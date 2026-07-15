@@ -1,0 +1,43 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    name: Build image & deploy to Container App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and push image to ACR
+        # Remote build (no runner Docker needed). Tags: latest + immutable commit sha.
+        run: |
+          az acr build \
+            -r kikiagentacr \
+            -t "kiki-app:latest" \
+            -t "kiki-app:${{ github.sha }}" \
+            -f Dockerfile .
+
+      - name: Deploy to Container App
+        # Unique immutable tag forces a fresh image pull + new revision.
+        run: |
+          az containerapp update \
+            -g kiki-agent-rg \
+            -n kiki-app \
+            --image "kikiagentacr.azurecr.io/kiki-app:${{ github.sha }}"

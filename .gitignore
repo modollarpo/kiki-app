@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Deployment secrets
+deploy/azure/parameters.dev.json
+google-play-key.json
+google-services.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Type checking
+*.tsbuildinfo
+next-env.d.ts
+
+# Workbox output
+public/sw.js
+public/workbox-*.js

@@ -1,0 +1,108 @@
+{
+  "expo": {
+    "name": "KIKI Agent",
+    "slug": "kiki-agent",
+    "version": "2.4.0",
+    "scheme": "kiki",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0A0A0B",
+    "primaryColor": "#005CFF",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0B"
+    },
+    "ios": {
+      "bundleIdentifier": "ai.kiki.agent",
+      "buildNumber": "241",
+      "supportsTablet": true,
+      "requireFullScreen": false,
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "KIKI Agent uses Face ID to securely authenticate you.",
+        "NSCameraUsageDescription": "KIKI Agent uses the camera for document scanning.",
+        "UIBackgroundModes": ["fetch", "remote-notification"]
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "associatedDomains": ["applinks:kiki.ai", "applinks:app.kiki.ai"],
+      "entitlements": {
+        "aps-environment": "production"
+      }
+    },
+    "android": {
+      "package": "ai.kiki.agent",
+      "versionCode": 241,
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "minSdkVersion": 31,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A0A0B"
+      },
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [{ "scheme": "https", "host": "kiki.ai" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#005CFF",
+          "sounds": ["./assets/notification-sound.wav"]
+        }
+      ],
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Allow KIKI Agent to use Face ID" }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "kiki-agent-expo-project-id"
+      },
+      "apiUrl": "https://api.kiki.ai",
+      "wsUrl": "wss://ws.kiki.ai"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/kiki-agent-expo-project-id",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#005CFF",
+      "iosDisplayInForeground": true
+    },
+    "githubUrl": "https://github.com/kiki-agent/kiki-platform"
+  }
+}

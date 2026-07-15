@@ -1,0 +1,64 @@
+---
+# ============================================================
+# KIKI Agent™ — Kubernetes Namespace & RBAC
+# ============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kiki-prod
+  labels:
+    app.kubernetes.io/managed-by: kiki-platform
+    environment: prod
+    team: platform
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kiki-api
+  namespace: kiki-prod
+  annotations:
+    azure.workload.identity/client-id: "AZURE_WORKLOAD_IDENTITY_CLIENT_ID"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kiki-api-role
+  namespace: kiki-prod
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kiki-api-binding
+  namespace: kiki-prod
+subjects:
+  - kind: ServiceAccount
+    name: kiki-api
+    namespace: kiki-prod
+roleRef:
+  kind: Role
+  name: kiki-api-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: kiki-prod-quota
+  namespace: kiki-prod
+spec:
+  hard:
+    requests.cpu: "32"
+    requests.memory: 64Gi
+    limits.cpu: "64"
+    limits.memory: 128Gi
+    pods: "100"

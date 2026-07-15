@@ -1,0 +1,39 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getUserFromRequest } from "@/lib/auth";
+import { syncPlatformCampaigns, syncAllPlatforms, getSyncStatus } from "@/lib/platform-sync";
+
+export async function GET(req: NextRequest) {
+  try {
+    const user = getUserFromRequest(req);
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const status = await getSyncStatus(user.tenantId);
+    return NextResponse.json({ integrations: status });
+  } catch (e) {
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const user = getUserFromRequest(req);
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = await req.json();
+    const { platform, syncAll } = body;
+
+    if (syncAll) {
+      const results = await syncAllPlatforms(user.tenantId);
+      return NextResponse.json({ synced: results });
+    }
+
+    if (!platform) {
+      return NextResponse.json({ error: "platform is required" }, { status: 400 });
+    }
+
+    const result = await syncPlatformCampaigns(user.tenantId, platform);
+    return NextResponse.json(result);
+  } catch (e) {
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}

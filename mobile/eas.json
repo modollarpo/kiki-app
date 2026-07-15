@@ -1,0 +1,95 @@
+{
+  "cli": {
+    "version": ">= 7.0.0",
+    "requireCommit": true,
+    "promptToConfigurePushNotifications": false
+  },
+  "build": {
+    "base": {
+      "node": "20.11.0",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.kiki.ai",
+        "EXPO_PUBLIC_WS_URL": "wss://ws.kiki.ai"
+      }
+    },
+    "dev": {
+      "extends": "base",
+      "distribution": "internal",
+      "developmentClient": true,
+      "ios": {
+        "simulator": true,
+        "buildConfiguration": "Debug"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.dev.kiki.ai",
+        "EXPO_PUBLIC_WS_URL": "wss://ws.dev.kiki.ai"
+      }
+    },
+    "staging": {
+      "extends": "base",
+      "distribution": "internal",
+      "channel": "staging",
+      "ios": {
+        "buildConfiguration": "Release",
+        "resourceClass": "m1-medium"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.staging.kiki.ai",
+        "EXPO_PUBLIC_WS_URL": "wss://ws.staging.kiki.ai"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "distribution": "store",
+      "channel": "production",
+      "autoIncrement": true,
+      "ios": {
+        "buildConfiguration": "Release",
+        "resourceClass": "m1-large",
+        "enterpriseProvisioning": "universal"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease"
+      },
+      "cache": {
+        "key": "kiki-agent-v2"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "$(APPLE_ID)",
+        "ascAppId": "1234567890",
+        "appleTeamId": "$(APPLE_TEAM_ID)",
+        "metadataPath": "./metadata/ios"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-play-key.json",
+        "track": "production",
+        "releaseStatus": "completed",
+        "changesNotSentForReview": false
+      }
+    },
+    "staging": {
+      "ios": {
+        "appleId": "$(APPLE_ID)",
+        "ascAppId": "1234567890",
+        "appleTeamId": "$(APPLE_TEAM_ID)"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-play-key.json",
+        "track": "internal"
+      }
+    }
+  }
+}

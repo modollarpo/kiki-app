@@ -1,0 +1,78 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "next": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/server": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/server.js": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/navigation": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/link": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/headers": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/image": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/og": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/font/google": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/dist/lib/metadata/types/metadata-interface": [
+        "./types/next-shims.d.ts"
+      ],
+      "next/dist/lib/metadata/types/metadata-interface.js": [
+        "./types/next-shims.d.ts"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/dev/types/**/*.ts",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "scripts",
+    "tests",
+    "vitest.config.ts"
+  ]
+}

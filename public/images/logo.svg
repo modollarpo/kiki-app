@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <!-- K Mark Icon (matches kiki.png) -->
+  <g id="k-mark">
+    <!-- Dark background -->
+    <rect x="0" y="0" width="40" height="40" rx="8" fill="#0A0A0B"/>
+
+    <!-- K vertical stem (blue) -->
+    <rect x="9" y="7" width="7" height="26" rx="1" fill="#005CFF"/>
+
+    <!-- K upper arm (blue diagonal) -->
+    <polygon points="18,20 18,13 30,7 30,12" fill="#005CFF"/>
+
+    <!-- K lower arm / upward arrow (cyan/mint) -->
+    <polygon points="18,20 18,27 30,33 30,26" fill="#31F3C3"/>
+    <!-- Arrow head (cyan/mint) -->
+    <polygon points="24,14 33,7 33,18" fill="#31F3C3"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g id="wordmark">
+    <text x="50" y="18"
+          font-family="'JetBrains Mono', 'Courier New', monospace"
+          font-size="16"
+          font-weight="700"
+          fill="#F0F0FA"
+          letter-spacing="-0.5">
+      KIKI
+    </text>
+    <text x="50" y="32"
+          font-family="'JetBrains Mono', 'Courier New', monospace"
+          font-size="9"
+          font-weight="500"
+          fill="#50506A"
+          letter-spacing="2">
+      .AGENT
+    </text>
+  </g>
+</svg>

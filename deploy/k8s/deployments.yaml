@@ -1,0 +1,461 @@
+---
+# ============================================================
+# KIKI Agent™ — Core Service Deployments
+# IMAGE_TAG is replaced by CI/CD pipeline at deploy time
+# ============================================================
+
+# ── API Gateway ───────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: kiki-prod
+  labels:
+    app: api-gateway
+    version: "IMAGE_TAG"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api-gateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        version: "IMAGE_TAG"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: kiki-api
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values: [api-gateway]
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: api-gateway
+          image: kikiagentprodacr.azurecr.io/api-gateway:IMAGE_TAG
+          ports:
+            - containerPort: 3001
+              name: http
+            - containerPort: 9090
+              name: metrics
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3001"
+            - name: PG_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: pg-connection
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: redis-url
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: openai-key
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: anthropic-key
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: stripe-key
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 3001
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: kiki-prod
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3001
+  type: ClusterIP
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway-hpa
+  namespace: kiki-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 65
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
+
+---
+# ── CAPI Gateway ──────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capi-gateway
+  namespace: kiki-prod
+  labels:
+    app: capi-gateway
+    version: "IMAGE_TAG"
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: capi-gateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: capi-gateway
+        version: "IMAGE_TAG"
+    spec:
+      serviceAccountName: kiki-api
+      containers:
+        - name: capi-gateway
+          image: kikiagentprodacr.azurecr.io/capi-gateway:IMAGE_TAG
+          ports:
+            - containerPort: 3002
+              name: http
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3002"
+            - name: PG_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: pg-connection
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: redis-url
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3002
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: capi-gateway
+  namespace: kiki-prod
+spec:
+  selector:
+    app: capi-gateway
+  ports:
+    - port: 80
+      targetPort: 3002
+  type: ClusterIP
+
+---
+# ── SyncBrain Orchestration ───────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: syncbrain
+  namespace: kiki-prod
+  labels:
+    app: syncbrain
+    version: "IMAGE_TAG"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: syncbrain
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: syncbrain
+        version: "IMAGE_TAG"
+    spec:
+      serviceAccountName: kiki-api
+      containers:
+        - name: syncbrain
+          image: kikiagentprodacr.azurecr.io/syncbrain:IMAGE_TAG
+          ports:
+            - containerPort: 3003
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: openai-key
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: anthropic-key
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: redis-url
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 4000m
+              memory: 8Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 20
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: syncbrain
+  namespace: kiki-prod
+spec:
+  selector:
+    app: syncbrain
+  ports:
+    - port: 80
+      targetPort: 3003
+  type: ClusterIP
+
+---
+# ── LTV Model Service ─────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ltv-model
+  namespace: kiki-prod
+  labels:
+    app: ltv-model
+    version: "IMAGE_TAG"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ltv-model
+  template:
+    metadata:
+      labels:
+        app: ltv-model
+        version: "IMAGE_TAG"
+    spec:
+      nodeSelector:
+        workload: gpu-inference
+      tolerations:
+        - key: gpu
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: ltv-model
+          image: kikiagentprodacr.azurecr.io/ltv-model:IMAGE_TAG
+          ports:
+            - containerPort: 3004
+          env:
+            - name: MODEL_VERSION
+              value: "v5"
+            - name: PG_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: pg-connection
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: redis-url
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 4Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: 8000m
+              memory: 16Gi
+              nvidia.com/gpu: "1"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 30
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ltv-model
+  namespace: kiki-prod
+spec:
+  selector:
+    app: ltv-model
+  ports:
+    - port: 80
+      targetPort: 3004
+  type: ClusterIP
+
+---
+# ── Ingress ───────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kiki-ingress
+  namespace: kiki-prod
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    appgw.ingress.kubernetes.io/connection-draining: "true"
+    appgw.ingress.kubernetes.io/connection-draining-timeout: "30"
+spec:
+  tls:
+    - hosts:
+        - api.kiki.ai
+        - capi.kiki.ai
+      secretName: kiki-tls-cert
+  rules:
+    - host: api.kiki.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 80
+    - host: capi.kiki.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: capi-gateway
+                port:
+                  number: 80
+
+---
+# ── ConfigMap ─────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kiki-config
+  namespace: kiki-prod
+data:
+  NODE_ENV: production
+  LOG_LEVEL: info
+  ENABLE_METRICS: "true"
+  ENRICHMENT_TIMEOUT_MS: "100"
+  FRAUD_SCORE_THRESHOLD: "0.15"
+  LTV_MODEL_VERSION: v5
+  MAX_SIGNAL_BATCH_SIZE: "1000"
+  KAFKA_BROKERS: "kiki-kafka:9092"
+
+---
+# ── Pod Disruption Budget ─────────────────────────────────
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway-pdb
+  namespace: kiki-prod
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: api-gateway
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: capi-gateway-pdb
+  namespace: kiki-prod
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: capi-gateway

@@ -1,0 +1,15 @@
+name: kiki-agent-platform
+services:
+  kiki:
+    project: .
+    language: ts
+    host: containerapp
+    docker:
+      path: Dockerfile
+    image: kiki-app
+    azure:
+      resourceGroup: kiki-rg
+      region: swedencentral
+      containerApp:
+        name: kiki-app
+        env: kiki-env

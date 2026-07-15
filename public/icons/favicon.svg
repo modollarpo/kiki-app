@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Dark background -->
+  <rect width="32" height="32" rx="6" fill="#0A0A0B"/>
+
+  <!-- K vertical stem (blue) -->
+  <rect x="5" y="4" width="5.5" height="24" rx="0.8" fill="#005CFF"/>
+
+  <!-- K upper arm (blue diagonal) -->
+  <polygon points="12,16 12,10 24,4 24,8.5" fill="#005CFF"/>
+
+  <!-- K lower arm / upward arrow (cyan/mint) -->
+  <polygon points="12,16 12,22 24,28 24,22" fill="#31F3C3"/>
+  <!-- Arrow head (cyan/mint) -->
+  <polygon points="18,10 26,4 26,13" fill="#31F3C3"/>
+</svg>
