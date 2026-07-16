@@ -220,3 +220,25 @@ declare module "next/dist/lib/metadata/types/metadata-interface.js" {
   export type ResolvingViewport = Record<string, unknown>;
   export type TemplateString = string;
 }
+
+// ============================================================
+// node:sqlite shim (Node 24+ built-in, not in @types/node v20)
+// Minimal surface used by src/lib/db.ts local fallback.
+// ============================================================
+declare module "node:sqlite" {
+  export interface DatabaseSyncOptions {
+    nativeBinding?: string;
+  }
+  export class DatabaseSync {
+    constructor(path: string, options?: DatabaseSyncOptions);
+    exec(sql: string): void;
+    prepare(sql: string): StatementSync;
+    close(): void;
+  }
+  export interface StatementSync {
+    run(...params: unknown[]): { lastInsertRowid: number | bigint; changes: number };
+    get(...params: unknown[]): Record<string, unknown> | undefined;
+    all(...params: unknown[]): Record<string, unknown>[];
+  }
+}
+

@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     action_count: number; config: string;
   }>;
 
-  const agentsWithActions = agents.map(async a => {
+  const agentsWithActions = await Promise.all(agents.map(async a => {
     const lastAction = await (await db.prepare(
       "SELECT action_type, output, duration_ms, created_at FROM agent_actions WHERE agent_id = ? ORDER BY created_at DESC LIMIT 1"
     )).get(a.id) as { action_type: string; output: string; duration_ms: number; created_at: string } | undefined;
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
       config: JSON.parse(a.config || "{}"),
       latestAction: lastAction || null,
     };
-  });
+  }));
 
   const running = agents.filter(a => a.status === "running").length;
   const paused = agents.filter(a => a.status === "paused").length;

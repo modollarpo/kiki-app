@@ -67,6 +67,7 @@ const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
       { href: "/dashboard/warehouse", icon: "▦", label: "Data Export" },
       { href: "/dashboard/fraud", icon: "⬗", label: "Fraud & IVT" },
       { href: "/dashboard/anomaly", icon: "⚠", label: "Anomaly Alerts", badgeSelector: () => "2", bc: K.warn },
+      { href: "/dashboard/commerce", icon: "🛒", label: "Commerce" },
     ],
   },
   {
@@ -347,6 +348,9 @@ const SidebarContent = memo(function SidebarContent({
     <>
       {/* Logo */}
       <div
+        onClick={() => router.push("/")}
+        role="link"
+        aria-label="Go to homepage"
         style={{
           height: 56,
           display: "flex",
@@ -355,6 +359,7 @@ const SidebarContent = memo(function SidebarContent({
           padding: "0 16px",
           borderBottom: `1px solid ${K.g800}`,
           flexShrink: 0,
+          cursor: "pointer",
         }}
       >
         <Image

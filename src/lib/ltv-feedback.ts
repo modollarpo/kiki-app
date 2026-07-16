@@ -208,6 +208,121 @@ export async function collectPlatformFeedback(tenantId: string): Promise<{
   return { newFeedbackCount, updatedPredictions };
 }
 
+// ── Collect Feedback from Commerce Realized LTV ─────────────
+
+export async function collectCommerceFeedback(tenantId: string): Promise<{
+  newFeedbackCount: number;
+  updatedPredictions: number;
+  avgActualLtv: number;
+}> {
+  const db = await getDb();
+
+  // Customers whose realized commerce LTV is a usable ground-truth signal:
+  // realized revenue recorded within the last 30 days, with associated predictions.
+  const customers = await db.prepare(`
+    SELECT id, realized_ltv
+    FROM customer_profiles
+    WHERE tenant_id = ?
+    AND realized_ltv > 0
+    AND last_commerce_sync_at IS NOT NULL
+    AND last_commerce_sync_at >= datetime('now', '-30 days')
+  `).all(tenantId) as Array<{ id: string; realized_ltv: number }>;
+
+  let newFeedbackCount = 0;
+  let updatedPredictions = 0;
+  let totalActualLtv = 0;
+
+  for (const customer of customers) {
+    const actualLtv = customer.realized_ltv;
+    totalActualLtv += actualLtv;
+
+    // Predictions linked to this customer still awaiting ground truth.
+    const predictions = await db.prepare(`
+      SELECT id, predicted_ltv, confidence, segment, factors
+      FROM ltv_predictions
+      WHERE tenant_id = ?
+      AND customer_id = ?
+      AND actual_ltv IS NULL
+    `).all(tenantId, customer.id) as Array<{
+      id: string;
+      predicted_ltv: number;
+      confidence: number;
+      segment: string;
+      factors: string;
+    }>;
+
+    for (const pred of predictions) {
+      const existingFeedback = await db.prepare(`
+        SELECT id FROM prediction_feedback WHERE prediction_id = ?
+      `).get(pred.id);
+
+      if (existingFeedback) continue;
+
+      const errorPct = pred.predicted_ltv > 0
+        ? Math.abs(pred.predicted_ltv - actualLtv) / actualLtv * 100
+        : 100;
+
+      let actualSegment = "low";
+      if (actualLtv > 500) actualSegment = "high";
+      else if (actualLtv > 200) actualSegment = "mid";
+      else if (actualLtv > 80) actualSegment = "low";
+      else actualSegment = "churn_risk";
+
+      const feedbackId = `fb_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      await db.prepare(`
+        INSERT INTO prediction_feedback
+        (id, tenant_id, prediction_id, predicted_ltv, actual_ltv, error_pct, segment_predicted, segment_actual, factors_at_prediction, feedback_source, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'commerce', datetime('now'))
+      `).run(
+        feedbackId,
+        tenantId,
+        pred.id,
+        pred.predicted_ltv,
+        actualLtv,
+        Math.round(errorPct * 100) / 100,
+        pred.segment,
+        actualSegment,
+        pred.factors
+      );
+
+      await db.prepare(`
+        UPDATE ltv_predictions
+        SET actual_ltv = ?, feedback_at = datetime('now')
+        WHERE id = ?
+      `).run(actualLtv, pred.id);
+
+      newFeedbackCount++;
+      updatedPredictions++;
+    }
+  }
+
+  if (newFeedbackCount > 0) {
+    await db.prepare(`
+      INSERT INTO system_metrics (tenant_id, metric_name, metric_value, tags, created_at)
+      VALUES (?, 'ltv.commerce_feedback_collected', ?, ?, datetime('now'))
+    `).run(
+      tenantId,
+      newFeedbackCount,
+      JSON.stringify({
+        customers: customers.length,
+        avgActualLtv: customers.length > 0 ? totalActualLtv / customers.length : 0,
+      })
+    );
+
+    eventBus.emit("ltv.commerce_feedback", {
+      tenantId,
+      newFeedbackCount,
+      updatedPredictions,
+    });
+  }
+
+  return {
+    newFeedbackCount,
+    updatedPredictions,
+    avgActualLtv: customers.length > 0 ? totalActualLtv / customers.length : 0,
+  };
+}
+
 // ── Feedback Summary ───────────────────────────────────────
 
 export async function getFeedbackStats(tenantId: string): Promise<{

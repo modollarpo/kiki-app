@@ -9,6 +9,9 @@ out/
 dist/
 build/
 
+# Local SQLite fallback database (runtime-generated)
+data/
+
 # Environment
 .env
 .env.local

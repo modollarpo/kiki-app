@@ -5,6 +5,7 @@
 
 import { getDb, genId } from "./db";
 import { predictLTV, type SignalData } from "./ltv-engine";
+import { resolveCustomer } from "./identity";
 
 export interface ProcessedSignal {
   id: string;
@@ -23,28 +24,35 @@ export async function ingestSignal(tenantId: string, signal: SignalData): Promis
   const db = await getDb();
   const id = genId("sig");
 
+  // Resolve identity from signal (email/phone may be on the signal itself
+  // or nested in raw_data) so signals/predictions link to a customer profile.
+  const rawEmail = signal.email ?? (signal as { rawData?: { email?: string } }).rawData?.email;
+  const rawPhone = signal.phone ?? (signal as { rawData?: { phone?: string } }).rawData?.phone;
+  const resolved = await resolveCustomer(tenantId, rawEmail, rawPhone);
+  const customerId = resolved.customerId;
+
   // Predict LTV
   const prediction = await predictLTV(signal, tenantId);
 
   // Store signal
   await db.prepare(`
-    INSERT INTO signals (id, tenant_id, campaign_id, platform, event_type, event_id, user_id, value, ltv_predicted, ltv_confidence, enriched, raw_data)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+    INSERT INTO signals (id, tenant_id, campaign_id, platform, event_type, event_id, user_id, value, ltv_predicted, ltv_confidence, enriched, customer_id, raw_data)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
   `).run(
     id, tenantId, null, signal.platform, signal.eventType,
     signal.eventId || "", signal.userId || "", signal.value,
-    prediction.predictedLTV, prediction.confidence,
+    prediction.predictedLTV, prediction.confidence, customerId,
     JSON.stringify(signal)
   );
 
   // Store prediction
   await db.prepare(`
-    INSERT INTO ltv_predictions (id, tenant_id, signal_id, predicted_ltv, confidence, horizon_days, features)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO ltv_predictions (id, tenant_id, signal_id, predicted_ltv, confidence, horizon_days, features, customer_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     genId("ltv"), tenantId, id, prediction.predictedLTV,
     prediction.confidence, prediction.horizonDays,
-    JSON.stringify(prediction.factors)
+    JSON.stringify(prediction.factors), customerId
   );
 
   // Log metric

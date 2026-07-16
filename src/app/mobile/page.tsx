@@ -318,7 +318,7 @@ export default function MobileAppPage() {
 
         {/* App header */}
         <div className="h-[52px] flex items-center justify-between px-[18px] shrink-0" style={{ background:K.void, borderBottom:`1px solid ${K.g800}` }}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
             <Image src="/images/kiki.png" alt="KIKI" width={26} height={26} style={{ borderRadius:6 }} />
             <span className="font-mono font-bold text-[13px] text-t1">KIKI<span className="text-kblue">.</span>Agent</span>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { MarketingLayout } from "@/components/layout/MarketingLayout";
 import { K } from "@/lib/kdls";
 import { Button, Badge } from "@/components/ui";
@@ -15,6 +16,7 @@ const FEATURES = [
 ];
 
 export default function AppDownloadPage() {
+  const router = useRouter();
   const [platform, setPlatform] = useState<"ios"|"android"|"pwa">("ios");
 
   return (
@@ -75,7 +77,7 @@ export default function AppDownloadPage() {
                 <span className="font-mono text-[9px] text-t2">100%</span>
               </div>
               <div className="py-2.5 px-4 flex items-center justify-between border-b border-g800" style={{ background:K.void }}>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
                   <Image src="/images/kiki.png" alt="KIKI" width={24} height={24} className="rounded-md" />
                   <span className="font-mono font-bold text-[12px] text-t1">KIKI</span>
                 </div>

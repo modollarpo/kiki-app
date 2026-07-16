@@ -8,6 +8,12 @@
 import { Pool } from "pg";
 import { hashPassword } from "./auth";
 
+// Local fallback database (Node 24+ built-in SQLite). Used automatically when
+// PostgreSQL is unreachable so `npm run dev` works with zero external setup.
+// The `node:sqlite` module is imported dynamically (inside createSqliteDb) so
+// that bundlers/test runners which cannot resolve the built-in do not fail at
+// module-evaluation time.
+
 // Production MUST provide DATABASE_URL (e.g. via Azure Key Vault / env).
 // No credentials are hardcoded here — the fallback is a local dev database
 // without authentication. Never commit real secrets to source.
@@ -105,6 +111,71 @@ class PgDb {
   async pragma(_name: string): Promise<any> {
     return undefined;
   }
+}
+
+// ─── SQLite fallback (node:sqlite) ───────────────────────
+// Implements the same prepare/exec surface as PgDb so call sites are unaware
+// which backend is active. Activated when PostgreSQL is unavailable.
+type SqliteRow = Record<string, any>;
+
+class SqliteStatement {
+  constructor(private db: SqliteDb, private sql: string) {}
+
+  run(...params: any[]): { lastInsertRowid: number; changes: number } {
+    const info = this.db.raw.prepare(this.sql).run(...params);
+    this.db.lastRowCount = info.changes ?? 0;
+    this.db.lastInsertRowid = Number(info.lastInsertRowid ?? 0);
+    return { lastInsertRowid: this.db.lastInsertRowid, changes: this.db.lastRowCount };
+  }
+
+  get(...params: any[]): any {
+    return this.db.raw.prepare(this.sql).get(...params) as SqliteRow | undefined;
+  }
+
+  all(...params: any[]): any[] {
+    return this.db.raw.prepare(this.sql).all(...params) as SqliteRow[];
+  }
+}
+
+class SqliteDb {
+  raw: any;
+  lastRowCount = 0;
+  lastInsertRowid: number = 0;
+
+  constructor(raw: any) {
+    this.raw = raw;
+  }
+
+  prepare(sql: string): SqliteStatement {
+    return new SqliteStatement(this, sql);
+  }
+
+  exec(sql: string): void {
+    const statements = sql
+      .split(";")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !/^--/.test(s));
+    for (const s of statements) {
+      this.raw.exec(s);
+    }
+  }
+
+  async pragma(_name: string): Promise<any> {
+    return undefined;
+  }
+}
+
+async function createSqliteDb(): Promise<SqliteDb> {
+  const fs = require("fs") as typeof import("fs");
+  const path = require("path") as typeof import("path");
+  const dataDir = path.resolve(process.cwd(), "data");
+  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+  const file = path.join(dataDir, "kiki-local.sqlite");
+  const { DatabaseSync } = await import("node:sqlite");
+  const raw = new DatabaseSync(file);
+  raw.exec("PRAGMA journal_mode = WAL;");
+  raw.exec("PRAGMA foreign_keys = OFF;");
+  return new SqliteDb(raw);
 }
 
 const SCHEMA = `
@@ -533,6 +604,31 @@ const SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_customer_email ON customer_profiles(tenant_id, email);
   CREATE INDEX IF NOT EXISTS idx_customer_segment ON customer_profiles(tenant_id, ltv_segment);
 
+  -- Link signals / predictions to a resolved customer profile (identity resolution)
+  -- Added for the Commerce-Revenue Closed-Loop LTV feature.
+  -- SQLite/Postgres are tolerant of ADD COLUMN IF NOT EXISTS via separate statements.
+  -- NOTE: applied via runMigrations() guard below to remain idempotent.
+
+  -- Realized LTV from commerce orders (ground truth for the LTV loop)
+  CREATE TABLE IF NOT EXISTS commerce_connections (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    shop_domain TEXT,
+    api_key_encrypted TEXT,
+    webhook_secret TEXT,
+    last_order_at TEXT,
+    total_orders INTEGER NOT NULL DEFAULT 0,
+    total_revenue REAL NOT NULL DEFAULT 0,
+    config TEXT NOT NULL DEFAULT '{}',
+    connected_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_sync_at TEXT,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_commerce_tenant ON commerce_connections(tenant_id);
+  CREATE INDEX IF NOT EXISTS idx_commerce_platform ON commerce_connections(tenant_id, platform);
+
   -- Audience segments for portability
   CREATE TABLE IF NOT EXISTS audience_segments (
     id TEXT PRIMARY KEY,
@@ -667,6 +763,35 @@ async function runMigrations(db: PgDb) {
   await db.exec(
     "UPDATE campaigns SET revenue = spend * roas WHERE revenue IS NULL OR revenue = 0"
   );
+
+  // ── Commerce-Revenue Closed-Loop LTV migrations ──────────────
+  // Idempotent column additions (safe for both pg and sqlite).
+  const addColumnIfMissing = async (table: string, column: string, definition: string) => {
+    try {
+      await db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    } catch {
+      // Column already exists (or not supported) — safe to ignore.
+    }
+  };
+
+  await addColumnIfMissing("signals", "customer_id", "TEXT");
+  await addColumnIfMissing("ltv_predictions", "customer_id", "TEXT");
+  await addColumnIfMissing("customer_profiles", "realized_ltv", "REAL NOT NULL DEFAULT 0");
+  await addColumnIfMissing("customer_profiles", "realized_orders", "INTEGER NOT NULL DEFAULT 0");
+  await addColumnIfMissing("customer_profiles", "last_commerce_sync_at", "TEXT");
+  await addColumnIfMissing("customer_profiles", "commerce_platform", "TEXT");
+  await addColumnIfMissing("customer_profiles", "identity_hash", "TEXT");
+  await addColumnIfMissing("commerce_connections", "auth_type", "TEXT NOT NULL DEFAULT 'api_key'");
+
+  try {
+    await db.exec("CREATE INDEX IF NOT EXISTS idx_signals_customer ON signals(tenant_id, customer_id)");
+  } catch { /* ignore */ }
+  try {
+    await db.exec("CREATE INDEX IF NOT EXISTS idx_ltv_customer ON ltv_predictions(tenant_id, customer_id)");
+  } catch { /* ignore */ }
+  try {
+    await db.exec("CREATE INDEX IF NOT EXISTS idx_customer_identity ON customer_profiles(tenant_id, identity_hash)");
+  } catch { /* ignore */ }
 }
 
 async function seedIfEmpty(db: PgDb) {
@@ -791,10 +916,35 @@ async function seedBillingIfEmpty(db: PgDb) {
   console.log("[DB] Seeded billing data (subscription, usage, invoice)");
 }
 
-const globalForDb = globalThis as unknown as { __kikiDb?: PgDb };
+const globalForDb = globalThis as unknown as { __kikiDb?: PgDb | SqliteDb };
 
-export async function getDb(): Promise<PgDb> {
+export async function getDb(): Promise<PgDb | SqliteDb> {
   if (!globalForDb.__kikiDb) {
+    let useSqlite = false;
+    try {
+      // Probe PostgreSQL connectivity before committing to it.
+      await pool.query("SELECT 1");
+    } catch (e) {
+      useSqlite = true;
+      console.warn(
+        "[DB] PostgreSQL unavailable (" + (e as Error).message.split("\n")[0] +
+        ") — falling back to local SQLite (node:sqlite)."
+      );
+    }
+
+    if (useSqlite) {
+      const db = await createSqliteDb();
+      db.exec(SCHEMA);
+      await runMigrations(db as unknown as PgDb);
+      if (process.env.SEED_DEMO_DATA === "true") {
+        await seedIfEmpty(db as unknown as PgDb);
+        await seedBillingIfEmpty(db as unknown as PgDb);
+      }
+      console.log("[DB] Using local SQLite fallback at ./data/kiki-local.sqlite");
+      globalForDb.__kikiDb = db as unknown as PgDb;
+      return globalForDb.__kikiDb;
+    }
+
     const db = new PgDb();
     await db.exec(SCHEMA);
     await pool.query(DATETIME_FN);
