@@ -724,6 +724,16 @@ const SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_creatives_campaign ON creatives(tenant_id, campaign_id);
 `;
 
+// SQLite-compatible variant of SCHEMA for the local `node:sqlite` fallback.
+// node:sqlite does not understand PostgreSQL's BIGSERIAL type, so the
+// autoincrement primary keys are rewritten to SQLite's INTEGER PRIMARY KEY
+// AUTOINCREMENT (otherwise CREATE TABLE fails and downstream indexes throw
+// "no such table"). All other DDL is already cross-compatible.
+const SQLITE_SCHEMA = SCHEMA.replace(
+  /BIGSERIAL PRIMARY KEY/g,
+  "INTEGER PRIMARY KEY AUTOINCREMENT"
+);
+
 // SQLite's datetime() helper, emulated in PostgreSQL. Handles 'now', modifiers
 // like '-7 days' / '+10 minutes', and 'start of day' / 'start of month'.
 const DATETIME_FN = `
@@ -934,7 +944,7 @@ export async function getDb(): Promise<PgDb | SqliteDb> {
 
     if (useSqlite) {
       const db = await createSqliteDb();
-      db.exec(SCHEMA);
+      db.exec(SQLITE_SCHEMA);
       await runMigrations(db as unknown as PgDb);
       if (process.env.SEED_DEMO_DATA === "true") {
         await seedIfEmpty(db as unknown as PgDb);
