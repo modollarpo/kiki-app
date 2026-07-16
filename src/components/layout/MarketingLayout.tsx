@@ -147,7 +147,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))", gap:"clamp(24px,4vw,40px)", marginBottom:"clamp(28px,4vw,44px)" }}>
             {/* Brand */}
             <div style={{ minWidth:180 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14, cursor:"pointer" }} onClick={() => router.push("/")}>
                 <Image src="/images/kiki.png" alt="KIKI" width={24} height={24} style={{ borderRadius:2 }} />
                 <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, fontSize:13, color:K.t1 }}>KIKI<span style={{color:K.blue}}>.</span>Agent</span>
               </div>

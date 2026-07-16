@@ -83,7 +83,9 @@ export default function LoginPage() {
       <div className="absolute pointer-events-none" style={{ top:"30%", left:"50%", transform:"translateX(-50%)", width:600, height:400, borderRadius:"50%", background:`radial-gradient(circle,${K.blueT} 0%,transparent 70%)`, filter:"blur(60px)" }} />
 
       <div className="relative text-center mb-8">
-        <Image src="/images/kiki.png" alt="KIKI" width={48} height={48} className="block rounded-sm mx-auto mb-3" style={{ boxShadow:`0 0 32px ${K.blue}50` }} />
+        <div className="inline-block cursor-pointer" onClick={() => router.push("/")}>
+          <Image src="/images/kiki.png" alt="KIKI" width={48} height={48} className="block rounded-sm mx-auto mb-3" style={{ boxShadow:`0 0 32px ${K.blue}50` }} />
+        </div>
         <p className="font-mono font-bold text-[18px] text-t1">KIKI<span className="text-kblue">.</span>Agent</p>
         <p className="font-mono text-[9px] tracking-[0.14em] text-t3 mt-1">AUTONOMOUS LTV CAMPAIGN PLATFORM</p>
       </div>

@@ -216,6 +216,74 @@ export const contacts = {
   }) => request<{ ok: boolean; id: string }>("/api/contacts", { method: "POST", body: JSON.stringify(data) }),
 };
 
+// ── Commerce (Closed-Loop LTV) ─────────────────────────
+export interface CommerceConnection {
+  id: string;
+  platform: string;
+  shopDomain: string;
+  status: "connected" | "pending" | "error" | "syncing";
+  lastSync: string | null;
+  totalOrders: number;
+  totalRevenue: number;
+}
+
+export interface PlatformCatalogItem {
+  key: string;
+  label: string;
+  description: string;
+}
+
+export interface CommerceData {
+  connections: CommerceConnection[];
+  catalog: PlatformCatalogItem[];
+}
+
+export interface LtvSegment {
+  segment: string;
+  predictedLtv: number;
+  realizedLtv: number;
+  errorPct: number;
+  count: number;
+}
+
+export interface LtvAccuracyData {
+  overallAccuracy: number;
+  predictionCoverage: number;
+  bySegment: LtvSegment[];
+}
+
+export interface CommerceConnectBody {
+  platform: string;
+  shopDomain: string;
+  apiKey: string;
+  webhookSecret: string;
+}
+
+export const commerce = {
+  list: (token: string) =>
+    request<{ data: CommerceData }>("/api/commerce", { token }),
+  ltvAccuracy: (token: string) =>
+    request<{ data: LtvAccuracyData }>("/api/commerce/ltv-accuracy", { token }),
+  connect: (token: string, body: CommerceConnectBody) =>
+    request<{ ok: boolean; data?: CommerceConnection }>("/api/commerce", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ action: "connect", ...body }),
+    }),
+  disconnect: (token: string, connectionId: string) =>
+    request<{ ok: boolean }>("/api/commerce", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ action: "disconnect", connectionId }),
+    }),
+  sync: (token: string, connectionId: string) =>
+    request<{ ok: boolean }>("/api/commerce", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ action: "sync", connectionId }),
+    }),
+};
+
 // ── Status ──────────────────────────────────────────────
 export const status = {
   get: () => request<{ status: string; services: Array<{ name: string; status: string; p99: number; uptime: number }> }>("/api/status"),

@@ -81,16 +81,18 @@ export default function RegisterPage() {
       />
 
       <div className="relative text-center mb-8">
-        <Image
-          src="/images/kiki.png"
-          alt="KIKI"
-          width={48}
-          height={48}
-          className="block rounded-sm mx-auto mb-3"
-          style={{
-            boxShadow: `0 0 32px ${K.blue}50`,
+        <div className="inline-block cursor-pointer" onClick={() => router.push("/")}>
+          <Image
+            src="/images/kiki.png"
+            alt="KIKI"
+            width={48}
+            height={48}
+            className="block rounded-sm mx-auto mb-3"
+            style={{
+              boxShadow: `0 0 32px ${K.blue}50`,
           }}
         />
+        </div>
         <p className="font-mono font-bold text-[18px] text-t1">
           KIKI<span className="text-kblue">.</span>Agent
         </p>

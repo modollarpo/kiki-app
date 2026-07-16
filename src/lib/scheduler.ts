@@ -11,7 +11,7 @@ import { runBiddingCycle } from "./bidding";
 import { startAutoFreezeMonitor } from "./wallet";
 import { startAutoSync } from "./platform-sync";
 import { trainModel } from "./ltv-training";
-import { collectWalletFeedback, collectPlatformFeedback } from "./ltv-feedback";
+import { collectWalletFeedback, collectPlatformFeedback, collectCommerceFeedback } from "./ltv-feedback";
 import { adaptStrategy, runSelfReflection } from "./metacognition";
 import { enforceDataRetentionPolicy } from "./gdpr";
 import { validateEnvironment } from "./env";
@@ -240,10 +240,11 @@ async function collectFeedbackForAllTenants(): Promise<void> {
     try {
       const walletResult = await collectWalletFeedback(tenant_id);
       const platformResult = await collectPlatformFeedback(tenant_id);
-      totalFeedback += walletResult.newFeedbackCount + platformResult.newFeedbackCount;
+      const commerceResult = await collectCommerceFeedback(tenant_id);
+      totalFeedback += walletResult.newFeedbackCount + platformResult.newFeedbackCount + commerceResult.newFeedbackCount;
 
-      if (walletResult.newFeedbackCount > 0 || platformResult.newFeedbackCount > 0) {
-        console.log(`[Scheduler] Feedback collected for ${tenant_id}: wallet=${walletResult.newFeedbackCount}, platform=${platformResult.newFeedbackCount}`);
+      if (walletResult.newFeedbackCount > 0 || platformResult.newFeedbackCount > 0 || commerceResult.newFeedbackCount > 0) {
+        console.log(`[Scheduler] Feedback collected for ${tenant_id}: wallet=${walletResult.newFeedbackCount}, platform=${platformResult.newFeedbackCount}, commerce=${commerceResult.newFeedbackCount}`);
       }
     } catch (e) {
       console.error(`[Scheduler] Feedback collection failed for tenant ${tenant_id}:`, e);

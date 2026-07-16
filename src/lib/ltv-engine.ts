@@ -22,6 +22,8 @@ export interface SignalData {
   previousPurchases?: number;
   accountAge?: number;
   emailDomain?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface LTVPrediction {
