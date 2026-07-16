@@ -1,11 +1,13 @@
 import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const db = await getDb();
+  try {
+    const db = await getDb();
   const tid = user.tenantId;
 
   // Get real data from SQLite
@@ -70,5 +72,9 @@ export async function GET(req: Request) {
       signalsTotal: signalCount,
       fraudBlocked,
     },
-  });
+    });
+  } catch (error) {
+    logger.error("dashboard/GET failed", { message: error instanceof Error ? error.message : String(error) });
+    return jsonError("Failed to load dashboard", 500);
+  }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -44,6 +45,26 @@ export async function GET(req: NextRequest) {
         roas: c.roas || 0,
       }));
 
+    // Build channel attribution from platform distribution
+    const platformSpend: Record<string, { spend: number; conversions: number; revenue: number }> = {};
+    for (const c of campaigns) {
+      const p = c.platform || "unknown";
+      if (!platformSpend[p]) platformSpend[p] = { spend: 0, conversions: 0, revenue: 0 };
+      platformSpend[p].spend += c.spend || 0;
+      platformSpend[p].conversions += c.conversions || 0;
+      platformSpend[p].revenue += c.revenue || 0;
+    }
+    const totalPlatformSpend = Object.values(platformSpend).reduce((s, p) => s + p.spend, 0);
+
+    const channelAttribution = Object.entries(platformSpend)
+      .filter(([, data]) => data.spend > 0)
+      .map(([channel, data]) => ({
+        channel: channel.charAt(0).toUpperCase() + channel.slice(1),
+        credit: totalPlatformSpend > 0 ? Math.round((data.spend / totalPlatformSpend) * 1000) / 10 : 0,
+        pipeline: data.revenue || data.spend,
+        deals: data.conversions || 0,
+      }));
+
     return NextResponse.json({
       success: true,
       data: {
@@ -55,6 +76,7 @@ export async function GET(req: NextRequest) {
         },
         stages,
         topAccounts,
+        channelAttribution,
         metrics: {
           totalSpent,
           totalRevenue,
@@ -64,6 +86,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
+    logger.error("b2b/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }

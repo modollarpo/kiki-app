@@ -3,13 +3,13 @@
   <rect width="32" height="32" rx="6" fill="#0A0A0B"/>
 
   <!-- K vertical stem (blue) -->
-  <rect x="5" y="4" width="5.5" height="24" rx="0.8" fill="#005CFF"/>
+  <rect x="3.68" y="2.56" width="6.16" height="26.88" rx="0.8" fill="#005CFF"/>
 
   <!-- K upper arm (blue diagonal) -->
-  <polygon points="12,16 12,10 24,4 24,8.5" fill="#005CFF"/>
+  <polygon points="11.52,16 11.52,9.28 24.96,2.56 24.96,7.6" fill="#005CFF"/>
 
   <!-- K lower arm / upward arrow (cyan/mint) -->
-  <polygon points="12,16 12,22 24,28 24,22" fill="#31F3C3"/>
+  <polygon points="11.52,16 11.52,22.72 24.96,29.44 24.96,22.72" fill="#31F3C3"/>
   <!-- Arrow head (cyan/mint) -->
-  <polygon points="18,10 26,4 26,13" fill="#31F3C3"/>
+  <polygon points="18.24,9.28 27.2,2.56 27.2,12.64" fill="#31F3C3"/>
 </svg>

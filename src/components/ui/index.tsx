@@ -75,11 +75,11 @@ export function Button({
 }
 
 // ─── Badge ────────────────────────────────────────────────
-export function Badge({ children, color = K.blue, dot, pulse, style }: {
-  children: React.ReactNode; color?: string; dot?: boolean; pulse?: boolean; style?: React.CSSProperties;
-}) {
+export function Badge({ children, color = K.blue, dot, pulse, style, className = "", ...rest }: {
+  children: React.ReactNode; color?: string; dot?: boolean; pulse?: boolean; style?: React.CSSProperties; className?: string;
+} & React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span style={{
+    <span className={className} {...rest} style={{
       display: "inline-flex", alignItems: "center", gap: 4,
       padding: "2px 7px", background: `${color}14`, color,
       fontFamily: K.mono, fontSize: 10, fontWeight: 700,
@@ -145,15 +145,15 @@ export function Card({ children, accent, glow, padding = 20, hover, onClick, sty
 }
 
 // ─── Input ────────────────────────────────────────────────
-export function Input({ placeholder, prefix, suffix, value, onChange, type = "text", mono, error, label, hint, style }: {
+export function Input({ placeholder, prefix, suffix, value, onChange, type = "text", mono, error, label, hint, style, className = "", ...rest }: {
   placeholder?: string; prefix?: string; suffix?: string;
   value?: string; onChange?: (v: string) => void; type?: string;
   mono?: boolean; error?: string; label?: string; hint?: string;
-  style?: React.CSSProperties;
-}) {
+  style?: React.CSSProperties; className?: string;
+} & Omit<React.HTMLAttributes<HTMLDivElement>, "onChange">) {
   const [focused, setFocused] = useState(false);
   return (
-    <div style={style}>
+    <div className={className} {...rest} style={style}>
       {label && <p style={{ fontFamily: K.mono, fontSize: 10, letterSpacing: "0.1em", color: K.t3, marginBottom: 6, textTransform: "uppercase" }}>{label}</p>}
       <div style={{
         display: "flex", alignItems: "center",

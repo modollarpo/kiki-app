@@ -9,81 +9,29 @@ interface ErrorProps {
 
 export default function DashboardError({ error, reset }: ErrorProps) {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: K.void,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-      }}
-    >
-      <div style={{ textAlign: "center", maxWidth: 480 }}>
+    <div className="min-h-screen bg-void flex items-center justify-center p-6">
+      <div className="text-center max-w-[480px]">
         <div
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 2,
-            background: K.dangerT,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 24,
-            color: K.danger,
-            margin: "0 auto 16px",
-          }}
+          className="w-14 h-14 rounded-kdls flex items-center justify-center text-2xl text-kdanger mx-auto mb-4"
+          style={{ background: K.dangerT }}
         >
           ⚠
         </div>
-        <h1
-          style={{
-            fontFamily: K.mono,
-            fontWeight: 700,
-            fontSize: 18,
-            color: K.t1,
-            marginBottom: 8,
-          }}
-        >
+        <h1 className="font-mono font-bold text-[18px] text-t1 mb-2">
           Something went wrong
         </h1>
-        <p
-          style={{
-            fontFamily: K.sans,
-            fontSize: 14,
-            color: K.t3,
-            lineHeight: 1.6,
-            marginBottom: 24,
-          }}
-        >
+        <p className="font-sans text-[14px] text-t3 leading-[1.6] mb-6">
           An unexpected error occurred while loading this page. Our team has been
           notified.
         </p>
         {error.digest && (
-          <p
-            style={{
-              fontFamily: K.mono,
-              fontSize: 10,
-              color: K.t4,
-              marginBottom: 16,
-            }}
-          >
+          <p className="font-mono text-[10px] text-t4 mb-4">
             Error ID: {error.digest}
           </p>
         )}
         <button
           onClick={reset}
-          style={{
-            padding: "10px 22px",
-            background: K.blue,
-            color: "white",
-            fontFamily: K.mono,
-            fontSize: 12,
-            fontWeight: 600,
-            borderRadius: 2,
-            border: "none",
-            cursor: "pointer",
-          }}
+          className="px-[22px] py-[10px] bg-kblue text-white font-mono text-[12px] font-semibold rounded-kdls border-none cursor-pointer"
         >
           Try Again
         </button>

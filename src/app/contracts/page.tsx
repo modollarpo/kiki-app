@@ -92,18 +92,19 @@ export default function ContractsPage() {
 
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)", maxWidth:1040, margin:"0 auto" }}>
-        <div style={{ marginBottom:36 }}>
-          <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4, marginBottom:12 }}>COMPLIANCE HUB</p>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(22px,4vw,36px)", color:K.t1, letterSpacing:"-0.025em", marginBottom:8 }}>Contracts & Downloads</h1>
-          <p style={{ fontFamily:"Inter,sans-serif", fontSize:15, color:K.t3, lineHeight:1.7, maxWidth:560 }}>All legal agreements, compliance documentation, and technical resources available for download. Some documents require NDA or are available upon request.</p>
+      <div className="bg-void mx-auto max-w-[1040px] px-[clamp(16px,4vw,48px)] py-[clamp(40px,6vw,80px)]">
+        <div className="mb-9">
+          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3">COMPLIANCE HUB</p>
+          <h1 className="font-mono font-bold text-[clamp(22px,4vw,36px)] text-t1 tracking-[-0.025em] mb-2">Contracts & Downloads</h1>
+          <p className="font-sans text-[15px] text-t3 leading-[1.7] max-w-[560px]">All legal agreements, compliance documentation, and technical resources available for download. Some documents require NDA or are available upon request.</p>
         </div>
 
         {/* Tabs */}
-        <div style={{ display:"flex", gap:4, marginBottom:28, background:K.g850, borderRadius:2, padding:4, width:"fit-content" }}>
+        <div className="flex gap-1 mb-7 bg-g850 rounded-kdls p-1 w-fit">
           {(["docs","processors"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              style={{ padding:"7px 18px", fontFamily:K.mono, fontSize:10, fontWeight:600, letterSpacing:"0.08em", borderRadius:2, border:"none", textTransform:"uppercase", background:tab===t?K.g700:"transparent", color:tab===t?K.t1:K.t3, cursor:"pointer" }}>
+              className="px-[18px] py-[7px] font-mono text-[10px] font-semibold tracking-[0.08em] rounded-kdls border-none uppercase cursor-pointer"
+              style={{ background: tab === t ? K.g700 : "transparent", color: tab === t ? K.t1 : K.t3 }}>
               {t === "docs" ? "Documents" : "Sub-Processors"}
             </button>
           ))}
@@ -112,26 +113,27 @@ export default function ContractsPage() {
         {tab === "docs" && (
           <div>
             {DOCS.map(cat => (
-              <div key={cat.category} style={{ marginBottom:32 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
-                  <div style={{ width:8, height:8, borderRadius:2, background:cat.color }}/>
-                  <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:11, color:cat.color, letterSpacing:"0.1em" }}>{cat.category.toUpperCase()}</p>
+              <div key={cat.category} className="mb-8">
+                <div className="flex items-center gap-2.5 mb-3.5">
+                  <div className="w-2 h-2 rounded-kdls" style={{ background: cat.color }}/>
+                  <p className="font-mono font-bold text-[11px] tracking-widest" style={{ color: cat.color }}>{cat.category.toUpperCase()}</p>
                 </div>
-                <div style={{ border:`1px solid ${K.g800}`, borderRadius:2, overflow:"hidden" }}>
+                <div className="border border-g800 rounded-kdls overflow-hidden">
                   {cat.items.map((doc, i) => (
-                    <div key={i} style={{ display:"flex", alignItems:"center", gap:16, padding:"14px 20px", borderBottom:i<cat.items.length-1?`1px solid ${K.g900}`:"none", background:K.g900, flexWrap:"wrap" }}
+                    <div key={i} className="flex items-center gap-4 px-5 py-[14px] bg-g900 flex-wrap"
+                      style={{ borderBottom: i < cat.items.length - 1 ? `1px solid ${K.g900}` : "none" }}
                       onMouseEnter={e => (e.currentTarget.style.background=K.g850)} onMouseLeave={e => (e.currentTarget.style.background=K.g900)}>
                       {/* Icon */}
-                      <div style={{ width:36, height:36, background:`${cat.color}10`, borderRadius:2, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, color:cat.color, flexShrink:0 }}>📄</div>
+                      <div className="w-9 h-9 rounded-kdls flex items-center justify-center text-base flex-shrink-0" style={{ background: `${cat.color}10`, color: cat.color }}>📄</div>
                       {/* Info */}
-                      <div style={{ flex:1, minWidth:200 }}>
-                        <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:12, color:K.t1, marginBottom:3 }}>{doc.name}</p>
-                        <p style={{ fontFamily:"Inter,sans-serif", fontSize:12, color:K.t3 }}>{doc.desc}</p>
+                      <div className="flex-1 min-w-[200px]">
+                        <p className="font-mono font-bold text-[12px] text-t1 mb-[3px]">{doc.name}</p>
+                        <p className="font-sans text-[12px] text-t3">{doc.desc}</p>
                       </div>
                       {/* Meta */}
-                      <div style={{ display:"flex", alignItems:"center", gap:14, flexShrink:0, flexWrap:"wrap" }}>
-                        {doc.pages > 0 && <span style={{ fontFamily:K.mono, fontSize:10, color:K.t4 }}>{doc.pages}p</span>}
-                        <span style={{ fontFamily:K.mono, fontSize:10, color:K.t4 }}>{doc.updated}</span>
+                      <div className="flex items-center gap-3.5 flex-shrink-0 flex-wrap">
+                        {doc.pages > 0 && <span className="font-mono text-[10px] text-t4">{doc.pages}p</span>}
+                        <span className="font-mono text-[10px] text-t4">{doc.updated}</span>
                         {requested.includes(doc.name) ? (
                           <Badge color={K.mint}>REQUESTED ✓</Badge>
                         ) : (
@@ -152,28 +154,29 @@ export default function ContractsPage() {
 
         {tab === "processors" && (
           <div>
-            <div style={{ padding:14, background:K.blueT, border:`1px solid ${K.blue}25`, borderRadius:2, marginBottom:24 }}>
-              <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t2, lineHeight:1.7 }}>
+            <div className="p-[14px] rounded-kdls mb-6" style={{ background: K.blueT, border: `1px solid ${K.blue}25` }}>
+              <p className="font-sans text-[13px] text-t2 leading-[1.7]">
                 This is the complete list of sub-processors engaged by KIKI Agent Inc. to process personal data on behalf of customers. Last updated: March 20, 2026. Changes notified via email with 30 days notice.
               </p>
             </div>
-            <div style={{ border:`1px solid ${K.g800}`, borderRadius:2, overflow:"hidden" }}>
-              <div style={{ display:"grid", gridTemplateColumns:"160px 1fr 1fr 120px", padding:"8px 20px", background:K.g950, borderBottom:`1px solid ${K.g800}` }}>
+            <div className="border border-g800 rounded-kdls overflow-hidden">
+              <div className="grid grid-cols-[160px_1fr_1fr_120px] px-5 py-2 bg-g950" style={{ borderBottom: `1px solid ${K.g800}` }}>
                 {["SUB-PROCESSOR","PURPOSE","DATA REGIONS","CERTIFICATIONS"].map(h => (
-                  <span key={h} style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.1em", color:K.t4 }}>{h}</span>
+                  <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>
                 ))}
               </div>
               {SUB_PROCESSORS.map((sp, i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"160px 1fr 1fr 120px", padding:"13px 20px", borderBottom:i<SUB_PROCESSORS.length-1?`1px solid ${K.g900}`:"none", background:i%2===0?K.g900:K.g950, alignItems:"start", gap:12 }}>
-                  <span style={{ fontFamily:K.mono, fontSize:12, fontWeight:700, color:K.t1 }}>{sp.name}</span>
-                  <span style={{ fontFamily:"Inter,sans-serif", fontSize:12, color:K.t3, lineHeight:1.5 }}>{sp.purpose}</span>
-                  <span style={{ fontFamily:K.mono, fontSize:11, color:K.t2 }}>{sp.region}</span>
+                <div key={i} className="grid grid-cols-[160px_1fr_1fr_120px] px-5 py-[13px] items-start gap-3"
+                  style={{ borderBottom: i < SUB_PROCESSORS.length - 1 ? `1px solid ${K.g900}` : "none", background: i % 2 === 0 ? K.g900 : K.g950 }}>
+                  <span className="font-mono text-[12px] font-bold text-t1">{sp.name}</span>
+                  <span className="font-sans text-[12px] text-t3 leading-[1.5]">{sp.purpose}</span>
+                  <span className="font-mono text-[11px] text-t2">{sp.region}</span>
                   <Badge color={K.mint}>{sp.cert}</Badge>
                 </div>
               ))}
             </div>
-            <div style={{ marginTop:20, padding:16, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2 }}>
-              <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3 }}>To object to a new sub-processor or request the full DPA, email <span style={{color:K.blue4}}>privacy@kiki.ai</span></p>
+            <div className="mt-5 p-4 bg-g900 rounded-kdls" style={{ border: `1px solid ${K.g800}` }}>
+              <p className="font-mono text-[11px] text-t3">To object to a new sub-processor or request the full DPA, email <span className="text-kblue4">privacy@kiki.ai</span></p>
             </div>
           </div>
         )}

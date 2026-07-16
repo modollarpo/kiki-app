@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { trainModel, getActiveModel, getModelHistory, getMetacognitionLog, getFeatureStore, getFeedbackSummary } from "@/lib/ltv-training";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -42,6 +43,7 @@ export async function GET(req: NextRequest) {
       }
     }
   } catch (e) {
+    logger.error("ltv/training/handler", { message: e instanceof Error ? e.message : String(e) });
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
@@ -54,6 +56,7 @@ export async function POST(req: NextRequest) {
     const result = await trainModel(user.tenantId);
     return NextResponse.json(result);
   } catch (e) {
+    logger.error("ltv/training/handler", { message: e instanceof Error ? e.message : String(e) });
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

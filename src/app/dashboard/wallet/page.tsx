@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, Button, ProgressBar } from "@/components/ui";
@@ -69,63 +69,66 @@ export default function WalletPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding:"24px 28px", maxWidth:1400 }}>
-        <div style={{ marginBottom:22, display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+      <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
+        <div className="mb-[22px] flex items-start justify-between">
           <div>
-            <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:18, color:K.t1, marginBottom:4 }}>Wallet & Cards</h1>
-            <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3 }}>Multi-currency · Virtual cards · Double-entry ledger</p>
+            <h1 className="font-mono font-bold text-lg text-t1 mb-1">Wallet & Cards</h1>
+            <p className="font-mono text-[11px] text-t3">Multi-currency · Virtual cards · Double-entry ledger</p>
           </div>
           <Button size="sm" loading={toppingUp} onClick={handleTopUp}>↑ Top Up Wallet</Button>
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Available Balance" value={`$${fmt(balance)}`} accent={K.gold} loading={loading} />
           <StatCard label="Today's Spend" value={`$${fmt(todaySpend)}`} accent={K.blue} loading={loading} />
           <StatCard label="Active Cards" value={String(cards.filter((c: WalletData["cards"][0]) => c.status === "active").length)} accent={K.indigo} loading={loading} />
           <StatCard label="Days Runway" value={runwayDays > 0 ? `${runwayDays}` : "—"} accent={K.teal} sub="at current burn" loading={loading} />
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:12 }}>
-          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-3">
+          <div className="flex flex-col gap-3">
             <Card accent={K.indigo}>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-                <h2 style={{ fontFamily:K.mono, fontWeight:700, fontSize:13, color:K.t1 }}>Virtual Cards</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-mono font-bold text-[13px] text-t1">Virtual Cards</h2>
                 <Button size="xs" variant="secondary" loading={issuing} onClick={handleIssueCard}>+ Issue New Card</Button>
               </div>
-              <div style={{ display:"flex", gap:12, overflowX:"auto", paddingBottom:4 }}>
+              <div className="flex gap-3 overflow-x-auto pb-1">
                 {cards.map((card: WalletData["cards"][0]) => (
-                  <div key={card.id} style={{ minWidth:220, flexShrink:0, background:`linear-gradient(135deg,${K.g850},${K.indigoD})`, border:`1px solid ${card.status==="frozen"?K.danger+"40":K.indigo+"40"}`, borderRadius:4, padding:16 }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:12 }}>
-                      <span style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.1em", color:K.t4 }}>KIKI VIRTUAL</span>
-                      {card.status==="frozen" && <Badge color={K.danger}>FROZEN</Badge>}
+                  <div key={card.id} className="min-w-[220px] shrink-0 rounded-[4px] p-4 border"
+                    style={{ background: `linear-gradient(135deg,${K.g850},${K.indigoD})`, borderColor: card.status === "frozen" ? `${K.danger}40` : `${K.indigo}40` }}>
+                    <div className="flex justify-between mb-3">
+                      <span className="font-mono text-[10px] tracking-widest text-t4">KIKI VIRTUAL</span>
+                      {card.status === "frozen" && <Badge color={K.danger}>FROZEN</Badge>}
                     </div>
-                    <p style={{ fontFamily:K.mono, fontSize:14, color:K.t3, marginBottom:8, letterSpacing:"0.1em" }}>•••• {card.last4}</p>
-                    <p style={{ fontFamily:K.mono, fontSize:12, fontWeight:700, color:K.indigo, marginBottom:8 }}>{card.campaign}</p>
-                    <ProgressBar value={card.limit > 0 ? (card.spent/card.limit)*100 : 0} color={K.indigo} height={3} />
-                    <p style={{ fontFamily:K.mono, fontSize:9, color:K.t4, marginTop:4 }}>${card.spent.toLocaleString()} / ${card.limit.toLocaleString()}</p>
+                    <p className="font-mono text-sm text-t3 mb-2 tracking-widest">•••• {card.last4}</p>
+                    <p className="font-mono text-xs font-bold text-kindigo mb-2">{card.campaign}</p>
+                    <ProgressBar value={card.limit > 0 ? (card.spent / card.limit) * 100 : 0} color={K.indigo} height={3} />
+                    <p className="font-mono text-[10px] text-t4 mt-1">${card.spent.toLocaleString()} / ${card.limit.toLocaleString()}</p>
                   </div>
                 ))}
-                {loading && [1,2].map(i => (
-                  <div key={i} style={{ minWidth:220, flexShrink:0, height:120, background:K.g850, borderRadius:4 }} />
+                {loading && [1, 2].map(i => (
+                  <div key={i} className="min-w-[220px] shrink-0 h-[120px] bg-g850 rounded-[4px]" />
                 ))}
               </div>
             </Card>
 
             <Card padding={0}>
-              <div style={{ padding:"12px 20px", borderBottom:`1px solid ${K.g800}` }}>
-                <h2 style={{ fontFamily:K.mono, fontWeight:700, fontSize:13, color:K.t1 }}>Recent Transactions</h2>
+              <div className="px-5 py-3 border-b border-g800">
+                <h2 className="font-mono font-bold text-[13px] text-t1">Recent Transactions</h2>
               </div>
               {txs.slice(0, 8).map((tx: WalletData["transactions"][0], i: number) => (
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"12px 20px", borderBottom:`1px solid ${K.g900}` }}>
-                  <div style={{ width:36, height:36, borderRadius:2, background:K.g850, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:K.mono, fontSize:16, color:tx.amount>0?K.mint:K.t3, flexShrink:0 }}>
-                    {tx.amount>0?"↑":"↓"}
+                <div key={i} className="flex items-center gap-[14px] px-5 py-3 border-b border-g900">
+                  <div className="w-9 h-9 rounded-kdls bg-g850 flex items-center justify-center font-mono text-base shrink-0"
+                    style={{ color: tx.amount > 0 ? K.mint : K.t3 }}>
+                    {tx.amount > 0 ? "↑" : "↓"}
                   </div>
-                  <div style={{ flex:1 }}>
-                    <p style={{ fontFamily:K.mono, fontSize:12, fontWeight:600, color:K.t2 }}>{tx.type.replace("_", " ")}</p>
-                    <p style={{ fontFamily:K.mono, fontSize:10, color:K.t4 }}>{new Date(tx.date).toLocaleDateString()} · {tx.campaign || tx.description}</p>
+                  <div className="flex-1">
+                    <p className="font-mono text-xs font-semibold text-t2">{tx.type.replace("_", " ")}</p>
+                    <p className="font-mono text-[10px] text-t4">{new Date(tx.date).toLocaleDateString()} · {tx.campaign || tx.description}</p>
                   </div>
-                  <span style={{ fontFamily:K.mono, fontSize:13, fontWeight:700, color:tx.amount>0?K.mint:K.t1 }}>
-                    {tx.amount>0?"+":"-"}${Math.abs(tx.amount).toLocaleString()}
+                  <span className="font-mono text-[13px] font-bold"
+                    style={{ color: tx.amount > 0 ? K.mint : K.t1 }}>
+                    {tx.amount > 0 ? "+" : "-"}${Math.abs(tx.amount).toLocaleString()}
                   </span>
                 </div>
               ))}
@@ -133,26 +136,28 @@ export default function WalletPage() {
           </div>
 
           <Card accent={K.gold} glow={K.gold}>
-            <h3 style={{ fontFamily:K.mono, fontWeight:700, fontSize:13, color:K.t1, marginBottom:16 }}>Fund Account</h3>
-            <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.1em", color:K.t4, marginBottom:10 }}>SELECT AMOUNT</p>
-            <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:16 }}>
-              {[500,1000,2500,5000,10000].map(a=>(
-                <button key={a} onClick={()=>setTopUpAmt(a)}
-                  style={{ padding:"8px 14px", fontFamily:K.mono, fontSize:11, fontWeight:700, background:a===topUpAmt?K.goldD:K.g850, border:`1px solid ${a===topUpAmt?K.gold:K.g700}`, borderRadius:2, color:a===topUpAmt?K.gold:K.t3, cursor:"pointer" }}>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-4">Fund Account</h3>
+            <p className="font-mono text-[10px] tracking-widest text-t4 mb-[10px]">SELECT AMOUNT</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {[500, 1000, 2500, 5000, 10000].map(a => (
+                <button key={a} onClick={() => setTopUpAmt(a)}
+                  className={`px-3 py-2 font-mono text-[11px] font-bold rounded-kdls cursor-pointer transition-colors ${
+                    a === topUpAmt ? "bg-kgold/10 border border-kgold text-kgold" : "bg-g850 border border-g700 text-t3"
+                  }`}>
                   ${a.toLocaleString()}
                 </button>
               ))}
             </div>
-            <div style={{ padding:"14px", background:K.goldT, border:`1px solid ${K.gold}25`, borderRadius:2, marginBottom:16 }}>
-              <p style={{ fontFamily:K.mono, fontSize:9, color:K.gold, marginBottom:4 }}>SELECTED AMOUNT</p>
-              <p style={{ fontFamily:K.mono, fontSize:28, fontWeight:700, color:K.gold }}>${topUpAmt.toLocaleString()}</p>
+            <div className="p-[14px] bg-kgold/5 border border-kgold/25 rounded-kdls mb-4">
+              <p className="font-mono text-[10px] text-kgold mb-1">SELECTED AMOUNT</p>
+              <p className="font-mono text-[28px] font-bold text-kgold">${topUpAmt.toLocaleString()}</p>
             </div>
             <Button variant="mint" size="lg" full loading={toppingUp} onClick={handleTopUp}>↑ Top Up Now</Button>
-            <div style={{ marginTop:16, display:"flex", flexDirection:"column", gap:6 }}>
-              {[{l:"Bank transfer fee",v:"Free"},{l:"Card processing",v:"2.9%"},{l:"Settlement",v:"Instant"}].map(r=>(
-                <div key={r.l} style={{ display:"flex", justifyContent:"space-between" }}>
-                  <span style={{ fontFamily:K.mono, fontSize:10, color:K.t3 }}>{r.l}</span>
-                  <span style={{ fontFamily:K.mono, fontSize:10, color:K.t2 }}>{r.v}</span>
+            <div className="mt-4 flex flex-col gap-[6px]">
+              {[{ l: "Bank transfer fee", v: "Free" }, { l: "Card processing", v: "2.9%" }, { l: "Settlement", v: "Instant" }].map(r => (
+                <div key={r.l} className="flex justify-between">
+                  <span className="font-mono text-[10px] text-t3">{r.l}</span>
+                  <span className="font-mono text-[10px] text-t2">{r.v}</span>
                 </div>
               ))}
             </div>

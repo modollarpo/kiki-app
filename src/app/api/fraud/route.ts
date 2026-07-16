@@ -1,6 +1,7 @@
 import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { getFraudStats, checkFraud } from "@/lib/fraud";
+import { handleApiError } from "@/lib/logger";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const result = await checkFraud(user.tenantId, body);
     return json(result);
-  } catch {
-    return jsonError("Invalid request body", 400);
+  } catch (e) {
+    return handleApiError(e, "fraud/POST failed");
   }
 }

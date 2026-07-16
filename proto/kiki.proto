@@ -1,0 +1,490 @@
+// ============================================================
+// KIKI Agent Platform — gRPC Service Definitions
+// Internal service communication between microservices
+// ============================================================
+
+syntax = "proto3";
+
+package kiki;
+
+option go_package = "github.com/kiki-agent/proto;kikipb";
+option java_package = "com.kiki.agent.proto";
+
+// ── Common Types ──────────────────────────────────────────
+
+message Empty {}
+
+message Pagination {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+
+// ── CampaignDataService ───────────────────────────────────
+// Normalizes metrics from all platforms into one schema.
+// Writes to campaignMetricsSnapshot. Pulls creative + audience data.
+
+service CampaignDataService {
+  // Fetch normalized metrics for a tenant's campaigns
+  rpc GetCampaignMetrics(GetCampaignMetricsRequest) returns (GetCampaignMetricsResponse);
+
+  // Stream real-time metric updates to subscribers
+  rpc StreamMetricUpdates(StreamMetricUpdatesRequest) returns (stream CampaignMetricUpdate);
+
+  // Pull latest creative performance data from platforms
+  rpc GetCreativePerformance(GetCreativePerformanceRequest) returns (GetCreativePerformanceResponse);
+
+  // Pull audience insights from platforms
+  rpc GetAudienceInsights(GetAudienceInsightsRequest) returns (GetAudienceInsightsResponse);
+
+  // Force a metrics collection cycle
+  rpc TriggerCollection(TriggerCollectionRequest) returns (TriggerCollectionResponse);
+}
+
+message GetCampaignMetricsRequest {
+  string tenant_id = 1;
+  string campaign_id = 2;  // optional, empty = all campaigns
+  string start_date = 3;
+  string end_date = 4;
+}
+
+message GetCampaignMetricsResponse {
+  repeated CampaignMetric metrics = 1;
+}
+
+message CampaignMetric {
+  string campaign_id = 1;
+  string platform = 2;
+  string name = 3;
+  string status = 4;
+  double impressions = 5;
+  double clicks = 6;
+  double conversions = 7;
+  double conversion_value = 8;
+  double spend = 9;
+  double revenue = 10;
+  double roas = 11;
+  double cpc = 12;
+  double cpm = 13;
+  double ctr = 14;
+  double conversion_rate = 15;
+  double frequency = 16;
+  double reach = 17;
+  string period_start = 18;
+  string period_end = 19;
+  string collected_at = 20;
+}
+
+message StreamMetricUpdatesRequest {
+  string tenant_id = 1;
+}
+
+message CampaignMetricUpdate {
+  string tenant_id = 1;
+  CampaignMetric metric = 2;
+  string update_type = 3;  // "new" | "updated" | "deleted"
+  string timestamp = 4;
+}
+
+message GetCreativePerformanceRequest {
+  string tenant_id = 1;
+  string platform = 2;  // optional
+}
+
+message GetCreativePerformanceResponse {
+  repeated CreativePerformance creatives = 1;
+}
+
+message CreativePerformance {
+  string creative_id = 1;
+  string campaign_id = 2;
+  string platform = 3;
+  string name = 4;
+  string type = 5;  // image, video, carousel
+  string status = 6;
+  double impressions = 7;
+  double clicks = 8;
+  double ctr = 9;
+  double conversions = 10;
+  double spend = 11;
+  double ltv_predicted = 12;
+  string ltv_segment = 13;
+  double ltv_per_dollar = 14;
+}
+
+message GetAudienceInsightsRequest {
+  string tenant_id = 1;
+  string platform = 2;
+}
+
+message GetAudienceInsightsResponse {
+  repeated AudienceInsight audiences = 1;
+}
+
+message AudienceInsight {
+  string audience_id = 1;
+  string name = 2;
+  string platform = 3;
+  int32 size = 4;
+  double overlap_percentage = 5;
+  string last_synced = 6;
+}
+
+message TriggerCollectionRequest {
+  string tenant_id = 1;
+}
+
+message TriggerCollectionResponse {
+  int32 campaigns_collected = 1;
+  int32 errors = 2;
+  double latency_ms = 3;
+}
+
+// ── CustomerIntelligenceService ────────────────────────────
+// Builds customerProfile records. Powers LTV enrichment,
+// audience segments, and cohort data for bidding.
+
+service CustomerIntelligenceService {
+  // Get LTV prediction for a customer
+  rpc GetCustomerLtv(GetCustomerLtvRequest) returns (GetCustomerLtvResponse);
+
+  // Stream real-time LTV signals
+  rpc StreamLtvSignals(StreamLtvSignalsRequest) returns (stream LtvSignal);
+
+  // Get all customers in an LTV segment
+  rpc GetSegmentCustomers(GetSegmentCustomersRequest) returns (GetSegmentCustomersResponse);
+
+  // Get cohort analysis data
+  rpc GetCohortAnalysis(GetCohortAnalysisRequest) returns (GetCohortAnalysisResponse);
+
+  // Batch predict LTV for multiple customers
+  rpc BatchPredictLtv(BatchPredictLtvRequest) returns (BatchPredictLtvResponse);
+}
+
+message GetCustomerLtvRequest {
+  string tenant_id = 1;
+  string customer_id = 2;
+}
+
+message GetCustomerLtvResponse {
+  string customer_id = 1;
+  double predicted_ltv_90d = 2;
+  double ltv_confidence = 3;
+  string ltv_segment = 4;
+  int32 total_orders = 5;
+  double total_spent = 6;
+  double average_order_value = 7;
+  double churn_risk = 8;
+  double repeat_probability = 9;
+  string first_order_at = 10;
+  string last_order_at = 11;
+}
+
+message StreamLtvSignalsRequest {
+  string tenant_id = 1;
+}
+
+message LtvSignal {
+  string tenant_id = 1;
+  string customer_id = 2;
+  string event_type = 3;  // purchase, refund, cancel
+  double order_value = 4;
+  double predicted_ltv = 5;
+  string segment = 6;
+  string platform = 7;
+  string timestamp = 8;
+}
+
+message GetSegmentCustomersRequest {
+  string tenant_id = 1;
+  string segment = 2;  // high, mid, low, churn_risk
+  int32 limit = 3;
+}
+
+message GetSegmentCustomersResponse {
+  repeated CustomerProfile customers = 1;
+  int32 total_count = 2;
+}
+
+message CustomerProfile {
+  string customer_id = 1;
+  string email = 2;
+  string external_id = 3;
+  double predicted_ltv = 4;
+  string ltv_segment = 5;
+  int32 total_orders = 6;
+  double total_spent = 7;
+  double churn_risk = 8;
+}
+
+message GetCohortAnalysisRequest {
+  string tenant_id = 1;
+  string cohort_period = 2;  // "week", "month"
+  int32 periods_back = 3;
+}
+
+message GetCohortAnalysisResponse {
+  repeated CohortRow cohorts = 1;
+}
+
+message CohortRow {
+  string cohort_period = 1;
+  int32 cohort_size = 2;
+  double retention_rate = 3;
+  double avg_ltv = 4;
+  double total_revenue = 5;
+}
+
+message BatchPredictLtvRequest {
+  string tenant_id = 1;
+  repeated CustomerInput customers = 2;
+}
+
+message CustomerInput {
+  string customer_id = 1;
+  string email = 2;
+  int32 total_orders = 3;
+  double total_spent = 4;
+  double average_order_value = 5;
+  string last_order_at = 6;
+}
+
+message BatchPredictLtvResponse {
+  repeated LtvPrediction predictions = 1;
+}
+
+message LtvPrediction {
+  string customer_id = 1;
+  double predicted_ltv = 2;
+  double confidence = 3;
+  string segment = 4;
+}
+
+// ── BiddingOrchestratorService ─────────────────────────────
+// Dedicated always-on service for bid optimization.
+// Receives metrics from CampaignDataService + LTV from CustomerIntelligenceService.
+
+service BiddingOrchestratorService {
+  // Run a bid optimization cycle for a tenant
+  rpc RunBidCycle(RunBidCycleRequest) returns (RunBidCycleResponse);
+
+  // Get latest bid decisions
+  rpc GetBidDecisions(GetBidDecisionsRequest) returns (GetBidDecisionsResponse);
+
+  // Stream real-time bid decisions to dashboard
+  rpc StreamBidDecisions(StreamBidDecisionsRequest) returns (stream BidDecision);
+
+  // Get savings report (waste detected vs. true incremental)
+  rpc GetSavingsReport(GetSavingsReportRequest) returns (GetSavingsReportResponse);
+
+  // Manual override for a specific bid
+  rpc ManualOverride(ManualOverrideRequest) returns (ManualOverrideResponse);
+
+  // Get arbitrage status and history
+  rpc GetArbitrageStatus(GetArbitrageStatusRequest) returns (GetArbitrageStatusResponse);
+}
+
+message RunBidCycleRequest {
+  string tenant_id = 1;
+}
+
+message RunBidCycleResponse {
+  int32 decisions_made = 1;
+  int32 stop_losses_triggered = 2;
+  double total_budget_shifted = 3;
+  repeated BidDecision decisions = 4;
+}
+
+message GetBidDecisionsRequest {
+  string tenant_id = 1;
+  string campaign_id = 2;  // optional
+  int32 limit = 3;
+}
+
+message GetBidDecisionsResponse {
+  repeated BidDecision decisions = 1;
+}
+
+message StreamBidDecisionsRequest {
+  string tenant_id = 1;
+}
+
+message BidDecision {
+  string id = 1;
+  string tenant_id = 2;
+  string campaign_id = 3;
+  string platform = 4;
+  string action = 5;  // increase, decrease, maintain, pause, resume
+  double old_bid = 6;
+  double new_bid = 7;
+  double old_budget = 8;
+  double new_budget = 9;
+  double percentage = 10;
+  string reason = 11;
+  bool stop_loss_triggered = 12;
+  double roas_at_decision = 13;
+  string timestamp = 14;
+}
+
+message GetSavingsReportRequest {
+  string tenant_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message GetSavingsReportResponse {
+  double total_spend = 1;
+  double waste_detected = 2;
+  double true_incremental_roas = 3;
+  double platform_claimed_roas = 4;
+  double attribution_gap = 5;
+  repeated WasteItem waste_items = 6;
+}
+
+message WasteItem {
+  string type = 1;  // frequency, creative_fatigue, overlap, low_ltv
+  string campaign_id = 2;
+  string description = 3;
+  double estimated_waste = 4;
+  string recommendation = 5;
+}
+
+message ManualOverrideRequest {
+  string tenant_id = 1;
+  string campaign_id = 2;
+  string action = 3;
+  double bid_amount = 4;
+  double budget_amount = 5;
+  string reason = 6;
+}
+
+message ManualOverrideResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetArbitrageStatusRequest {
+  string tenant_id = 1;
+}
+
+message GetArbitrageStatusResponse {
+  repeated PlatformEfficiency platforms = 1;
+  repeated ArbitrageShift recent_shifts = 2;
+}
+
+message PlatformEfficiency {
+  string platform = 1;
+  double ltv_per_dollar = 2;
+  double total_spend = 3;
+  double total_ltv = 4;
+  int32 active_campaigns = 5;
+}
+
+message ArbitrageShift {
+  string from_platform = 1;
+  string to_platform = 2;
+  double amount = 3;
+  string reason = 4;
+  string timestamp = 5;
+}
+
+// ── SignalIntelligenceService ──────────────────────────────
+// CAPI routing + signal config + immutable ledger.
+
+service SignalIntelligenceService {
+  // Send an enriched signal to platforms
+  rpc SendSignal(SendSignalRequest) returns (SendSignalResponse);
+
+  // Get signal delivery ledger
+  rpc GetSignalLedger(GetSignalLedgerRequest) returns (GetSignalLedgerResponse);
+
+  // Configure signal routing rules
+  rpc ConfigureRouting(ConfigureRoutingRequest) returns (ConfigureRoutingResponse);
+
+  // Get signal intelligence stats
+  rpc GetSignalStats(GetSignalStatsRequest) returns (GetSignalStatsResponse);
+}
+
+message SendSignalRequest {
+  string tenant_id = 1;
+  string platform = 2;
+  string event_name = 3;
+  int64 event_time = 4;
+  map<string, string> user_data = 5;
+  map<string, double> custom_data = 6;
+  double predicted_ltv = 7;
+  string ltv_segment = 8;
+  double bid_multiplier = 9;
+}
+
+message SendSignalResponse {
+  bool success = 1;
+  string event_id = 2;
+  double latency_ms = 3;
+  repeated PlatformDeliveryResult deliveries = 4;
+}
+
+message PlatformDeliveryResult {
+  string platform = 1;
+  bool success = 2;
+  double latency_ms = 3;
+  string error = 4;
+}
+
+message GetSignalLedgerRequest {
+  string tenant_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+  string platform = 4;  // optional filter
+  int32 limit = 5;
+}
+
+message GetSignalLedgerResponse {
+  repeated SignalLedgerEntry entries = 1;
+  int32 total_count = 2;
+}
+
+message SignalLedgerEntry {
+  string id = 1;
+  string tenant_id = 2;
+  string event_name = 3;
+  string platform = 4;
+  double value = 5;
+  double predicted_ltv = 6;
+  string ltv_segment = 7;
+  bool fraud_blocked = 8;
+  string created_at = 9;
+}
+
+message ConfigureRoutingRequest {
+  string tenant_id = 1;
+  repeated RoutingRule rules = 2;
+}
+
+message RoutingRule {
+  string platform = 1;
+  bool enabled = 2;
+  double min_ltv_to_send = 3;
+  bool send_negative_signals = 4;
+}
+
+message ConfigureRoutingResponse {
+  bool success = 1;
+  int32 rules_applied = 2;
+}
+
+message GetSignalStatsRequest {
+  string tenant_id = 1;
+}
+
+message GetSignalStatsResponse {
+  int32 total_signals = 1;
+  int32 signals_today = 2;
+  double avg_latency_ms = 3;
+  map<string, int32> by_platform = 4;
+  map<string, int32> by_segment = 5;
+}

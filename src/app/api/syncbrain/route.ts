@@ -1,11 +1,13 @@
 import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const db = await getDb();
+  try {
+    const db = await getDb();
 
   // Get real agent action count in last hour
   const actionsLastHour = await db.prepare(`
@@ -61,4 +63,8 @@ export async function GET(req: Request) {
       count: a.count,
     })),
   });
+  } catch (error) {
+    logger.error("syncbrain/GET failed", { message: error instanceof Error ? error.message : String(error) });
+    return jsonError("Failed to load syncbrain data", 500);
+  }
 }

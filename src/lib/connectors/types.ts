@@ -11,7 +11,9 @@ export type PlatformId =
   | "tiktok"
   | "linkedin"
   | "snap"
-  | "pinterest";
+  | "pinterest"
+  | "amazon"
+  | "ctv";
 
 export type PlatformStatus = "active" | "expired" | "revoked" | "error" | "rate_limited";
 
@@ -149,6 +151,10 @@ export interface ConversionCustomData {
   numberOfItems?: number;
   contentName?: string;
   contentIds?: string[];
+  predictedLtv90d?: number;
+  ltvSegment?: "high" | "mid" | "low" | "churn_risk";
+  bidMultiplier?: number;
+  content_type?: string;
 }
 
 export interface ConversionConsent {
@@ -208,9 +214,9 @@ export interface IPlatformConnector {
   readonly platformId: PlatformId;
   readonly config: PlatformConfig;
 
-  // OAuth
-  generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string }>;
-  handleCallback(code: string, state: string): Promise<OAuthTokens>;
+  // OAuth (with PKCE support)
+  generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string; codeVerifier: string }>;
+  handleCallback(code: string, state: string, codeVerifier?: string): Promise<OAuthTokens>;
   refreshToken(refreshToken: string): Promise<OAuthTokens>;
   validateToken(accessToken: string): Promise<boolean>;
 
@@ -225,6 +231,16 @@ export interface IPlatformConnector {
   // CAPI
   sendConversion(accessToken: string, event: ConversionEvent): Promise<ConversionDeliveryResult>;
   sendConversionBatch?(accessToken: string, events: ConversionEvent[]): Promise<ConversionDeliveryResult[]>;
+
+  // Campaign Write Operations
+  pauseCampaign?(accessToken: string, campaignId: string): Promise<PlatformApiResponse<any>>;
+  resumeCampaign?(accessToken: string, campaignId: string): Promise<PlatformApiResponse<any>>;
+  setBid?(accessToken: string, adGroupId: string, bidAmount: number): Promise<PlatformApiResponse<any>>;
+  updateCampaign?(accessToken: string, campaignId: string, updates: { dailyBudget?: number; status?: string; name?: string }): Promise<PlatformApiResponse<any>>;
+
+  // Audience Operations
+  createCustomAudience?(accessToken: string, params: { name: string; users?: any }): Promise<PlatformApiResponse<any>>;
+  addToCustomAudience?(accessToken: string, audienceId: string, users: any): Promise<PlatformApiResponse<any>>;
 
   // Webhooks
   verifyWebhookSignature?(payload: string, signature: string, secret: string): boolean;

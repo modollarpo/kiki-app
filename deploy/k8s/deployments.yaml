@@ -435,6 +435,12 @@ data:
   LTV_MODEL_VERSION: v5
   MAX_SIGNAL_BATCH_SIZE: "1000"
   KAFKA_BROKERS: "kiki-kafka:9092"
+  CREATIVE_ATTRIBUTION_URL: "http://creative-attribution-service.kiki-prod.svc.cluster.local"
+  MMM_URL: "http://mmm-service.kiki-prod.svc.cluster.local"
+  COMPETITIVE_INTEL_URL: "http://competitive-intel-service.kiki-prod.svc.cluster.local"
+  PROFIT_MARGIN_URL: "http://profit-margin-service.kiki-prod.svc.cluster.local"
+  NL_ANALYTICS_URL: "http://nl-analytics-service.kiki-prod.svc.cluster.local"
+  INFLUENCER_URL: "http://influencer-service.kiki-prod.svc.cluster.local"
 
 ---
 # ── Pod Disruption Budget ─────────────────────────────────
@@ -459,3 +465,435 @@ spec:
   selector:
     matchLabels:
       app: capi-gateway
+
+---
+# ── Creative Attribution Service ──────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: creative-attribution-service
+  namespace: kiki-prod
+  labels:
+    app: creative-attribution-service
+    version: "IMAGE_TAG"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: creative-attribution-service
+  template:
+    metadata:
+      labels:
+        app: creative-attribution-service
+        version: "IMAGE_TAG"
+    spec:
+      serviceAccountName: kiki-api
+      containers:
+        - name: creative-attribution-service
+          image: kikiagentprodacr.azurecr.io/creative-attribution-service:IMAGE_TAG
+          ports:
+            - containerPort: 3021
+          env:
+            - name: PORT
+              value: "3021"
+            - name: NODE_ENV
+              value: production
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: pg-connection
+            - name: KAFKA_BROKERS
+              value: "kiki-kafka:9092"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3021
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3021
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: creative-attribution-service
+  namespace: kiki-prod
+spec:
+  selector:
+    app: creative-attribution-service
+  ports:
+    - port: 80
+      targetPort: 3021
+  type: ClusterIP
+
+---
+# ── MMM Service ───────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mmm-service
+  namespace: kiki-prod
+  labels:
+    app: mmm-service
+    version: "IMAGE_TAG"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mmm-service
+  template:
+    metadata:
+      labels:
+        app: mmm-service
+        version: "IMAGE_TAG"
+    spec:
+      serviceAccountName: kiki-api
+      containers:
+        - name: mmm-service
+          image: kikiagentprodacr.azurecr.io/mmm-service:IMAGE_TAG
+          ports:
+            - containerPort: 3022
+          env:
+            - name: PORT
+              value: "3022"
+            - name: NODE_ENV
+              value: production
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: pg-connection
+            - name: KAFKA_BROKERS
+              value: "kiki-kafka:9092"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3022
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3022
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mmm-service
+  namespace: kiki-prod
+spec:
+  selector:
+    app: mmm-service
+  ports:
+    - port: 80
+      targetPort: 3022
+  type: ClusterIP
+
+---
+# ── Competitive Intel Service ─────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: competitive-intel-service
+  namespace: kiki-prod
+  labels:
+    app: competitive-intel-service
+    version: "IMAGE_TAG"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: competitive-intel-service
+  template:
+    metadata:
+      labels:
+        app: competitive-intel-service
+        version: "IMAGE_TAG"
+    spec:
+      serviceAccountName: kiki-api
+      containers:
+        - name: competitive-intel-service
+          image: kikiagentprodacr.azurecr.io/competitive-intel-service:IMAGE_TAG
+          ports:
+            - containerPort: 3023
+          env:
+            - name: PORT
+              value: "3023"
+            - name: NODE_ENV
+              value: production
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: pg-connection
+            - name: KAFKA_BROKERS
+              value: "kiki-kafka:9092"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3023
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3023
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: competitive-intel-service
+  namespace: kiki-prod
+spec:
+  selector:
+    app: competitive-intel-service
+  ports:
+    - port: 80
+      targetPort: 3023
+  type: ClusterIP
+
+---
+# ── Profit Margin Service ─────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profit-margin-service
+  namespace: kiki-prod
+  labels:
+    app: profit-margin-service
+    version: "IMAGE_TAG"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profit-margin-service
+  template:
+    metadata:
+      labels:
+        app: profit-margin-service
+        version: "IMAGE_TAG"
+    spec:
+      serviceAccountName: kiki-api
+      containers:
+        - name: profit-margin-service
+          image: kikiagentprodacr.azurecr.io/profit-margin-service:IMAGE_TAG
+          ports:
+            - containerPort: 3024
+          env:
+            - name: PORT
+              value: "3024"
+            - name: NODE_ENV
+              value: production
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: pg-connection
+            - name: KAFKA_BROKERS
+              value: "kiki-kafka:9092"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3024
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3024
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: profit-margin-service
+  namespace: kiki-prod
+spec:
+  selector:
+    app: profit-margin-service
+  ports:
+    - port: 80
+      targetPort: 3024
+  type: ClusterIP
+
+---
+# ── NL Analytics Service ──────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nl-analytics-service
+  namespace: kiki-prod
+  labels:
+    app: nl-analytics-service
+    version: "IMAGE_TAG"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nl-analytics-service
+  template:
+    metadata:
+      labels:
+        app: nl-analytics-service
+        version: "IMAGE_TAG"
+    spec:
+      serviceAccountName: kiki-api
+      containers:
+        - name: nl-analytics-service
+          image: kikiagentprodacr.azurecr.io/nl-analytics-service:IMAGE_TAG
+          ports:
+            - containerPort: 3025
+          env:
+            - name: PORT
+              value: "3025"
+            - name: NODE_ENV
+              value: production
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: pg-connection
+            - name: KAFKA_BROKERS
+              value: "kiki-kafka:9092"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3025
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3025
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nl-analytics-service
+  namespace: kiki-prod
+spec:
+  selector:
+    app: nl-analytics-service
+  ports:
+    - port: 80
+      targetPort: 3025
+  type: ClusterIP
+
+---
+# ── Influencer Service ────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influencer-service
+  namespace: kiki-prod
+  labels:
+    app: influencer-service
+    version: "IMAGE_TAG"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: influencer-service
+  template:
+    metadata:
+      labels:
+        app: influencer-service
+        version: "IMAGE_TAG"
+    spec:
+      serviceAccountName: kiki-api
+      containers:
+        - name: influencer-service
+          image: kikiagentprodacr.azurecr.io/influencer-service:IMAGE_TAG
+          ports:
+            - containerPort: 3026
+          env:
+            - name: PORT
+              value: "3026"
+            - name: NODE_ENV
+              value: production
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: pg-connection
+            - name: KAFKA_BROKERS
+              value: "kiki-kafka:9092"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3026
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3026
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influencer-service
+  namespace: kiki-prod
+spec:
+  selector:
+    app: influencer-service
+  ports:
+    - port: 80
+      targetPort: 3026
+  type: ClusterIP

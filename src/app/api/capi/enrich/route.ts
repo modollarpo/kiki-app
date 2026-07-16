@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { enrichConversionEvent, enrichConversionBatch, getEnrichmentStats, type ConversionEvent } from "@/lib/capi";
 import { getUserFromRequest } from "@/lib/auth";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-    console.error("CAPI enrichment error:", error);
+    logger.error("capi/enrich/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { success: false, error: String(error) },
       { status: 500 }
@@ -73,6 +74,7 @@ export async function GET(req: NextRequest) {
     const stats = await getEnrichmentStats(user.tenantId);
     return NextResponse.json({ success: true, data: stats });
   } catch (error) {
+    logger.error("capi/enrich/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { success: false, error: String(error) },
       { status: 500 }

@@ -5,11 +5,12 @@ import { useKikiStore } from "@/store";
 import { useAuth } from "@/hooks/useAuth";
 import { K } from "@/lib/kdls";
 import { Button, Card, Input } from "@/components/ui";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { setUser, addToast } = useKikiStore();
-  const { login, loading: authLoading, error: authError } = useAuth();
+  const { signup, loading: authLoading, error: authError } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
@@ -33,8 +34,7 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     if (!validate()) return;
-    // For demo, just log in with existing account
-    const success = await login("alex@acmecorp.com", "password123");
+    const success = await signup(name, email, password, company);
     if (success) {
       const auth = useAuth.getState();
       if (auth.user) {
@@ -58,32 +58,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: K.void,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
+    <div className="flex flex-col items-center justify-center p-6 relative overflow-hidden min-h-dvh" style={{ background: K.void }}>
       <div
+        className="absolute inset-0 opacity-40 pointer-events-none"
         style={{
-          position: "absolute",
-          inset: 0,
           backgroundImage: `radial-gradient(circle,${K.g800} 1px,transparent 1px)`,
           backgroundSize: "32px 32px",
-          opacity: 0.4,
-          pointerEvents: "none",
         }}
       />
       <div
+        className="absolute pointer-events-none"
         style={{
-          position: "absolute",
           top: "30%",
           left: "50%",
           transform: "translateX(-50%)",
@@ -92,43 +77,40 @@ export default function RegisterPage() {
           borderRadius: "50%",
           background: `radial-gradient(circle,${K.blueT} 0%,transparent 70%)`,
           filter: "blur(60px)",
-          pointerEvents: "none",
         }}
       />
 
-      <div style={{ position: "relative", textAlign: "center", marginBottom: 32 }}>
-        <img
+      <div className="relative text-center mb-8">
+        <Image
           src="/images/kiki.png"
           alt="KIKI"
           width={48}
           height={48}
+          className="block rounded-sm mx-auto mb-3"
           style={{
-            borderRadius: 2,
-            margin: "0 auto 12px",
             boxShadow: `0 0 32px ${K.blue}50`,
-            display: "block",
           }}
         />
-        <p style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1 }}>
-          KIKI<span style={{ color: K.blue }}>.</span>Agent
+        <p className="font-mono font-bold text-[18px] text-t1">
+          KIKI<span className="text-kblue">.</span>Agent
         </p>
-        <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.14em", color: K.t4, marginTop: 4 }}>
+        <p className="font-mono text-[11px] tracking-[0.14em] text-t3 mt-1">
           AUTONOMOUS LTV CAMPAIGN PLATFORM
         </p>
       </div>
 
-      <div style={{ position: "relative", width: "100%", maxWidth: 400 }}>
+      <div className="relative w-full max-w-[400px]">
         <Card accent={K.blue}>
-          <p style={{ fontFamily: K.sans, fontWeight: 700, fontSize: 18, color: K.t1, marginBottom: 6 }}>
+          <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">
             Create your account
           </p>
-          <p style={{ fontFamily: K.sans, fontSize: 13, color: K.t3, marginBottom: 22 }}>
+          <p className="font-sans text-[13px] text-t3 mb-[22px]">
             14-day free trial. No credit card required.
           </p>
 
           {authError && (
-            <div style={{ padding: "10px 14px", background: K.dangerT, border: `1px solid ${K.danger}40`, borderRadius: 2, marginBottom: 16 }}>
-              <p style={{ fontFamily: K.mono, fontSize: 11, color: K.danger }}>{authError}</p>
+            <div className="px-3.5 py-2.5 rounded-sm mb-4" style={{ background: K.dangerT, border: `1px solid ${K.danger}40` }}>
+              <p className="font-mono text-[11px] text-kdanger">{authError}</p>
             </div>
           )}
 
@@ -181,7 +163,7 @@ export default function RegisterPage() {
             Create Account →
           </Button>
 
-          <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t4, textAlign: "center", marginTop: 16 }}>
+          <p className="font-mono text-[10px] text-t4 text-center mt-4">
             Already have an account?{" "}
             <span style={{ color: K.blue4, cursor: "pointer" }} onClick={() => router.push("/auth/login")}>
               Sign in →
@@ -190,16 +172,7 @@ export default function RegisterPage() {
         </Card>
       </div>
 
-      <p
-        style={{
-          position: "relative",
-          marginTop: 32,
-          fontFamily: K.mono,
-          fontSize: 9,
-          letterSpacing: "0.1em",
-          color: K.t4,
-        }}
-      >
+      <p className="relative mt-8 font-mono text-[11px] tracking-widest text-t3">
         BY CREATING AN ACCOUNT YOU AGREE TO OUR{" "}
         <span style={{ color: K.t3, cursor: "pointer" }} onClick={() => router.push("/terms")}>
           TERMS OF SERVICE

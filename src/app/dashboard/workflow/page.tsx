@@ -1,99 +1,91 @@
-"use client";
-import { useState } from "react";
+﻿"use client";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button, Toggle } from "@/components/ui";
+import { Card, Badge, Button } from "@/components/ui";
 import { K } from "@/lib/kdls";
+import { useAuth } from "@/hooks/useAuth";
 import { useInsights } from "@/hooks/useInsights";
 
-const WORKFLOWS = [
-  {
-    name: "Pause Low ROAS Campaigns",
-    description: "Automatically pause any campaign with ROAS below 2.0× for 24h to prevent budget waste",
-    trigger: "ROAS check every 30 min",
-    conditions: ["Campaign ROAS < 2.0×", "Active for > 24 hours", "Spend > $100"],
-    actions: ["Pause campaign", "Send Slack alert", "Log to audit trail"],
-    lastFired: "14:32 today",
-    firesCount: 47,
-    active: true,
-    color: K.danger,
-  },
-  {
-    name: "Scale High-Performers",
-    description: "Increase budget by 20% when CTR exceeds 5% and ROAS is above 4.0×",
-    trigger: "Performance check every 15 min",
-    conditions: ["CTR > 5%", "ROAS > 4.0×", "Budget < 80% consumed"],
-    actions: ["Increase budget +20%", "Update bid strategy", "Notify account manager"],
-    lastFired: "12:15 today",
-    firesCount: 128,
-    active: true,
-    color: K.mint,
-  },
-  {
-    name: "Creative Fatigue Detection",
-    description: "Rotate creatives when frequency exceeds 3.5 and CTR drops below 1.5%",
-    trigger: "Creative metrics every 1 hour",
-    conditions: ["Frequency > 3.5", "CTR < 1.5%", "Impressions > 50K"],
-    actions: ["Swap to next creative variant", "Reset frequency cap", "Log rotation event"],
-    lastFired: "Yesterday 18:40",
-    firesCount: 23,
-    active: true,
-    color: K.gold,
-  },
-  {
-    name: "Budget Rebalancer",
-    description: "Shift 10% of budget from underperforming to top-performing channels daily",
-    trigger: "Daily at 6:00 AM UTC",
-    conditions: ["Channel ROAS delta > 30%", "Minimum spend threshold met", "Campaign active > 3 days"],
-    actions: ["Reduce losing channel budget", "Increase winning channel budget", "Send daily digest"],
-    lastFired: "Today 06:00",
-    firesCount: 89,
-    active: true,
-    color: K.blue,
-  },
-  {
-    name: "Anomaly Auto-Pause",
-    description: "Emergency pause when CTR drops >40% in 2 hours or spend spikes 3× normal",
-    trigger: "Anomaly detection every 5 min",
-    conditions: ["CTR drop > 40% in 2h", "OR spend spike > 3× hourly avg", "AND not already paused"],
-    actions: ["Emergency pause all affected campaigns", "Page on-call operator", "Create incident ticket"],
-    lastFired: "3 days ago",
-    firesCount: 5,
-    active: true,
-    color: K.danger,
-  },
-  {
-    name: "Weekend Budget Shift",
-    description: "Reduce weekday budget by 15% on Saturdays and shift to social channels",
-    trigger: "Every Saturday 00:00 UTC",
-    conditions: ["Day = Saturday", "Campaign type = evergreen", "Not in blackout period"],
-    actions: ["Reduce search budget -15%", "Increase social budget +25%", "Notify team in Slack"],
-    lastFired: "Jul 5, 2026",
-    firesCount: 12,
-    active: false,
-    color: K.teal,
-  },
-];
+interface WorkflowEvent {
+  id: string; agentId: string | null; agentType: string | null;
+  actionType: string; input: string; output: string;
+  status: string; durationMs: number; createdAt: string;
+}
 
 export default function WorkflowPage() {
-  const { data, loading } = useInsights();
+  const { token } = useAuth();
+  const { data, loading: insightsLoading } = useInsights();
   const fires = data?.workflow?.length ?? 0;
-  const budgetSaved = data?.savings?.totalSaved ?? 0;
+  const budgetSaved = data?.savings?.total ?? 0;
+  const workflowFromInsights = data?.workflow ?? [];
+  const [events, setEvents] = useState<WorkflowEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch("/api/workflow", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.data) setEvents(d.data.events ?? []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  const allActions: WorkflowEvent[] = events.length > 0 ? events : workflowFromInsights.map((w: any, i: number): WorkflowEvent => ({
+    id: `wf-${i}`,
+    agentId: null,
+    agentType: w.agent,
+    actionType: w.action,
+    input: typeof w.details === "string" ? w.details : JSON.stringify(w.details ?? ""),
+    output: "",
+    status: w.status ?? "success",
+    durationMs: 0,
+    createdAt: w.time,
+  }));
+
+  const groupedByType = allActions.reduce<Record<string, typeof allActions>>((acc, a) => {
+    const key = a.actionType ?? "unknown";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(a);
+    return acc;
+  }, {});
+
+  const workflows = Object.entries(groupedByType).map(([actionType, items]) => {
+    const successes = items.filter(i => i.status === "success").length;
+    const errors = items.filter(i => i.status === "error").length;
+    const latest = items[0];
+    return {
+      name: actionType.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+      description: `Automated ${actionType.replace(/_/g, " ")} actions performed by AI agents`,
+      agent: latest?.agentType ?? "System",
+      firesCount: items.length,
+      successCount: successes,
+      errorCount: errors,
+      lastFired: latest?.createdAt ?? "Never",
+      active: true,
+      color: errors > 0 ? K.danger : successes > 5 ? K.mint : K.blue,
+    };
+  });
+
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
-  const filtered = filter === "all" ? WORKFLOWS : filter === "active" ? WORKFLOWS.filter(w => w.active) : WORKFLOWS.filter(w => !w.active);
+  const filtered = filter === "all" ? workflows : filter === "active" ? workflows.filter(w => w.active) : workflows.filter(w => !w.active);
+  const isLoading = loading || insightsLoading;
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
+        <div className="flex justify-between items-start mb-5">
           <div>
-            <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>Automation Builder</h1>
-            <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>Workflow rules · Trigger conditions · Automated actions · {WORKFLOWS.filter(w => w.active).length} active rules</p>
+            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Automation Builder</h1>
+            <p className="font-mono text-[11px] text-gray-500">Workflow rules · Trigger conditions · Automated actions · {workflows.length} active rules</p>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <div style={{ display: "flex", gap: 4, background: K.g900, border: `1px solid ${K.g800}`, borderRadius: 2, padding: 3 }}>
+          <div className="flex gap-2">
+            <div className="flex gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
               {(["all", "active", "inactive"] as const).map(f => (
                 <button key={f} onClick={() => setFilter(f)}
-                  style={{ padding: "5px 12px", fontFamily: K.mono, fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", color: filter === f ? K.t1 : K.t4, background: filter === f ? K.g800 : "transparent", border: "none", borderRadius: 2, cursor: "pointer", textTransform: "uppercase" }}>
+                  className="font-mono text-[10px] font-semibold tracking-wider px-3 py-[5px] rounded-sm cursor-pointer uppercase"
+                  style={{ color: filter === f ? K.t1 : K.t4, background: filter === f ? K.g800 : "transparent", border: "none" }}>
                   {f}
                 </button>
               ))}
@@ -102,62 +94,66 @@ export default function WorkflowPage() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
-          {[{ label: "Active Rules", value: `${WORKFLOWS.filter(w => w.active).length}`, color: K.mint },
-            { label: "Triggered (30d)", value: loading ? "…" : String(fires), color: K.blue },
-            { label: "Budget Saved", value: loading ? "…" : `$${Number(budgetSaved).toLocaleString()}`, color: K.gold },
-            { label: "Avg Response Time", value: "< 1 min", color: K.teal },
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          {[{ label: "Active Rules", value: `${workflows.length}`, color: K.mint },
+            { label: "Triggered (30d)", value: isLoading ? "…" : String(fires), color: K.blue },
+            { label: "Budget Saved", value: isLoading ? "…" : `$${Number(budgetSaved).toLocaleString()}`, color: K.gold },
+            { label: "Avg Response Time", value: isLoading ? "…" : allActions.length > 0 ? `${Math.round(allActions.reduce((s, a) => s + (a.durationMs || 0), 0) / allActions.length)}ms` : "< 1 min", color: K.teal },
           ].map((s, i) => (
             <Card key={i} accent={s.color}>
-              <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.14em", color: K.t4, marginBottom: 6 }}>{s.label}</p>
-              <p style={{ fontFamily: K.mono, fontSize: 20, fontWeight: 700, color: s.color }}>{s.value}</p>
+              <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-1.5">{s.label}</p>
+              <p className="font-mono text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
             </Card>
           ))}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {filtered.map((wf, i) => (
-            <Card key={i} accent={wf.color}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                    <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1 }}>{wf.name}</h3>
-                    <Badge color={wf.active ? K.mint : K.t3} dot pulse={wf.active}>{wf.active ? "ACTIVE" : "PAUSED"}</Badge>
+        <div className="flex flex-col gap-3">
+          {isLoading ? (
+            <Card><div className="py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading workflows…</span></div></Card>
+          ) : filtered.length === 0 ? (
+            <Card><div className="py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No workflows found. Agent actions will appear here once agents start running.</span></div></Card>
+          ) : (
+            filtered.map((wf, i) => (
+              <Card key={i} accent={wf.color}>
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2.5 mb-1">
+                      <h3 className="font-mono font-bold text-[13px] text-white">{wf.name}</h3>
+                      <Badge color={wf.active ? K.mint : K.t3} dot pulse={wf.active}>{wf.active ? "ACTIVE" : "PAUSED"}</Badge>
+                    </div>
+                    <p className="font-sans text-[11px] text-gray-500 leading-relaxed max-w-[600px]">{wf.description}</p>
                   </div>
-                  <p style={{ fontFamily: K.sans, fontSize: 11, color: K.t3, lineHeight: 1.5, maxWidth: 600 }}>{wf.description}</p>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="text-right">
+                      <p className="font-mono text-[10px] text-gray-600">Last fired</p>
+                      <p className="font-mono text-[11px] font-semibold text-gray-400">
+                        {wf.lastFired !== "Never" ? new Date(wf.lastFired).toLocaleString() : "Never"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-[10px] text-gray-600">Total fires</p>
+                      <p className="font-mono text-[11px] font-bold" style={{ color: wf.color }}>{wf.firesCount}</p>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-                  <div style={{ textAlign: "right" }}>
-                    <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>Last fired</p>
-                    <p style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 600, color: K.t2 }}>{wf.lastFired}</p>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>Total fires</p>
-                    <p style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: wf.color }}>{wf.firesCount}</p>
-                  </div>
-                </div>
-              </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                <div style={{ padding: "10px 12px", background: K.g850, borderRadius: 2 }}>
-                  <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.1em", color: K.t4, marginBottom: 4 }}>TRIGGER</p>
-                  <p style={{ fontFamily: K.mono, fontSize: 10, color: K.blue }}>{wf.trigger}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="p-2.5 px-3 rounded-sm bg-g850">
+                    <p className="font-mono text-[10px] tracking-[0.1em] text-gray-600 mb-1">AGENT</p>
+                    <p className="font-mono text-[10px] text-kblue">{wf.agent}</p>
+                  </div>
+                  <div className="p-2.5 px-3 rounded-sm bg-g850">
+                    <p className="font-mono text-[10px] tracking-[0.1em] text-gray-600 mb-1">SUCCESS</p>
+                    <p className="font-mono text-[10px] text-kmint">{wf.successCount} of {wf.firesCount}</p>
+                  </div>
+                  <div className="p-2.5 px-3 rounded-sm bg-g850">
+                    <p className="font-mono text-[10px] tracking-[0.1em] text-gray-600 mb-1">ERRORS</p>
+                    <p className="font-mono text-[10px]" style={{ color: wf.errorCount > 0 ? K.danger : K.t4 }}>{wf.errorCount}</p>
+                  </div>
                 </div>
-                <div style={{ padding: "10px 12px", background: K.g850, borderRadius: 2 }}>
-                  <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.1em", color: K.t4, marginBottom: 4 }}>CONDITIONS</p>
-                  {wf.conditions.map((c, j) => (
-                    <p key={j} style={{ fontFamily: K.mono, fontSize: 10, color: K.t2, marginBottom: 1 }}>{c}</p>
-                  ))}
-                </div>
-                <div style={{ padding: "10px 12px", background: K.g850, borderRadius: 2 }}>
-                  <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.1em", color: K.t4, marginBottom: 4 }}>ACTIONS</p>
-                  {wf.actions.map((a, j) => (
-                    <p key={j} style={{ fontFamily: K.mono, fontSize: 10, color: K.mint, marginBottom: 1 }}>→ {a}</p>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </DashboardLayout>

@@ -20,37 +20,38 @@ export default function FeaturesPage() {
   const feat = FEATURES.find(f => f.id === active) || FEATURES[0]!;
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"80px 48px", maxWidth:1100, margin:"0 auto" }}>
-        <div style={{ textAlign:"center", marginBottom:56 }}>
-          <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4, marginBottom:14 }}>PLATFORM FEATURES</p>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(28px,5vw,52px)", letterSpacing:"-0.03em", color:K.t1, marginBottom:14 }}>Everything your media team needs.</h1>
-          <p style={{ fontFamily:"Inter,sans-serif", fontSize:16, color:K.t3, maxWidth:520, margin:"0 auto" }}>One platform for signal enrichment, autonomous optimization, fraud protection, and financial control.</p>
+      <div className="py-20 px-12 max-w-[1100px] mx-auto" style={{ background:K.void }}>
+        <div className="text-center mb-14">
+          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">PLATFORM FEATURES</p>
+          <h1 className="font-mono font-bold text-[clamp(28px,5vw,52px)] tracking-[-0.03em] text-t1 mb-3.5">Everything your media team needs.</h1>
+          <p className="font-sans text-[16px] text-t3 max-w-[520px] mx-auto">One platform for signal enrichment, autonomous optimization, fraud protection, and financial control.</p>
         </div>
-        <div style={{ display:"flex", gap:32 }}>
-          <div style={{ width:260, flexShrink:0 }}>
+        <div className="flex gap-8">
+          <div className="w-[260px] shrink-0">
             {FEATURES.map(f => (
               <div key={f.id} onClick={() => setActive(f.id)}
-                style={{ padding:"14px 16px", marginBottom:6, background:active===f.id?`${f.color}10`:K.g900, border:`1px solid ${active===f.id?f.color+"40":K.g800}`, borderRadius:2, cursor:"pointer", transition:"all 0.15s" }}>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    <span style={{ fontSize:16, color:f.color }}>{f.icon}</span>
-                    <span style={{ fontFamily:K.mono, fontSize:12, fontWeight:700, color:active===f.id?K.t1:K.t2 }}>{f.label}</span>
+                className="px-4 py-3.5 mb-1.5 rounded-sm cursor-pointer transition-all duration-150"
+                style={{ background:active===f.id?`${f.color}10`:K.g900, border:`1px solid ${active===f.id?f.color+"40":K.g800}` }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[16px]" style={{ color:f.color }}>{f.icon}</span>
+                    <span className="font-mono text-[12px] font-bold" style={{ color:active===f.id?K.t1:K.t2 }}>{f.label}</span>
                   </div>
-                  {active===f.id && <span style={{ fontFamily:K.mono, fontSize:12, color:f.color }}>›</span>}
+                  {active===f.id && <span className="font-mono text-[12px]" style={{ color:f.color }}>›</span>}
                 </div>
               </div>
             ))}
           </div>
-          <div style={{ flex:1, padding:32, background:K.g900, border:`1px solid ${feat.color}30`, borderRadius:2, position:"relative", overflow:"hidden" }}>
-            <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${feat.color},transparent)` }} />
+          <div className="flex-1 p-8 bg-g900 rounded-sm relative overflow-hidden" style={{ border:`1px solid ${feat.color}30` }}>
+            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background:`linear-gradient(90deg,transparent,${feat.color},transparent)` }} />
             <Badge color={feat.color}>{feat.label.toUpperCase()}</Badge>
-            <h2 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(18px,3vw,28px)", letterSpacing:"-0.02em", color:K.t1, margin:"16px 0 12px" }}>{feat.tagline}</h2>
-            <p style={{ fontFamily:"Inter,sans-serif", fontSize:15, color:K.t3, lineHeight:1.7, maxWidth:520, marginBottom:20 }}>{feat.desc}</p>
-            <div style={{ padding:"14px 18px", background:`${feat.color}08`, border:`1px solid ${feat.color}25`, borderRadius:2, display:"inline-block", marginBottom:20 }}>
-              <span style={{ fontFamily:K.mono, fontSize:20, fontWeight:700, color:feat.color }}>{feat.stat}</span>
+            <h2 className="font-mono font-bold text-[clamp(18px,3vw,28px)] tracking-tight text-t1 my-4">{feat.tagline}</h2>
+            <p className="font-sans text-[15px] text-t3 leading-[1.7] max-w-[520px] mb-5">{feat.desc}</p>
+            <div className="px-[18px] py-3.5 rounded-sm inline-block mb-5" style={{ background:`${feat.color}08`, border:`1px solid ${feat.color}25` }}>
+              <span className="font-mono text-[20px] font-bold" style={{ color:feat.color }}>{feat.stat}</span>
             </div>
-            <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3, lineHeight:1.7 }}>{feat.detail}</p>
-            <Button size="md" style={{ marginTop:20 }} onClick={() => router.push("/auth/login")}>Learn more →</Button>
+            <p className="font-mono text-[11px] text-t3 leading-[1.7]">{feat.detail}</p>
+            <Button size="md" className="mt-5" onClick={() => router.push("/auth/login")}>Learn more →</Button>
           </div>
         </div>
       </div>

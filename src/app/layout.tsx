@@ -4,11 +4,12 @@ import { homeMetadata } from "@/lib/seo";
 import ToastProvider from "@/components/providers/ToastProvider";
 import { HydrationGuard } from "@/components/providers/HydrationGuard";
 import { ClientProviders } from "@/components/providers/ClientProviders";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export const metadata: Metadata = {
   ...homeMetadata,
   metadataBase: new URL("https://kiki.ai"),
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/images/kiki.png", type: "image/png" },
@@ -97,7 +98,7 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="theme-color" content="#005CFF" />
@@ -112,6 +113,10 @@ export default function RootLayout({
         }}
       >
         <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            var t=localStorage.getItem('kiki-theme');
+            if(t==='light'){document.documentElement.setAttribute('data-theme','light')}
+          })();
           if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
               navigator.serviceWorker.register('/sw.js').catch(function() {});
@@ -119,11 +124,13 @@ export default function RootLayout({
           }
         `}} />
         <HydrationGuard>
-          <ToastProvider />
+          <ThemeProvider>
+            <ToastProvider />
+            <ClientProviders>
+              {children}
+            </ClientProviders>
+          </ThemeProvider>
         </HydrationGuard>
-        <ClientProviders>
-          {children}
-        </ClientProviders>
       </body>
     </html>
   );

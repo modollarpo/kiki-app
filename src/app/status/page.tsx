@@ -43,60 +43,60 @@ export default function StatusPage() {
 
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)", maxWidth:960, margin:"0 auto" }}>
-        <div style={{ textAlign:"center", marginBottom:48 }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"12px 24px", background:K.mintT, border:`1px solid ${K.mint}30`, borderRadius:2, marginBottom:20 }}>
-            <span className="animate-kdls-pulse" style={{ width:10, height:10, borderRadius:"50%", background:K.mint, display:"inline-block" }}/>
-            <span style={{ fontFamily:K.mono, fontSize:13, fontWeight:700, color:K.mint }}>ALL SYSTEMS OPERATIONAL</span>
+      <div style={{ background:K.void }} className="p-[clamp(40px,6vw,80px)] px-[clamp(16px,4vw,48px)] max-w-[960px] mx-auto">
+        <div className="text-center mb-12">
+          <div style={{ background:K.mintT, border:`1px solid ${K.mint}30` }} className="inline-flex items-center gap-2.5 px-6 py-3 rounded-sm mb-5">
+            <span className="animate-kdls-pulse w-2.5 h-2.5 rounded-full bg-kmint inline-block"/>
+            <span className="font-mono text-[13px] font-bold text-kmint">ALL SYSTEMS OPERATIONAL</span>
           </div>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(22px,4vw,36px)", color:K.t1, letterSpacing:"-0.025em", marginBottom:8 }}>KIKI Agent Status</h1>
-          <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3 }}>Live status · Updated {now.toLocaleTimeString("en-US", { hour12:false })} UTC</p>
+          <h1 className="font-mono font-bold text-[clamp(22px,4vw,36px)] text-t1 tracking-[-0.025em] mb-2">KIKI Agent Status</h1>
+          <p className="font-mono text-[11px] text-t3">Live status · Updated {now.toLocaleTimeString("en-US", { hour12:false })} UTC</p>
         </div>
 
         {SERVICES.map(group => (
-          <div key={group.group} style={{ marginBottom:28 }}>
-            <p style={{ fontFamily:K.mono, fontSize:10, fontWeight:700, color:K.t2, marginBottom:10, letterSpacing:"0.04em" }}>{group.group}</p>
-            <div style={{ border:`1px solid ${K.g800}`, borderRadius:2, overflow:"hidden" }}>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 100px 80px 90px", gap:12, padding:"8px 16px", background:K.g950, borderBottom:`1px solid ${K.g800}` }}>
-                {["SERVICE","STATUS","P99","30D UPTIME"].map(h => <span key={h} style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.1em", color:K.t4 }}>{h}</span>)}
+          <div key={group.group} className="mb-7">
+            <p className="font-mono font-bold text-[10px] text-t2 mb-2.5 tracking-[0.04em]">{group.group}</p>
+            <div className="border border-g800 rounded-sm overflow-hidden">
+              <div className="grid grid-cols-[1fr_100px_80px_90px] gap-3 px-4 py-2 bg-g950 border-b border-g800">
+                {["SERVICE","STATUS","P99","30D UPTIME"].map(h => <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>)}
               </div>
               {group.items.map((svc,i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"1fr 100px 80px 90px", gap:12, padding:"12px 16px", borderBottom:i<group.items.length-1?`1px solid ${K.g900}`:"none", alignItems:"center", background:K.g900 }}>
-                  <span style={{ fontFamily:K.mono, fontSize:12, color:K.t1 }}>{svc.name}</span>
-                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                    <span className="animate-kdls-pulse" style={{ width:7, height:7, borderRadius:"50%", background:STATUS_COLORS[svc.status]||K.t3, display:"inline-block" }}/>
-                    <span style={{ fontFamily:K.mono, fontSize:10, color:STATUS_COLORS[svc.status]||K.t3, textTransform:"capitalize" }}>{svc.status}</span>
+                <div key={i} className="grid grid-cols-[1fr_100px_80px_90px] gap-3 px-4 py-3 items-center bg-g900" style={{ borderBottom:i<group.items.length-1?`1px solid ${K.g900}`:"none" }}>
+                  <span className="font-mono text-[12px] text-t1">{svc.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="animate-kdls-pulse w-[7px] h-[7px] rounded-full inline-block" style={{ background:STATUS_COLORS[svc.status]||K.t3 }}/>
+                    <span className="font-mono text-[10px] capitalize" style={{ color:STATUS_COLORS[svc.status]||K.t3 }}>{svc.status}</span>
                   </div>
-                  <span style={{ fontFamily:K.mono, fontSize:11, color:K.t2 }}>{svc.p99}</span>
-                  <span style={{ fontFamily:K.mono, fontSize:11, fontWeight:700, color:K.mint }}>{svc.uptime}</span>
+                  <span className="font-mono text-[11px] text-t2">{svc.p99}</span>
+                  <span className="font-mono font-bold text-[11px] text-kmint">{svc.uptime}</span>
                 </div>
               ))}
             </div>
           </div>
         ))}
 
-        <div style={{ marginTop:40 }}>
-          <p style={{ fontFamily:K.mono, fontSize:10, fontWeight:700, color:K.t2, marginBottom:16, letterSpacing:"0.04em" }}>RECENT INCIDENTS</p>
+        <div className="mt-10">
+          <p className="font-mono font-bold text-[10px] text-t2 mb-4 tracking-[0.04em]">RECENT INCIDENTS</p>
           {INCIDENTS.map((inc,i) => (
-            <div key={i} style={{ padding:"14px 18px", background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2, marginBottom:8, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:10 }}>
+            <div key={i} className="px-[18px] py-3.5 bg-g900 border border-g800 rounded-sm mb-2 flex items-center justify-between flex-wrap gap-2.5">
               <div>
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4, flexWrap:"wrap" }}>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <Badge color={SEV_COLORS[inc.severity]||K.t3}>{inc.severity}</Badge>
-                  <span style={{ fontFamily:K.mono, fontSize:12, fontWeight:700, color:K.t1 }}>{inc.title}</span>
+                  <span className="font-mono font-bold text-[12px] text-t1">{inc.title}</span>
                 </div>
-                <span style={{ fontFamily:K.mono, fontSize:10, color:K.t3 }}>{inc.date} · Duration: {inc.duration}</span>
+                <span className="font-mono text-[10px] text-t3">{inc.date} · Duration: {inc.duration}</span>
               </div>
               <Badge color={K.pos}>RESOLVED</Badge>
             </div>
           ))}
         </div>
 
-        <div style={{ marginTop:32, textAlign:"center", padding:20, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2 }}>
-          <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3 }}>
+        <div className="mt-8 text-center p-5 bg-g900 border border-g800 rounded-sm">
+          <p className="font-mono text-[11px] text-t3">
             Subscribe to status updates:{" "}
-            <a href="https://status.kiki.ai" target="_blank" rel="noopener noreferrer" style={{ color:K.blue4, textDecoration:"none" }}>status.kiki.ai</a>
+            <a href="https://status.kiki.ai" target="_blank" rel="noopener noreferrer" className="no-underline" style={{ color:K.blue4 }}>status.kiki.ai</a>
             {" "}or follow{" "}
-            <a href="https://x.com/KIKIAgent" target="_blank" rel="noopener noreferrer" style={{ color:K.blue4, textDecoration:"none" }}>@KIKIAgent</a>
+            <a href="https://x.com/KIKIAgent" target="_blank" rel="noopener noreferrer" className="no-underline" style={{ color:K.blue4 }}>@KIKIAgent</a>
           </p>
         </div>
       </div>

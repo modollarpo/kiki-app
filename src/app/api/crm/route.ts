@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,11 +11,10 @@ export async function GET(req: NextRequest) {
     const db = await getDb();
     const tenantId = user.tenantId;
 
-    // Get contacts from database
     const contacts = await (await db.prepare(`
       SELECT id, first_name, last_name, email, company, status, created_at
-      FROM contacts ORDER BY created_at DESC
-    `)).all() as any[];
+      FROM contacts WHERE tenant_id = ? ORDER BY created_at DESC
+    `)).all(tenantId) as any[];
 
     const totalContacts = contacts.length;
     const recentLeads = contacts
@@ -40,8 +40,8 @@ export async function GET(req: NextRequest) {
 
     // Get contact status distribution
     const statusDistribution = await (await db.prepare(`
-      SELECT status, COUNT(*) as count FROM contacts GROUP BY status
-    `)).all() as any[];
+      SELECT status, COUNT(*) as count FROM contacts WHERE tenant_id = ? GROUP BY status
+    `)).all(tenantId) as any[];
 
     return NextResponse.json({
       success: true,
@@ -65,6 +65,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
+    logger.error("crm/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }

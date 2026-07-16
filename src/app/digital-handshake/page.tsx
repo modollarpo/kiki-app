@@ -37,34 +37,34 @@ export default function DigitalHandshakePage() {
 
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)", maxWidth:900, margin:"0 auto" }}>
+      <div className="p-[clamp(40px,6vw,80px)_clamp(16px,4vw,48px)] max-w-[900px] mx-auto" style={{ background:K.void }}>
 
         {/* Signing modal */}
         {signing && (
-          <div style={{ position:"fixed", inset:0, background:"rgba(6,6,8,0.9)", zIndex:999, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }} onClick={() => setSigning(null)}>
-            <div style={{ width:"100%", maxWidth:520, background:K.g900, border:`1px solid ${K.g700}`, borderRadius:2, overflow:"hidden", boxShadow:"0 32px 80px rgba(0,0,0,0.7)" }} onClick={e => e.stopPropagation()}>
-              <div style={{ padding:"16px 22px", borderBottom:`1px solid ${K.g800}`, position:"relative" }}>
-                <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${K.blue}80,transparent)` }}/>
-                <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:14, color:K.t1, marginBottom:4 }}>Sign {docs.find(d=>d.id===signing)?.title}</p>
-                <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3 }}>By signing, you agree to be bound by this document on behalf of your organization.</p>
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-5 bg-[rgba(6,6,8,0.9)]" onClick={() => setSigning(null)}>
+            <div className="w-full max-w-[520px] bg-g900 border border-g700 rounded-sm overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
+              <div className="px-[22px] py-4 border-b border-g800 relative">
+                <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background:`linear-gradient(90deg,transparent,${K.blue}80,transparent)` }}/>
+                <p className="font-mono font-bold text-[14px] text-t1 mb-1">Sign {docs.find(d=>d.id===signing)?.title}</p>
+                <p className="font-sans text-[13px] text-t3">By signing, you agree to be bound by this document on behalf of your organization.</p>
               </div>
-              <div style={{ padding:22 }}>
-                <div style={{ padding:14, background:K.blueT, border:`1px solid ${K.blue}25`, borderRadius:2, marginBottom:18 }}>
-                  <p style={{ fontFamily:K.mono, fontSize:11, color:K.blue4, fontWeight:700, marginBottom:4 }}>🔒 Cryptographic signature</p>
-                  <p style={{ fontFamily:"Inter,sans-serif", fontSize:12, color:K.t2 }}>Your signature will be timestamped, hashed (SHA-256), and stored in the immutable audit log with your IP address and user agent. This creates a legally binding electronic agreement.</p>
+              <div className="p-[22px]">
+                <div className="p-3.5 rounded-sm mb-4.5" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
+                  <p className="font-mono font-bold text-[11px] mb-1" style={{ color:K.blue4 }}>🔒 Cryptographic signature</p>
+                  <p className="font-sans text-[12px] text-t2">Your signature will be timestamped, hashed (SHA-256), and stored in the immutable audit log with your IP address and user agent. This creates a legally binding electronic agreement.</p>
                 </div>
-                <div style={{ marginBottom:12 }}>
-                  <p style={{ fontFamily:K.mono, fontSize:10, letterSpacing:"0.08em", color:K.t3, marginBottom:6 }}>YOUR FULL LEGAL NAME</p>
+                <div className="mb-3">
+                  <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">YOUR FULL LEGAL NAME</p>
                   <input value={signature} onChange={e => setSignature(e.target.value)} placeholder="e.g. Sarah Chen" style={{ width:"100%", background:K.g800, border:`1px solid ${K.g700}`, borderRadius:2, padding:"11px 14px", fontFamily:"Inter,sans-serif", fontSize:14, color:K.t1, outline:"none" }}/>
                 </div>
-                <div style={{ marginBottom:18 }}>
-                  <p style={{ fontFamily:K.mono, fontSize:10, letterSpacing:"0.08em", color:K.t3, marginBottom:6 }}>YOUR TITLE / ROLE</p>
+                <div className="mb-4.5">
+                  <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">YOUR TITLE / ROLE</p>
                   <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Chief Marketing Officer" style={{ width:"100%", background:K.g800, border:`1px solid ${K.g700}`, borderRadius:2, padding:"11px 14px", fontFamily:"Inter,sans-serif", fontSize:14, color:K.t1, outline:"none" }}/>
                 </div>
                 {signature.trim() && (
-                  <div style={{ padding:14, background:K.g850, borderRadius:2, marginBottom:16, fontFamily:"Georgia,serif", fontSize:22, color:K.t2, letterSpacing:"0.02em", borderLeft:`3px solid ${K.blue}` }}>{signature}</div>
+                  <div className="p-3.5 bg-g850 rounded-sm mb-4 font-[Georgia,serif] text-[22px] text-t2 tracking-[0.02em]" style={{ borderLeft:`3px solid ${K.blue}` }}>{signature}</div>
                 )}
-                <div style={{ display:"flex", gap:10 }}>
+                <div className="flex gap-2.5">
                   <Button variant="ghost" size="md" onClick={() => setSigning(null)}>Cancel</Button>
                   <Button size="md" full disabled={!signature.trim() || !title.trim()} onClick={() => handleSign(signing!)}>
                     ✓ Sign & Confirm
@@ -75,43 +75,43 @@ export default function DigitalHandshakePage() {
           </div>
         )}
 
-        <div style={{ marginBottom:36 }}>
-          <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4, marginBottom:12 }}>DIGITAL HANDSHAKE</p>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(22px,4vw,34px)", color:K.t1, letterSpacing:"-0.025em", marginBottom:8 }}>Contract & Agreement Center</h1>
-          <p style={{ fontFamily:"Inter,sans-serif", fontSize:14, color:K.t3 }}>Manage all legal agreements for your KIKI Agent account. Electronic signatures are legally binding under ESIGN Act (US) and eIDAS (EU).</p>
+        <div className="mb-9">
+          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3">DIGITAL HANDSHAKE</p>
+          <h1 className="font-mono font-bold text-[clamp(22px,4vw,34px)] text-t1 tracking-[-0.025em] mb-2">Contract & Agreement Center</h1>
+          <p className="font-sans text-[14px] text-t3">Manage all legal agreements for your KIKI Agent account. Electronic signatures are legally binding under ESIGN Act (US) and eIDAS (EU).</p>
         </div>
 
         {/* Progress */}
-        <div style={{ padding:20, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2, marginBottom:28, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
+        <div className="p-5 bg-g900 border border-g800 rounded-sm mb-7 flex items-center justify-between flex-wrap gap-4">
           <div>
-            <p style={{ fontFamily:K.mono, fontSize:12, fontWeight:700, color:K.t1, marginBottom:4 }}>
+            <p className="font-mono font-bold text-[12px] text-t1 mb-1">
               {signedRequired === requiredCount ? "✓ All required documents signed" : `${requiredCount - signedRequired} required document${requiredCount - signedRequired > 1 ? "s" : ""} pending`}
             </p>
-            <p style={{ fontFamily:K.mono, fontSize:10, color:K.t3 }}>{signedCount} of {docs.length} total documents signed</p>
+            <p className="font-mono text-[10px] text-t3">{signedCount} of {docs.length} total documents signed</p>
           </div>
-          <div style={{ display:"flex", gap:3, alignItems:"center" }}>
+          <div className="flex gap-[3px] items-center">
             {docs.map(d => (
-              <div key={d.id} style={{ width:10, height:10, borderRadius:2, background:d.signed?K.mint:d.required?K.warn:K.g700 }} title={d.title}/>
+              <div key={d.id} className="w-2.5 h-2.5 rounded-sm" style={{ background:d.signed?K.mint:d.required?K.warn:K.g700 }} title={d.title}/>
             ))}
           </div>
         </div>
 
         {/* Documents */}
-        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        <div className="flex flex-col gap-2.5">
           {docs.map(doc => (
-            <div key={doc.id} style={{ padding:"16px 20px", background:K.g900, border:`1px solid ${doc.signed?K.mint+"30":doc.required?K.warn+"20":K.g800}`, borderLeft:`3px solid ${doc.signed?K.mint:doc.required?K.warn:K.g700}`, borderRadius:2, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
-              <div style={{ flex:1, minWidth:200 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5, flexWrap:"wrap" }}>
-                  <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:13, color:K.t1 }}>{doc.title}</p>
+            <div key={doc.id} className="px-5 py-4 bg-g900 rounded-sm flex items-center justify-between flex-wrap gap-4" style={{ border:`1px solid ${doc.signed?K.mint+"30":doc.required?K.warn+"20":K.g800}`, borderLeft:`3px solid ${doc.signed?K.mint:doc.required?K.warn:K.g700}` }}>
+              <div className="flex-1 min-w-[200px]">
+                <div className="flex items-center gap-2 mb-[5px] flex-wrap">
+                  <p className="font-mono font-bold text-[13px] text-t1">{doc.title}</p>
                   <Badge color={TYPE_COLORS[doc.type]||K.t3}>{doc.type.toUpperCase()}</Badge>
                   {doc.required && <Badge color={K.warn}>REQUIRED</Badge>}
                 </div>
-                <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
-                  <span style={{ fontFamily:K.mono, fontSize:10, color:K.t3 }}>Version: {doc.version}</span>
-                  {doc.signed && doc.date && <span style={{ fontFamily:K.mono, fontSize:10, color:K.mint }}>✓ Signed {doc.date}</span>}
+                <div className="flex gap-4 flex-wrap">
+                  <span className="font-mono text-[10px] text-t3">Version: {doc.version}</span>
+                  {doc.signed && doc.date && <span className="font-mono text-[10px] text-kmint">✓ Signed {doc.date}</span>}
                 </div>
               </div>
-              <div style={{ display:"flex", gap:8, flexShrink:0, flexWrap:"wrap" }}>
+              <div className="flex gap-2 shrink-0 flex-wrap">
                   <Button variant="secondary" size="sm" onClick={() => downloadSimplePDF(`${doc.id}.pdf`, doc.title, doc.title + "\n\nVersion: " + doc.version + "\nStatus: " + (doc.signed ? "Signed " + doc.date : "Pending signature") + "\nType: " + doc.type.charAt(0).toUpperCase() + doc.type.slice(1) + "\n\nThis document is available for review. Signed copies are stored in the KIKI immutable audit log with cryptographic hash verification.")}>📄 View PDF</Button>
                 {!doc.signed ? (
                   <Button size="sm" onClick={() => setSigning(doc.id)}>Sign →</Button>
@@ -123,9 +123,9 @@ export default function DigitalHandshakePage() {
           ))}
         </div>
 
-        <div style={{ marginTop:32, padding:18, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2 }}>
-          <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:12, color:K.t1, marginBottom:6 }}>Need a custom agreement?</p>
-          <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3 }}>Enterprise customers can request custom MSAs, BAAs, and tailored DPAs. Contact <span style={{color:K.blue4}}>legal@kiki.ai</span></p>
+        <div className="mt-8 p-4.5 bg-g900 border border-g800 rounded-sm">
+          <p className="font-mono font-bold text-[12px] text-t1 mb-1.5">Need a custom agreement?</p>
+          <p className="font-sans text-[13px] text-t3">Enterprise customers can request custom MSAs, BAAs, and tailored DPAs. Contact <span style={{color:K.blue4}}>legal@kiki.ai</span></p>
         </div>
       </div>
     </MarketingLayout>

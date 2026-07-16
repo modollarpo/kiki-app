@@ -1,8 +1,16 @@
 import { getDb } from "@/lib/db";
 import { verifyPassword, createSession, json, jsonError, validateEmail, validateRequired } from "@/lib/auth";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   try {
+    // Brute-force protection: 10 login attempts per IP per minute.
+    const rl = rateLimit(`login:${clientKey(req)}`, 10, 60_000);
+    if (!rl.ok) {
+      return jsonError("Too many login attempts. Please try again later.", 429);
+    }
+
     const body = await req.json();
     const { email, password } = body;
 
@@ -53,7 +61,10 @@ export async function POST(req: Request) {
         avatarInitials: user.avatar_initials,
       },
     });
-  } catch {
+  } catch (error) {
+    logger.error("auth/login request failed", {
+      message: error instanceof Error ? error.message : String(error),
+    });
     return jsonError("Invalid request body", 400);
   }
 }

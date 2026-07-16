@@ -9,6 +9,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
+  signup: (name: string, email: string, password: string, companyName?: string) => Promise<boolean>;
   logout: () => void;
   loadUser: () => Promise<void>;
 }
@@ -29,6 +30,18 @@ export const useAuth = create<AuthState>()(
           return true;
         } catch (err) {
           set({ loading: false, error: err instanceof Error ? err.message : "Login failed" });
+          return false;
+        }
+      },
+
+      signup: async (name: string, email: string, password: string, companyName?: string) => {
+        set({ loading: true, error: null });
+        try {
+          const res = await auth.signup(name, email, password, companyName);
+          set({ token: res.token, user: res.user, loading: false, error: null });
+          return true;
+        } catch (err) {
+          set({ loading: false, error: err instanceof Error ? err.message : "Signup failed" });
           return false;
         }
       },

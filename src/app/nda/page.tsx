@@ -26,13 +26,13 @@ export default function NDAPage() {
 
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)", maxWidth:840, margin:"0 auto" }}>
+      <div className="max-w-[840px] mx-auto" style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
         {signed ? (
-          <div style={{ textAlign:"center", padding:"60px 0" }}>
-            <div style={{ fontSize:56, marginBottom:20 }}>🤝</div>
-            <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(20px,3.5vw,32px)", color:K.mint, marginBottom:12 }}>NDA Executed</h1>
-            <p style={{ fontFamily:"Inter,sans-serif", fontSize:15, color:K.t3, maxWidth:440, margin:"0 auto 28px", lineHeight:1.7 }}>Thank you, {name}. The Mutual NDA between {company} and KIKI Agent Inc. has been executed. A signed copy will be emailed within 2 hours.</p>
-            <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
+          <div className="text-center py-[60px]">
+            <div className="text-[56px] mb-5">🤝</div>
+            <h1 className="font-mono font-bold text-[clamp(20px,3.5vw,32px)] text-kmint mb-3">NDA Executed</h1>
+            <p className="font-sans text-[15px] text-t3 max-w-[440px] mx-auto mb-7 leading-[1.7]">Thank you, {name}. The Mutual NDA between {company} and KIKI Agent Inc. has been executed. A signed copy will be emailed within 2 hours.</p>
+            <div className="flex gap-2.5 justify-center flex-wrap">
               <Button size="lg" onClick={async () => {
                 const contract = getContract("mutual-nda");
                 const content = contract
@@ -61,40 +61,40 @@ export default function NDAPage() {
           </div>
         ) : (
           <>
-            <div style={{ marginBottom:36 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, flexWrap:"wrap" }}>
-                <span style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4 }}>LEGAL</span>
+            <div className="mb-9">
+              <div className="flex items-center gap-2.5 mb-3.5 flex-wrap">
+                <span className="font-mono text-[9px] tracking-[0.18em] text-t4">LEGAL</span>
                 <Badge color={K.teal}>MUTUAL</Badge>
                 <Badge color={K.blue}>ELECTRONIC SIGNATURE</Badge>
               </div>
-              <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(22px,4vw,34px)", color:K.t1, letterSpacing:"-0.025em", marginBottom:8 }}>Mutual Non-Disclosure Agreement</h1>
-              <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3 }}>Version 1.2 · Effective upon signature · 3-year term</p>
+              <h1 className="font-mono font-bold text-[clamp(22px,4vw,34px)] text-t1 tracking-[-0.025em] mb-2">Mutual Non-Disclosure Agreement</h1>
+              <p className="font-mono text-[11px] text-t3">Version 1.2 · Effective upon signature · 3-year term</p>
             </div>
-            <div className="prose" style={{ marginBottom:32 }}>
+            <div className="prose mb-8">
               {NDA_TEXT.map((s,i) => (
-                <div key={i} style={{ marginBottom:22, paddingBottom:22, borderBottom:i<NDA_TEXT.length-1?`1px solid ${K.g800}`:"none" }}>
-                  <h3 style={{ fontFamily:K.mono, fontWeight:700, fontSize:13, color:K.t1, marginBottom:8 }}>{s.n}</h3>
-                  <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t2, lineHeight:1.75 }}>{s.t}</p>
+                <div key={i} className="mb-[22px] pb-[22px]" style={{ borderBottom:i<NDA_TEXT.length-1?`1px solid ${K.g800}`:"none" }}>
+                  <h3 className="font-mono font-bold text-[13px] text-t1 mb-2">{s.n}</h3>
+                  <p className="font-sans text-[13px] text-t2 leading-relaxed">{s.t}</p>
                 </div>
               ))}
             </div>
-            <div style={{ padding:20, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2 }}>
-              <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:13, color:K.t1, marginBottom:16 }}>Executing Party (Recipient)</p>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+            <div className="p-5 bg-g900 rounded-sm" style={{ border:`1px solid ${K.g800}` }}>
+              <p className="font-mono font-bold text-[13px] text-t1 mb-4">Executing Party (Recipient)</p>
+              <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
-                  <p style={{ fontFamily:K.mono, fontSize:10, letterSpacing:"0.08em", color:K.t3, marginBottom:6 }}>FULL LEGAL NAME</p>
-                  <input value={name} onChange={e=>setName(e.target.value)} placeholder="Sarah Chen" style={{ width:"100%", background:K.g800, border:`1px solid ${K.g700}`, borderRadius:2, padding:"10px 14px", fontFamily:"Inter,sans-serif", fontSize:13, color:K.t1, outline:"none" }}/>
+                  <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">FULL LEGAL NAME</p>
+                  <input value={name} onChange={e=>setName(e.target.value)} placeholder="Sarah Chen" className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-[13px] text-t1 outline-none" style={{ border:`1px solid ${K.g700}` }}/>
                 </div>
                 <div>
-                  <p style={{ fontFamily:K.mono, fontSize:10, letterSpacing:"0.08em", color:K.t3, marginBottom:6 }}>TITLE / ROLE</p>
-                  <input value={role} onChange={e=>setRole(e.target.value)} placeholder="CMO" style={{ width:"100%", background:K.g800, border:`1px solid ${K.g700}`, borderRadius:2, padding:"10px 14px", fontFamily:"Inter,sans-serif", fontSize:13, color:K.t1, outline:"none" }}/>
+                  <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">TITLE / ROLE</p>
+                  <input value={role} onChange={e=>setRole(e.target.value)} placeholder="CMO" className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-[13px] text-t1 outline-none" style={{ border:`1px solid ${K.g700}` }}/>
                 </div>
               </div>
-              <div style={{ marginBottom:16 }}>
-                <p style={{ fontFamily:K.mono, fontSize:10, letterSpacing:"0.08em", color:K.t3, marginBottom:6 }}>COMPANY / ORGANIZATION</p>
-                <input value={company} onChange={e=>setCompany(e.target.value)} placeholder="Acme Corp" style={{ width:"100%", background:K.g800, border:`1px solid ${K.g700}`, borderRadius:2, padding:"10px 14px", fontFamily:"Inter,sans-serif", fontSize:13, color:K.t1, outline:"none" }}/>
+              <div className="mb-4">
+                <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">COMPANY / ORGANIZATION</p>
+                <input value={company} onChange={e=>setCompany(e.target.value)} placeholder="Acme Corp" className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-[13px] text-t1 outline-none" style={{ border:`1px solid ${K.g700}` }}/>
               </div>
-              {name && <div style={{ padding:"12px 16px", background:K.g850, borderRadius:2, marginBottom:16, fontFamily:"Georgia,serif", fontSize:20, color:K.t2, borderLeft:`3px solid ${K.teal}` }}>{name}</div>}
+              {name && <div className="px-4 py-3 bg-g850 rounded-sm mb-4 font-[Georgia,serif] text-[20px] text-t2" style={{ borderLeft:`3px solid ${K.teal}` }}>{name}</div>}
               <Button size="lg" disabled={!name.trim()||!company.trim()||!role.trim()} onClick={() => setSigned(true)}>
                 ✓ Execute Mutual NDA
               </Button>

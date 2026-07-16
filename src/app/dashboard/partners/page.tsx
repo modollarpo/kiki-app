@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar, Button, AIThinking } from "@/components/ui";
-import { K, fmt } from "@/lib/kdls";
+import { StatCard, Card, Badge, Button, AIThinking } from "@/components/ui";
+import { K } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
 
 const TIER_COLORS: Record<string, string> = {
@@ -18,19 +18,19 @@ export default function PartnersPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400 }}>
-        <div style={{ marginBottom: 22 }}>
-          <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>Partner Management</h1>
-          <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>Reseller network · Tier management · Commission tracking</p>
+      <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
+        <div className="mb-[22px]">
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Partner Management</h1>
+          <p className="font-mono text-[11px] text-t3">Reseller network · Tier management · Commission tracking</p>
         </div>
 
         {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: 60 }}>
+          <div className="flex justify-center p-15">
             <AIThinking text="Loading partners..." />
           </div>
         ) : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 16 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
               <StatCard label="Total Integrations" value={String(partners.length)} accent={K.blue} />
               <StatCard label="Active" value={String(activePartners)} accent={K.mint} />
               <StatCard label="Connected Platforms" value={String(new Set(partners.map((p: any) => p.name)).size)} accent={K.gold} />
@@ -39,27 +39,27 @@ export default function PartnersPage() {
 
             {partners.length === 0 ? (
               <Card>
-                <div style={{ padding: 40, textAlign: "center" }}>
-                  <p style={{ fontFamily: K.mono, fontSize: 12, color: K.t4, marginBottom: 12 }}>No platform integrations connected yet.</p>
+                <div className="p-10 text-center">
+                  <p className="font-mono text-xs text-t4 mb-3">No platform integrations connected yet.</p>
                   <Button variant="primary" size="sm" onClick={() => window.location.href = "/dashboard/settings"}>Connect a Platform →</Button>
                 </div>
               </Card>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Card accent={K.gold}>
-                  <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>Connected Platforms</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Connected Platforms</h3>
+                  <div className="flex flex-col">
                     {partners.map((p: any) => (
-                      <div key={p.name} style={{ padding: "14px 0", borderBottom: `1px solid ${K.g800}` }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.t1, textTransform: "capitalize" }}>{p.name}</span>
+                      <div key={p.name} className="py-[14px] border-b border-g800">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-t1 capitalize">{p.name}</span>
                             <Badge color={p.status === "active" ? K.mint : K.warn} dot>{p.status.toUpperCase()}</Badge>
                           </div>
-                          <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>Since {new Date(p.connectedAt).toLocaleDateString()}</span>
+                          <span className="font-mono text-[10px] text-t4">Since {new Date(p.connectedAt).toLocaleDateString()}</span>
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t3 }}>
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[10px] text-t2">
                             Last sync: {p.lastSync ? new Date(p.lastSync).toLocaleString() : "—"}
                           </span>
                           <Button variant="ghost" size="xs">Details</Button>
@@ -69,33 +69,33 @@ export default function PartnersPage() {
                   </div>
                 </Card>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div className="flex flex-col gap-3">
                   <Card accent={K.oaas}>
-                    <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>Platform Status</h3>
+                    <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Platform Status</h3>
                     {partners.map((p: any) => (
-                      <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${K.g800}` }}>
+                      <div key={p.name} className="flex items-center gap-3 py-[10px] border-b border-g800">
                         <Badge color={p.status === "active" ? K.mint : K.warn} dot>{p.status === "active" ? "CONNECTED" : "INACTIVE"}</Badge>
-                        <div style={{ flex: 1 }}>
-                          <p style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.t1, textTransform: "capitalize" }}>{p.name}</p>
-                          <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>OAuth connected</p>
+                        <div className="flex-1">
+                          <p className="font-mono text-[11px] font-bold text-t1 capitalize">{p.name}</p>
+                          <p className="font-mono text-[10px] text-t4">OAuth connected</p>
                         </div>
                       </div>
                     ))}
                   </Card>
 
                   <Card accent={K.mint}>
-                    <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>Commission Tiers</h3>
+                    <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Commission Tiers</h3>
                     {[
                       { tier: "Platinum", rate: "18%", minRev: "$250K+/mo", benefits: "Priority support, custom reporting" },
                       { tier: "Gold", rate: "15%", minRev: "$100K+/mo", benefits: "Dedicated CMO, API access" },
                       { tier: "Silver", rate: "12%", minRev: "$25K+/mo", benefits: "Standard reporting, email support" },
                       { tier: "Bronze", rate: "10%", minRev: "Any", benefits: "Self-serve dashboard" },
                     ].map(t => (
-                      <div key={t.tier} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${K.g800}` }}>
+                      <div key={t.tier} className="flex items-center gap-3 py-[10px] border-b border-g800">
                         <Badge color={TIER_COLORS[t.tier]}>{t.tier}</Badge>
-                        <div style={{ flex: 1 }}>
-                          <p style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.t1 }}>{t.rate} commission</p>
-                          <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>Min: {t.minRev} · {t.benefits}</p>
+                        <div className="flex-1">
+                          <p className="font-mono text-[11px] font-bold text-t1">{t.rate} commission</p>
+                          <p className="font-mono text-[10px] text-t4">Min: {t.minRev} · {t.benefits}</p>
                         </div>
                       </div>
                     ))}

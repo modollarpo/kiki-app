@@ -7,6 +7,10 @@ param baseName string = 'kiki'
 @description('Azure OpenAI API version')
 param openAiApiVersion string = '2024-10-21'
 
+@description('Groq API key for fast bidding inference (leave empty to disable)')
+@secure()
+param groqApiKey string = ''
+
 var resourceGroupName = '${baseName}-rg'
 var acrName = replace('${baseName}acr', '-', '')
 var envName = '${baseName}-env'
@@ -123,6 +127,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
         { name: 'openai-key', value: openAi.listKeys().key1 }
         { name: 'jwt-secret', value: jwtSecret }
         { name: 'encryption-key', value: encryptionKey }
+        { name: 'groq-api-key', value: groqApiKey }
       ]
       registries: [
         {
@@ -153,6 +158,11 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             { name: 'AZURE_OPENAI_DEPLOYMENT_MINI', value: 'gpt-4o-mini' }
             { name: 'JWT_SECRET', secretRef: 'jwt-secret' }
             { name: 'ENCRYPTION_KEY', secretRef: 'encryption-key' }
+            { name: 'GROQ_API_KEY', secretRef: 'groq-api-key' }
+            { name: 'GROQ_MODEL', value: 'llama-3.1-8b-instant' }
+            { name: 'BIDDING_INTERVAL_MS', value: '300000' }
+            { name: 'OPENCODE_ENDPOINT', value: '' }
+            { name: 'OPENCODE_SECRET', value: '' }
           ]
           volumeMounts: [
             { name: 'data', mountPath: '/app/data' }

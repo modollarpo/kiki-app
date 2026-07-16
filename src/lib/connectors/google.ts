@@ -64,14 +64,16 @@ export class GoogleConnector extends BaseConnector {
 
   // ── OAuth ──────────────────────────────────────────────
 
-  async generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string }> {
+  async generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string; codeVerifier: string }> {
     const state = crypto.randomBytes(32).toString("hex");
+    const codeVerifier = this.generateCodeVerifier();
+    const codeChallenge = this.generateCodeChallenge(codeVerifier);
 
     const db = await getDb();
     await db.prepare(`
-      INSERT OR REPLACE INTO oauth_states (state, tenant_id, platform, created_at, expires_at)
-      VALUES (?, ?, 'google', datetime('now'), datetime('now', '+10 minutes'))
-    `).run(state, tenantId);
+      INSERT OR REPLACE INTO oauth_states (state, tenant_id, platform, code_verifier, created_at, expires_at)
+      VALUES (?, ?, 'google', ?, datetime('now'), datetime('now', '+10 minutes'))
+    `).run(state, tenantId, codeVerifier);
 
     const params = new URLSearchParams({
       client_id: this.config.oauth.clientId,
@@ -81,12 +83,14 @@ export class GoogleConnector extends BaseConnector {
       access_type: "offline",
       prompt: "consent",
       state,
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
     });
 
-    return { url: `${this.config.oauth.authUrl}?${params.toString()}`, state };
+    return { url: `${this.config.oauth.authUrl}?${params.toString()}`, state, codeVerifier };
   }
 
-  async handleCallback(code: string, state: string): Promise<OAuthTokens> {
+  async handleCallback(code: string, state: string, codeVerifier?: string): Promise<OAuthTokens> {
     const body = new URLSearchParams({
       client_id: this.config.oauth.clientId,
       client_secret: this.config.oauth.clientSecret,
@@ -94,6 +98,8 @@ export class GoogleConnector extends BaseConnector {
       grant_type: "authorization_code",
       redirect_uri: this.config.oauth.redirectUri,
     });
+
+    if (codeVerifier) body.set("code_verifier", codeVerifier);
 
     const result = await fetch(this.config.oauth.tokenUrl, {
       method: "POST",
@@ -410,6 +416,11 @@ export class GoogleConnector extends BaseConnector {
           gbraid: event.userData.gbraid,
           wbraid: event.userData.wbraid,
           userData,
+          customVariables: {
+            ...(event.customData.predictedLtv90d !== undefined && { predicted_ltv_90d: String(event.customData.predictedLtv90d) }),
+            ...(event.customData.ltvSegment && { ltv_segment: event.customData.ltvSegment }),
+            ...(event.customData.bidMultiplier !== undefined && { bid_multiplier: String(event.customData.bidMultiplier) }),
+          },
         }],
       };
 
@@ -435,6 +446,184 @@ export class GoogleConnector extends BaseConnector {
         error: String(error),
       };
     }
+  }
+
+  // ── Campaign Write Operations ───────────────────────────
+
+  async updateCampaignBudget(
+    accessToken: string,
+    campaignId: string,
+    dailyBudget: number
+  ): Promise<PlatformApiResponse<{ resourceName: string }>> {
+    const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID || "";
+
+    const query = `
+      SELECT campaign.campaign_budget, campaign_budget.resource_name
+      FROM campaign
+      WHERE campaign.id = ${campaignId}
+    `;
+
+    const budgetResult = await this.post<{
+      results: Array<{
+        campaign: { campaignBudget: string };
+        campaignBudget: { resourceName: string };
+      }>;
+    }>(
+      `customers/${customerId}/googleAds:searchStream`,
+      accessToken,
+      { query }
+    );
+
+    if (!budgetResult.success || !budgetResult.data?.results?.[0]) {
+      return { success: false, error: "Could not find campaign budget", latencyMs: budgetResult.latencyMs };
+    }
+
+    const budgetResourceName = budgetResult.data.results[0].campaignBudget.resourceName;
+    const amountMicros = Math.round(dailyBudget * 1000000);
+
+    return this.post<{ resourceName: string }>(
+      `customers/${customerId}/campaignBudgets:mutate`,
+      accessToken,
+      {
+        operations: [{
+          update: {
+            resourceName: budgetResourceName,
+            amountMicros: String(amountMicros),
+          },
+          updateMask: "amountMicros",
+        }],
+      }
+    );
+  }
+
+  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ resourceName: string }>> {
+    const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID || "";
+    return this.post<{ resourceName: string }>(
+      `customers/${customerId}/campaigns:mutate`,
+      accessToken,
+      {
+        operations: [{
+          update: {
+            resourceName: `customers/${customerId}/campaigns/${campaignId}`,
+            status: "PAUSED",
+          },
+          updateMask: "status",
+        }],
+      }
+    );
+  }
+
+  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ resourceName: string }>> {
+    const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID || "";
+    return this.post<{ resourceName: string }>(
+      `customers/${customerId}/campaigns:mutate`,
+      accessToken,
+      {
+        operations: [{
+          update: {
+            resourceName: `customers/${customerId}/campaigns/${campaignId}`,
+            status: "ENABLED",
+          },
+          updateMask: "status",
+        }],
+      }
+    );
+  }
+
+  async setBid(
+    accessToken: string,
+    adGroupId: string,
+    bidAmount: number
+  ): Promise<PlatformApiResponse<{ resourceName: string }>> {
+    const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID || "";
+    const bidMicros = Math.round(bidAmount * 1000000);
+    return this.post<{ resourceName: string }>(
+      `customers/${customerId}/adGroups:mutate`,
+      accessToken,
+      {
+        operations: [{
+          update: {
+            resourceName: `customers/${customerId}/adGroups/${adGroupId}`,
+            cpcBidMicros: String(bidMicros),
+          },
+          updateMask: "cpc_bid_micros",
+        }],
+      }
+    );
+  }
+
+  // ── Customer Match (Audiences) ──────────────────────────
+
+  async uploadCustomerMatch(
+    accessToken: string,
+    params: {
+      name: string;
+      users: { emails?: string[]; phones?: string[]; externalIds?: string[] };
+    }
+  ): Promise<PlatformApiResponse<{ resourceName: string; matchRate: number }>> {
+    const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID || "";
+
+    const userIdentifierSources: string[] = [];
+    const matchingKeys: Array<{ hashingStrategy: string; addressInfo?: any; mobileDeviceInfo?: any; userIdentifiers?: any[] }> = [];
+
+    if (params.users.emails) {
+      for (const email of params.users.emails) {
+        matchingKeys.push({
+          hashingStrategy: "SHA256",
+          addressInfo: { hashedEmail: this.hashEmail(email) },
+        });
+        userIdentifierSources.push("EMAIL");
+      }
+    }
+
+    if (params.users.phones) {
+      for (const phone of params.users.phones) {
+        matchingKeys.push({
+          hashingStrategy: "SHA256",
+          mobileDeviceInfo: { hashedPhoneNumber: this.hashPhone(phone) },
+        });
+        userIdentifierSources.push("PHONE_NUMBER");
+      }
+    }
+
+    if (params.users.externalIds) {
+      for (const id of params.users.externalIds) {
+        matchingKeys.push({
+          hashingStrategy: "SHA256",
+          userIdentifiers: [{ userIdType: "CRISP_CROSS_PARTNER_ID", userId: id }],
+        });
+        userIdentifierSources.push("CRISP_CROSS_PARTNER_ID");
+      }
+    }
+
+    if (matchingKeys.length === 0) {
+      return { success: false, error: "No users provided", latencyMs: 0 };
+    }
+
+    const result = await this.post<{
+      results: Array<{ resourceName: string }>;
+      partialFailureError?: { message: string };
+    }>(
+      `customers/${customerId}/customerMatchActions:uploadCustomerMatch`,
+      accessToken,
+      {
+        userIdentifiers: matchingKeys,
+        consent: { adPersonalization: "GRANTED", adUserData: "GRANTED" },
+      }
+    );
+
+    if (!result.success) {
+      return { ...result, data: undefined };
+    }
+
+    return {
+      success: true,
+      data: {
+        resourceName: result.data?.results?.[0]?.resourceName || "",
+        matchRate: 0,
+      },
+      latencyMs: result.latencyMs,
+    };
   }
 
   // ── Webhook Verification ───────────────────────────────

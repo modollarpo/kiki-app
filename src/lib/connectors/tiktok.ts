@@ -62,31 +62,37 @@ export class TikTokConnector extends BaseConnector {
 
   // ── OAuth ──────────────────────────────────────────────
 
-  async generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string }> {
+  async generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string; codeVerifier: string }> {
     const state = crypto.randomBytes(32).toString("hex");
+    const codeVerifier = this.generateCodeVerifier();
+    const codeChallenge = this.generateCodeChallenge(codeVerifier);
 
     const db = await getDb();
     await db.prepare(`
-      INSERT OR REPLACE INTO oauth_states (state, tenant_id, platform, created_at, expires_at)
-      VALUES (?, ?, 'tiktok', datetime('now'), datetime('now', '+10 minutes'))
-    `).run(state, tenantId);
+      INSERT OR REPLACE INTO oauth_states (state, tenant_id, platform, code_verifier, created_at, expires_at)
+      VALUES (?, ?, 'tiktok', ?, datetime('now'), datetime('now', '+10 minutes'))
+    `).run(state, tenantId, codeVerifier);
 
     const params = new URLSearchParams({
       app_id: this.config.oauth.clientId,
       redirect_uri: this.config.oauth.redirectUri,
       state,
       scope: this.config.oauth.scopes.join(","),
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
     });
 
-    return { url: `${this.config.oauth.authUrl}?${params.toString()}`, state };
+    return { url: `${this.config.oauth.authUrl}?${params.toString()}`, state, codeVerifier };
   }
 
-  async handleCallback(code: string, state: string): Promise<OAuthTokens> {
-    const body = {
+  async handleCallback(code: string, state: string, codeVerifier?: string): Promise<OAuthTokens> {
+    const body: Record<string, string> = {
       app_id: this.config.oauth.clientId,
       secret: this.config.oauth.clientSecret,
       auth_code: code,
     };
+
+    if (codeVerifier) body.code_verifier = codeVerifier;
 
     const result = await fetch(
       `${this.config.oauth.tokenUrl}?access_token=`,
@@ -384,6 +390,9 @@ export class TikTokConnector extends BaseConnector {
           content_name: event.customData.contentName,
           content_type: "product",
           description: `Conversion: ${event.eventName}`,
+          ...(event.customData.predictedLtv90d !== undefined && { predicted_ltv_90d: event.customData.predictedLtv90d }),
+          ...(event.customData.ltvSegment && { ltv_segment: event.customData.ltvSegment }),
+          ...(event.customData.bidMultiplier !== undefined && { bid_multiplier: event.customData.bidMultiplier }),
         },
       };
 
@@ -409,6 +418,104 @@ export class TikTokConnector extends BaseConnector {
         error: String(error),
       };
     }
+  }
+
+  // ── Campaign Write Operations ───────────────────────────
+
+  async updateCampaign(
+    accessToken: string,
+    campaignId: string,
+    updates: { budget?: number; operationStatus?: "CAMPAIGN_STATUS_ENABLE" | "CAMPAIGN_STATUS_DISABLE"; name?: string }
+  ): Promise<PlatformApiResponse<{ campaign_id: string }>> {
+    const accountId = campaignId.split("_")[0] || "";
+    const fields: Record<string, any> = { campaign_id: campaignId };
+    if (updates.budget !== undefined) fields.budget = updates.budget;
+    if (updates.operationStatus !== undefined) fields.operation_status = updates.operationStatus;
+    if (updates.name !== undefined) fields.campaign_name = updates.name;
+
+    return this.post<{ campaign_id: string }>(
+      "campaign/update/",
+      accessToken,
+      { advertiser_id: accountId, ...fields }
+    );
+  }
+
+  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ campaign_id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { operationStatus: "CAMPAIGN_STATUS_DISABLE" });
+  }
+
+  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ campaign_id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { operationStatus: "CAMPAIGN_STATUS_ENABLE" });
+  }
+
+  async setBid(
+    accessToken: string,
+    adGroupId: string,
+    bidAmount: number
+  ): Promise<PlatformApiResponse<{ adgroup_id: string }>> {
+    const accountId = adGroupId.split("_")[0] || "";
+    return this.post<{ adgroup_id: string }>(
+      "adgroup/update/",
+      accessToken,
+      {
+        advertiser_id: accountId,
+        adgroup_id: adGroupId,
+        bid: bidAmount,
+      }
+    );
+  }
+
+  // ── Custom Audiences ─────────────────────────────────────
+
+  async createCustomAudience(
+    accessToken: string,
+    params: {
+      name: string;
+      audienceType: "CUSTOM" | "LOOKALIKE";
+      users?: { emails?: string[]; phoneNumbers?: string[]; mobileDeviceIds?: string[] };
+      file?: File;
+    }
+  ): Promise<PlatformApiResponse<{ audience_id: string }>> {
+    const accountId = params.name.split("_")[0] || "";
+    const body: Record<string, any> = {
+      advertiser_id: accountId,
+      name: params.name,
+      audience_type: params.audienceType,
+    };
+
+    if (params.users) {
+      const ids: string[] = [];
+      if (params.users.emails) ids.push(...params.users.emails.map(e => this.hashEmail(e)));
+      if (params.users.phoneNumbers) ids.push(...params.users.phoneNumbers.map(p => this.hashPhone(p)));
+      if (params.users.mobileDeviceIds) ids.push(...params.users.mobileDeviceIds);
+      body.identifiers = ids.map(id => ({ id, type: "CUSTOMERFILE_ID" }));
+    }
+
+    return this.post<{ audience_id: string }>(
+      "custom_audience/create/",
+      accessToken,
+      body
+    );
+  }
+
+  async addUsersToAudience(
+    accessToken: string,
+    audienceId: string,
+    users: { emails?: string[]; phoneNumbers?: string[]; mobileDeviceIds?: string[] }
+  ): Promise<PlatformApiResponse<{ audience_id: string }>> {
+    const ids: string[] = [];
+    if (users.emails) ids.push(...users.emails.map(e => this.hashEmail(e)));
+    if (users.phoneNumbers) ids.push(...users.phoneNumbers.map(p => this.hashPhone(p)));
+    if (users.mobileDeviceIds) ids.push(...users.mobileDeviceIds);
+
+    return this.post<{ audience_id: string }>(
+      "custom_audience/update/",
+      accessToken,
+      {
+        audience_id: audienceId,
+        identifiers: ids.map(id => ({ id, type: "CUSTOMERFILE_ID" })),
+      }
+    );
   }
 
   // ── Webhook Verification ───────────────────────────────

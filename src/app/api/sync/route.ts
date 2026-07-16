@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { syncPlatformCampaigns, syncAllPlatforms, getSyncStatus } from "@/lib/platform-sync";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,6 +11,7 @@ export async function GET(req: NextRequest) {
     const status = await getSyncStatus(user.tenantId);
     return NextResponse.json({ integrations: status });
   } catch (e) {
+    logger.error("sync/handler", { message: e instanceof Error ? e.message : String(e) });
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
@@ -34,6 +36,7 @@ export async function POST(req: NextRequest) {
     const result = await syncPlatformCampaigns(user.tenantId, platform);
     return NextResponse.json(result);
   } catch (e) {
+    logger.error("sync/handler", { message: e instanceof Error ? e.message : String(e) });
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

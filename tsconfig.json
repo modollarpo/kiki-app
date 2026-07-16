@@ -73,6 +73,8 @@
     "node_modules",
     "scripts",
     "tests",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "packages",
+    "services"
   ]
 }

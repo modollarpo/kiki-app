@@ -8,9 +8,12 @@
 import { Pool } from "pg";
 import { hashPassword } from "./auth";
 
+// Production MUST provide DATABASE_URL (e.g. via Azure Key Vault / env).
+// No credentials are hardcoded here — the fallback is a local dev database
+// without authentication. Never commit real secrets to source.
 const connectionString =
   process.env.DATABASE_URL ||
-  "postgres://kikiadmin:KikiPg%232026!Sweden@kiki-pg.postgres.database.azure.com:5432/kiki?sslmode=require";
+  "postgres://postgres:postgres@localhost:5432/kiki?sslmode=disable";
 
 const pool = new Pool({
   connectionString,
@@ -334,6 +337,7 @@ const SCHEMA = `
     state TEXT PRIMARY KEY,
     tenant_id TEXT NOT NULL,
     platform TEXT NOT NULL,
+    code_verifier TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at TEXT NOT NULL
   );
@@ -454,6 +458,174 @@ const SCHEMA = `
     max_val REAL,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+
+  -- Impression log for Frequency Governor
+  CREATE TABLE IF NOT EXISTS impression_log (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    campaign_id TEXT,
+    ad_id TEXT,
+    placement TEXT,
+    impression_time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_impression_user ON impression_log(tenant_id, user_id, platform);
+  CREATE INDEX IF NOT EXISTS idx_impression_time ON impression_log(tenant_id, impression_time);
+
+  -- Campaign metrics snapshot for live polling
+  CREATE TABLE IF NOT EXISTS campaign_metrics_snapshot (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    campaign_id TEXT NOT NULL,
+    impressions INTEGER NOT NULL DEFAULT 0,
+    clicks INTEGER NOT NULL DEFAULT 0,
+    conversions REAL NOT NULL DEFAULT 0,
+    conversion_value REAL NOT NULL DEFAULT 0,
+    spend REAL NOT NULL DEFAULT 0,
+    revenue REAL NOT NULL DEFAULT 0,
+    roas REAL NOT NULL DEFAULT 0,
+    cpc REAL NOT NULL DEFAULT 0,
+    cpm REAL NOT NULL DEFAULT 0,
+    ctr REAL NOT NULL DEFAULT 0,
+    conversion_rate REAL NOT NULL DEFAULT 0,
+    frequency REAL NOT NULL DEFAULT 0,
+    reach INTEGER NOT NULL DEFAULT 0,
+    period_start TEXT NOT NULL,
+    period_end TEXT NOT NULL,
+    collected_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_metrics_campaign ON campaign_metrics_snapshot(tenant_id, platform, campaign_id);
+  CREATE INDEX IF NOT EXISTS idx_metrics_time ON campaign_metrics_snapshot(tenant_id, collected_at);
+
+  -- Customer profiles from CRM sync
+  CREATE TABLE IF NOT EXISTS customer_profiles (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    external_id TEXT,
+    email TEXT,
+    phone TEXT,
+    first_name TEXT,
+    last_name TEXT,
+    total_orders INTEGER NOT NULL DEFAULT 0,
+    total_spent REAL NOT NULL DEFAULT 0,
+    predicted_ltv REAL NOT NULL DEFAULT 0,
+    ltv_confidence REAL NOT NULL DEFAULT 0,
+    ltv_segment TEXT DEFAULT 'low',
+    repeat_purchase_probability REAL NOT NULL DEFAULT 0,
+    first_order_at TEXT,
+    last_order_at TEXT,
+    average_order_value REAL NOT NULL DEFAULT 0,
+    days_since_last_order INTEGER,
+    churn_risk REAL NOT NULL DEFAULT 0,
+    acquisition_source TEXT,
+    acquisition_campaign TEXT,
+    tags TEXT NOT NULL DEFAULT '[]',
+    metadata TEXT NOT NULL DEFAULT '{}',
+    synced_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_customer_tenant ON customer_profiles(tenant_id);
+  CREATE INDEX IF NOT EXISTS idx_customer_email ON customer_profiles(tenant_id, email);
+  CREATE INDEX IF NOT EXISTS idx_customer_segment ON customer_profiles(tenant_id, ltv_segment);
+
+  -- Audience segments for portability
+  CREATE TABLE IF NOT EXISTS audience_segments (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    segment_type TEXT NOT NULL DEFAULT 'ltv',
+    criteria TEXT NOT NULL DEFAULT '{}',
+    member_count INTEGER NOT NULL DEFAULT 0,
+    last_synced_at TEXT,
+    platform_mappings TEXT NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_segment_tenant ON audience_segments(tenant_id);
+
+  -- Catalog products for ASC override
+  CREATE TABLE IF NOT EXISTS catalog_products (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    price REAL NOT NULL DEFAULT 0,
+    category TEXT,
+    image_url TEXT,
+    ltv_contribution REAL NOT NULL DEFAULT 0,
+    cac REAL NOT NULL DEFAULT 0,
+    repeat_rate REAL NOT NULL DEFAULT 0,
+    margin REAL NOT NULL DEFAULT 0,
+    suppressed INTEGER NOT NULL DEFAULT 0,
+    suppression_reason TEXT,
+    metadata TEXT NOT NULL DEFAULT '{}',
+    synced_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_catalog_tenant ON catalog_products(tenant_id);
+  CREATE INDEX IF NOT EXISTS idx_catalog_suppressed ON catalog_products(tenant_id, suppressed);
+
+  -- Incrementality experiments
+  CREATE TABLE IF NOT EXISTS incrementality_experiments (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    campaign_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    holdout_percentage REAL NOT NULL DEFAULT 0.10,
+    treatment_conversions INTEGER NOT NULL DEFAULT 0,
+    treatment_impressions INTEGER NOT NULL DEFAULT 0,
+    treatment_spend REAL NOT NULL DEFAULT 0,
+    treatment_revenue REAL NOT NULL DEFAULT 0,
+    control_conversions INTEGER NOT NULL DEFAULT 0,
+    control_impressions INTEGER NOT NULL DEFAULT 0,
+    control_spend REAL NOT NULL DEFAULT 0,
+    control_revenue REAL NOT NULL DEFAULT 0,
+    incremental_roas REAL NOT NULL DEFAULT 0,
+    incremental_conversions REAL NOT NULL DEFAULT 0,
+    confidence_level REAL NOT NULL DEFAULT 0,
+    started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ended_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_experiment_tenant ON incrementality_experiments(tenant_id);
+  CREATE INDEX IF NOT EXISTS idx_experiment_campaign ON incrementality_experiments(tenant_id, campaign_id);
+
+  -- Token refresh tracking
+  CREATE TABLE IF NOT EXISTS token_refresh_log (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    integration_id TEXT NOT NULL,
+    status TEXT NOT NULL,
+    old_expiry TEXT,
+    new_expiry TEXT,
+    error_message TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_token_refresh ON token_refresh_log(tenant_id, platform);
+
+  CREATE TABLE IF NOT EXISTS creatives (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    campaign_id TEXT,
+    type TEXT NOT NULL DEFAULT 'headline',
+    content TEXT NOT NULL,
+    platform TEXT NOT NULL DEFAULT 'multi',
+    status TEXT NOT NULL DEFAULT 'draft',
+    ai_score REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_creatives_tenant ON creatives(tenant_id);
+  CREATE INDEX IF NOT EXISTS idx_creatives_campaign ON creatives(tenant_id, campaign_id);
 `;
 
 // SQLite's datetime() helper, emulated in PostgreSQL. Handles 'now', modifiers
@@ -632,8 +804,10 @@ export async function getDb(): Promise<PgDb> {
       console.warn("[DB] timestamp cast setup skipped:", (e as Error).message);
     }
     await runMigrations(db);
-    await seedIfEmpty(db);
-    await seedBillingIfEmpty(db);
+    if (process.env.SEED_DEMO_DATA === "true") {
+      await seedIfEmpty(db);
+      await seedBillingIfEmpty(db);
+    }
     globalForDb.__kikiDb = db;
   }
   return globalForDb.__kikiDb;

@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { getDb } from "@/lib/db";
 import { getPlanLimits, checkPlanLimit } from "@/lib/tenant";
+import { isDbAvailable } from "./db-env";
 
-describe("db — initialization & seed", () => {
+const dbAvailable = await isDbAvailable();
+
+describe.skipIf(!dbAvailable)("db — initialization & seed", () => {
   let db: Awaited<ReturnType<typeof getDb>>;
 
   beforeAll(async () => {
@@ -16,8 +19,10 @@ describe("db — initialization & seed", () => {
 
   it("creates core tables", async () => {
     for (const t of ["campaigns", "agents", "wallets", "subscriptions", "usage_records", "invoices", "oaas_tasks", "kyc_entities"]) {
-      const row = await db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`).get(t);
-      expect(row, `missing table ${t}`).toBeTruthy();
+      // Dialect-portable existence check: a COUNT query throws if the table
+      // is missing, on both SQLite and PostgreSQL.
+      const res = await db.prepare(`SELECT COUNT(*) as c FROM ${t}`).get();
+      expect(res, `missing or unqueryable table ${t}`).toBeTruthy();
     }
   });
 
@@ -27,7 +32,7 @@ describe("db — initialization & seed", () => {
   });
 });
 
-describe("tenant — plan limits", () => {
+describe.skipIf(!dbAvailable)("tenant — plan limits", () => {
   it("returns limits for a known plan", () => {
     const limits = getPlanLimits("growth");
     expect(limits).toBeTruthy();

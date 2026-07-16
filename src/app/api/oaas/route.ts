@@ -1,5 +1,6 @@
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { handleApiError } from "@/lib/logger";
 
 // Generate OaaS tasks from live underperforming campaigns when none are stored.
 async function generateTasks(tenantId: string) {
@@ -77,7 +78,7 @@ export async function POST(req: Request) {
     await db.prepare("UPDATE oaas_tasks SET status = ?, updated_at = datetime('now') WHERE id = ?").run(status, id);
 
     return json({ id, status });
-  } catch {
-    return jsonError("Invalid request body", 400);
+  } catch (e) {
+    return handleApiError(e, "oaas/handler");
   }
 }

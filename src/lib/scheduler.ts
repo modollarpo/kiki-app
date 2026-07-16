@@ -1,6 +1,6 @@
 // ============================================================
 // Background Scheduler — Runs agents on intervals
-// Bidding: 15 min (96 cycles/day), others vary
+// Bidding: configurable via BIDDING_INTERVAL_MS (default 5 min)
 // Continuous LTV training: every 6 hours
 // Feedback collection: every 1 hour
 // Metacognition: every 4 hours
@@ -17,13 +17,23 @@ import { enforceDataRetentionPolicy } from "./gdpr";
 import { validateEnvironment } from "./env";
 import { eventBus, EVENTS } from "./events";
 import { getDb } from "./db";
+import { checkAndRefreshExpiringTokens } from "./token-refresh";
+import { collectCampaignMetrics } from "./campaign-metrics-collector";
+import { syncAudienceSegments } from "./audience-portability";
+import { checkFrequencyGovernor } from "./frequency-governor";
+import { runArbitrageCycle } from "./platform-arbitrage";
+import { isGroqConfigured } from "./groq";
 
 let schedulerRunning = false;
 let intervals: NodeJS.Timeout[] = [];
 
 // Agent intervals in seconds
+// Bidding is configurable via BIDDING_INTERVAL_MS env var (default 5 min with Groq, 15 min without)
+const BIDDING_INTERVAL_SEC = Math.max(30, Math.floor(
+  parseInt(process.env.BIDDING_INTERVAL_MS || "300000", 10) / 1000
+));
 const AGENT_INTERVALS: Record<AgentType, number> = {
-  bidding: 900,    // every 15 min (96 cycles/day per tenant)
+  bidding: BIDDING_INTERVAL_SEC, // Configurable: default 300s (5 min)
   creative: 900,   // every 15 min
   pacing: 60,      // every 1 min
   signals: 30,     // every 30 sec
@@ -36,6 +46,11 @@ const FEEDBACK_INTERVAL = 3600000;      // 1 hour — collect feedback
 const TRAINING_INTERVAL = 21600000;     // 6 hours — retrain models
 const METACOGNITION_INTERVAL = 14400000; // 4 hours — self-reflect + adapt
 const RETENTION_INTERVAL = 86400000;    // 24 hours — data retention cleanup
+const TOKEN_REFRESH_INTERVAL = 3600000;  // 1 hour — proactive token refresh
+const METRICS_COLLECT_INTERVAL = 900000; // 15 min — pull platform metrics
+const AUDIENCE_SYNC_INTERVAL = 21600000; // 6 hours — sync audience segments
+const FREQUENCY_CHECK_INTERVAL = 300000; // 5 min — frequency governor check
+const ARBITRAGE_INTERVAL = 21600000;     // 6 hours — platform arbitrage
 
 // ── Start the scheduler ───────────────────────────────────
 export async function startScheduler(): Promise<void> {
@@ -46,6 +61,7 @@ export async function startScheduler(): Promise<void> {
   validateEnvironment();
 
   console.log("[Scheduler] Starting background agent scheduler");
+  console.log(`[Scheduler] Bidding interval: ${BIDDING_INTERVAL_SEC}s (${isGroqConfigured() ? "Groq fast-path" : "heuristic fallback"})`);
 
   // Start auto-freeze monitor for virtual cards
   await startAutoFreezeMonitor();
@@ -94,6 +110,56 @@ export async function startScheduler(): Promise<void> {
     await runRetentionCleanupForAllTenants();
   }, RETENTION_INTERVAL));
   console.log("[Scheduler] Data retention cleanup started (every 24h)");
+
+  // ── Token Refresh Watchdog (every 1 hour) ───────────────
+  setTimeout(async () => {
+    await runTokenRefreshForAllTenants();
+  }, 15000); // Start after 15 seconds
+  intervals.push(setInterval(async () => {
+    if (!schedulerRunning) return;
+    await runTokenRefreshForAllTenants();
+  }, TOKEN_REFRESH_INTERVAL));
+  console.log("[Scheduler] Token refresh watchdog started (every 1h)");
+
+  // ── Campaign Metrics Collector (every 15 min) ───────────
+  setTimeout(async () => {
+    await runMetricsCollection();
+  }, 20000); // Start after 20 seconds
+  intervals.push(setInterval(async () => {
+    if (!schedulerRunning) return;
+    await runMetricsCollection();
+  }, METRICS_COLLECT_INTERVAL));
+  console.log("[Scheduler] Campaign metrics collector started (every 15min)");
+
+  // ── Audience Portability Sync (every 6 hours) ───────────
+  setTimeout(async () => {
+    await syncAudiencesForAllTenants();
+  }, 45000); // Start after 45 seconds
+  intervals.push(setInterval(async () => {
+    if (!schedulerRunning) return;
+    await syncAudiencesForAllTenants();
+  }, AUDIENCE_SYNC_INTERVAL));
+  console.log("[Scheduler] Audience portability sync started (every 6h)");
+
+  // ── Frequency Governor Check (every 5 min) ──────────────
+  setTimeout(async () => {
+    await checkFrequencyForAllTenants();
+  }, 25000); // Start after 25 seconds
+  intervals.push(setInterval(async () => {
+    if (!schedulerRunning) return;
+    await checkFrequencyForAllTenants();
+  }, FREQUENCY_CHECK_INTERVAL));
+  console.log("[Scheduler] Frequency governor started (every 5min)");
+
+  // ── Platform Arbitrage (every 6 hours) ──────────────────
+  setTimeout(async () => {
+    await runArbitrageCycle();
+  }, 60000); // Start after 1 minute
+  intervals.push(setInterval(async () => {
+    if (!schedulerRunning) return;
+    await runArbitrageCycle();
+  }, ARBITRAGE_INTERVAL));
+  console.log("[Scheduler] Platform arbitrage started (every 6h)");
 
   // Run each agent on its own interval
   for (const [type, intervalSec] of Object.entries(AGENT_INTERVALS)) {
@@ -290,6 +356,63 @@ async function runBiddingForAllTenants(): Promise<void> {
       });
     } catch (e) {
       console.error(`[Scheduler] Bidding cycle failed for tenant ${tenant_id}:`, e);
+    }
+  }
+}
+
+// ── Token Refresh for all tenants ──────────────────────────
+async function runTokenRefreshForAllTenants(): Promise<void> {
+  try {
+    const refreshed = await checkAndRefreshExpiringTokens();
+    if (refreshed > 0) {
+      console.log(`[Scheduler] Token refresh: ${refreshed} tokens refreshed`);
+      eventBus.emit("token.refresh_cycle_complete" as any, { refreshed });
+    }
+  } catch (e) {
+    console.error("[Scheduler] Token refresh failed:", e);
+  }
+}
+
+// ── Campaign Metrics for all tenants ───────────────────────
+async function runMetricsCollection(): Promise<void> {
+  try {
+    await collectCampaignMetrics();
+  } catch (e) {
+    console.error("[Scheduler] Metrics collection failed:", e);
+  }
+}
+
+// ── Audience Sync for all tenants ──────────────────────────
+async function syncAudiencesForAllTenants(): Promise<void> {
+  const db = await getDb();
+  const tenants = await db.prepare(`
+    SELECT DISTINCT tenant_id FROM tenant_integrations WHERE status = 'active'
+  `).all() as Array<{ tenant_id: string }>;
+
+  for (const { tenant_id } of tenants) {
+    try {
+      const segments = await syncAudienceSegments(tenant_id);
+      if (segments.length > 0) {
+        console.log(`[Scheduler] Audience sync: ${segments.length} segments for ${tenant_id}`);
+      }
+    } catch (e) {
+      console.error(`[Scheduler] Audience sync failed for tenant ${tenant_id}:`, e);
+    }
+  }
+}
+
+// ── Frequency Governor for all tenants ─────────────────────
+async function checkFrequencyForAllTenants(): Promise<void> {
+  const db = await getDb();
+  const tenants = await db.prepare(`
+    SELECT DISTINCT tenant_id FROM tenant_integrations WHERE status = 'active'
+  `).all() as Array<{ tenant_id: string }>;
+
+  for (const { tenant_id } of tenants) {
+    try {
+      await checkFrequencyGovernor(tenant_id);
+    } catch (e) {
+      console.error(`[Scheduler] Frequency governor failed for tenant ${tenant_id}:`, e);
     }
   }
 }

@@ -382,10 +382,22 @@ export abstract class BaseConnector {
     return crypto.createHash("sha256").update(payload).digest("hex");
   }
 
+  // ── PKCE (S256) Helpers ────────────────────────────────
+
+  protected generateCodeVerifier(): string {
+    return crypto.randomBytes(32)
+      .toString("base64url")
+      .slice(0, 128);
+  }
+
+  protected generateCodeChallenge(verifier: string): string {
+    return crypto.createHash("sha256").update(verifier).digest("base64url");
+  }
+
   // ── Abstract Methods ──────────────────────────────────
 
-  abstract generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string }>;
-  abstract handleCallback(code: string, state: string): Promise<OAuthTokens>;
+  abstract generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string; codeVerifier: string }>;
+  abstract handleCallback(code: string, state: string, codeVerifier?: string): Promise<OAuthTokens>;
   abstract refreshToken(refreshToken: string): Promise<OAuthTokens>;
   abstract validateToken(accessToken: string): Promise<boolean>;
 }

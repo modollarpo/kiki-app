@@ -633,7 +633,7 @@ export async function enrichConversionEvent(
     userId: event.userData.externalId,
     referrer: event.userData.ipAddress,
     sessionDuration: 0,
-  });
+  }, tenantId);
 
   // 8. Classify LTV tier and determine value to send
   const tier = classifyLtvTier(
@@ -712,6 +712,9 @@ export async function enrichConversionEvent(
             productCategory: event.customData.productCategory,
             numberOfItems: event.customData.numberOfItems ? Number(event.customData.numberOfItems) : undefined,
             contentName: event.customData.contentName,
+            predictedLtv90d: ltvPrediction.predictedLTV,
+            ltvSegment: tier.segment,
+            bidMultiplier: tier.segment === "high" ? 1.5 : tier.segment === "mid" ? 1.2 : tier.segment === "low" ? 0.8 : 0.4,
           },
           consent: event.consent,
         });

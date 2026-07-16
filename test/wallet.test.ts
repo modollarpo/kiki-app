@@ -6,11 +6,14 @@ import {
   getCampaignCards,
   getWalletBalance,
 } from "@/lib/wallet";
+import { isDbAvailable } from "./db-env";
+
+const dbAvailable = await isDbAvailable();
 
 const TENANT = "t1";
 const WALLET = "w1"; // seeded Acme Corp wallet
 
-describe("wallet — virtual cards", () => {
+describe.skipIf(!dbAvailable)("wallet — virtual cards", () => {
   it("creates a virtual card for a campaign", async () => {
     const card = await createVirtualCard(TENANT, WALLET, genId("cmp"), "Test Campaign", 100, 5000);
     expect(card.id).toBeTruthy();

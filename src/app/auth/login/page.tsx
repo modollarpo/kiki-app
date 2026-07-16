@@ -5,6 +5,7 @@ import { useKikiStore } from "@/store";
 import { useAuth } from "@/hooks/useAuth";
 import { K } from "@/lib/kdls";
 import { Button, Card, Input } from "@/components/ui";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -77,63 +78,60 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh", background: K.void,
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      padding: 24, position: "relative", overflow: "hidden",
-    }}>
-      <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle,${K.g800} 1px,transparent 1px)`, backgroundSize:"32px 32px", opacity:0.4, pointerEvents:"none" }} />
-      <div style={{ position:"absolute", top:"30%", left:"50%", transform:"translateX(-50%)", width:600, height:400, borderRadius:"50%", background:`radial-gradient(circle,${K.blueT} 0%,transparent 70%)`, filter:"blur(60px)", pointerEvents:"none" }} />
+    <div className="flex flex-col items-center justify-center p-6 relative overflow-hidden min-h-dvh" style={{ background: K.void }}>
+      <div className="absolute inset-0 opacity-40 pointer-events-none" style={{ backgroundImage:`radial-gradient(circle,${K.g800} 1px,transparent 1px)`, backgroundSize:"32px 32px" }} />
+      <div className="absolute pointer-events-none" style={{ top:"30%", left:"50%", transform:"translateX(-50%)", width:600, height:400, borderRadius:"50%", background:`radial-gradient(circle,${K.blueT} 0%,transparent 70%)`, filter:"blur(60px)" }} />
 
-      <div style={{ position:"relative", textAlign:"center", marginBottom:32 }}>
-        <img src="/images/kiki.png" alt="KIKI" width={48} height={48} style={{ borderRadius:2, margin:"0 auto 12px", boxShadow:`0 0 32px ${K.blue}50`, display:"block" }} />
-        <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:18, color:K.t1 }}>KIKI<span style={{ color:K.blue }}>.</span>Agent</p>
-        <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.14em", color:K.t4, marginTop:4 }}>AUTONOMOUS LTV CAMPAIGN PLATFORM</p>
+      <div className="relative text-center mb-8">
+        <Image src="/images/kiki.png" alt="KIKI" width={48} height={48} className="block rounded-sm mx-auto mb-3" style={{ boxShadow:`0 0 32px ${K.blue}50` }} />
+        <p className="font-mono font-bold text-[18px] text-t1">KIKI<span className="text-kblue">.</span>Agent</p>
+        <p className="font-mono text-[9px] tracking-[0.14em] text-t3 mt-1">AUTONOMOUS LTV CAMPAIGN PLATFORM</p>
       </div>
 
-      <div style={{ position:"relative", display:"flex", gap:4, marginBottom:24, background:K.g850, borderRadius:2, padding:4 }}>
+      <div className="relative flex gap-1 mb-6 p-1 rounded-sm bg-g850">
         {(["login","forgot","sso"] as const).map(s => (
           <button key={s} onClick={() => { setScreen(s); setErrors({}); }}
-            style={{ padding:"5px 14px", fontFamily:K.mono, fontSize:10, fontWeight:600, letterSpacing:"0.06em", borderRadius:2, border:"none", textTransform:"uppercase", background:screen===s?K.g700:"transparent", color:screen===s?K.t1:K.t3, cursor:"pointer" }}>
+            className="px-3.5 py-[5px] font-mono text-[10px] font-semibold tracking-[0.06em] rounded-sm border-none uppercase cursor-pointer"
+            style={{ background:screen===s?K.g700:"transparent", color:screen===s?K.t1:K.t3 }}>
             {s === "sso" ? "SSO" : s}
           </button>
         ))}
       </div>
 
       {screen === "login" && (
-        <div style={{ position:"relative", width:"100%", maxWidth:380 }}>
+        <div className="relative w-full max-w-[380px]">
           <Card accent={K.blue}>
-            <p style={{ fontFamily:K.sans, fontWeight:700, fontSize:18, color:K.t1, marginBottom:6 }}>Sign in to your account</p>
-            <p style={{ fontFamily:K.sans, fontSize:13, color:K.t3, marginBottom:22 }}>Enterprise-grade ad platform. SOC2 certified.</p>
+            <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">Sign in to your account</p>
+            <p className="font-sans text-[13px] text-t3 mb-[22px]">Enterprise-grade ad platform. SOC2 certified.</p>
 
             {authError && (
-              <div style={{ padding:"10px 14px", background:K.dangerT, border:`1px solid ${K.danger}40`, borderRadius:2, marginBottom:16 }}>
-                <p style={{ fontFamily:K.mono, fontSize:11, color:K.danger }}>{authError}</p>
+              <div className="px-3.5 py-2.5 rounded-sm mb-4" style={{ background:K.dangerT, border:`1px solid ${K.danger}40` }}>
+                <p className="font-mono text-[11px] text-kdanger">{authError}</p>
               </div>
             )}
 
             <Input label="Work Email" type="email" placeholder="you@company.com" value={email} onChange={v => { setEmail(v); setErrors(e => ({...e, email: undefined})); }} error={errors.email} style={{ marginBottom:12 }} />
-            <div style={{ marginBottom:6 }}>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
-                <p style={{ fontFamily:K.mono, fontSize:10, letterSpacing:"0.1em", color:K.t3, textTransform:"uppercase" as const }}>Password</p>
-                <button onClick={() => setScreen("forgot")} style={{ fontFamily:K.mono, fontSize:10, color:K.blue4, background:"none", border:"none", cursor:"pointer" }}>Forgot?</button>
+            <div className="mb-1.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="font-mono text-[10px] tracking-widest text-t3 uppercase">Password</p>
+                <button onClick={() => setScreen("forgot")} className="font-mono text-[10px] bg-transparent border-none cursor-pointer" style={{ color:K.blue4 }}>Forgot?</button>
               </div>
               <Input type="password" placeholder="••••••••" value={password} onChange={v => { setPassword(v); setErrors(e => ({...e, password: undefined})); }} error={errors.password} suffix="👁" />
             </div>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20, marginTop:8, cursor:"pointer" }} onClick={() => setKeepSignedIn(!keepSignedIn)}>
-              <div style={{ width:14, height:14, borderRadius:2, border:`2px solid ${keepSignedIn ? K.blue : K.g700}`, background: keepSignedIn ? K.blue : "transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition: "all 0.15s" }}>
-                {keepSignedIn && <span style={{ color:"white", fontSize:9, fontWeight:700 }}>✓</span>}
+            <div className="flex items-center gap-2 mb-5 mt-2 cursor-pointer" onClick={() => setKeepSignedIn(!keepSignedIn)}>
+              <div className="flex-shrink-0 flex items-center justify-center w-[14px] h-[14px] rounded-sm transition-all duration-150" style={{ border:`2px solid ${keepSignedIn ? K.blue : K.g700}`, background: keepSignedIn ? K.blue : "transparent" }}>
+                {keepSignedIn && <span className="text-white text-[9px] font-bold">✓</span>}
               </div>
-              <span style={{ fontFamily:K.sans, fontSize:12, color:K.t3 }}>Keep me signed in for 30 days</span>
+              <span className="font-sans text-[12px] text-t3">Keep me signed in for 30 days</span>
             </div>
             <Button full size="lg" loading={authLoading} onClick={handleLogin}>Sign In →</Button>
-            <div style={{ margin:"16px 0", height:1, background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
+            <div className="my-4 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
             <Button full variant="secondary" size="md" onClick={() => setScreen("sso")} icon={<span>⬡</span>}>Sign in with SSO</Button>
-            <p style={{ fontFamily:K.mono, fontSize:10, color:K.t4, textAlign:"center", marginTop:16 }}>
+            <p className="font-mono text-[10px] text-t4 text-center mt-4">
               No account?{" "}
               <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => router.push("/contact")}>Request access →</span>
             </p>
-            <p style={{ fontFamily:K.mono, fontSize:9, color:K.t4, textAlign:"center", marginTop:10 }}>
+            <p className="font-mono text-[11px] text-t3 text-center mt-2.5">
               Demo: alex@acmecorp.com / password123
             </p>
           </Card>
@@ -141,22 +139,22 @@ export default function LoginPage() {
       )}
 
       {screen === "forgot" && (
-        <div style={{ position:"relative", width:"100%", maxWidth:380 }}>
+        <div className="relative w-full max-w-[380px]">
           <Card>
             {emailSent ? (
-              <div style={{ textAlign:"center", padding:"16px 0" }}>
-                <div style={{ fontSize:40, marginBottom:16 }}>✉</div>
-                <p style={{ fontFamily:K.sans, fontWeight:700, fontSize:18, color:K.t1, marginBottom:8 }}>Check your inbox</p>
-                <p style={{ fontFamily:K.sans, fontSize:13, color:K.t3, lineHeight:1.6 }}>We sent a reset link to <span style={{ color:K.t1 }}>{email}</span>. Expires in 15 min.</p>
-                <Button variant="ghost" size="md" style={{ marginTop:20 }} onClick={() => { setEmailSent(false); setScreen("login"); }}>← Back to sign in</Button>
+              <div className="text-center py-4">
+                <div className="text-[40px] mb-4">✉</div>
+                <p className="font-sans font-bold text-[18px] text-t1 mb-2">Check your inbox</p>
+                <p className="font-sans text-[13px] text-t3 leading-[1.6]">We sent a reset link to <span className="text-t1">{email}</span>. Expires in 15 min.</p>
+                <Button variant="ghost" size="md" className="mt-5" onClick={() => { setEmailSent(false); setScreen("login"); }}>← Back to sign in</Button>
               </div>
             ) : (
               <>
-                <p style={{ fontFamily:K.sans, fontWeight:700, fontSize:18, color:K.t1, marginBottom:6 }}>Reset your password</p>
-                <p style={{ fontFamily:K.sans, fontSize:13, color:K.t3, marginBottom:22, lineHeight:1.5 }}>Enter your work email and we&apos;ll send a secure reset link.</p>
+                <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">Reset your password</p>
+                <p className="font-sans text-[13px] text-t3 mb-[22px] leading-[1.5]">Enter your work email and we&apos;ll send a secure reset link.</p>
                 <Input label="Work Email" type="email" placeholder="you@company.com" value={email} onChange={v => { setEmail(v); setErrors({}); }} error={errors.email} style={{ marginBottom:16 }} />
                 <Button full size="lg" onClick={handleForgotPassword}>Send Reset Link →</Button>
-                <p style={{ fontFamily:K.mono, fontSize:10, color:K.t4, textAlign:"center", marginTop:14 }}>
+                <p className="font-mono text-[10px] text-t4 text-center mt-3.5">
                   <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => setScreen("login")}>← Back to sign in</span>
                 </p>
               </>
@@ -166,32 +164,33 @@ export default function LoginPage() {
       )}
 
       {screen === "sso" && (
-        <div style={{ position:"relative", width:"100%", maxWidth:380 }}>
+        <div className="relative w-full max-w-[380px]">
           <Card accent={K.oaas}>
-            <p style={{ fontFamily:K.sans, fontWeight:700, fontSize:18, color:K.t1, marginBottom:6 }}>Single Sign-On</p>
-            <p style={{ fontFamily:K.sans, fontSize:13, color:K.t3, marginBottom:22 }}>Enter your organization&apos;s SSO domain</p>
-            <Input placeholder="acmecorp" suffix=".kiki.ai/sso" mono hint="Your IT admin can provide the SSO subdomain" style={{ marginBottom:16 }} />
+            <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">Single Sign-On</p>
+            <p className="font-sans text-[13px] text-t3 mb-[22px]">Enter your organization&apos;s SSO domain</p>
+            <Input placeholder="acmecorp" suffix=".kiki.ai/sso" mono hint="Your IT admin can provide the SSO subdomain" className="mb-4" />
             <Button full variant="violet" size="lg" onClick={handleSsoLogin}>Continue with SSO →</Button>
-            <div style={{ margin:"16px 0", height:1, background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
-            <div style={{ display:"flex", gap:10 }}>
+            <div className="my-4 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
+            <div className="flex gap-2.5">
               {[{l:"Google Workspace",c:"#4285F4"},{l:"Microsoft Entra",c:"#0078D4"},{l:"Okta",c:"#007DC1"}].map(p => (
                 <button key={p.l} onClick={() => handleProviderLogin(p.l)}
-                  style={{ flex:1, padding:"10px 8px", background:K.g850, border:`1px solid ${K.g700}`, borderRadius:2, fontFamily:K.mono, fontSize:9, color:K.t2, cursor:"pointer", textAlign:"center", transition:"all 0.15s" }}
+                  className="flex-1 px-2 py-2 rounded-sm font-mono text-[9px] text-t2 cursor-pointer text-center transition-all duration-150"
+                  style={{ background:K.g850, border:`1px solid ${K.g700}` }}
                   onMouseEnter={e => { e.currentTarget.style.background = K.g800; e.currentTarget.style.borderColor = K.g600; }}
                   onMouseLeave={e => { e.currentTarget.style.background = K.g850; e.currentTarget.style.borderColor = K.g700; }}>
-                  <div style={{ width:24, height:24, borderRadius:"50%", background:`${p.c}18`, margin:"0 auto 5px", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:K.mono, fontWeight:700, fontSize:12, color:p.c }}>{p.l[0]}</div>
+                  <div className="w-6 h-6 rounded-full mx-auto mb-[5px] flex items-center justify-center font-mono font-bold text-[12px]" style={{ background:`${p.c}18`, color:p.c }}>{p.l[0]}</div>
                   {p.l}
                 </button>
               ))}
             </div>
-            <p style={{ fontFamily:K.mono, fontSize:10, color:K.t4, textAlign:"center", marginTop:14 }}>
+            <p className="font-mono text-[10px] text-t4 text-center mt-3.5">
               <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => setScreen("login")}>← Use email instead</span>
             </p>
           </Card>
         </div>
       )}
 
-      <p style={{ position:"relative", marginTop:32, fontFamily:K.mono, fontSize:9, letterSpacing:"0.1em", color:K.t4 }}>
+      <p className="relative mt-8 font-mono text-[11px] tracking-widest text-t3">
         BY SIGNING IN YOU AGREE TO OUR{" "}
         <span style={{ color:K.t3, cursor:"pointer" }} onClick={() => router.push("/terms")}>TERMS OF SERVICE</span>
         {" & "}

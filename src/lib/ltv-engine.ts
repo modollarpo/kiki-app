@@ -4,6 +4,7 @@
 // ============================================================
 
 import { AZURE_OPENAI_CONFIG, buildAzureOpenAIUrl, buildAzureOpenAIHeaders, SYSTEM_PROMPTS } from "./azure-openai";
+import { getDb } from "./db";
 
 export interface SignalData {
   platform: string;
@@ -33,13 +34,20 @@ export interface LTVPrediction {
 }
 
 // ── Heuristic LTV prediction (always works, no API needed) ─
-function heuristicPredict(signal: SignalData, historicalAvg?: number): LTVPrediction {
-  const baseLTV = historicalAvg || 250;
+function heuristicPredict(signal: SignalData, historicalAvg?: number, trainedWeights?: {
+  intercept: number;
+  platformWeights: Record<string, number>;
+  eventWeights: Record<string, number>;
+  deviceWeights: Record<string, number>;
+  engagementWeights: { sessionDuration: number; pagesViewed: number; repeatPurchase: number };
+  segmentThresholds: { high: number; mid: number; low: number };
+}): LTVPrediction {
+  const baseLTV = trainedWeights?.intercept || historicalAvg || 250;
   let multiplier = 1.0;
   const factors: string[] = [];
 
   // Platform signal quality
-  const platformQuality: Record<string, number> = {
+  const platformQuality: Record<string, number> = trainedWeights?.platformWeights || {
     meta: 1.0,
     google: 1.1,
     tiktok: 0.85,
@@ -54,7 +62,7 @@ function heuristicPredict(signal: SignalData, historicalAvg?: number): LTVPredic
   factors.push(`platform:${signal.platform}(${pq.toFixed(2)})`);
 
   // Event type value
-  const eventValue: Record<string, number> = {
+  const eventValue: Record<string, number> = trainedWeights?.eventWeights || {
     purchase: 2.5,
     signup: 1.8,
     add_to_cart: 1.4,
@@ -67,8 +75,12 @@ function heuristicPredict(signal: SignalData, historicalAvg?: number): LTVPredic
   factors.push(`event:${signal.eventType}(${ev.toFixed(2)})`);
 
   // Device signal
-  if (signal.device === "desktop") { multiplier *= 1.15; factors.push("device:desktop(+15%)"); }
-  else if (signal.device === "mobile") { multiplier *= 0.9; factors.push("device:mobile(-10%)"); }
+  const deviceWeights: Record<string, number> = trainedWeights?.deviceWeights || { desktop: 1.15, mobile: 0.9, tablet: 1.05 };
+  if (signal.device && deviceWeights[signal.device]) {
+    const dw = deviceWeights[signal.device];
+    multiplier *= dw;
+    factors.push(`device:${signal.device}(${dw >= 1 ? "+" : ""}${((dw - 1) * 100).toFixed(0)}%)`);
+  }
 
   // Session engagement
   if (signal.sessionDuration && signal.sessionDuration > 300) {
@@ -78,8 +90,9 @@ function heuristicPredict(signal: SignalData, historicalAvg?: number): LTVPredic
   }
 
   // Repeat behavior
+  const repeatCoeff = trainedWeights?.engagementWeights?.repeatPurchase || 0.2;
   if (signal.previousPurchases && signal.previousPurchases > 0) {
-    multiplier *= 1.0 + (signal.previousPurchases * 0.2);
+    multiplier *= 1.0 + (signal.previousPurchases * repeatCoeff);
     factors.push(`repeat:${signal.previousPurchases}x(+${signal.previousPurchases * 20}%)`);
   }
 
@@ -92,10 +105,11 @@ function heuristicPredict(signal: SignalData, historicalAvg?: number): LTVPredic
   const predictedLTV = Math.round(baseLTV * multiplier * 100) / 100;
   const confidence = Math.min(0.95, 0.6 + (signal.sessionDuration ? 0.1 : 0) + (signal.previousPurchases ? 0.15 : 0));
 
+  const thresholds = trainedWeights?.segmentThresholds || { high: 500, mid: 200, low: 80 };
   let segment: LTVPrediction["segment"] = "mid";
-  if (predictedLTV > 500) segment = "high";
-  else if (predictedLTV > 200) segment = "mid";
-  else if (predictedLTV > 80) segment = "low";
+  if (predictedLTV > thresholds.high) segment = "high";
+  else if (predictedLTV > thresholds.mid) segment = "mid";
+  else if (predictedLTV > thresholds.low) segment = "low";
   else segment = "churn_risk";
 
   const bidMultiplier = segment === "high" ? 2.0 : segment === "mid" ? 1.2 : segment === "low" ? 0.8 : 0.4;
@@ -104,15 +118,41 @@ function heuristicPredict(signal: SignalData, historicalAvg?: number): LTVPredic
 }
 
 // ── AI-enhanced LTV prediction (uses Azure OpenAI) ────────
-export async function predictLTV(signal: SignalData): Promise<LTVPrediction> {
+export async function predictLTV(signal: SignalData, tenantId?: string): Promise<LTVPrediction> {
+  // Attempt to load trained weights from the active model version
+  let trainedWeights: {
+    intercept: number;
+    platformWeights: Record<string, number>;
+    eventWeights: Record<string, number>;
+    deviceWeights: Record<string, number>;
+    engagementWeights: { sessionDuration: number; pagesViewed: number; repeatPurchase: number };
+    segmentThresholds: { high: number; mid: number; low: number };
+  } | undefined;
+
+  if (tenantId) {
+    try {
+      const db = await getDb();
+      const activeModel = await db.prepare(`
+        SELECT weights FROM ltv_models
+        WHERE tenant_id = ? AND status = 'active'
+        ORDER BY trained_at DESC LIMIT 1
+      `).get(tenantId) as { weights: string } | undefined;
+      if (activeModel) {
+        trainedWeights = JSON.parse(activeModel.weights);
+      }
+    } catch {
+      // No trained model available — fall back to defaults below
+    }
+  }
+
   const creds = (() => {
     try {
       return buildAzureOpenAIHeaders() ? { endpoint: process.env.AZURE_OPENAI_ENDPOINT!, apiKey: process.env.AZURE_OPENAI_API_KEY! } : null;
     } catch { return null; }
   })();
 
-  // If no Azure OpenAI configured, use heuristic
-  if (!creds) return heuristicPredict(signal);
+  // If no Azure OpenAI configured, use heuristic (with trained weights if available)
+  if (!creds) return heuristicPredict(signal, undefined, trainedWeights);
 
   try {
     const url = buildAzureOpenAIUrl(AZURE_OPENAI_CONFIG.mini.deploymentName);
@@ -163,12 +203,12 @@ Return JSON: {"ltv": number, "confidence": 0.0-1.0, "factors": ["reason1", "reas
     console.warn("[LTV] AI prediction failed, using heuristic:", e);
   }
 
-  return heuristicPredict(signal);
+  return heuristicPredict(signal, undefined, trainedWeights);
 }
 
 // ── Batch predict ─────────────────────────────────────────
-export async function predictLTVBatch(signals: SignalData[]): Promise<LTVPrediction[]> {
-  return Promise.all(signals.map(s => predictLTV(s)));
+export async function predictLTVBatch(signals: SignalData[], tenantId?: string): Promise<LTVPrediction[]> {
+  return Promise.all(signals.map(s => predictLTV(s, tenantId)));
 }
 
 // ── Per-Tenant LTV Model Training ──────────────────────────

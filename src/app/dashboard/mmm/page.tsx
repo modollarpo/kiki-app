@@ -1,130 +1,117 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
+import { Card, Badge, StatCard, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
-interface Channel {
-  name: string; contribution: number; share: number; roi: number;
-  optimal: number; elasticity: number;
-}
+interface Channel { name: string; contributionPct: number; spend: number; revenue: number; efficiency: number; }
+interface Recommendation { channel: string; currentSpend: number; recommendedSpend: number; confidence: number; reason: string; }
 
-export default function MixModellingPage() {
-  const [modelFit, setModelFit] = useState<{ rSquared: number; adjRSquared: number; aic: number; bic: number } | null>(null);
+export default function MmmPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [budgetRec, setBudgetRec] = useState<{ current: number; optimal: number; lift: number; confidence: number } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [modelFit, setModelFit] = useState<{ rSquared: number; algorithm: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [hasRun, setHasRun] = useState(false);
+  const { token, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/mmm")
-      .then(r => r.json())
-      .then(d => {
-        if (d.success) {
-          setModelFit(d.data.modelFit);
-          setChannels(d.data.channels);
-          setBudgetRec(d.data.budgetRecommendation);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    if (!authLoading && !token) router.push("/auth/login");
+  }, [token, authLoading, router]);
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
 
-  const totalContribution = channels.reduce((s, c) => s + c.contribution, 0);
+  const runMmm = async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/mmm-analysis", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ weeks: 52 }) });
+      const data = await res.json();
+      if (data.success) {
+        setChannels(data.data.channels || []);
+        setRecommendations(data.data.recommendations || []);
+        setModelFit(data.data.modelFit || null);
+        setHasRun(true);
+      }
+    } catch {}
+    setLoading(false);
+  };
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400, color: K.t1 }}>
-        <div style={{ marginBottom: 22 }}>
-          <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>Marketing Mix Modelling</h1>
-          <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>Statistical analysis of channel contributions and budget optimization</p>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
-          <StatCard label="Model R² Score" value={modelFit ? String(modelFit.rSquared) : "—"} sub="High accuracy" accent={K.mint} loading={loading} />
-          <StatCard label="Total Contribution" value={totalContribution > 0 ? `$${(totalContribution / 1000000).toFixed(2)}M` : "—"} delta={18} sub="+18% vs last quarter" accent={K.blue} loading={loading} />
-          <StatCard label="Optimal Spend" value={budgetRec ? `$${(budgetRec.optimal / 1000).toFixed(0)}K` : "—"} delta={budgetRec?.lift} sub={`+${budgetRec?.lift || 0}% lift recommended`} accent={K.gold} loading={loading} />
-          <StatCard label="Channels Tracked" value={channels.length > 0 ? String(channels.length) : "—"} sub="Active channels" accent={K.teal} loading={loading} />
-        </div>
-
-        <Card accent={K.mint} style={{ marginBottom: 16 }}>
-          <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>Channel Contribution Analysis</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {channels.map((ch, i) => {
-              const sharePct = totalContribution > 0 ? (ch.contribution / totalContribution) * 100 : 0;
-              return (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: K.g900, borderRadius: 2 }}>
-                  <div style={{ minWidth: 120 }}>
-                    <span style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 600, color: K.t1 }}>{ch.name}</span>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                      <span style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>CONTRIBUTION</span>
-                      <span style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.mint }}>${(ch.contribution / 1000).toFixed(0)}K</span>
-                    </div>
-                    <ProgressBar value={sharePct} color={K.mint} height={4} />
-                  </div>
-                  <div style={{ textAlign: "right", minWidth: 50 }}>
-                    <p style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: ch.roi >= 5 ? K.mint : ch.roi >= 3 ? K.gold : K.danger }}>{ch.roi}×</p>
-                    <p style={{ fontFamily: K.mono, fontSize: 8, color: K.t4 }}>ROAS</p>
-                  </div>
-                  <div style={{ textAlign: "right", minWidth: 50 }}>
-                    <p style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 600, color: ch.elasticity > 0.7 ? K.mint : K.t2 }}>{ch.elasticity}</p>
-                    <p style={{ fontFamily: K.mono, fontSize: 8, color: K.t4 }}>elasticity</p>
-                  </div>
-                </div>
-              );
-            })}
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-white">
+        <div className="flex justify-between items-center mb-5 gap-3 flex-wrap">
+          <div className="min-w-0">
+            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Media Mix Modelling</h1>
+            <p className="font-mono text-[11px] text-gray-500">Bayesian adstock + Hill saturation channel attribution</p>
           </div>
-        </Card>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <Card accent={K.teal}>
-            <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>Budget Recommendation</h3>
-            <div style={{ padding: "14px", background: K.g850, borderRadius: 2, marginBottom: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontFamily: K.mono, fontSize: 11, color: K.t2 }}>Current Annual Spend</span>
-                <span style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.t1 }}>${budgetRec ? (budgetRec.current / 1000000).toFixed(2) : "—"}M</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontFamily: K.mono, fontSize: 11, color: K.t2 }}>Optimal Spend</span>
-                <span style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.mint }}>${budgetRec ? (budgetRec.optimal / 1000000).toFixed(2) : "—"}M</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontFamily: K.mono, fontSize: 11, color: K.t2 }}>Projected Lift</span>
-                <span style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.mint }}>+{budgetRec?.lift || 0}%</span>
-              </div>
-            </div>
-            <div style={{ padding: "10px 14px", background: `${K.mint}10`, border: `1px solid ${K.mint}30`, borderRadius: 2 }}>
-              <span style={{ fontFamily: K.mono, fontSize: 10, color: K.mint }}>Recommendation: Increase spend by {budgetRec ? `$${((budgetRec.optimal - budgetRec.current) / 1000).toFixed(0)}K` : "—"} annually for maximum ROI</span>
-            </div>
-          </Card>
-
-          <Card accent={K.gold}>
-            <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>Model Performance</h3>
-            {[
-              { label: "R² Score", value: modelFit?.rSquared || 0, max: 1, color: K.mint },
-              { label: "Adjusted R²", value: modelFit?.adjRSquared || 0, max: 1, color: K.blue },
-            ].map((m, i) => (
-              <div key={i} style={{ marginBottom: 14 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t3 }}>{m.label}</span>
-                  <span style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.t1 }}>{m.value.toFixed(3)}</span>
-                </div>
-                <ProgressBar value={m.value * 100} color={m.color} height={5} />
-              </div>
-            ))}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
-              <div style={{ padding: "8px 12px", background: K.g850, borderRadius: 2, textAlign: "center" }}>
-                <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>AIC</p>
-                <p style={{ fontFamily: K.mono, fontSize: 14, fontWeight: 700, color: K.t1 }}>{modelFit?.aic || "—"}</p>
-              </div>
-              <div style={{ padding: "8px 12px", background: K.g850, borderRadius: 2, textAlign: "center" }}>
-                <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>BIC</p>
-                <p style={{ fontFamily: K.mono, fontSize: 14, fontWeight: 700, color: K.t1 }}>{modelFit?.bic || "—"}</p>
-              </div>
-            </div>
-          </Card>
+          <button onClick={runMmm} disabled={loading} className="font-mono text-[11px] font-semibold px-5 py-2 rounded-sm cursor-pointer"
+            style={{ border: `1px solid ${K.blue}40`, background: loading ? K.g800 : K.blue + "20", color: K.blue, cursor: loading ? "wait" : "pointer" }}>
+            {loading ? "Running..." : hasRun ? "Re-run MMM" : "Run MMM Analysis"}
+          </button>
         </div>
+
+        {loading && <div className="flex justify-center py-15"><AIThinking text="Fitting Bayesian model with adstock decay..." /></div>}
+
+        {!loading && hasRun && (
+          <>
+            {modelFit && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                <StatCard label="R² Score" value={`${(modelFit.rSquared * 100).toFixed(1)}%`} accent={K.mint} />
+                <StatCard label="Algorithm" value={modelFit.algorithm} accent={K.blue} />
+                <StatCard label="Channels" value={String(channels.length)} accent={K.gold} />
+              </div>
+            )}
+
+            <Card accent={K.mint} className="mb-4">
+              <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Channel Contributions</h3>
+              {channels.map((ch, i) => (
+                <div key={i} className="flex items-center gap-3 p-2.5 px-3 mb-1.5 rounded-sm bg-g850">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-mono text-xs font-semibold text-white">{ch.name}</div>
+                    <div className="font-mono text-[11px] text-gray-500">${ch.spend?.toLocaleString()} spend → ${ch.revenue?.toLocaleString()} revenue</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="font-mono text-[11px] text-gray-500">Contribution</div>
+                    <div className="font-mono text-sm font-bold text-kmint">{ch.contributionPct?.toFixed(1)}%</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="font-mono text-[11px] text-gray-500">Efficiency</div>
+                    <div className="font-mono text-sm font-bold" style={{ color: ch.efficiency >= 3 ? K.mint : ch.efficiency >= 1.5 ? K.gold : K.danger }}>{ch.efficiency?.toFixed(1)}x</div>
+                  </div>
+                </div>
+              ))}
+            </Card>
+
+            <Card accent={K.gold}>
+              <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Budget Recommendations</h3>
+              {recommendations.map((rec, i) => (
+                <div key={i} className="flex items-center gap-3 p-2.5 px-3 mb-1.5 rounded-sm bg-g850">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-mono text-xs font-semibold text-white">{rec.channel}</div>
+                    <div className="font-mono text-[11px] text-gray-500">{rec.reason}</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="font-mono text-[11px] text-gray-400">${rec.currentSpend?.toLocaleString()} → ${rec.recommendedSpend?.toLocaleString()}</div>
+                    <Badge color={rec.confidence > 80 ? K.mint : K.gold}>{rec.confidence}% confidence</Badge>
+                  </div>
+                </div>
+              ))}
+            </Card>
+          </>
+        )}
+
+        {!loading && !hasRun && (
+          <Card>
+            <div className="py-15 text-center">
+              <p className="font-mono text-xs text-gray-500 mb-3">Run MMM analysis to see channel contributions and budget recommendations.</p>
+              <p className="font-mono text-[11px] text-gray-500">Requires at least 8 weeks of campaign data. Uses Bayesian adstock decay + Hill saturation curves.</p>
+            </div>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );

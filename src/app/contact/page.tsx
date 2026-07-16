@@ -41,19 +41,19 @@ export default function ContactPage() {
 
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, minHeight:"80vh", display:"flex", alignItems:"center", justifyContent:"center", padding:"80px 48px" }}>
-        <div style={{ width:"100%", maxWidth:960 }}>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:48, alignItems:"start" }}>
+      <div className="min-h-[80vh] flex items-center justify-center px-12 py-20" style={{ background:K.void }}>
+        <div className="w-full max-w-[960px]">
+          <div className="grid grid-cols-2 gap-12 items-start">
             <div>
-              <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4, marginBottom:14 }}>GET IN TOUCH</p>
-              <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(28px,4vw,44px)", letterSpacing:"-0.03em", color:K.t1, marginBottom:16 }}>Let&apos;s talk.</h1>
-              <p style={{ fontFamily:"Inter,sans-serif", fontSize:15, color:K.t3, lineHeight:1.7, marginBottom:40 }}>Evaluating KIKI, have a technical question, or want to partner — we respond within 4 hours.</p>
+              <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">GET IN TOUCH</p>
+              <h1 className="font-mono font-bold text-[clamp(28px,4vw,44px)] tracking-[-0.03em] text-t1 mb-4">Let&apos;s talk.</h1>
+              <p className="font-sans text-[15px] text-t3 leading-[1.7] mb-10">Evaluating KIKI, have a technical question, or want to partner — we respond within 4 hours.</p>
               {[{icon:"✉",label:"Email",val:"hello@kiki.ai"},{icon:"💬",label:"Live chat",val:"Available in the dashboard"},{icon:"📞",label:"Enterprise",val:"Book a 30-min call"}].map(c=>(
-                <div key={c.label} style={{ display:"flex", alignItems:"center", gap:14, marginBottom:20 }}>
-                  <div style={{ width:40, height:40, borderRadius:2, background:K.g850, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>{c.icon}</div>
+                <div key={c.label} className="flex items-center gap-3.5 mb-5">
+                  <div className="w-10 h-10 rounded-sm bg-g850 flex items-center justify-center text-[18px] shrink-0">{c.icon}</div>
                   <div>
-                    <p style={{ fontFamily:K.mono, fontSize:11, fontWeight:700, color:K.t1 }}>{c.label}</p>
-                    <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3 }}>{c.val}</p>
+                    <p className="font-mono font-bold text-[11px] text-t1">{c.label}</p>
+                    <p className="font-mono text-[11px] text-t3">{c.val}</p>
                   </div>
                 </div>
               ))}
@@ -61,28 +61,29 @@ export default function ContactPage() {
             <div>
               {sent ? (
                 <Card accent={K.mint} glow={K.mint}>
-                  <div style={{ textAlign:"center", padding:"32px 0" }}>
-                    <div style={{ fontSize:48, marginBottom:16 }}>✓</div>
-                    <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:20, color:K.mint, marginBottom:8 }}>Message sent!</p>
-                    <p style={{ fontFamily:"Inter,sans-serif", fontSize:14, color:K.t3 }}>We&apos;ll get back to you within 4 hours.</p>
+                  <div className="text-center py-8">
+                    <div className="text-[48px] mb-4">✓</div>
+                    <p className="font-mono font-bold text-[20px] text-kmint mb-2">Message sent!</p>
+                    <p className="font-sans text-[14px] text-t3">We&apos;ll get back to you within 4 hours.</p>
                   </div>
                 </Card>
               ) : (
                 <Card>
-                  <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:18, color:K.t1, marginBottom:20 }}>Send us a message</p>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+                  <p className="font-mono font-bold text-[18px] text-t1 mb-5">Send us a message</p>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
                     <Input label="First name" placeholder="Alex" value={firstName} onChange={v => { setFirstName(v); setErrors(e => ({...e, firstName: ""})); }} error={errors.firstName} />
                     <Input label="Last name"  placeholder="Chen" value={lastName} onChange={v => { setLastName(v); setErrors(e => ({...e, lastName: ""})); }} error={errors.lastName} />
                   </div>
                   <Input label="Work email" type="email" placeholder="alex@company.com" value={email} onChange={v => { setEmail(v); setErrors(e => ({...e, email: ""})); }} error={errors.email} style={{ marginBottom:12 }} />
                   <Input label="Company" placeholder="Acme Corp" value={company} onChange={v => { setCompany(v); setErrors(e => ({...e, company: ""})); }} error={errors.company} style={{ marginBottom:12 }} />
-                  <div style={{ marginBottom:16 }}>
-                    <p style={{ fontFamily:K.mono, fontSize:10, letterSpacing:"0.1em", color:K.t3, textTransform:"uppercase", marginBottom:6 }}>Message</p>
+                  <div className="mb-4">
+                    <p className="font-mono text-[10px] tracking-widest text-t3 uppercase mb-1.5">Message</p>
                     <textarea placeholder="Tell us about your use case..." value={msg} onChange={e => { setMsg(e.target.value); setErrors(er => ({...er, message: ""})); }}
-                      style={{ width:"100%", background:K.g800, border:`1px solid ${errors.message ? K.danger : K.g700}`, borderRadius:2, padding:"10px 14px", fontFamily:"Inter,sans-serif", fontSize:13, color:K.t1, resize:"none", height:100, outline:"none", transition:"border-color 0.15s" }} />
-                    {errors.message && <p style={{ fontFamily:K.mono, fontSize:10, color:K.danger, marginTop:4 }}>{errors.message}</p>}
+                      className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-[13px] text-t1 resize-none h-[100px] outline-none transition-colors duration-150"
+                      style={{ border:`1px solid ${errors.message ? K.danger : K.g700}` }} />
+                    {errors.message && <p className="font-mono text-[10px] text-kdanger mt-1">{errors.message}</p>}
                   </div>
-                  {errors.submit && <p style={{ fontFamily:K.mono, fontSize:10, color:K.danger, marginBottom:12 }}>{errors.submit}</p>}
+                  {errors.submit && <p className="font-mono text-[10px] text-kdanger mb-3">{errors.submit}</p>}
                   <Button full size="lg" loading={loading} onClick={handleSubmit}>Send Message →</Button>
                 </Card>
               )}

@@ -15,25 +15,25 @@ const TAG_COLORS: Record<string,string> = { major:K.mint, minor:K.blue, patch:K.
 export default function ChangelogPage() {
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"80px 48px", maxWidth:720, margin:"0 auto" }}>
-        <div style={{ marginBottom:48 }}>
-          <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4, marginBottom:14 }}>CHANGELOG</p>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(28px,5vw,44px)", letterSpacing:"-0.03em", color:K.t1 }}>What's new in KIKI Agent™</h1>
-          <p style={{ fontFamily:"Inter,sans-serif", fontSize:15, color:K.t3, marginTop:10 }}>Platform updates, new features, and bug fixes.</p>
+      <div className="bg-void py-20 px-12 max-w-[720px] mx-auto">
+        <div className="mb-12">
+          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">CHANGELOG</p>
+          <h1 className="font-mono font-bold text-t1 tracking-[-0.03em]" style={{ fontSize:"clamp(28px,5vw,44px)" }}>What's new in KIKI Agent™</h1>
+          <p className="font-sans text-[15px] text-t3 mt-2.5">Platform updates, new features, and bug fixes.</p>
         </div>
         {RELEASES.map((r,i)=>(
-          <div key={r.version} style={{ marginBottom:40, paddingLeft:20, borderLeft:`2px solid ${i===0?K.blue:K.g700}`, position:"relative" }}>
-            <div style={{ position:"absolute", left:-6, top:4, width:10, height:10, borderRadius:"50%", background:i===0?K.blue:K.g700 }} />
-            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
-              <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:18, color:K.t1 }}>{r.version}</p>
+          <div key={r.version} className="mb-10 pl-5 relative" style={{ borderLeft:`2px solid ${i===0?K.blue:K.g700}` }}>
+            <div className="absolute left-[-6px] top-1 w-2.5 h-2.5 rounded-full" style={{ background:i===0?K.blue:K.g700 }} />
+            <div className="flex items-center gap-2.5 mb-3.5">
+              <p className="font-mono font-bold text-[18px] text-t1">{r.version}</p>
               <Badge color={TAG_COLORS[r.tag]||K.t3}>{r.tag.toUpperCase()}</Badge>
-              <span style={{ fontFamily:K.mono, fontSize:11, color:K.t4 }}>{r.date}</span>
+              <span className="font-mono text-[11px] text-t4">{r.date}</span>
             </div>
-            <div style={{ padding:"16px 20px", background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2 }}>
+            <div className="px-5 py-4 bg-g900 border border-g800 rounded-sm">
               {r.highlights.map(h=>(
-                <div key={h} style={{ display:"flex", gap:8, marginBottom:8, alignItems:"flex-start" }}>
-                  <span style={{ color:i===0?K.mint:K.t3, fontFamily:K.mono, fontSize:12, flexShrink:0, marginTop:1 }}>{h.startsWith("Fixed")||h.startsWith("Improved")?"✦":"+"}</span>
-                  <span style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:i===0?K.t2:K.t3, lineHeight:1.4 }}>{h}</span>
+                <div key={h} className="flex gap-2 mb-2 items-start">
+                  <span className="font-mono text-xs shrink-0 mt-px" style={{ color:i===0?K.mint:K.t3 }}>{h.startsWith("Fixed")||h.startsWith("Improved")?"✦":"+"}</span>
+                  <span className="font-sans text-[13px] leading-[1.4]" style={{ color:i===0?K.t2:K.t3 }}>{h}</span>
                 </div>
               ))}
             </div>

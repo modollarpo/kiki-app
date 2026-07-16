@@ -1,117 +1,135 @@
-"use client";
+﻿"use client";
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar, PlatformChip } from "@/components/ui";
-import { K, fmt } from "@/lib/kdls";
-import { useInsights } from "@/hooks/useInsights";
+import { Card, Badge, StatCard } from "@/components/ui";
+import { K } from "@/lib/kdls";
 
-const CREATORS = [
-  { name: "@sarahstyles", platform: "TikTok", followers: "1.2M", promoCodes: ["SARAH20", "KIKI15"], conversions: 342, revenue: 18900, status: "active", engagement: "4.8%" },
-  { name: "@techreview_mike", platform: "YouTube", followers: "890K", promoCodes: ["MIKEDEAL"], conversions: 187, revenue: 12400, status: "active", engagement: "3.2%" },
-  { name: "@fitnessjenna", platform: "Instagram", followers: "2.1M", promoCodes: ["JENNAFIT", "KIKI25"], conversions: 521, revenue: 31200, status: "active", engagement: "5.1%" },
-  { name: "@thegamingnest", platform: "Twitch", followers: "450K", promoCodes: ["NESTPLAY"], conversions: 98, revenue: 5600, status: "paused", engagement: "6.3%" },
-  { name: "@cookingwithalex", platform: "TikTok", followers: "3.4M", promoCodes: ["ALEXCOOK", "KIKIFOOD"], conversions: 876, revenue: 42100, status: "active", engagement: "3.9%" },
-  { name: "@digitalnomadlife", platform: "YouTube", followers: "620K", promoCodes: ["NOMAD10"], conversions: 134, revenue: 8700, status: "active", engagement: "4.1%" },
-  { name: "@beautybyluna", platform: "Instagram", followers: "1.8M", promoCodes: ["LUNABEAUTY"], conversions: 412, revenue: 24300, status: "active", engagement: "4.5%" },
-];
-
-const DARK_SOCIAL_CHANNELS = [
-  { channel: "WhatsApp Groups", signals: 1240, conversions: 89, revenue: 5200 },
-  { channel: "Telegram Channels", signals: 890, conversions: 54, revenue: 3100 },
-  { channel: "Discord Servers", signals: 560, conversions: 32, revenue: 1800 },
-  { channel: "Private Slack", signals: 320, conversions: 21, revenue: 1200 },
-];
+interface Creator { id: string; name: string; handle: string; platform: string; promoCode: string; totalConversions: number; totalRevenue: number; totalLtv: number; roi: number; }
 
 export default function InfluencerPage() {
-  const { data, loading } = useInsights();
-  const inf = data?.influencer ?? { campaigns: 0, platforms: [], totalReach: 0, avgRoas: 0 };
+  const [creators, setCreators] = useState<Creator[]>([]);
+  const [darkSocial, setDarkSocial] = useState<{ totalUnattributedConversions: number; totalUnattributedRevenue: number } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ name: "", handle: "", platform: "meta" });
+  const { token, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !token) router.push("/auth/login");
+  }, [token, authLoading, router]);
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
+
+  const fetchData = useCallback(async () => {
+    if (!token) return;
+    try {
+      const [creatorsRes, darkRes] = await Promise.all([
+        fetch("/api/influencer", { headers: { "Authorization": `Bearer ${token}` } }).then(r => r.json()),
+        fetch("/api/influencer/dark-social", { headers: { "Authorization": `Bearer ${token}` } }).then(r => r.json()).catch(() => null),
+      ]);
+      if (creatorsRes.success) setCreators(creatorsRes.data);
+      if (darkRes?.success) setDarkSocial(darkRes.data);
+    } catch {}
+    setLoading(false);
+  }, [token]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const registerCreator = async () => {
+    if (!token) return;
+    await fetch("/api/influencer", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify(form) });
+    setForm({ name: "", handle: "", platform: "meta" });
+    setShowForm(false);
+    fetchData();
+  };
+
+  const totalRevenue = creators.reduce((s, c) => s + (c.totalRevenue || 0), 0);
+  const totalConversions = creators.reduce((s, c) => s + (c.totalConversions || 0), 0);
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400 }}>
-        <div style={{ marginBottom: 22 }}>
-          <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>Influencer & Dark Social</h1>
-          <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>Creator tracking · Promo code attribution · Dark social attribution</p>
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-white">
+        <div className="flex justify-between items-center mb-5 gap-3 flex-wrap">
+          <div className="min-w-0">
+            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Influencer & Dark Social</h1>
+            <p className="font-mono text-[11px] text-gray-500">Track creator ROI, promo codes, and unattributed conversions</p>
+          </div>
+          <button onClick={() => setShowForm(!showForm)} className="font-mono text-[11px] font-semibold px-5 py-2 rounded-sm cursor-pointer"
+            style={{ border: `1px solid ${K.blue}40`, background: K.blue + "20", color: K.blue }}>
+            {showForm ? "Cancel" : "+ Add Creator"}
+          </button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 16 }}>
-          <StatCard label="Campaigns Tracked" value={loading ? "…" : String(inf.campaigns)} accent={K.oaas} sub={`${inf.platforms?.length ?? 0} platforms`} />
-          <StatCard label="Total Reach" value={loading ? "…" : fmt.compact(inf.totalReach)} accent={K.mint} sub="Across channels" />
-          <StatCard label="Avg ROAS" value={loading ? "…" : `${inf.avgRoas?.toFixed(1)}×`} accent={K.teal} />
-          <StatCard label="Creator Network" value={String(CREATORS.length)} accent={K.blue} sub="Sample · illustrative" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          <StatCard label="Creators" value={String(creators.length)} accent={K.blue} loading={loading} />
+          <StatCard label="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} accent={K.mint} loading={loading} />
+          <StatCard label="Conversions" value={String(totalConversions)} accent={K.gold} loading={loading} />
+          <StatCard label="Dark Social" value={darkSocial ? `$${darkSocial.totalUnattributedRevenue?.toLocaleString() || 0}` : "—"} sub={`${darkSocial?.totalUnattributedConversions || 0} unattributed`} accent={K.danger} loading={loading} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
-          <Card accent={K.oaas}>
-            <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>Creator Tracking <Badge color={K.t4} style={{ fontSize: 8 }}>SAMPLE</Badge></h3>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr>
-                    {["Creator", "Platform", "Followers", "Promo Codes", "Conversions", "Revenue", "Status"].map(h => (
-                      <th key={h} style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.1em", color: K.t4, textTransform: "uppercase", textAlign: "left", padding: "8px 10px", borderBottom: `1px solid ${K.g800}` }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {CREATORS.map(c => (
-                    <tr key={c.name}>
-                      <td style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.t1, padding: "10px", borderBottom: `1px solid ${K.g800}` }}>{c.name}</td>
-                      <td style={{ padding: "10px", borderBottom: `1px solid ${K.g800}` }}><PlatformChip platform={c.platform} /></td>
-                      <td style={{ fontFamily: K.mono, fontSize: 11, color: K.t2, padding: "10px", borderBottom: `1px solid ${K.g800}` }}>{c.followers}</td>
-                      <td style={{ padding: "10px", borderBottom: `1px solid ${K.g800}` }}>
-                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                          {c.promoCodes.map(code => (
-                            <Badge key={code} color={K.oaas}>{code}</Badge>
-                          ))}
-                        </div>
-                      </td>
-                      <td style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.mint, padding: "10px", borderBottom: `1px solid ${K.g800}` }}>{c.conversions.toLocaleString()}</td>
-                      <td style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.gold, padding: "10px", borderBottom: `1px solid ${K.g800}` }}>{fmt.currency(c.revenue)}</td>
-                      <td style={{ padding: "10px", borderBottom: `1px solid ${K.g800}` }}><Badge color={c.status === "active" ? K.mint : K.warn} dot>{c.status.toUpperCase()}</Badge></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {showForm && (
+          <Card accent={K.blue} className="mb-4">
+            <h3 className="font-mono font-bold text-[13px] text-white mb-3">Register Creator</h3>
+            <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
+              <div>
+                <label className="font-mono text-[11px] text-gray-500 block mb-1">Name</label>
+                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                  className="w-full py-2 px-2.5 font-mono text-xs rounded-sm"
+                  style={{ background: K.inputBg, border: `1px solid ${K.inputBorder}`, color: K.t1 }} />
+              </div>
+              <div>
+                <label className="font-mono text-[11px] text-gray-500 block mb-1">Handle</label>
+                <input value={form.handle} onChange={e => setForm({ ...form, handle: e.target.value })} placeholder="@username"
+                  className="w-full py-2 px-2.5 font-mono text-xs rounded-sm"
+                  style={{ background: K.inputBg, border: `1px solid ${K.inputBorder}`, color: K.t1 }} />
+              </div>
+              <div>
+                <label className="font-mono text-[11px] text-gray-500 block mb-1">Platform</label>
+                <select value={form.platform} onChange={e => setForm({ ...form, platform: e.target.value })}
+                  className="w-full py-2 px-2.5 font-mono text-xs rounded-sm"
+                  style={{ background: K.inputBg, border: `1px solid ${K.inputBorder}`, color: K.t1 }}>
+                  <option value="meta">Meta</option><option value="tiktok">TikTok</option><option value="youtube">YouTube</option><option value="instagram">Instagram</option>
+                </select>
+              </div>
+              <button onClick={registerCreator} className="font-mono text-[11px] font-semibold px-4 py-2 rounded-sm cursor-pointer"
+                style={{ border: `1px solid ${K.mint}40`, background: K.mint + "20", color: K.mint }}>Register</button>
             </div>
           </Card>
+        )}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <Card accent={K.teal}>
-              <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>Dark Social Attribution <Badge color={K.t4} style={{ fontSize: 8 }}>SAMPLE</Badge></h3>
-              {DARK_SOCIAL_CHANNELS.map(ch => (
-                <div key={ch.channel} style={{ marginBottom: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{ fontFamily: K.mono, fontSize: 11, color: K.t2 }}>{ch.channel}</span>
-                    <span style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.gold }}>{fmt.currency(ch.revenue)}</span>
+        <Card accent={K.mint}>
+          <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Creators</h3>
+          {creators.length === 0 ? (
+            <div className="p-10 text-center"><p className="font-mono text-xs text-gray-500">No creators registered yet.</p></div>
+          ) : (
+            creators.map((c, i) => (
+              <div key={i} className="flex items-center gap-3 p-3 px-3.5 mb-1.5 rounded-sm bg-g850">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="font-mono text-xs font-semibold text-white">{c.name}</span>
+                    <Badge color={K.t3}>{c.platform}</Badge>
                   </div>
-                  <div style={{ display: "flex", gap: 12, marginBottom: 4 }}>
-                    <span style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>{fmt.compact(ch.signals)} signals</span>
-                    <span style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>{ch.conversions} conversions</span>
-                  </div>
-                  <ProgressBar value={ch.revenue} max={6000} color={K.teal} height={3} />
+                  <span className="font-mono text-[11px] text-gray-500">{c.handle} · Code: {c.promoCode}</span>
                 </div>
-              ))}
-            </Card>
-
-            <Card accent={K.gold}>
-              <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>Top Promo Codes <Badge color={K.t4} style={{ fontSize: 8 }}>SAMPLE</Badge></h3>
-              {[
-                { code: "KIKI25", conversions: 234, revenue: 12800 },
-                { code: "SARAH20", conversions: 198, revenue: 10200 },
-                { code: "ALEXCOOK", conversions: 176, revenue: 9400 },
-                { code: "JENNAFIT", conversions: 156, revenue: 8100 },
-                { code: "LUNABEAUTY", conversions: 134, revenue: 7200 },
-              ].map((p, i) => (
-                <div key={p.code} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${K.g800}` }}>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t4, width: 16 }}>#{i + 1}</span>
-                  <Badge color={K.oaas}>{p.code}</Badge>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, flex: 1 }}>{p.conversions} conv</span>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, fontWeight: 700, color: K.gold }}>{fmt.currency(p.revenue)}</span>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-mono text-xs font-bold text-kmint">${c.totalRevenue?.toLocaleString() || 0}</p>
+                  <p className="font-mono text-[11px] text-gray-500">revenue</p>
                 </div>
-              ))}
-            </Card>
-          </div>
-        </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-mono text-xs font-bold text-kblue">{c.totalConversions || 0}</p>
+                  <p className="font-mono text-[11px] text-gray-500">conv.</p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-mono text-xs font-bold" style={{ color: c.roi >= 2 ? K.mint : K.danger }}>{c.roi?.toFixed(1) || "0.0"}×</p>
+                  <p className="font-mono text-[11px] text-gray-500">ROI</p>
+                </div>
+              </div>
+            ))
+          )}
+        </Card>
       </div>
     </DashboardLayout>
   );

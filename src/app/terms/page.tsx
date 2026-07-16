@@ -1,6 +1,5 @@
 "use client";
 import { MarketingLayout } from "@/components/layout/MarketingLayout";
-import { K } from "@/lib/kdls";
 
 const S = [
   { h:"1. Acceptance", b:"By accessing or using KIKI Agent, you agree to these Terms. If agreeing on behalf of an organization, you represent you have authority to bind that organization. These Terms incorporate our Privacy Policy, Data Processing Addendum, and any applicable Order Forms." },
@@ -17,17 +16,17 @@ const S = [
 export default function TermsPage() {
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)", maxWidth:840, margin:"0 auto" }}>
-        <div style={{ marginBottom:36 }}>
-          <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4, marginBottom:12 }}>LEGAL</p>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(22px,4vw,34px)", color:K.t1, letterSpacing:"-0.025em", marginBottom:8 }}>Terms of Service</h1>
-          <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3 }}>Last updated: March 20, 2026 · Version 2.4</p>
+      <div className="bg-void max-w-[840px] mx-auto" style={{ padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
+        <div className="mb-9">
+          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3">LEGAL</p>
+          <h1 className="font-mono font-bold text-t1 tracking-tight mb-2" style={{ fontSize:"clamp(22px,4vw,34px)" }}>Terms of Service</h1>
+          <p className="font-mono text-[11px] text-t3">Last updated: March 20, 2026 · Version 2.4</p>
         </div>
         <div className="prose">
           {S.map((s,i) => (
-            <div key={i} style={{ marginBottom:28, paddingBottom:28, borderBottom:i<S.length-1?`1px solid ${K.g800}`:"none" }}>
-              <h2 style={{ fontFamily:K.mono, fontWeight:700, fontSize:16, color:K.t1, marginBottom:10 }}>{s.h}</h2>
-              <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t2, lineHeight:1.75 }}>{s.b}</p>
+            <div key={i} className={`mb-7 pb-7 ${i<S.length-1?"border-b border-g800":""}`}>
+              <h2 className="font-mono font-bold text-base text-t1 mb-2.5">{s.h}</h2>
+              <p className="font-sans text-[13px] text-t2 leading-[1.75]">{s.b}</p>
             </div>
           ))}
         </div>

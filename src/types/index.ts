@@ -229,5 +229,5 @@ export interface DashboardData {
   }>;
   wallet: { balance: number; cards: number };
   notifications: { unread: number; total: number };
-  system: { status: string; agentsRunning: number; eventsToday: number };
+  system: { status: string; agentsRunning: number; eventsToday: number; signalsTotal: number; fraudBlocked: number };
 }

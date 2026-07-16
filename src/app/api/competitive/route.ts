@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -49,6 +50,28 @@ export async function GET(req: NextRequest) {
       GROUP BY platform
     `).all(tenantId) as any[];
 
+    // Compute CPM benchmarks from campaign data
+    const allCampaigns = await db.prepare(`
+      SELECT platform, spend, impressions FROM campaigns WHERE tenant_id = ?
+    `).all(tenantId) as any[];
+
+    const platformCpm: Record<string, { spend: number; impressions: number }> = {};
+    for (const c of allCampaigns) {
+      const p = c.platform || "unknown";
+      if (!platformCpm[p]) platformCpm[p] = { spend: 0, impressions: 0 };
+      platformCpm[p].spend += c.spend || 0;
+      platformCpm[p].impressions += c.impressions || 0;
+    }
+
+    const cpmBenchmarks = Object.entries(platformCpm)
+      .filter(([, data]) => data.impressions > 0)
+      .map(([platform, data]) => ({
+        platform: platform.charAt(0).toUpperCase() + platform.slice(1),
+        yours: Math.round((data.spend / data.impressions) * 1000 * 100) / 100,
+        benchmark: 0,
+        industry: 0,
+      }));
+
     return NextResponse.json({
       success: true,
       data: {
@@ -64,11 +87,12 @@ export async function GET(req: NextRequest) {
           volume: s.count,
           avgValue: Math.round(s.avg_value || 0),
         })),
-        // In production, this would include real competitor data from external APIs
+        cpmBenchmarks,
         note: "Competitor data requires external intelligence API integration",
       },
     });
   } catch (error) {
+    logger.error("competitive/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }

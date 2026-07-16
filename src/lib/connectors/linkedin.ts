@@ -58,14 +58,16 @@ export class LinkedInConnector extends BaseConnector {
 
   // ── OAuth ──────────────────────────────────────────────
 
-  async generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string }> {
+  async generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string; codeVerifier: string }> {
     const state = crypto.randomBytes(32).toString("hex");
+    const codeVerifier = this.generateCodeVerifier();
+    const codeChallenge = this.generateCodeChallenge(codeVerifier);
 
     const db = await getDb();
     await db.prepare(`
-      INSERT OR REPLACE INTO oauth_states (state, tenant_id, platform, created_at, expires_at)
-      VALUES (?, ?, 'linkedin', datetime('now'), datetime('now', '+10 minutes'))
-    `).run(state, tenantId);
+      INSERT OR REPLACE INTO oauth_states (state, tenant_id, platform, code_verifier, created_at, expires_at)
+      VALUES (?, ?, 'linkedin', ?, datetime('now'), datetime('now', '+10 minutes'))
+    `).run(state, tenantId, codeVerifier);
 
     const params = new URLSearchParams({
       response_type: "code",
@@ -73,12 +75,14 @@ export class LinkedInConnector extends BaseConnector {
       redirect_uri: this.config.oauth.redirectUri,
       state,
       scope: this.config.oauth.scopes.join(" "),
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
     });
 
-    return { url: `${this.config.oauth.authUrl}?${params.toString()}`, state };
+    return { url: `${this.config.oauth.authUrl}?${params.toString()}`, state, codeVerifier };
   }
 
-  async handleCallback(code: string, state: string): Promise<OAuthTokens> {
+  async handleCallback(code: string, state: string, codeVerifier?: string): Promise<OAuthTokens> {
     const params = new URLSearchParams({
       grant_type: "authorization_code",
       code,
@@ -86,6 +90,8 @@ export class LinkedInConnector extends BaseConnector {
       client_id: this.config.oauth.clientId,
       client_secret: this.config.oauth.clientSecret,
     });
+
+    if (codeVerifier) params.set("code_verifier", codeVerifier);
 
     const result = await fetch(this.config.oauth.tokenUrl, {
       method: "POST",

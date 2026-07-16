@@ -7,6 +7,26 @@ import {
   SYSTEM_PROMPTS,
   type ModelTier,
 } from "@/lib/azure-openai";
+import { getUserFromRequest } from "@/lib/auth";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
+import { isOpenCodeConfigured, chat as opencodeChat, type OpenCodeMessage } from "@/lib/opencode";
+
+const NL_SERVICE_URL = process.env.NL_ANALYTICS_URL || "http://localhost:3025";
+
+const DATA_KEYWORDS = [
+  "campaign", "roas", "cpa", "spend", "revenue", "conversion",
+  "budget", "performance", "metric", "analytics", "data",
+  "best", "worst", "top", "lowest", "compare", "trend",
+  "yesterday", "last week", "last month", "today",
+  "signal", "ltv", "lifetime", "churn", "segment",
+  "creative", "ad", "variant", "platform",
+];
+
+function isDataQuestion(text: string): boolean {
+  const lower = text.toLowerCase();
+  return DATA_KEYWORDS.filter(k => lower.includes(k)).length >= 2;
+}
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -22,6 +42,17 @@ interface ChatRequest {
 }
 
 export async function POST(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  // Abuse protection: 30 chat requests per IP per minute.
+  const rl = checkRateLimit(`chat:${getClientIp(req)}`, { maxRequests: 30 });
+  if (!rl.allowed) {
+    return rateLimitResponse(rl);
+  }
+
   try {
     const body: ChatRequest = await req.json();
     const { messages, model, taskType = "general", maxTokens, temperature } = body;
@@ -30,15 +61,82 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
     }
 
+    // Cap message count and content length to prevent abuse / huge payloads.
+    if (messages.length > 50) {
+      return NextResponse.json({ error: "Maximum 50 messages per request" }, { status: 400 });
+    }
+    for (const msg of messages) {
+      if (!msg || typeof msg.content !== "string" || msg.content.length > 32_000) {
+        return NextResponse.json({ error: "Each message must have a content string <= 32,000 characters" }, { status: 400 });
+      }
+    }
+    if (maxTokens !== undefined && (maxTokens < 1 || maxTokens > 8192)) {
+      return NextResponse.json({ error: "maxTokens must be between 1 and 8192" }, { status: 400 });
+    }
+    if (temperature !== undefined && (temperature < 0 || temperature > 2)) {
+      return NextResponse.json({ error: "temperature must be between 0 and 2" }, { status: 400 });
+    }
+
     const selectedTier = model || selectModelForTask(taskType);
-    const config = AZURE_OPENAI_CONFIG[selectedTier];
+    // "fast" tier (Groq) routes to Azure mini for chat — Groq is for bidding latency paths only
+    const azureTier = selectedTier === "fast" ? "mini" : selectedTier;
+    const config = AZURE_OPENAI_CONFIG[azureTier];
+
+    // Detect data questions and ground with NL Analytics
+    const lastUserMsg = [...messages].reverse().find(m => m.role === "user");
+    let groundedContext = "";
+    if (lastUserMsg && isDataQuestion(lastUserMsg.content)) {
+      try {
+        const nlRes = await fetch(`${NL_SERVICE_URL}/api/query`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenantId: user.tenantId, question: lastUserMsg.content }),
+          signal: AbortSignal.timeout(5000),
+        });
+        if (nlRes.ok) {
+          const nlData = await nlRes.json();
+          if (nlData.success && nlData.data?.answer) {
+            groundedContext = `\n\n[GROUNDING DATA — answer using only this data when relevant]\nIntent: ${nlData.data.intent}\nData-backed answer: ${nlData.data.answer}\n`;
+          }
+        }
+      } catch (e) {
+        logger.debug("nl-analytics unavailable, falling back to LLM", { tenantId: user.tenantId });
+      }
+    }
 
     // Build messages with system prompt if not included
     const systemMessage: ChatMessage = {
       role: "system",
-      content: SYSTEM_PROMPTS.syncbrain,
+      content: SYSTEM_PROMPTS.syncbrain + groundedContext,
     };
     const fullMessages = messages[0]?.role === "system" ? messages : [systemMessage, ...messages];
+
+    // ── OpenCode fast path ───────────────────────────────
+    if (isOpenCodeConfigured()) {
+      try {
+        const opencodeMessages: OpenCodeMessage[] = fullMessages.map(m => ({
+          role: m.role as "system" | "user" | "assistant",
+          content: m.content,
+        }));
+
+        const ocResponse = await opencodeChat(opencodeMessages, {
+          directory: "./src",
+        });
+
+        if (ocResponse && ocResponse.content) {
+          return NextResponse.json({
+            content: ocResponse.content,
+            model: ocResponse.model,
+            usage: ocResponse.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+            finishReason: ocResponse.finishReason,
+          });
+        }
+      } catch (e) {
+        logger.debug("OpenCode unavailable, falling back to Azure OpenAI", { tenantId: user.tenantId });
+      }
+    }
+
+    // ── Azure OpenAI fallback ────────────────────────────
 
     const url = buildAzureOpenAIUrl(config.deploymentName);
     const headers = buildAzureOpenAIHeaders();
@@ -60,7 +158,10 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const error = await response.text();
-      console.error("Azure OpenAI error:", error);
+      logger.error("ai/chat upstream error", {
+        status: response.status,
+        tenantId: user?.tenantId,
+      });
       return NextResponse.json(
         { error: "AI service temporarily unavailable", detail: response.status },
         { status: 502 }
@@ -81,7 +182,10 @@ export async function POST(req: NextRequest) {
       finishReason: choice.finish_reason,
     });
   } catch (error) {
-    console.error("Chat API error:", error);
+    logger.error("ai/chat request failed", {
+      message: error instanceof Error ? error.message : String(error),
+      tenantId: user?.tenantId,
+    });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

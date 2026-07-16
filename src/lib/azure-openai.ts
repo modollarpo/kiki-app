@@ -2,6 +2,8 @@
 // Azure OpenAI Configuration — Cheapest functional models
 // ============================================================
 
+import { withRetry } from "./retry";
+
 export const AZURE_OPENAI_CONFIG = {
   // Cheapest model — GPT-4o-mini: ~$0.15/1M input, ~$0.60/1M output
   // Great for: classification, summarization, routing, simple Q&A
@@ -23,7 +25,8 @@ export const AZURE_OPENAI_CONFIG = {
   },
 } as const;
 
-export type ModelTier = keyof typeof AZURE_OPENAI_CONFIG;
+// Model tiers: "fast" routes to Groq (<200ms), "mini"/"standard" route to Azure OpenAI
+export type ModelTier = "fast" | "mini" | "standard";
 
 // ── Get endpoint & key from env ────────────────────────────
 export function getAzureOpenAICredentials() {
@@ -57,15 +60,15 @@ export function buildAzureOpenAIHeaders(): Record<string, string> {
 
 // ── Smart model router — picks cheapest model for the task ─
 export function selectModelForTask(
-  taskType: "routing" | "classification" | "summarization" | "creative" | "analysis" | "general"
+  taskType: "routing" | "classification" | "summarization" | "creative" | "analysis" | "general" | "fast"
 ): ModelTier {
-  // gpt-4o-mini handles 90% of tasks at 1/20th the cost
   const taskModelMap: Record<string, ModelTier> = {
-    routing: "mini",
+    fast: "fast",           // Groq: <200ms for bidding, pacing, fast routing
+    routing: "mini",        // Azure GPT-4o-mini: classification, summarization
     classification: "mini",
     summarization: "mini",
     general: "mini",
-    creative: "standard",
+    creative: "standard",   // Azure GPT-4o: deep reasoning, creative tasks
     analysis: "standard",
   };
   return taskModelMap[taskType] ?? "mini";
@@ -99,3 +102,47 @@ You have access to:
 
   support: `You are KIKI Agent support. Help users with platform questions, troubleshooting, and best practices for autonomous campaign management. Be friendly, professional, and solution-oriented.`,
 } as const;
+
+// ── Call Azure OpenAI with retry ──────────────────────────
+export async function callAzureOpenAI(
+  prompt: string,
+  systemPrompt: string,
+  tier: "mini" | "standard" = "mini",
+  options?: { maxTokens?: number; temperature?: number }
+): Promise<{ content: string; tokens: number }> {
+  const config = AZURE_OPENAI_CONFIG[tier];
+
+  try {
+    return await withRetry(async () => {
+      const url = buildAzureOpenAIUrl(config.deploymentName);
+      const headers = buildAzureOpenAIHeaders();
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt },
+          ],
+          max_tokens: options?.maxTokens ?? config.maxTokens,
+          temperature: options?.temperature ?? 0.3,
+        }),
+        signal: AbortSignal.timeout(30000), // 30s timeout
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          content: data.choices?.[0]?.message?.content || "",
+          tokens: data.usage?.total_tokens || 0,
+        };
+      }
+
+      throw new Error(`Azure OpenAI returned ${response.status}: ${response.statusText}`);
+    }, { maxRetries: 3, baseDelayMs: 1000, maxDelayMs: 10000 });
+  } catch (e) {
+    console.warn(`[Azure OpenAI] ${tier} call failed after retries:`, e);
+    return { content: "", tokens: 0 };
+  }
+}

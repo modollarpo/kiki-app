@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button } from "@/components/ui";
@@ -41,17 +41,18 @@ export default function AuditPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
+        <div className="flex justify-between items-start mb-5">
           <div>
-            <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>Audit Log</h1>
-            <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>All system events · User actions · Security events · {loading ? "…" : `${EVENTS.length} events`}</p>
+            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Audit Log</h1>
+            <p className="font-mono text-[11px] text-gray-500">All system events · User actions · Security events · {loading ? "…" : `${EVENTS.length} events`}</p>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <div style={{ display: "flex", gap: 4, background: K.g900, border: `1px solid ${K.g800}`, borderRadius: 2, padding: 3 }}>
+          <div className="flex gap-2">
+            <div className="flex gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
               {["all", "info", "warn", "critical"].map(f => (
                 <button key={f} onClick={() => setFilter(f)}
-                  style={{ padding: "5px 12px", fontFamily: K.mono, fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", color: filter === f ? K.t1 : K.t4, background: filter === f ? K.g800 : "transparent", border: "none", borderRadius: 2, cursor: "pointer", textTransform: "uppercase" }}>
+                  className="font-mono text-[10px] font-semibold tracking-wider px-3 py-[5px] rounded-sm cursor-pointer uppercase"
+                  style={{ color: filter === f ? K.t1 : K.t4, background: filter === f ? K.g800 : "transparent", border: "none" }}>
                   {f}
                 </button>
               ))}
@@ -61,22 +62,21 @@ export default function AuditPage() {
         </div>
 
         <Card padding={0}>
-          <div style={{ display: "grid", gridTemplateColumns: "80px 140px 100px 200px 1fr 80px", gap: 12, padding: "8px 20px", borderBottom: `1px solid ${K.g800}`, background: K.g950 }}>
+          <div className="grid grid-cols-[80px_140px_100px_200px_1fr_80px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
             {["TIME", "ACTOR", "ACTION", "RESOURCE", "DETAIL", "LEVEL"].map(h => (
-              <span key={h} style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.1em", color: K.t4 }}>{h}</span>
+              <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
             ))}
           </div>
           {filtered.map((e, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "80px 140px 100px 200px 1fr 80px", gap: 12, padding: "10px 20px", borderBottom: `1px solid ${K.g900}`, alignItems: "center" }}
-              onMouseEnter={e2 => (e2.currentTarget.style.background = K.g850)} onMouseLeave={e2 => (e2.currentTarget.style.background = "transparent")}>
-              <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>{e.time}</span>
+            <div key={i} className="grid grid-cols-[80px_140px_100px_200px_1fr_80px] gap-3 px-5 py-2.5 items-center hover:bg-[var(--card-hover)] border-b border-g900">
+              <span className="font-mono text-[10px] text-gray-600">{e.time}</span>
               <div>
-                <span style={{ fontFamily: K.mono, fontSize: 10, fontWeight: 600, color: K.t1 }}>{e.actor}</span>
-                {e.role !== "agent" && <span style={{ fontFamily: K.mono, fontSize: 8, color: K.t4, marginLeft: 4 }}>({e.role})</span>}
+                <span className="font-mono text-[10px] font-semibold text-white">{e.actor}</span>
+                {e.role !== "agent" && <span className="font-mono text-[10px] text-gray-600 ml-1">({e.role})</span>}
               </div>
               <Badge color={ACTION_COLORS[e.action] || K.t3}>{e.action}</Badge>
-              <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.resource}</span>
-              <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.detail}</span>
+              <span className="font-mono text-[10px] text-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">{e.resource}</span>
+              <span className="font-mono text-[10px] text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">{e.detail}</span>
               <Badge color={e.severity === "critical" ? K.danger : e.severity === "warn" ? K.warn : K.t3} dot pulse={e.severity === "critical"}>
                 {e.severity.toUpperCase()}
               </Badge>

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { K } from "@/lib/kdls";
 import { Button, Badge } from "@/components/ui";
+import Image from "next/image";
 
 const NAV_LINKS = [
   { href:"/features",   label:"Product"    },
@@ -64,7 +65,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
 
   return (
-    <div style={{ background:K.void, minHeight:"100vh", color:K.t1, fontFamily:"'Inter',system-ui,sans-serif" }}>
+    <div style={{ background:K.void, minHeight:"100dvh", color:K.t1, fontFamily:"'Inter',system-ui,sans-serif" }}>
       {/* ── NAV ──────────────────────────────────────── */}
       <nav style={{
         position:"sticky", top:0, zIndex:100, height:56,
@@ -76,7 +77,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
       }}>
         {/* Logo */}
         <div style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", flexShrink:0 }} onClick={() => router.push("/")}>
-          <img src="/images/kiki.png" alt="KIKI" width={26} height={26} style={{ borderRadius:2, boxShadow:scrolled?`0 0 16px ${K.blue}50`:undefined }} />
+          <Image src="/images/kiki.png" alt="KIKI" width={26} height={26} style={{ borderRadius:2, boxShadow:scrolled?`0 0 16px ${K.blue}50`:undefined }} />
           <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, fontSize:13, color:K.t1 }}>KIKI<span style={{ color:K.blue }}>.</span>Agent</span>
         </div>
 
@@ -147,13 +148,13 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
             {/* Brand */}
             <div style={{ minWidth:180 }}>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
-                <img src="/images/kiki.png" alt="KIKI" width={24} height={24} style={{ borderRadius:2 }} />
+                <Image src="/images/kiki.png" alt="KIKI" width={24} height={24} style={{ borderRadius:2 }} />
                 <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, fontSize:13, color:K.t1 }}>KIKI<span style={{color:K.blue}}>.</span>Agent</span>
               </div>
               <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3, lineHeight:1.7, marginBottom:14 }}>Autonomous LTV campaign execution. Your ad platforms learn from real customer value.</p>
               <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                 {["SOC2","GDPR","CCPA","PCI DSS"].map(b => (
-                  <span key={b} style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:8, letterSpacing:"0.1em", color:K.t3, background:K.g850, border:`1px solid ${K.g700}`, borderRadius:2, padding:"2px 6px" }}>{b}</span>
+                  <span key={b} style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:"0.1em", color:K.t3, background:K.g850, border:`1px solid ${K.g700}`, borderRadius:2, padding:"2px 6px" }}>{b}</span>
                 ))}
               </div>
             </div>
@@ -161,7 +162,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
             {/* Link columns */}
             {FOOTER_COLS.map(col => (
               <div key={col.title}>
-                <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, letterSpacing:"0.14em", color:K.t4, marginBottom:14, textTransform:"uppercase" }}>{col.title}</p>
+                <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:"0.14em", color:K.t3, marginBottom:14, textTransform:"uppercase" }}>{col.title}</p>
                 {col.links.map(l => (
                   <a key={l.label} href={l.href}
                     style={{ display:"block", fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:K.t3, textDecoration:"none", marginBottom:9, transition:"color 0.15s" }}
@@ -177,7 +178,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
           {/* Download CTAs */}
           <div style={{ borderTop:`1px solid ${K.g800}`, paddingTop:20, marginBottom:20, display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
             <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
-              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:K.t4 }}>DOWNLOAD THE APP</span>
+              <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:K.t3 }}>DOWNLOAD THE APP</span>
               {[{ l:"📱 iOS", h:"/app-download" }, { l:"▶ Android", h:"/app-download" }, { l:"⬡ Install PWA", h:"/app-download" }].map(a => (
                 <a key={a.l} href={a.h}
                   style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:K.blue4, textDecoration:"none", background:K.blueD, border:`1px solid ${K.blue}25`, padding:"4px 10px", borderRadius:2 }}>
@@ -194,8 +195,8 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
 
           {/* Bottom bar */}
           <div style={{ borderTop:`1px solid ${K.g800}`, paddingTop:20, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
-            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, letterSpacing:"0.1em", color:K.t4, lineHeight:1.8 }}>KIKI AGENT™ is a product of STOREGRILL INC LTD<br/>Company No. 14581073 · 18 Hampshire Close, Binley, Coventry, CV3 2FP, England<br/>Registered in England & Wales · © 2026 All Rights Reserved</span>
-            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:K.t4 }}>Built with precision · v2.4.0</span>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:"0.1em", color:K.t3, lineHeight:1.8 }}>KIKI AGENT™ is a product of STOREGRILL INC LTD<br/>Company No. 14581073 · 18 Hampshire Close, Binley, Coventry, CV3 2FP, England<br/>Registered in England & Wales · © 2026 All Rights Reserved</span>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:K.t3 }}>Built with precision · v2.4.0</span>
           </div>
         </div>
       </footer>
