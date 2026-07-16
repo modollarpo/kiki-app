@@ -365,12 +365,12 @@ const SidebarContent = memo(function SidebarContent({
         <Image
           src="/images/kiki.png"
           alt="KIKI"
-          width={28}
-          height={28}
+          width={24}
+          height={24}
           style={{
             borderRadius: 2,
             flexShrink: 0,
-            boxShadow: `0 0 16px ${K.blue}50`,
+            margin: 2,
           }}
         />
         {(!sidebarCollapsed || isMobile) && (
