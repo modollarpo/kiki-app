@@ -23,8 +23,6 @@ export default function B2BPage() {
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
   }, [token, authLoading, router]);
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
-  if (!token) return null;
 
   useEffect(() => {
     if (!token) return;
@@ -41,6 +39,9 @@ export default function B2BPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [token]);
+
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
 
   const totalStageValue = stages.reduce((s, st) => s + st.value, 0);
 

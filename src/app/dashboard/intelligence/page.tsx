@@ -19,8 +19,6 @@ export default function IntelligencePage() {
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
   }, [token, authLoading, router]);
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
-  if (!token) return null;
 
   useEffect(() => {
     if (!token) return;
@@ -35,6 +33,9 @@ export default function IntelligencePage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [token]);
+
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
 
   const getInsightColor = (type: string) => type === "opportunity" ? K.mint : type === "alert" ? K.warn : K.blue;
   const getImpactColor = (impact: string) => impact === "high" ? K.mint : impact === "medium" ? K.gold : K.t3;

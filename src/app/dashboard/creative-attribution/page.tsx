@@ -18,8 +18,6 @@ export default function CreativeAttributionPage() {
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
   }, [token, authLoading, router]);
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
-  if (!token) return null;
 
   const fetchBreakdown = useCallback(async () => {
     if (!token) return;
@@ -31,6 +29,9 @@ export default function CreativeAttributionPage() {
     } catch {}
     setLoading(false);
   }, [token]);
+
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
 
   const totalRevenue = attributions.reduce((s, a) => s + (a.total_revenue || 0), 0);
   const totalLtv = attributions.reduce((s, a) => s + (a.total_ltv || 0), 0);
