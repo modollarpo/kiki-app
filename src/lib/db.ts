@@ -154,7 +154,11 @@ class SqliteDb {
     const statements = sql
       .split(";")
       .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !/^--/.test(s));
+      // Drop leading SQL comment lines (e.g. a "-- note" placed on the same
+      // `;`-delimited segment as a CREATE TABLE) so the real statement that
+      // follows the comment is not accidentally discarded.
+      .map((s) => s.replace(/^(\s*--[^\n]*\n)+/, "").trim())
+      .filter((s) => s.length > 0);
     for (const s of statements) {
       this.raw.exec(s);
     }
@@ -375,9 +379,6 @@ const SCHEMA = `
     tags TEXT NOT NULL DEFAULT '{}',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
-
-  -- system_metrics holds both tenant-scoped and global rows (tenant_id IS NULL)
-  ALTER TABLE system_metrics ALTER COLUMN tenant_id DROP NOT NULL;
 
   CREATE TABLE IF NOT EXISTS contacts (
     id TEXT PRIMARY KEY,

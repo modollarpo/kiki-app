@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RESOURCE_GROUP: kiki-rg
-  ACR_NAME: kikiregistry
+  RESOURCE_GROUP: kiki-agent-rg
+  ACR_NAME: kikiagentacr
   CONTAINER_APP: kiki-app
   IMAGE: kiki-app
 
