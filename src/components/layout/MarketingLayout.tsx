@@ -77,7 +77,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
       }}>
         {/* Logo */}
         <div style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", flexShrink:0 }} onClick={() => router.push("/")}>
-          <Image src="/images/kiki.png" alt="KIKI" width={26} height={26} style={{ borderRadius:2, boxShadow:scrolled?`0 0 16px ${K.blue}50`:undefined }} />
+          <Image src="/images/kiki.png" alt="KIKI" width={22} height={22} style={{ borderRadius:2, margin:2 }} />
           <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, fontSize:13, color:K.t1 }}>KIKI<span style={{ color:K.blue }}>.</span>Agent</span>
         </div>
 

@@ -84,7 +84,7 @@ export default function LoginPage() {
 
       <div className="relative text-center mb-8">
         <div className="inline-block cursor-pointer" onClick={() => router.push("/")}>
-          <Image src="/images/kiki.png" alt="KIKI" width={48} height={48} className="block rounded-sm mx-auto mb-3" style={{ boxShadow:`0 0 32px ${K.blue}50` }} />
+          <Image src="/images/kiki.png" alt="KIKI" width={44} height={44} className="block rounded-sm mx-auto mb-3" style={{ margin:3 }} />
         </div>
         <p className="font-mono font-bold text-[18px] text-t1">KIKI<span className="text-kblue">.</span>Agent</p>
         <p className="font-mono text-[9px] tracking-[0.14em] text-t3 mt-1">AUTONOMOUS LTV CAMPAIGN PLATFORM</p>

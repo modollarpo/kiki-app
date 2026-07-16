@@ -86,10 +86,11 @@ export default function RegisterPage() {
             src="/images/kiki.png"
             alt="KIKI"
             width={48}
-            height={48}
+            height={44}
             className="block rounded-sm mx-auto mb-3"
             style={{
-              boxShadow: `0 0 32px ${K.blue}50`,
+              margin: 3,
+              filter: "none",
           }}
         />
         </div>

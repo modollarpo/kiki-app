@@ -78,7 +78,7 @@ export default function AppDownloadPage() {
               </div>
               <div className="py-2.5 px-4 flex items-center justify-between border-b border-g800" style={{ background:K.void }}>
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
-                  <Image src="/images/kiki.png" alt="KIKI" width={24} height={24} className="rounded-md" />
+                  <Image src="/images/kiki.png" alt="KIKI" width={20} height={20} className="rounded-md" style={{ margin:2 }} />
                   <span className="font-mono font-bold text-[12px] text-t1">KIKI</span>
                 </div>
                 <span className="font-mono text-[10px] text-kmint">● LIVE</span>
