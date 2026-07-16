@@ -16,7 +16,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "predeploy": "npm run type-check && npm run lint && npm run test",
-    "deploy": "git push origin main && azd up"
+    "deploy": "node scripts/deploy.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
