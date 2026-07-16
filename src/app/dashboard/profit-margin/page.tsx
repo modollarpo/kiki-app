@@ -18,8 +18,6 @@ export default function ProfitMarginPage() {
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
   }, [token, authLoading, router]);
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
-  if (!token) return null;
 
   const fetchPortfolio = useCallback(async () => {
     if (!token) return;
@@ -31,6 +29,9 @@ export default function ProfitMarginPage() {
     } catch {}
     setLoading(false);
   }, [token]);
+
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
 
   const uploadMargins = async () => {
     if (!token) return;

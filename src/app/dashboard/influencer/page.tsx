@@ -20,8 +20,6 @@ export default function InfluencerPage() {
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
   }, [token, authLoading, router]);
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
-  if (!token) return null;
 
   const fetchData = useCallback(async () => {
     if (!token) return;
@@ -37,6 +35,9 @@ export default function InfluencerPage() {
   }, [token]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
 
   const registerCreator = async () => {
     if (!token) return;

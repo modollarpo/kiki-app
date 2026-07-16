@@ -20,8 +20,6 @@ export default function CRMPage() {
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
   }, [token, authLoading, router]);
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
-  if (!token) return null;
 
   useEffect(() => {
     if (!token) return;
@@ -37,6 +35,9 @@ export default function CRMPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [token]);
+
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
 
   return (
     <DashboardLayout>
