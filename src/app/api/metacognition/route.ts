@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { getMetacognitionDashboard, analyzeConfidenceCalibration, analyzeFactorAttribution, runSelfReflection, adaptStrategy } from "@/lib/metacognition";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -33,6 +34,7 @@ export async function GET(req: NextRequest) {
       }
     }
   } catch (e) {
+    logger.error("metacognition/handler", { message: e instanceof Error ? e.message : String(e) });
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
@@ -45,6 +47,7 @@ export async function POST(req: NextRequest) {
     const strategy = await adaptStrategy(user.tenantId);
     return NextResponse.json({ strategy, applied: !!strategy });
   } catch (e) {
+    logger.error("metacognition/handler", { message: e instanceof Error ? e.message : String(e) });
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

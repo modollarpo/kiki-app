@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, Button, StatusBadge, ProgressBar, AIThinking } from "@/components/ui";
+import { StatCard, Card, Badge, Button, StatusBadge, AIThinking } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useKikiStore } from "@/store";
 import { agents as agentsApi, type Agent } from "@/lib/api";
@@ -17,24 +17,30 @@ interface AgentWithActions extends Agent {
   config?: Record<string, unknown>;
 }
 
+interface Guardrail {
+  label: string;
+  value: string;
+  status: string;
+}
+
 export default function AgentsPage() {
   const { token } = useAuth();
   const { toggleAgent } = useKikiStore();
   const [agentList, setAgentList] = useState<AgentWithActions[]>([]);
+  const [guardrails, setGuardrails] = useState<Guardrail[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
   const [runningAgent, setRunningAgent] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) return;
-    agentsApi.list(token).then(d => { setAgentList(d.agents as AgentWithActions[]); setLoading(false); }).catch(() => setLoading(false));
+    agentsApi.list(token).then(d => { setAgentList(d.agents as AgentWithActions[]); if (d.guardrails) setGuardrails(d.guardrails); setLoading(false); }).catch(() => setLoading(false));
   }, [token]);
 
-  // Auto-refresh every 15 seconds
   useEffect(() => {
     if (!token) return;
     const iv = setInterval(() => {
-      agentsApi.list(token).then(d => setAgentList(d.agents as AgentWithActions[])).catch(() => {});
+      agentsApi.list(token).then(d => { setAgentList(d.agents as AgentWithActions[]); if (d.guardrails) setGuardrails(d.guardrails); }).catch(() => {});
     }, 15000);
     return () => clearInterval(iv);
   }, [token]);
@@ -63,7 +69,6 @@ export default function AgentsPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id, action: "run" }),
       });
-      // Refresh agent data
       const d = await agentsApi.list(token);
       setAgentList(d.agents as AgentWithActions[]);
     } catch { /* ignore */ }
@@ -84,66 +89,58 @@ export default function AgentsPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400 }}>
-        <div style={{ marginBottom: 22, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+      <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
+        <div className="mb-[22px] flex items-start justify-between">
           <div>
-            <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>AI Agents</h1>
-            <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">AI Agents</h1>
+            <p className="font-mono text-[11px] text-t3">
               {loading ? "Loading..." : `${agentList.length} agents · ${running.length} running · ${totalActions.toLocaleString()} total actions`}
             </p>
           </div>
           <Badge color={K.mint} dot pulse>LIVE</Badge>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Running Agents" value={String(running.length)} accent={K.mint} loading={loading} />
           <StatCard label="Paused" value={String(agentList.filter(a => a.status === "paused").length)} accent={K.warn} loading={loading} />
           <StatCard label="Total Actions" value={totalActions.toLocaleString()} accent={K.blue} loading={loading} />
           <StatCard label="Avg Uptime" value="99.7%" accent={K.teal} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-[10px]">
             {agentList.map(agent => (
               <Card key={agent.id} accent={agent.status === "running" ? agent.color : undefined}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 2, background: K.g850, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-kdls bg-g850 flex items-center justify-center text-xl shrink-0">
                     {agentTypeIcon(agent.type)}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.t1 }}>{agent.name}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-mono text-xs font-bold text-t1">{agent.name}</span>
                       <StatusBadge status={agent.status} />
                     </div>
-                    <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, marginBottom: 6 }}>{agent.task}</p>
+                    <p className="font-mono text-[10px] text-t3 mb-[6px]">{agent.task}</p>
 
                     {agent.latestAction && (
-                      <div style={{ padding: "8px 10px", background: K.g900, borderRadius: 2, marginBottom: 8, border: `1px solid ${K.g800}` }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                      <div className="p-2 bg-g900 rounded-kdls mb-2 border border-g800">
+                        <div className="flex items-center justify-between mb-[3px]">
                           <Badge color={K.teal} dot>{agent.latestAction.action_type.replace(/_/g, " ")}</Badge>
-                          <span style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>{agent.latestAction.duration_ms}ms</span>
+                          <span className="font-mono text-[10px] text-t4">{agent.latestAction.duration_ms}ms</span>
                         </div>
-                        <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <p className="font-mono text-[10px] text-t4 overflow-hidden text-ellipsis whitespace-nowrap">
                           {agent.latestAction.output.slice(0, 100)}
                         </p>
                       </div>
                     )}
 
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ fontFamily: K.mono, fontSize: 10, fontWeight: 700, color: agent.color }}>{agent.metric}</span>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <Button
-                          size="xs"
-                          variant="ghost"
-                          loading={runningAgent === agent.id}
-                          onClick={() => handleRunNow(agent.id)}>
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-bold" style={{ color: agent.color }}>{agent.metric}</span>
+                      <div className="flex gap-[6px]">
+                        <Button size="xs" variant="ghost" loading={runningAgent === agent.id} onClick={() => handleRunNow(agent.id)}>
                           ▶ Run Now
                         </Button>
-                        <Button
-                          size="xs"
-                          variant="ghost"
-                          loading={toggling === agent.id}
-                          onClick={() => handleToggle(agent.id, agent.status)}>
+                        <Button size="xs" variant="ghost" loading={toggling === agent.id} onClick={() => handleToggle(agent.id, agent.status)}>
                           {agent.status === "running" ? "⏸ Pause" : "▶ Resume"}
                         </Button>
                       </div>
@@ -155,22 +152,24 @@ export default function AgentsPage() {
           </div>
 
           <Card accent={K.blue}>
-            <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>Agent Guardrails</h3>
-            {[{ l: "Max daily spend", v: "$5,000", s: "Active" }, { l: "ROAS floor", v: "2.0×", s: "Active" }, { l: "CPA ceiling", v: "$35", s: "Active" }, { l: "Brand safety", v: "Strict", s: "Active" }].map(r => (
-              <div key={r.l} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${K.g800}` }}>
-                <span style={{ fontFamily: K.mono, fontSize: 11, color: K.t2 }}>{r.l}</span>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.t1 }}>{r.v}</span>
-                  <Badge color={K.mint}>{r.s}</Badge>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-[14px]">Agent Guardrails</h3>
+            {guardrails.length > 0 ? guardrails.map(r => (
+              <div key={r.label} className="flex items-center justify-between py-[10px] border-b border-g800">
+                <span className="font-mono text-[11px] text-t2">{r.label}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[11px] font-bold text-t1">{r.value}</span>
+                  <Badge color={K.mint}>{r.status}</Badge>
                 </div>
               </div>
-            ))}
-            <div style={{ marginTop: 16 }}>
+            )) : (
+              <p className="font-mono text-[11px] text-t3 py-2">No guardrails configured</p>
+            )}
+            <div className="mt-4">
               <AIThinking label="All agents operating within guardrails — no interventions needed" />
             </div>
 
-            <div style={{ marginTop: 16, padding: 14, background: K.g850, borderRadius: 2, border: `1px solid ${K.g700}` }}>
-              <h4 style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: K.t1, marginBottom: 8 }}>Agent Config (Azure OpenAI)</h4>
+            <div className="mt-4 p-[14px] bg-g850 rounded-kdls border border-g700">
+              <h4 className="font-mono text-[11px] font-bold text-t1 mb-2">Agent Config (Azure OpenAI)</h4>
               {[
                 { k: "Primary Model", v: "GPT-4o-mini" },
                 { k: "Fallback Model", v: "GPT-4o" },
@@ -178,9 +177,9 @@ export default function AgentsPage() {
                 { k: "Max Retries", v: "3" },
                 { k: "Timeout", v: "30s" },
               ].map(c => (
-                <div key={c.k} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>{c.k}</span>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, fontWeight: 700, color: K.t2 }}>{c.v}</span>
+                <div key={c.k} className="flex justify-between py-1">
+                  <span className="font-mono text-[10px] text-t4">{c.k}</span>
+                  <span className="font-mono text-[10px] font-bold text-t2">{c.v}</span>
                 </div>
               ))}
             </div>

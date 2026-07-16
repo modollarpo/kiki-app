@@ -17,31 +17,31 @@ const S = [
 export default function PrivacyPage() {
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)", maxWidth:840, margin:"0 auto" }}>
-        <div style={{ marginBottom:36 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14, flexWrap:"wrap" }}>
-            <span style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4 }}>LEGAL</span>
+      <div className="bg-void max-w-[840px] mx-auto" style={{ padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
+        <div className="mb-9">
+          <div className="flex items-center gap-2 mb-3.5 flex-wrap">
+            <span className="font-mono text-[9px] tracking-[0.18em] text-t4">LEGAL</span>
             <Badge color={K.mint}>GDPR</Badge>
             <Badge color={K.blue}>CCPA</Badge>
             <Badge color={K.teal}>SOC2 TYPE II</Badge>
           </div>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(22px,4vw,34px)", color:K.t1, letterSpacing:"-0.025em", marginBottom:8 }}>Privacy Policy</h1>
-          <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3 }}>Last updated: March 20, 2026 · Effective: March 20, 2026</p>
+          <h1 className="font-mono font-bold text-t1 tracking-tight mb-2" style={{ fontSize:"clamp(22px,4vw,34px)" }}>Privacy Policy</h1>
+          <p className="font-mono text-[11px] text-t3">Last updated: March 20, 2026 · Effective: March 20, 2026</p>
         </div>
-        <div style={{ padding:14, background:K.blueT, border:`1px solid ${K.blue}25`, borderRadius:2, marginBottom:28 }}>
-          <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t2, lineHeight:1.7 }}>This policy describes how KIKI Agent Inc. collects, uses, and protects your information. As a data processor, we handle conversion data strictly according to your instructions.</p>
+        <div className="p-3.5 mb-7 rounded-sm" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
+          <p className="font-sans text-[13px] text-t2 leading-[1.7]">This policy describes how KIKI Agent Inc. collects, uses, and protects your information. As a data processor, we handle conversion data strictly according to your instructions.</p>
         </div>
         <div className="prose">
           {S.map((s,i) => (
-            <div key={i} style={{ marginBottom:28, paddingBottom:28, borderBottom:i<S.length-1?`1px solid ${K.g800}`:"none" }}>
-              <h2 style={{ fontFamily:K.mono, fontWeight:700, fontSize:16, color:K.t1, marginBottom:10 }}>{s.h}</h2>
-              <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t2, lineHeight:1.75 }}>{s.b}</p>
+            <div key={i} className={`mb-7 pb-7 ${i<S.length-1?"border-b border-g800":""}`}>
+              <h2 className="font-mono font-bold text-base text-t1 mb-2.5">{s.h}</h2>
+              <p className="font-sans text-[13px] text-t2 leading-[1.75]">{s.b}</p>
             </div>
           ))}
         </div>
-        <div style={{ marginTop:36, padding:18, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2 }}>
-          <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:12, color:K.t1, marginBottom:6 }}>Questions or data requests?</p>
-          <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3 }}>Email <span style={{color:K.blue4}}>privacy@kiki.ai</span> or use Settings → Privacy → Data Requests in your dashboard.</p>
+        <div className="mt-9 p-[18px] bg-g900 border border-g800 rounded-sm">
+          <p className="font-mono font-bold text-xs text-t1 mb-1.5">Questions or data requests?</p>
+          <p className="font-sans text-[13px] text-t3">Email <span className="text-kblue4">privacy@kiki.ai</span> or use Settings → Privacy → Data Requests in your dashboard.</p>
         </div>
       </div>
     </MarketingLayout>

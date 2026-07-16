@@ -4,7 +4,8 @@
 // ============================================================
 
 import { getDb, genId } from "./db";
-import { AZURE_OPENAI_CONFIG, buildAzureOpenAIUrl, buildAzureOpenAIHeaders } from "./azure-openai";
+import { AZURE_OPENAI_CONFIG, buildAzureOpenAIUrl, buildAzureOpenAIHeaders, type ModelTier } from "./azure-openai";
+import { callGroq, isGroqConfigured } from "./groq";
 
 export type AgentType = "bidding" | "creative" | "pacing" | "signals" | "syncbrain" | "oaas";
 
@@ -25,9 +26,21 @@ interface AgentTaskResult {
   metrics: Record<string, string | number>;
 }
 
-// ── Call Azure OpenAI for agent decision-making ───────────
-async function callAI(prompt: string, systemPrompt: string, model: "mini" | "standard" = "mini"): Promise<string> {
-  const config = AZURE_OPENAI_CONFIG[model];
+// ── Call AI for agent decision-making ─────────────────────
+// "fast" routes to Groq (<200ms), "mini"/"standard" route to Azure OpenAI
+async function callAI(prompt: string, systemPrompt: string, tier: ModelTier = "mini"): Promise<string> {
+  // Fast path: Groq
+  if (tier === "fast") {
+    if (!isGroqConfigured()) {
+      console.warn("[Agent] Groq not configured, falling back to Azure mini");
+      tier = "mini";
+    } else {
+      return callGroq(prompt, systemPrompt, { maxTokens: 512, temperature: 0.3 });
+    }
+  }
+
+  // Azure OpenAI path (tier is now "mini" | "standard")
+  const config = AZURE_OPENAI_CONFIG[tier as "mini" | "standard"];
   try {
     const url = buildAzureOpenAIUrl(config.deploymentName);
     const headers = buildAzureOpenAIHeaders();
@@ -82,7 +95,7 @@ Return JSON array: [{"campaignId": "id", "action": "increase|decrease|maintain",
 
   const system = "You are the Bidding Agent for KIKI Agent. Analyze campaign performance and optimize bids to maximize ROAS while maintaining spend efficiency. Return ONLY valid JSON.";
 
-  let output = await callAI(prompt, system, "mini");
+  let output = await callAI(prompt, system, "fast");
   let parsed: Array<{ campaignId: string; action: string; percentage: number; reason: string }> = [];
 
   try {
@@ -143,9 +156,33 @@ Return JSON array: [{"headline": "string", "text": "string", "cta": "string", "a
   let output = await callAI(prompt, system, "standard");
   let variants: number;
 
+  // Get tenant_id from agent
+  const agentRow = await db.prepare("SELECT tenant_id FROM agents WHERE id = ?").get(agentId) as { tenant_id: string } | undefined;
+  const tenantId = agentRow?.tenant_id || "t1";
+
   try {
     const parsed = JSON.parse(output.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
-    variants = Array.isArray(parsed) ? parsed.length : 3;
+    if (Array.isArray(parsed)) {
+      variants = parsed.length;
+      const insertCreative = db.prepare(`
+        INSERT INTO creatives (id, tenant_id, campaign_id, type, content, platform, status, ai_score)
+        VALUES (?, ?, ?, ?, ?, ?, 'draft', ?)
+      `);
+      for (const v of parsed) {
+        const headline = v.headline || "";
+        const text = v.text || "";
+        const cta = v.cta || "";
+        const angle = v.angle || "";
+        const expectedCTR = typeof v.expectedCTR === "number" ? v.expectedCTR : 0;
+        const content = JSON.stringify({ headline, text, cta, angle, expectedCTR });
+        await insertCreative.run(
+          genId("cr"), tenantId, null, "headline", content, "multi",
+          Math.round(expectedCTR * 100)
+        );
+      }
+    } else {
+      variants = 3;
+    }
   } catch {
     variants = 3;
   }
@@ -158,15 +195,20 @@ Return JSON array: [{"headline": "string", "text": "string", "cta": "string", "a
 
   return { agentId, actionType: "creative_generation", input: "{}", output: output || "{}", status: "success", durationMs: duration, metrics: { variants } };
 }
-
 // ── Smart Pacing Agent ────────────────────────────────────
 export async function runPacingAgent(agentId: string): Promise<AgentTaskResult> {
   const start = Date.now();
   const db = await getDb();
 
-  const campaigns =   await db.prepare(
-    "SELECT id, name, spend, budget, status FROM campaigns WHERE tenant_id = ? AND status = 'active'"
-  ).all() as Array<{ id: string; name: string; spend: number; budget: number }>;
+  // Get agent's tenant_id
+  const agent = await db.prepare("SELECT tenant_id FROM agents WHERE id = ?").get(agentId) as { tenant_id: string } | undefined;
+  const tenantId = agent?.tenant_id;
+  if (!tenantId) throw new Error(`Agent ${agentId} has no tenant_id`);
+
+  const campaigns =
+    await db.prepare(
+      "SELECT id, name, spend, budget, status FROM campaigns WHERE tenant_id = ? AND status = 'active'"
+    ).all(tenantId) as Array<{ id: string; name: string; spend: number; budget: number }>;
 
   const now = new Date();
   const hour = now.getHours();

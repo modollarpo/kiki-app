@@ -45,55 +45,56 @@ export default function DocsPage() {
   const router = useRouter();
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)", maxWidth:1060, margin:"0 auto" }}>
-        <div style={{ textAlign:"center", marginBottom:56 }}>
-          <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4, marginBottom:14 }}>DEVELOPER DOCUMENTATION</p>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(24px,4vw,40px)", color:K.t1, letterSpacing:"-0.03em", marginBottom:12 }}>KIKI Agent API Reference</h1>
-          <p style={{ fontFamily:"Inter,sans-serif", fontSize:16, color:K.t3, maxWidth:520, margin:"0 auto 28px" }}>Everything you need to integrate, extend, and automate the KIKI Agent platform.</p>
-          <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
+      <div className="max-w-[1060px] mx-auto" style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
+        <div className="text-center mb-14">
+          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">DEVELOPER DOCUMENTATION</p>
+          <h1 className="font-mono font-bold text-[clamp(24px,4vw,40px)] text-t1 tracking-[-0.03em] mb-3">KIKI Agent API Reference</h1>
+          <p className="font-sans text-[16px] text-t3 max-w-[520px] mx-auto mb-7">Everything you need to integrate, extend, and automate the KIKI Agent platform.</p>
+          <div className="flex gap-2.5 justify-center flex-wrap">
             <Button size="lg" onClick={() => router.push("/auth/login")}>Get API Key →</Button>
             <Button variant="secondary" size="lg" onClick={() => window.open("https://github.com/kiki-agent/sdk", "_blank")}>View on GitHub</Button>
           </div>
         </div>
 
-        <div style={{ padding:0, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2, marginBottom:40, overflow:"hidden" }}>
-          <div style={{ padding:"10px 18px", background:K.g950, borderBottom:`1px solid ${K.g800}`, display:"flex", alignItems:"center", gap:8 }}>
-            <div style={{ display:"flex", gap:5 }}>
-              {["#FF3B3B","#F5A623","#31F3C3"].map((c,i) => <div key={i} style={{ width:10, height:10, borderRadius:"50%", background:c, opacity:0.7 }}/>)}
+        <div className="rounded-sm mb-10 overflow-hidden" style={{ background:K.g900, border:`1px solid ${K.g800}` }}>
+          <div className="px-4 py-2.5 flex items-center gap-2" style={{ background:K.g950, borderBottom:`1px solid ${K.g800}` }}>
+            <div className="flex gap-[5px]">
+              {["#FF3B3B","#F5A623","#31F3C3"].map((c,i) => <div key={i} className="w-2.5 h-2.5 rounded-full opacity-70" style={{ background:c }}/>)}
             </div>
-            <span style={{ fontFamily:K.mono, fontSize:10, color:K.t4 }}>Terminal</span>
+            <span className="font-mono text-[10px] text-t4">Terminal</span>
           </div>
-          <pre style={{ padding:"20px 24px", fontFamily:K.mono, fontSize:12, color:K.t2, lineHeight:1.9, overflow:"auto" }}>
+          <pre className="px-6 py-5 font-mono text-[12px] text-t2 leading-[1.9] overflow-auto">
             <code>{CODE_EXAMPLE}</code>
           </pre>
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))", gap:12 }}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3">
           {SECTIONS.map(s => (
             <div key={s.title} onClick={() => router.push(s.href)}
-              style={{ padding:22, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2, cursor:"pointer", transition:"all 0.2s", position:"relative", overflow:"hidden" }}
+              className="p-[22px] bg-g900 rounded-sm cursor-pointer transition-all duration-200 relative overflow-hidden"
+              style={{ border:`1px solid ${K.g800}` }}
               onMouseEnter={e => { (e.currentTarget.style.background=K.g850); (e.currentTarget.style.transform="translateY(-2px)"); }}
               onMouseLeave={e => { (e.currentTarget.style.background=K.g900); (e.currentTarget.style.transform="none"); }}>
-              <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:`linear-gradient(90deg,transparent,${s.bc}60,transparent)` }}/>
-              <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:12 }}>
-                <span style={{ fontSize:22, color:s.bc }}>{s.icon}</span>
-                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+              <div className="absolute top-0 left-0 right-0 h-px" style={{ background:`linear-gradient(90deg,transparent,${s.bc}60,transparent)` }}/>
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-[22px]" style={{ color:s.bc }}>{s.icon}</span>
+                <div className="flex gap-1.5 flex-wrap">
                   {s.badge && <Badge color={s.bc}>{s.badge}</Badge>}
-                  <span style={{ fontFamily:K.mono, fontSize:9, color:K.t4 }}>{s.time}</span>
+                  <span className="font-mono text-[9px] text-t4">{s.time}</span>
                 </div>
               </div>
-              <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:13, color:K.t1, marginBottom:6 }}>{s.title}</p>
-              <p style={{ fontFamily:"Inter,sans-serif", fontSize:12, color:K.t3, lineHeight:1.6 }}>{s.desc}</p>
+              <p className="font-mono font-bold text-[13px] text-t1 mb-1.5">{s.title}</p>
+              <p className="font-sans text-[12px] text-t3 leading-[1.6]">{s.desc}</p>
             </div>
           ))}
         </div>
 
-        <div style={{ marginTop:40, padding:20, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
+        <div className="mt-10 p-5 bg-g900 rounded-sm flex items-center justify-between flex-wrap gap-4" style={{ border:`1px solid ${K.g800}` }}>
           <div>
-            <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:13, color:K.t1, marginBottom:4 }}>Need help integrating?</p>
-            <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3 }}>Join our developer Discord or email <span style={{color:K.blue4}}>developers@kiki.ai</span></p>
+            <p className="font-mono font-bold text-[13px] text-t1 mb-1">Need help integrating?</p>
+            <p className="font-sans text-[13px] text-t3">Join our developer Discord or email <span style={{color:K.blue4}}>developers@kiki.ai</span></p>
           </div>
-          <div style={{ display:"flex", gap:10 }}>
+          <div className="flex gap-2.5">
             <Button variant="secondary" size="sm" onClick={() => window.open("https://discord.gg/kiki-agent", "_blank")}>Join Discord</Button>
             <Button size="sm" onClick={() => router.push("/contact")}>Book Integration Call</Button>
           </div>

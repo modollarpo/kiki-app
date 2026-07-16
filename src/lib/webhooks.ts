@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { enrichConversionEvent } from "@/lib/capi";
 import { eventBus } from "@/lib/events";
+import { logger } from "@/lib/logger";
 
 export interface WebhookPayload {
   platform: string;
@@ -159,6 +160,55 @@ function parsePinterestWebhook(body: any): WebhookPayload {
   };
 }
 
+// ── Webhook Signature Verification ─────────────────────────
+// Each platform signs POST bodies with a shared secret. Verification
+// MUST be enforced in production; in dev, a missing secret allows the
+// request through with a warning so local integrations still work.
+
+const WEBHOOK_SECRETS: Record<string, { header: string; envKey: string }> = {
+  meta:      { header: "x-hub-signature-256",       envKey: "META_APP_SECRET" },
+  tiktok:    { header: "x-tt-signature",             envKey: "TIKTOK_WEBHOOK_SECRET" },
+  linkedin:  { header: "x-li-signature",             envKey: "LINKEDIN_WEBHOOK_SECRET" },
+  google:    { header: "x-goog-signature",           envKey: "GOOGLE_WEBHOOK_SECRET" },
+  snap:      { header: "x-snap-signature",           envKey: "SNAP_WEBHOOK_SECRET" },
+  pinterest: { header: "x-pinterest-signature",      envKey: "PINTEREST_WEBHOOK_SECRET" },
+};
+
+function verifyPlatformSignature(
+  req: NextRequest,
+  platform: string,
+  rawBody: string
+): boolean {
+  const cfg = WEBHOOK_SECRETS[platform];
+  if (!cfg) return true; // unknown platform — cannot verify
+
+  const secret = process.env[cfg.envKey];
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      logger.error(`webhook: ${cfg.envKey} not set in production — rejecting ${platform}`, { platform });
+      return false;
+    }
+    logger.warn(`webhook: ${cfg.envKey} not set — allowing in dev mode`, { platform });
+    return true;
+  }
+
+  const signature = req.headers.get(cfg.header);
+  if (!signature) return false;
+
+  // Meta sends "sha256=<hex>"; most others send raw hex.
+  const expectedHex = signature.startsWith("sha256=") ? signature.slice(7) : signature;
+
+  const computedHex = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+
+  // Validate hex lengths match before timingSafeEqual (it throws on mismatch).
+  if (expectedHex.length !== computedHex.length) return false;
+
+  return crypto.timingSafeEqual(
+    Buffer.from(expectedHex, "hex"),
+    Buffer.from(computedHex, "hex")
+  );
+}
+
 // ── Main Webhook Handler ───────────────────────────────────
 
 export async function handleWebhook(
@@ -166,7 +216,15 @@ export async function handleWebhook(
   platform: string
 ): Promise<NextResponse> {
   try {
-    const body = await req.json();
+    // Read raw body first — needed for HMAC signature verification.
+    const rawBody = await req.text();
+
+    if (!verifyPlatformSignature(req, platform, rawBody)) {
+      logger.warn("webhook: rejected request with invalid signature", { platform });
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
+
+    const body = JSON.parse(rawBody);
 
     // Parse platform-specific webhook
     let payload: WebhookPayload;
@@ -230,6 +288,7 @@ export async function handleWebhook(
       segment: result.enriched.ltvSegment,
     });
   } catch (e) {
+    logger.error("webhook: processing failed", { platform, error: String(e) });
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

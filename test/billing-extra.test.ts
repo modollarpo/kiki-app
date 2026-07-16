@@ -6,6 +6,9 @@ import {
   handlePaymentFailure,
   PLAN_PRICING,
 } from "@/lib/billing";
+import { isDbAvailable } from "./db-env";
+
+const dbAvailable = await isDbAvailable();
 
 const TENANT = "t1";
 
@@ -17,7 +20,7 @@ async function activeSpend(): Promise<number> {
   return row.s;
 }
 
-describe("billing — OaaS fee calculation", () => {
+describe.skipIf(!dbAvailable)("billing — OaaS fee calculation", () => {
   it("derives management fee as a % of managed spend", async () => {
     const r = await calculateOaasFees(
       TENANT,
@@ -45,7 +48,7 @@ describe("billing — OaaS fee calculation", () => {
   });
 });
 
-describe("billing — invoice generation (growth plan)", () => {
+describe.skipIf(!dbAvailable)("billing — invoice generation (growth plan)", () => {
   it("includes the base subscription line item", async () => {
     const periodStart = new Date(Date.now() - 30 * 86400000).toISOString();
     const periodEnd = new Date().toISOString();
@@ -55,7 +58,7 @@ describe("billing — invoice generation (growth plan)", () => {
   });
 });
 
-describe("billing — dunning transitions", () => {
+describe.skipIf(!dbAvailable)("billing — dunning transitions", () => {
   it("moves subscription to past_due after first failure", async () => {
     await handlePaymentFailure(TENANT, "inv_test_dunning", 1);
     const db = await getDb();

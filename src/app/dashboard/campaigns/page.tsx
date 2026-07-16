@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, Button, StatusBadge, ProgressBar, AIThinking } from "@/components/ui";
+import { StatCard, Card, Badge, Button, StatusBadge, ProgressBar } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { campaigns as campaignsApi, type Campaign } from "@/lib/api";
 import { K } from "@/lib/kdls";
@@ -42,21 +42,21 @@ export default function CampaignsPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding:"24px 28px", maxWidth:1400 }}>
-        <div style={{ marginBottom:22, display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+      <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
+        <div className="mb-[22px] flex items-start justify-between">
           <div>
-            <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:18, color:K.t1, letterSpacing:"-0.02em", marginBottom:4 }}>Campaigns</h1>
-            <p style={{ fontFamily:K.mono, fontSize:11, color:K.t3 }}>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Campaigns</h1>
+            <p className="font-mono text-[11px] text-t3">
               {loading ? "Loading..." : `${campaignList.length} campaigns · ${active.length} active · Bidding Agent active`}
             </p>
           </div>
-          <div style={{ display:"flex", gap:8 }}>
+          <div className="flex gap-2">
             <Button variant="secondary" size="sm">⬡ Zero-Shot Create</Button>
             <Button size="sm" onClick={() => setCreating(true)}>+ New Campaign</Button>
           </div>
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Active Campaigns" value={String(active.length)} accent={K.mint} loading={loading} />
           <StatCard label="Best ROAS" value={`${bestRoas.toFixed(2)}×`} accent={K.mint} delta={12.4} loading={loading} />
           <StatCard label="Total Spend" value={`$${fmt(totalSpend)}`} accent={K.blue} loading={loading} />
@@ -64,22 +64,22 @@ export default function CampaignsPage() {
         </div>
 
         {creating && (
-          <div style={{ marginBottom:16, padding:20, background:K.oaasD, border:`1px solid ${K.oaas}40`, borderRadius:2 }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-              <span style={{ fontFamily:K.mono, fontSize:13, fontWeight:700, color:K.oaas }}>⬡ New Campaign</span>
+          <div className="mb-4 p-5 bg-koaas/10 border border-koaas/40 rounded-kdls">
+            <div className="flex items-center justify-between mb-[14px]">
+              <span className="font-mono text-[13px] font-bold text-koaas">⬡ New Campaign</span>
               <Button size="xs" variant="ghost" onClick={() => setCreating(false)}>✕</Button>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 120px 120px", gap:10, marginBottom:10 }}>
+            <div className="grid grid-cols-[1fr_120px_120px] gap-[10px] mb-[10px]">
               <input placeholder="Campaign name" value={newName} onChange={e => setNewName(e.target.value)}
-                style={{ background:K.g850, border:`1px solid ${K.g700}`, borderRadius:2, padding:"10px 14px", fontFamily:"Inter,sans-serif", fontSize:13, color:K.t1, outline:"none" }} />
+                className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-sans text-[13px] text-t1 outline-none focus:border-kblue" />
               <select value={newPlatform} onChange={e => setNewPlatform(e.target.value)}
-                style={{ background:K.g850, border:`1px solid ${K.g700}`, borderRadius:2, padding:"10px 14px", fontFamily:K.mono, fontSize:11, color:K.t1, outline:"none" }}>
+                className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-[11px] text-t1 outline-none">
                 {["meta","google","tiktok","linkedin","youtube","pinterest"].map(p => <option key={p} value={p}>{p}</option>)}
               </select>
               <input type="number" placeholder="Budget" value={newBudget} onChange={e => setNewBudget(Number(e.target.value))}
-                style={{ background:K.g850, border:`1px solid ${K.g700}`, borderRadius:2, padding:"10px 14px", fontFamily:K.mono, fontSize:11, color:K.t1, outline:"none" }} />
+                className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-[11px] text-t1 outline-none" />
             </div>
-            <div style={{ display:"flex", gap:8 }}>
+            <div className="flex gap-2">
               <Button variant="violet" size="md" onClick={handleCreate}>Create Campaign →</Button>
               <Button variant="ghost" size="md" onClick={() => setCreating(false)}>Cancel</Button>
             </div>
@@ -87,39 +87,43 @@ export default function CampaignsPage() {
         )}
 
         <Card padding={0}>
-          <div style={{ padding:"12px 20px", borderBottom:`1px solid ${K.g800}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-            <span style={{ fontFamily:K.mono, fontSize:13, fontWeight:700, color:K.t1 }}>All Campaigns</span>
+          <div className="px-5 py-3 border-b border-g800 flex items-center justify-between">
+            <span className="font-mono text-[13px] font-bold text-t1">All Campaigns</span>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 90px 80px 80px 80px 90px 70px", gap:10, padding:"8px 20px", borderBottom:`1px solid ${K.g800}`, background:K.g950 }}>
+          <div className="overflow-x-auto">
+          <div className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-2 border-b border-g800 bg-g950 min-w-[700px]">
             {["NAME","STATUS","ROAS","SPEND","BUDGET","PLATFORM","CREATED"].map(h => (
-              <span key={h} style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.1em", color:K.t4 }}>{h}</span>
+              <span key={h} className="font-mono text-[10px] tracking-widest text-t4">{h}</span>
             ))}
           </div>
           {campaignList.map(c => {
-            const rc = c.roas >= 4 ? K.mint : c.roas >= 2 ? K.warn : K.t3;
+            const rc = c.roas >= 4 ? "text-kmint" : c.roas >= 2 ? "text-kwarn" : "text-t3";
             return (
               <div key={c.id}
-                style={{ display:"grid", gridTemplateColumns:"1fr 90px 80px 80px 80px 90px 70px", gap:10, padding:"12px 20px", borderBottom:`1px solid ${K.g900}`, alignItems:"center", cursor:"pointer", transition:"background 0.1s" }}
-                onMouseEnter={e => (e.currentTarget.style.background = K.g850)} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-3 border-b border-g900 items-center cursor-pointer hover:bg-g850 transition-colors">
                 <div>
-                  <p style={{ fontFamily:K.mono, fontSize:11, fontWeight:700, color:K.t1, marginBottom:3 }}>{c.name}</p>
+                  <p className="font-mono text-[11px] font-bold text-t1 mb-[3px]">{c.name}</p>
                   {c.budget > 0 && <ProgressBar value={(c.spend / c.budget) * 100} color={K.blue} height={2} />}
                 </div>
                 <StatusBadge status={c.status} />
-                <span style={{ fontFamily:K.mono, fontSize:12, fontWeight:700, color:rc }}>{c.roas > 0 ? `${c.roas}×` : "—"}</span>
-                <span style={{ fontFamily:K.mono, fontSize:11, color:K.t2 }}>{c.spend > 0 ? `$${fmt(c.spend)}` : "—"}</span>
-                <span style={{ fontFamily:K.mono, fontSize:11, color:K.t2 }}>${fmt(c.budget)}</span>
-                <span style={{ width:16, height:16, borderRadius:2, background:`${PLATFORM_COLORS[c.platform] || "#555"}18`, color:PLATFORM_COLORS[c.platform] || "#888", fontFamily:"monospace", fontSize:8, fontWeight:700, display:"inline-flex", alignItems:"center", justifyContent:"center" }}>{c.platform[0]?.toUpperCase()}</span>
-                <span style={{ fontFamily:K.mono, fontSize:10, color:K.t4 }}>{new Date(c.createdAt).toLocaleDateString()}</span>
+                <span className={`font-mono text-xs font-bold ${rc}`}>{c.roas > 0 ? `${c.roas}×` : "—"}</span>
+                <span className="font-mono text-[11px] text-t2">{c.spend > 0 ? `$${fmt(c.spend)}` : "—"}</span>
+                <span className="font-mono text-[11px] text-t2">${fmt(c.budget)}</span>
+                <span className="w-4 h-4 rounded-kdls inline-flex items-center justify-center font-mono text-[10px] font-bold"
+                  style={{ background: `${PLATFORM_COLORS[c.platform] || "#555"}18`, color: PLATFORM_COLORS[c.platform] || "#888" }}>
+                  {c.platform[0]?.toUpperCase()}
+                </span>
+                <span className="font-mono text-[10px] text-t4">{new Date(c.createdAt).toLocaleDateString()}</span>
               </div>
             );
           })}
           {loading && [1,2,3].map(i => (
-            <div key={i} style={{ padding:"12px 20px", borderBottom:`1px solid ${K.g900}` }}>
-              <div style={{ height:14, width:"50%", background:K.g850, borderRadius:2, marginBottom:6 }} />
-              <div style={{ height:3, width:"70%", background:K.g850, borderRadius:2 }} />
+            <div key={i} className="px-5 py-3 border-b border-g900">
+              <div className="h-[14px] w-1/2 bg-g850 rounded-kdls mb-[6px]" />
+              <div className="h-[3px] w-[70%] bg-g850 rounded-kdls" />
             </div>
           ))}
+          </div>
         </Card>
       </div>
     </DashboardLayout>

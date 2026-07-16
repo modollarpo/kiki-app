@@ -1,13 +1,19 @@
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { ingestSignal, getSignalStats } from "@/lib/signals";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const stats = await getSignalStats(user.tenantId);
-  return json(stats);
+  try {
+    const stats = await getSignalStats(user.tenantId);
+    return json(stats);
+  } catch (error) {
+    logger.error("signals/GET failed", { message: error instanceof Error ? error.message : String(error) });
+    return jsonError("Failed to load signal stats", 500);
+  }
 }
 
 export async function POST(req: Request) {
@@ -26,7 +32,7 @@ export async function POST(req: Request) {
     });
 
     return json(result, 201);
-  } catch {
-    return jsonError("Invalid request body", 400);
+  } catch (e) {
+    return handleApiError(e, "signals/POST failed");
   }
 }

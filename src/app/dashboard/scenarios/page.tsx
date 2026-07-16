@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, ProgressBar, Button } from "@/components/ui";
@@ -31,20 +31,20 @@ export default function ScenariosPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400 }}>
-        <div style={{ marginBottom: 22 }}>
-          <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>Scenario Planner</h1>
-          <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>Budget allocation scenarios · Projected ROAS · Risk assessment</p>
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
+        <div className="mb-5">
+          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Scenario Planner</h1>
+          <p className="font-mono text-[11px] text-gray-500">Budget allocation scenarios · Projected ROAS · Risk assessment</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Scenarios" value={scenarios.length > 0 ? String(scenarios.length) : "—"} accent={K.blue} loading={loading} />
           <StatCard label="Best Projected ROAS" value={scenarios.length > 0 ? `${Math.max(...scenarios.map(s => s.projectedROAS))}×` : "—"} accent={K.mint} sub="Highest return" loading={loading} />
           <StatCard label="Avg Confidence" value={scenarios.length > 0 ? `${Math.round(scenarios.reduce((s, sc) => s + sc.confidence, 0) / scenarios.length)}%` : "—"} accent={K.teal} loading={loading} />
           <StatCard label="Total Projected Revenue" value={scenarios.length > 0 ? fmt.currency(scenarios.reduce((s, sc) => s + sc.projectedRevenue, 0)) : "—"} accent={K.gold} loading={loading} />
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="flex flex-col gap-3">
           {scenarios.map(sc => (
             <Card
               key={sc.id}
@@ -54,36 +54,36 @@ export default function ScenariosPage() {
               onClick={() => setSelected(sc.id)}
               style={{ border: selected === sc.id ? `1px solid ${K.blue}60` : undefined }}
             >
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                    <span style={{ fontFamily: K.mono, fontSize: 14, fontWeight: 700, color: K.t1 }}>{sc.name}</span>
+              <div className="flex items-start gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="font-mono text-sm font-bold text-white">{sc.name}</span>
                     <Badge color={getRiskColor(sc.risk)}>{sc.risk.toUpperCase()} RISK</Badge>
                     <Badge color={K.t3}>{sc.confidence}% CONF</Badge>
                   </div>
-                  <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3, marginBottom: 12 }}>{sc.description}</p>
+                  <p className="font-mono text-[11px] text-gray-500 mb-3">{sc.description}</p>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+                  <div className="flex items-center gap-6">
                     <div>
-                      <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4, marginBottom: 2 }}>BUDGET CHANGE</p>
-                      <p style={{ fontFamily: K.mono, fontSize: 13, fontWeight: 700, color: sc.budgetChange > 0 ? K.mint : sc.budgetChange < 0 ? K.danger : K.t2 }}>{sc.budgetChange > 0 ? "+" : ""}{sc.budgetChange}%</p>
+                      <p className="font-mono text-[10px] text-gray-600 mb-0.5">BUDGET CHANGE</p>
+                      <p className="font-mono text-[13px] font-bold" style={{ color: sc.budgetChange > 0 ? K.mint : sc.budgetChange < 0 ? K.danger : K.t2 }}>{sc.budgetChange > 0 ? "+" : ""}{sc.budgetChange}%</p>
                     </div>
                     <div>
-                      <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4, marginBottom: 2 }}>PROJECTED ROAS</p>
-                      <p style={{ fontFamily: K.mono, fontSize: 13, fontWeight: 700, color: K.mint }}>{sc.projectedROAS}×</p>
+                      <p className="font-mono text-[10px] text-gray-600 mb-0.5">PROJECTED ROAS</p>
+                      <p className="font-mono text-[13px] font-bold text-kmint">{sc.projectedROAS}×</p>
                     </div>
                     <div>
-                      <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4, marginBottom: 2 }}>PROJECTED REVENUE</p>
-                      <p style={{ fontFamily: K.mono, fontSize: 13, fontWeight: 700, color: K.t1 }}>{fmt.currency(sc.projectedRevenue)}</p>
+                      <p className="font-mono text-[10px] text-gray-600 mb-0.5">PROJECTED REVENUE</p>
+                      <p className="font-mono text-[13px] font-bold text-white">{fmt.currency(sc.projectedRevenue)}</p>
                     </div>
                     <div>
-                      <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4, marginBottom: 2 }}>CONFIDENCE</p>
-                      <p style={{ fontFamily: K.mono, fontSize: 13, fontWeight: 700, color: K.blue }}>{sc.confidence}%</p>
+                      <p className="font-mono text-[10px] text-gray-600 mb-0.5">CONFIDENCE</p>
+                      <p className="font-mono text-[13px] font-bold text-kblue">{sc.confidence}%</p>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+                <div className="flex flex-col gap-1.5 flex-shrink-0">
                   {selected === sc.id && <Button variant="primary" size="sm">Selected</Button>}
                   {selected !== sc.id && <Button variant="secondary" size="sm">Select</Button>}
                 </div>

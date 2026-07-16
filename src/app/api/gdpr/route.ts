@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { exportUserData, deleteUserData, recordConsent, getConsentStatus } from "@/lib/gdpr";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,6 +24,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Unknown action" }, { status: 400 });
     }
   } catch (e) {
+    logger.error("gdpr/handler", { message: e instanceof Error ? e.message : String(e) });
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
@@ -64,6 +66,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Unknown action" }, { status: 400 });
     }
   } catch (e) {
+    logger.error("gdpr/handler", { message: e instanceof Error ? e.message : String(e) });
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

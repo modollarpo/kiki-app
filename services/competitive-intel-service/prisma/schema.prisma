@@ -1,0 +1,67 @@
+// ============================================================
+// KIKI Agent™ — Prisma Schema: Competitive Intel Service
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CompetitorTrack {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  name           String
+  domain         String
+  platforms      String[]
+  industry       String?
+  trackingSince  DateTime @default(now()) @map("tracking_since")
+  lastChecked    DateTime? @map("last_checked")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, domain])
+  @@index([tenantId])
+  @@map("competitor_tracks")
+}
+
+model CompetitorAdSnapshot {
+  id                  String   @id @default(cuid())
+  competitorId        String   @map("competitor_id")
+  platform            String
+  adId                String   @map("ad_id")
+  creativeType        String   @map("creative_type")
+  headline            String?
+  body                String?
+  imageUrl            String?  @map("image_url")
+  callToAction        String?  @map("call_to_action")
+  landingPageUrl      String?  @map("landing_page_url")
+  firstSeen           DateTime @default(now()) @map("first_seen")
+  lastSeen            DateTime @default(now()) @map("last_seen")
+  estimatedImpressions Int?    @map("estimated_impressions")
+  estimatedSpend       Float?  @map("estimated_spend")
+  aiAnalysis          Json?    @map("ai_analysis")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@index([competitorId, platform])
+  @@index([platform, lastSeen])
+  @@map("competitor_ad_snapshots")
+}
+
+model CpmBenchmark {
+  id           String   @id @default(cuid())
+  platform     String
+  industry     String
+  period       String
+  p50          Float
+  p75          Float
+  p90          Float
+  sampleSize   Int      @default(0) @map("sample_size")
+  source       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([platform, industry, period])
+  @@map("cpm_benchmarks")
+}

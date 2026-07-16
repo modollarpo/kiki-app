@@ -1,5 +1,6 @@
 import { getDb, genId } from "@/lib/db";
 import { json, jsonError, validateEmail, validateRequired, sanitizeString, getUserFromRequest } from "@/lib/auth";
+import { handleApiError } from "@/lib/logger";
 import { NextRequest } from "next/server";
 
 export async function POST(req: Request) {
@@ -25,8 +26,8 @@ export async function POST(req: Request) {
       email.toLowerCase().trim(), sanitizeString(company, 200), sanitizeString(message, 5000));
 
     return json({ ok: true, id }, 201);
-  } catch {
-    return jsonError("Invalid request body", 400);
+  } catch (e) {
+    return handleApiError(e, "contacts/POST failed");
   }
 }
 
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
     const db = await getDb();
     const contacts = await db.prepare("SELECT * FROM contacts ORDER BY created_at DESC").all();
     return json({ contacts, total: contacts.length });
-  } catch {
-    return jsonError("Failed to fetch contacts", 500);
+  } catch (e) {
+    return handleApiError(e, "contacts/GET failed");
   }
 }

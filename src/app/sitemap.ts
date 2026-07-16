@@ -9,7 +9,7 @@ const PUBLIC_ROUTES: { path: string; priority: number; change: "daily" | "weekly
   { path: "/features", priority: 0.9, change: "weekly" },
   { path: "/pricing", priority: 0.9, change: "weekly" },
   { path: "/enterprise", priority: 0.8, change: "weekly" },
-  { path: "/agency", priority: 0.8, change: "weekly" },
+  { path: "/dashboard/agency", priority: 0.8, change: "weekly" },
   { path: "/mobile", priority: 0.8, change: "weekly" },
   { path: "/app-download", priority: 0.8, change: "weekly" },
   { path: "/about", priority: 0.7, change: "monthly" },
@@ -25,8 +25,8 @@ const PUBLIC_ROUTES: { path: string; priority: number; change: "daily" | "weekly
   { path: "/oaas-agreement", priority: 0.4, change: "monthly" },
   { path: "/digital-handshake", priority: 0.4, change: "monthly" },
   { path: "/contracts", priority: 0.4, change: "monthly" },
-  { path: "/consent", priority: 0.4, change: "monthly" },
-  { path: "/developer", priority: 0.6, change: "weekly" },
+  { path: "/privacy/consent", priority: 0.4, change: "monthly" },
+  { path: "/dashboard/developer", priority: 0.6, change: "weekly" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -1,0 +1,20 @@
+replicaCount: 1
+image:
+  repository: kikiagentprodacr.azurecr.io/mmm-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 3022
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2
+    memory: 1Gi
+env:
+  PORT: "3022"
+  NODE_ENV: production
+  DATABASE_URL: ""
+  KAFKA_BROKERS: "kiki-kafka:9092"

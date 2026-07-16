@@ -16,29 +16,29 @@ const CONTROLS = [
 export default function SecurityPage() {
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"80px 48px", maxWidth:960, margin:"0 auto" }}>
-        <div style={{ textAlign:"center", marginBottom:60 }}>
-          <div style={{ width:60, height:60, background:K.mintD, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", fontSize:28 }}>🛡</div>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(28px,5vw,48px)", letterSpacing:"-0.03em", color:K.t1, marginBottom:16 }}>Security at KIKI</h1>
-          <p style={{ fontFamily:"Inter,sans-serif", fontSize:16, color:K.t3, maxWidth:500, margin:"0 auto" }}>Enterprise-grade security built into every layer of the platform.</p>
+      <div className="py-20 px-12 max-w-[960px] mx-auto" style={{ background:K.void }}>
+        <div className="text-center mb-15">
+          <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center mx-auto mb-4 text-[28px]" style={{ background:K.mintD }}>🛡</div>
+          <h1 className="font-mono font-bold text-[clamp(28px,5vw,48px)] tracking-[-0.03em] text-t1 mb-4">Security at KIKI</h1>
+          <p className="font-sans text-[16px] text-t3 max-w-[500px] mx-auto">Enterprise-grade security built into every layer of the platform.</p>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:48 }}>
+        <div className="grid grid-cols-3 gap-4 mb-12">
           {CONTROLS.map(c=>(
-            <div key={c.title} style={{ padding:24, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2 }}>
-              <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:`linear-gradient(90deg,transparent,${c.color}60,transparent)` }} />
-              <span style={{ fontSize:28, display:"block", marginBottom:12 }}>{c.icon}</span>
-              <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:14, color:K.t1, marginBottom:8 }}>{c.title}</p>
-              <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3, lineHeight:1.6 }}>{c.desc}</p>
+            <div key={c.title} className="p-6 bg-g900 border border-g800 rounded-sm">
+              <div className="absolute top-0 left-0 right-0 h-px" style={{ background:`linear-gradient(90deg,transparent,${c.color}60,transparent)` }} />
+              <span className="text-[28px] block mb-3">{c.icon}</span>
+              <p className="font-mono font-bold text-[14px] text-t1 mb-2">{c.title}</p>
+              <p className="font-sans text-[13px] text-t3 leading-[1.6]">{c.desc}</p>
             </div>
           ))}
         </div>
         <Card accent={K.mint} glow={K.mint}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <p style={{ fontFamily:K.mono, fontWeight:700, fontSize:18, color:K.t1, marginBottom:6 }}>Security whitepaper</p>
-              <p style={{ fontFamily:"Inter,sans-serif", fontSize:14, color:K.t3, maxWidth:480 }}>Detailed technical documentation of our security architecture, controls, and compliance posture.</p>
+              <p className="font-mono font-bold text-[18px] text-t1 mb-1.5">Security whitepaper</p>
+              <p className="font-sans text-[14px] text-t3 max-w-[480px]">Detailed technical documentation of our security architecture, controls, and compliance posture.</p>
             </div>
-            <div style={{ display:"flex", gap:10 }}>
+            <div className="flex gap-2.5">
               <Button variant="secondary" size="md" onClick={() => downloadSimplePDF("kiki-security-whitepaper.pdf", "Security Whitepaper", [
   "KIKI Agent Inc. — Security Architecture Whitepaper",
   "Version 1.0 · Effective March 2026 · Classification: Confidential",

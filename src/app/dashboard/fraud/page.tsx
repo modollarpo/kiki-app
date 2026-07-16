@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, StatCard, Button } from "@/components/ui";
@@ -45,54 +45,54 @@ export default function FraudIVTPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400 }}>
-        <div style={{ marginBottom: 22, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
+        <div className="mb-5 flex items-start justify-between">
           <div>
-            <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>Fraud & IVT Detection</h1>
-            <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>
+            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Fraud & IVT Detection</h1>
+            <p className="font-mono text-[11px] text-gray-500">
               {loading ? "Loading..." : `Real-time invalid traffic monitoring · ${stats?.totalDetected || 0} events detected today`}
             </p>
           </div>
           <Badge color={K.mint} dot pulse>PROTECTED</Badge>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Blocked Today" value={String(stats?.totalBlocked || 0)} accent={K.danger} sub="Events prevented" loading={loading} />
           <StatCard label="Detection Rate" value={stats ? `${((stats.totalDetected / Math.max(1, stats.totalDetected + 10000)) * 100).toFixed(2)}%` : "0.08%"} accent={K.warn} sub="Of total traffic" loading={loading} />
           <StatCard label="Protection Score" value={`${stats?.dataQualityScore || 99.1}%`} accent={K.mint} delta={0.3} period="this week" loading={loading} />
           <StatCard label="Savings" value={`$${(stats?.estimatedSavings || 0).toLocaleString()}`} accent={K.gold} sub="Prevented wasted spend" loading={loading} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <Card accent={K.danger}>
-            <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>IVT Types Detected</h3>
+            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">IVT Types Detected</h3>
             {ivtTypes.map((ivt, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", marginBottom: 8, background: K.g850, borderRadius: 2, border: `1px solid ${K.g700}` }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+              <div key={i} className="flex items-center justify-between p-2.5 px-3 mb-2 rounded-sm bg-g850 border border-g700">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-[3px]">
                     <Badge color={ivt.severity === "high" ? K.danger : K.warn} dot>{ivt.severity}</Badge>
-                    <span style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.t1 }}>{ivt.type}</span>
+                    <span className="font-mono text-xs font-bold text-white">{ivt.type}</span>
                   </div>
-                  <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>{ivt.desc}</p>
+                  <p className="font-mono text-[10px] text-gray-600">{ivt.desc}</p>
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <span style={{ fontFamily: K.mono, fontSize: 14, fontWeight: 700, color: K.t1 }}>{ivt.count}</span>
-                  <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>events</p>
+                <div className="text-right">
+                  <span className="font-mono text-sm font-bold text-white">{ivt.count}</span>
+                  <p className="font-mono text-[10px] text-gray-600">events</p>
                 </div>
               </div>
             ))}
           </Card>
 
           <Card accent={K.mint}>
-            <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>Protection Rules</h3>
+            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Protection Rules</h3>
             {protectionRules.map((rule, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${K.g800}` }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: rule.color }} />
-                  <span style={{ fontFamily: K.mono, fontSize: 11, color: K.t1 }}>{rule.name}</span>
+              <div key={i} className="flex items-center justify-between py-2.5 border-b border-g800">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: rule.color }} />
+                  <span className="font-mono text-[11px] text-white">{rule.name}</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t3 }}>{rule.blocked} blocked</span>
+                <div className="flex items-center gap-2.5">
+                  <span className="font-mono text-[10px] text-gray-500">{rule.blocked} blocked</span>
                   <Badge color={rule.color}>Active</Badge>
                 </div>
               </div>
@@ -101,50 +101,50 @@ export default function FraudIVTPage() {
         </div>
 
         <Card accent={K.gold}>
-          <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 13, color: K.t1, marginBottom: 14 }}>Threat Summary</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Threat Summary</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.14em", color: K.t4, marginBottom: 8 }}>DETECTION BREAKDOWN</p>
+              <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-2">DETECTION BREAKDOWN</p>
               {Object.entries(stats?.bySeverity || {}).length > 0 ? (
                 Object.entries(stats?.bySeverity || {}).map(([sev, count]) => (
-                  <div key={sev} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${K.g800}` }}>
-                    <span style={{ fontFamily: K.mono, fontSize: 11, color: K.t2, textTransform: "capitalize" }}>{sev} severity</span>
-                    <span style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: sev === "high" ? K.danger : sev === "medium" ? K.warn : K.mint }}>{count}</span>
+                  <div key={sev} className="flex justify-between py-1.5 border-b border-g800">
+                    <span className="font-mono text-[11px] text-gray-400 capitalize">{sev} severity</span>
+                    <span className="font-mono text-[11px] font-bold" style={{ color: sev === "high" ? K.danger : sev === "medium" ? K.warn : K.mint }}>{count}</span>
                   </div>
                 ))
               ) : (
-                <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>No events detected today.</p>
+                <p className="font-mono text-[10px] text-gray-600">No events detected today.</p>
               )}
             </div>
             <div>
-              <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.14em", color: K.t4, marginBottom: 8 }}>DETECTION BY SEVERITY</p>
+              <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-2">DETECTION BY SEVERITY</p>
               {Object.entries(stats?.bySeverity || {}).length > 0 ? (
                 Object.entries(stats?.bySeverity || {}).map(([sev, count]) => {
                   const total = Object.values(stats?.bySeverity || {}).reduce((a, b) => a + b, 0) || 1;
                   const pct = Math.round((count / total) * 100);
                   return (
-                    <div key={sev} style={{ marginBottom: 8 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                        <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t2, textTransform: "capitalize" }}>{sev} severity</span>
-                        <span style={{ fontFamily: K.mono, fontSize: 10, fontWeight: 700, color: K.t1 }}>{pct}%</span>
+                    <div key={sev} className="mb-2">
+                      <div className="flex justify-between mb-[3px]">
+                        <span className="font-mono text-[10px] text-gray-400 capitalize">{sev} severity</span>
+                        <span className="font-mono text-[10px] font-bold text-white">{pct}%</span>
                       </div>
                       <ProgressBar value={pct} color={sev === "high" ? K.danger : sev === "medium" ? K.warn : K.mint} height={3} />
                     </div>
                   );
                 })
               ) : (
-                <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>No fraud events detected today.</p>
+                <p className="font-mono text-[10px] text-gray-600">No fraud events detected today.</p>
               )}
             </div>
             <div>
-              <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.14em", color: K.t4, marginBottom: 8 }}>IMPACT</p>
-              <div style={{ padding: 16, background: K.g850, borderRadius: 2, marginBottom: 10 }}>
-                <p style={{ fontFamily: K.mono, fontSize: 24, fontWeight: 700, color: K.gold }}>${(stats?.estimatedSavings || 0).toLocaleString()}</p>
-                <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, marginTop: 4 }}>Estimated savings today</p>
+              <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-2">IMPACT</p>
+              <div className="p-4 rounded-sm mb-2.5 bg-g850">
+                <p className="font-mono text-2xl font-bold text-kgold">${(stats?.estimatedSavings || 0).toLocaleString()}</p>
+                <p className="font-mono text-[10px] text-gray-500 mt-1">Estimated savings today</p>
               </div>
-              <div style={{ padding: 16, background: K.g850, borderRadius: 2 }}>
-                <p style={{ fontFamily: K.mono, fontSize: 24, fontWeight: 700, color: K.mint }}>{stats?.dataQualityScore || 0}%</p>
-                <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, marginTop: 4 }}>Data quality score</p>
+              <div className="p-4 rounded-sm bg-g850">
+                <p className="font-mono text-2xl font-bold text-kmint">{stats?.dataQualityScore || 0}%</p>
+                <p className="font-mono text-[10px] text-gray-500 mt-1">Data quality score</p>
               </div>
             </div>
           </div>

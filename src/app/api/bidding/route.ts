@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { runBiddingCycle, getBiddingStats, getDayPartingWeights } from "@/lib/bidding";
 import { getUserFromRequest } from "@/lib/auth";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest) {
     const stats = await getBiddingStats(user.tenantId);
     return NextResponse.json({ success: true, data: stats });
   } catch (error) {
+    logger.error("bidding/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { success: false, error: String(error) },
       { status: 500 }
@@ -63,6 +65,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
+    logger.error("bidding/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { success: false, error: String(error) },
       { status: 500 }

@@ -586,6 +586,12 @@ export async function getBillingStats(tenantId: string) {
     SELECT SUM(spend) as total FROM campaigns WHERE tenant_id = ?
   `).get(tenantId) as any;
 
+  const invoices =   await db.prepare(`
+    SELECT id, amount, status, period_start, period_end, currency
+    FROM invoices WHERE tenant_id = ?
+    ORDER BY created_at DESC LIMIT 50
+  `).all(tenantId) as any[];
+
   return {
     subscription: subscription ? {
       plan: subscription.plan,
@@ -597,6 +603,14 @@ export async function getBillingStats(tenantId: string) {
       return acc;
     }, {}),
     totalManagedSpend: totalSpend?.total || 0,
+    invoices: invoices.map((inv: any) => ({
+      id: inv.id,
+      amount: inv.amount,
+      status: inv.status,
+      currency: inv.currency,
+      periodStart: inv.period_start,
+      periodEnd: inv.period_end,
+    })),
     oaas: subscription?.plan === "oaas"
       ? await calculateOaasFees(tenantId, new Date(Date.now() - 30 * 86400000).toISOString(), new Date().toISOString())
       : null,

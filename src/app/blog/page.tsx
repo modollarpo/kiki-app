@@ -14,37 +14,37 @@ const POSTS = [
 export default function BlogPage() {
   return (
     <MarketingLayout>
-      <div style={{ background:K.void, padding:"80px 48px", maxWidth:960, margin:"0 auto" }}>
-        <div style={{ marginBottom:48 }}>
-          <p style={{ fontFamily:K.mono, fontSize:9, letterSpacing:"0.18em", color:K.t4, marginBottom:14 }}>BLOG</p>
-          <h1 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(28px,5vw,48px)", letterSpacing:"-0.03em", color:K.t1 }}>Ideas from the KIKI team.</h1>
+      <div style={{ background:K.void }} className="p-20 px-12 max-w-[960px] mx-auto">
+        <div className="mb-12">
+          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">BLOG</p>
+          <h1 className="font-mono font-bold text-[clamp(28px,5vw,48px)] tracking-[-0.03em] text-t1">Ideas from the KIKI team.</h1>
         </div>
         {POSTS.filter(p=>p.featured).map(p=>(
-          <div key={p.title} style={{ padding:32, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2, marginBottom:32, cursor:"pointer", transition:"all 0.2s", position:"relative", overflow:"hidden" }}
+          <div key={p.title} className="p-8 bg-g900 border border-g800 rounded-sm mb-8 cursor-pointer transition-all relative overflow-hidden"
             onMouseEnter={e=>{(e.currentTarget.style.background=K.g850);(e.currentTarget.style.transform="translateY(-2px)");}} onMouseLeave={e=>{(e.currentTarget.style.background=K.g900);(e.currentTarget.style.transform="none");}}>
-            <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${p.color},transparent)` }} />
-            <Badge color={p.color} style={{ marginBottom:14 }}>{p.tag.toUpperCase()}</Badge>
-            <h2 style={{ fontFamily:K.mono, fontWeight:700, fontSize:"clamp(16px,3vw,26px)", letterSpacing:"-0.02em", color:K.t1, marginBottom:12 }}>{p.title}</h2>
-            <p style={{ fontFamily:"Inter,sans-serif", fontSize:14, color:K.t3, lineHeight:1.7, maxWidth:620, marginBottom:18 }}>{p.excerpt}</p>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-              <div style={{ display:"flex", gap:16 }}>
-                <span style={{ fontFamily:K.mono, fontSize:10, color:K.t4 }}>{p.date}</span>
-                <span style={{ fontFamily:K.mono, fontSize:10, color:K.t4 }}>{p.readTime} read</span>
+            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background:`linear-gradient(90deg,transparent,${p.color},transparent)` }} />
+            <Badge color={p.color} className="mb-[14px]">{p.tag.toUpperCase()}</Badge>
+            <h2 className="font-mono font-bold text-[clamp(16px,3vw,26px)] tracking-[-0.02em] text-t1 mb-3">{p.title}</h2>
+            <p className="font-sans text-[14px] text-t3 leading-[1.7] max-w-[620px] mb-4.5">{p.excerpt}</p>
+            <div className="flex items-center justify-between">
+              <div className="flex gap-4">
+                <span className="font-mono text-[10px] text-t4">{p.date}</span>
+                <span className="font-mono text-[10px] text-t4">{p.readTime} read</span>
               </div>
               <Button variant="primary" size="sm" onClick={() => { /* Blog post routing - future: /blog/[slug] */ }}>Read Article →</Button>
             </div>
           </div>
         ))}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+        <div className="grid grid-cols-2 gap-4">
           {POSTS.filter(p=>!p.featured).map(p=>(
-            <div key={p.title} style={{ padding:24, background:K.g900, border:`1px solid ${K.g800}`, borderRadius:2, cursor:"pointer", transition:"all 0.2s", position:"relative", overflow:"hidden" }}
+            <div key={p.title} className="p-6 bg-g900 border border-g800 rounded-sm cursor-pointer transition-all relative overflow-hidden"
               onMouseEnter={e=>{(e.currentTarget.style.background=K.g850);(e.currentTarget.style.transform="translateY(-2px)");}} onMouseLeave={e=>{(e.currentTarget.style.background=K.g900);(e.currentTarget.style.transform="none");}}>
-              <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${p.color},transparent)` }} />
-              <Badge color={p.color} style={{ marginBottom:12 }}>{p.tag.toUpperCase()}</Badge>
-              <h3 style={{ fontFamily:K.mono, fontWeight:700, fontSize:16, letterSpacing:"-0.01em", color:K.t1, marginBottom:10 }}>{p.title}</h3>
-              <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3, lineHeight:1.6, marginBottom:14 }}>{p.excerpt}</p>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                <span style={{ fontFamily:K.mono, fontSize:10, color:K.t4 }}>{p.date} · {p.readTime}</span>
+              <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background:`linear-gradient(90deg,transparent,${p.color},transparent)` }} />
+              <Badge color={p.color} className="mb-3">{p.tag.toUpperCase()}</Badge>
+              <h3 className="font-mono font-bold text-[16px] tracking-[-0.01em] text-t1 mb-2.5">{p.title}</h3>
+              <p className="font-sans text-[13px] text-t3 leading-[1.6] mb-3.5">{p.excerpt}</p>
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] text-t4">{p.date} · {p.readTime}</span>
                 <Button variant="ghost" size="xs" onClick={() => { /* Blog post routing - future: /blog/[slug] */ }}>Read →</Button>
               </div>
             </div>

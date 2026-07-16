@@ -10,6 +10,8 @@ import { tiktokConnector } from "./tiktok";
 import { linkedinConnector } from "./linkedin";
 import { snapConnector } from "./snap";
 import { pinterestConnector } from "./pinterest";
+import { AmazonConnector } from "./amazon";
+import { CtvConnector } from "./ctv";
 
 // ── Connector Registry ─────────────────────────────────────
 
@@ -22,6 +24,25 @@ connectors.set("tiktok", tiktokConnector);
 connectors.set("linkedin", linkedinConnector);
 connectors.set("snap", snapConnector);
 connectors.set("pinterest", pinterestConnector);
+
+// Amazon Ads connector (lazy-initialized from env)
+if (process.env.AMAZON_CLIENT_ID) {
+  connectors.set("amazon", new AmazonConnector({
+    clientId: process.env.AMAZON_CLIENT_ID,
+    clientSecret: process.env.AMAZON_CLIENT_SECRET || "",
+    profileId: process.env.AMAZON_PROFILE_ID || "",
+  }));
+}
+
+// CTV connector (lazy-initialized from env)
+if (process.env.CTV_CLIENT_ID) {
+  connectors.set("ctv", new CtvConnector({
+    provider: (process.env.CTV_PROVIDER as "roku" | "thed-trade-desk") || "roku",
+    clientId: process.env.CTV_CLIENT_ID,
+    clientSecret: process.env.CTV_CLIENT_SECRET || "",
+    partnerId: process.env.CTV_PARTNER_ID || "",
+  }));
+}
 
 // ── Public API ─────────────────────────────────────────────
 

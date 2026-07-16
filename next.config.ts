@@ -6,8 +6,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
 
   // ── TypeScript ──────────────────────────────────────────
+  // Type-checking runs during build. The source of truth is `npm run
+  // type-check` (tsc), which uses local Next.js type shims in
+  // types/next-shims.d.ts because the installed `next` package in this
+  // environment ships without its bundled .d.ts declarations.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   // ── ESLint ──────────────────────────────────────────────
@@ -83,9 +87,9 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
-      // PWA manifest
+      // PWA manifest (Next.js serves the app manifest at /manifest.webmanifest)
       {
-        source: "/manifest.json",
+        source: "/manifest.webmanifest",
         headers: [
           { key: "Content-Type",  value: "application/manifest+json"                      },
           { key: "Cache-Control", value: "public, max-age=3600"                            },

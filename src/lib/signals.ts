@@ -24,7 +24,7 @@ export async function ingestSignal(tenantId: string, signal: SignalData): Promis
   const id = genId("sig");
 
   // Predict LTV
-  const prediction = await predictLTV(signal);
+  const prediction = await predictLTV(signal, tenantId);
 
   // Store signal
   await db.prepare(`

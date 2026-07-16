@@ -1,0 +1,176 @@
+version: "3.9"
+
+services:
+  # ── Infrastructure ──────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kiki
+      POSTGRES_USER: kiki
+      POSTGRES_PASSWORD: kiki_dev_2024
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kiki"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Services ────────────────────────────────────────────
+  creative-attribution:
+    build:
+      context: .
+      dockerfile: services/creative-attribution-service/Dockerfile
+    ports:
+      - "3021:3021"
+    environment:
+      PORT: "3021"
+      NODE_ENV: development
+      DATABASE_URL: postgresql://kiki:kiki_dev_2024@postgres:5432/kiki
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mmm:
+    build:
+      context: .
+      dockerfile: services/mmm-service/Dockerfile
+    ports:
+      - "3022:3022"
+    environment:
+      PORT: "3022"
+      NODE_ENV: development
+      DATABASE_URL: postgresql://kiki:kiki_dev_2024@postgres:5432/kiki
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  competitive-intel:
+    build:
+      context: .
+      dockerfile: services/competitive-intel-service/Dockerfile
+    ports:
+      - "3023:3023"
+    environment:
+      PORT: "3023"
+      NODE_ENV: development
+      DATABASE_URL: postgresql://kiki:kiki_dev_2024@postgres:5432/kiki
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+      META_AD_LIBRARY_TOKEN: ""
+      TIKTOK_CREATIVE_CENTER_TOKEN: ""
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  profit-margin:
+    build:
+      context: .
+      dockerfile: services/profit-margin-service/Dockerfile
+    ports:
+      - "3024:3024"
+    environment:
+      PORT: "3024"
+      NODE_ENV: development
+      DATABASE_URL: postgresql://kiki:kiki_dev_2024@postgres:5432/kiki
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  nl-analytics:
+    build:
+      context: .
+      dockerfile: services/nl-analytics-service/Dockerfile
+    ports:
+      - "3025:3025"
+    environment:
+      PORT: "3025"
+      NODE_ENV: development
+      DATABASE_URL: postgresql://kiki:kiki_dev_2024@postgres:5432/kiki
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_ENDPOINT: ${OPENAI_ENDPOINT}
+      OPENAI_DEPLOYMENT: ${OPENAI_DEPLOYMENT:-gpt-4o-mini}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  influencer:
+    build:
+      context: .
+      dockerfile: services/influencer-service/Dockerfile
+    ports:
+      - "3026:3026"
+    environment:
+      PORT: "3026"
+      NODE_ENV: development
+      DATABASE_URL: postgresql://kiki:kiki_dev_2024@postgres:5432/kiki
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -1,92 +1,132 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
 import { K } from "@/lib/kdls";
+import { useAuth } from "@/hooks/useAuth";
+
+interface ConsentData {
+  totalUsers: number;
+  byPlan: { plan: string; count: number }[];
+  compliance: {
+    gdprEnabled: boolean;
+    ccpaEnabled: boolean;
+    dataRetentionDays: number;
+    consentVersion: string;
+    lastAuditDate: string;
+  };
+}
 
 export default function ConsentPrivacyPage() {
-  const regions = [
-    { region: "GDPR (EU)", compliance: 98.2, users: 234567, consentRate: 72.3 },
-    { region: "CCPA (California)", compliance: 96.8, users: 89234, consentRate: 68.9 },
-    { region: "PIPEDA (Canada)", compliance: 97.5, users: 45678, consentRate: 71.2 },
-    { region: "LGPD (Brazil)", compliance: 95.4, users: 67890, consentRate: 65.8 },
-    { region: "Other Regions", compliance: 94.1, users: 123456, consentRate: 63.4 },
-  ];
+  const { token } = useAuth();
+  const [consentData, setConsentData] = useState<ConsentData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch("/api/consent", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.data) setConsentData(d.data);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  const totalUsers = consentData?.totalUsers ?? 0;
+  const compliance = consentData?.compliance;
+  const byPlan = consentData?.byPlan ?? [];
+
+  const regions = byPlan.map(p => ({
+    region: `${p.plan?.toUpperCase() ?? "STANDARD"} Plan`,
+    compliance: 0,
+    users: p.count,
+    consentRate: 0,
+  }));
+
+  const overallCompliance = regions.length > 0
+    ? (regions.reduce((s, r) => s + r.compliance, 0) / regions.length).toFixed(1)
+    : "—";
+
+  const overallConsentRate = regions.length > 0
+    ? (regions.reduce((s, r) => s + r.consentRate, 0) / regions.length).toFixed(1)
+    : "—";
 
   return (
     <DashboardLayout>
-      <div className="space-y-6" style={{ color: K.t1 }}>
+      <div className="space-y-6 text-white p-[clamp(14px,3vw,28px)] max-w-[1400px]">
         <div>
-          <h1 className="text-2xl font-semibold" style={{ color: K.t1 }}>Consent & Privacy</h1>
-          <p className="mt-1 text-sm" style={{ color: K.t3 }}>Manage user consent, privacy compliance, and data protection</p>
+          <h1 className="text-2xl font-semibold text-white">Consent & Privacy</h1>
+          <p className="mt-1 text-sm text-gray-500">Manage user consent, privacy compliance, and data protection</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatCard label="Overall Compliance" value="96.8%" delta={1.2} sub="+1.2% this month" accent={K.mint} />
-          <StatCard label="Consent Rate" value="69.4%" delta={2.1} sub="+2.1% improvement" accent={K.mint} />
-          <StatCard label="UID2 Adoption" value="78.3%" delta={5.6} sub="+5.6% growth" accent={K.mint} />
-          <StatCard label="Privacy Sandbox" value="Ready" sub="All APIs enabled" accent={K.mint} />
+          <StatCard label="Overall Compliance" value={loading ? "…" : `${overallCompliance}%`} sub={compliance?.gdprEnabled ? "GDPR enabled" : "GDPR pending"} accent={K.mint} />
+          <StatCard label="Consent Rate" value={loading ? "…" : `${overallConsentRate}%`} sub={compliance?.ccpaEnabled ? "CCPA enabled" : "CCPA pending"} accent={K.mint} />
+          <StatCard label="Total Users" value={loading ? "…" : totalUsers > 0 ? totalUsers.toLocaleString() : "—"} sub={compliance ? `Retention: ${compliance.dataRetentionDays}d` : "Loading…"} accent={K.mint} />
+          <StatCard label="Privacy Sandbox" value={compliance?.gdprEnabled ? "Ready" : "Setup"} sub={compliance ? `Consent v${compliance.consentVersion}` : "Pending config"} accent={K.mint} />
         </div>
 
-        <Card className="p-4" style={{ background: K.g950, borderColor: K.g850 }}>
-          <h3 className="text-sm font-semibold mb-3" style={{ color: K.t1 }}>Compliance by Region</h3>
+        <Card className="p-4 bg-g950 border-g850">
+          <h3 className="text-sm font-semibold mb-3 text-white">Compliance by Region</h3>
           <div className="space-y-3">
-            {regions.map((region, i) => (
-              <div key={i} className="flex items-center gap-4 p-3 rounded-lg" style={{ background: K.g900 }}>
+            {regions.length > 0 ? regions.map((region, i) => (
+              <div key={i} className="flex items-center gap-4 p-3 rounded-lg bg-g900">
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium" style={{ color: K.t1 }}>{region.region}</span>
-                    <span className="text-sm font-semibold" style={{ color: K.mint }}>{region.compliance}%</span>
+                    <span className="text-sm font-medium text-white">{region.region}</span>
+                    <span className="text-sm font-semibold text-kmint">{region.compliance > 0 ? `${region.compliance}%` : "—"}</span>
                   </div>
-                  <ProgressBar value={region.compliance} max={100} color={K.mint} height={4} />
+                  {region.compliance > 0 && <ProgressBar value={region.compliance} max={100} color={K.mint} height={4} />}
                 </div>
                 <div className="text-right w-24">
-                  <div className="text-xs" style={{ color: K.t3 }}>Users</div>
-                  <div className="text-sm font-medium" style={{ color: K.t2 }}>{(region.users / 1000).toFixed(1)}K</div>
+                  <div className="text-xs text-gray-500">Users</div>
+                  <div className="text-sm font-medium text-gray-400">{region.users > 1000 ? `${(region.users / 1000).toFixed(1)}K` : region.users}</div>
                 </div>
                 <div className="text-right w-24">
-                  <div className="text-xs" style={{ color: K.t3 }}>Consent</div>
-                  <div className="text-sm font-medium" style={{ color: K.blue }}>{region.consentRate}%</div>
+                  <div className="text-xs text-gray-500">Consent</div>
+                  <div className="text-sm font-medium text-kblue">{region.consentRate > 0 ? `${region.consentRate}%` : "—"}</div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="font-mono text-[11px] text-gray-500 py-4 text-center">No consent data yet. Start collecting user consent to see compliance metrics.</p>
+            )}
           </div>
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card className="p-4" style={{ background: K.g950, borderColor: K.g850 }}>
-            <h3 className="text-sm font-semibold mb-3" style={{ color: K.t1 }}>UID2 Adoption Status</h3>
+          <Card className="p-4 bg-g950 border-g850">
+            <h3 className="text-sm font-semibold mb-3 text-white">UID2 Adoption Status</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: K.t2 }}>Hashed Email Match Rate</span>
-                <span className="text-sm font-semibold" style={{ color: K.mint }}>84.2%</span>
+                <span className="text-sm text-gray-400">Hashed Email Match Rate</span>
+                <span className="text-sm font-semibold text-kmint">—</span>
               </div>
-              <ProgressBar value={84.2} max={100} color={K.mint} height={4} />
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: K.t2 }}>Phone Number Match Rate</span>
-                <span className="text-sm font-semibold" style={{ color: K.blue }}>72.6%</span>
+                <span className="text-sm text-gray-400">Phone Number Match Rate</span>
+                <span className="text-sm font-semibold text-kblue">—</span>
               </div>
-              <ProgressBar value={72.6} max={100} color={K.blue} height={4} />
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: K.t2 }}>Address Match Rate</span>
-                <span className="text-sm font-semibold" style={{ color: K.teal }}>61.8%</span>
+                <span className="text-sm text-gray-400">Address Match Rate</span>
+                <span className="text-sm font-semibold text-kteal">—</span>
               </div>
-              <ProgressBar value={61.8} max={100} color={K.teal} height={4} />
+              <p className="font-mono text-[11px] text-gray-600">No UID2 match data available yet. Connect an identity partner to populate match rates.</p>
             </div>
           </Card>
 
-          <Card className="p-4" style={{ background: K.g950, borderColor: K.g850 }}>
-            <h3 className="text-sm font-semibold mb-3" style={{ color: K.t1 }}>Privacy Sandbox Status</h3>
+          <Card className="p-4 bg-g950 border-g850">
+            <h3 className="text-sm font-semibold mb-3 text-white">Privacy Sandbox Status</h3>
             <div className="space-y-3">
               {[
-                { api: "Topics API", status: "Active", color: K.mint },
-                { api: "Protected Audiences", status: "Active", color: K.mint },
-                { api: "Attribution Reporting", status: "Active", color: K.mint },
+                { api: "Topics API", status: compliance?.gdprEnabled ? "Active" : "Pending", color: compliance?.gdprEnabled ? K.mint : K.warn },
+                { api: "Protected Audiences", status: compliance?.gdprEnabled ? "Active" : "Pending", color: compliance?.gdprEnabled ? K.mint : K.warn },
+                { api: "Attribution Reporting", status: compliance?.ccpaEnabled ? "Active" : "Pending", color: compliance?.ccpaEnabled ? K.mint : K.warn },
                 { api: "FLEDGE", status: "Testing", color: K.gold },
                 { api: "Trust Tokens", status: "Deprecated", color: K.warn },
               ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-lg" style={{ background: K.g900 }}>
-                  <span className="text-sm" style={{ color: K.t1 }}>{item.api}</span>
+                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-g900">
+                  <span className="text-sm text-white">{item.api}</span>
                   <Badge style={{ background: item.color + "20", color: item.color }}>{item.status}</Badge>
                 </div>
               ))}

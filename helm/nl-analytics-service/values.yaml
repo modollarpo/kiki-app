@@ -1,0 +1,20 @@
+replicaCount: 2
+image:
+  repository: kikiagentprodacr.azurecr.io/nl-analytics-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 3025
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2
+    memory: 2Gi
+env:
+  PORT: "3025"
+  NODE_ENV: production
+  DATABASE_URL: ""
+  KAFKA_BROKERS: "kiki-kafka:9092"

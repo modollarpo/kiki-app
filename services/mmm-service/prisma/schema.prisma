@@ -1,0 +1,46 @@
+// ============================================================
+// KIKI Agent™ — Prisma Schema: MMM Service
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MmmRun {
+  id                    String   @id @default(cuid())
+  tenantId              String   @map("tenant_id")
+  status                String   @default("pending")
+  weeksOfData           Int      @map("weeks_of_data")
+  channelContributions  Json     @default("[]") @map("channel_contributions")
+  saturationCurves      Json     @default("[]") @map("saturation_curves")
+  budgetRecommendations Json     @default("[]") @map("budget_recommendations")
+  modelFit              Json     @default("{}") @map("model_fit")
+  hyperparameters       Json     @default("{}") @map("hyperparameters")
+  startedAt             DateTime @default(now()) @map("started_at")
+  completedAt           DateTime? @map("completed_at")
+
+  @@index([tenantId, status])
+  @@map("mmm_runs")
+}
+
+model MmmWeeklyData {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  channel    String
+  weekStart  DateTime @map("week_start")
+  spend      Float
+  revenue    Float
+  conversions Int     @default(0)
+  impressions Int     @default(0)
+  clicks     Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, channel, weekStart])
+  @@index([tenantId, weekStart])
+  @@map("mmm_weekly_data")
+}

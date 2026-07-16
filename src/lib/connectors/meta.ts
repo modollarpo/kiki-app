@@ -63,14 +63,16 @@ export class MetaConnector extends BaseConnector {
 
   // ── OAuth ──────────────────────────────────────────────
 
-  async generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string }> {
+  async generateOAuthUrl(tenantId: string): Promise<{ url: string; state: string; codeVerifier: string }> {
     const state = crypto.randomBytes(32).toString("hex");
+    const codeVerifier = this.generateCodeVerifier();
+    const codeChallenge = this.generateCodeChallenge(codeVerifier);
 
     const db = await getDb();
     await db.prepare(`
-      INSERT OR REPLACE INTO oauth_states (state, tenant_id, platform, created_at, expires_at)
-      VALUES (?, ?, 'meta', datetime('now'), datetime('now', '+10 minutes'))
-    `).run(state, tenantId);
+      INSERT OR REPLACE INTO oauth_states (state, tenant_id, platform, code_verifier, created_at, expires_at)
+      VALUES (?, ?, 'meta', ?, datetime('now'), datetime('now', '+10 minutes'))
+    `).run(state, tenantId, codeVerifier);
 
     const params = new URLSearchParams({
       client_id: this.config.oauth.clientId,
@@ -80,18 +82,22 @@ export class MetaConnector extends BaseConnector {
       state,
       config_id: process.env.META_CONFIG_ID || "",
       override_default_response_type: "true",
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
     });
 
-    return { url: `${this.config.oauth.authUrl}?${params.toString()}`, state };
+    return { url: `${this.config.oauth.authUrl}?${params.toString()}`, state, codeVerifier };
   }
 
-  async handleCallback(code: string, state: string): Promise<OAuthTokens> {
+  async handleCallback(code: string, state: string, codeVerifier?: string): Promise<OAuthTokens> {
     const params = new URLSearchParams({
       client_id: this.config.oauth.clientId,
       client_secret: this.config.oauth.clientSecret,
       redirect_uri: this.config.oauth.redirectUri,
       code,
     });
+
+    if (codeVerifier) params.set("code_verifier", codeVerifier);
 
     const result = await fetch(`${this.config.oauth.tokenUrl}?${params.toString()}`);
     if (!result.ok) {
@@ -337,6 +343,9 @@ export class MetaConnector extends BaseConnector {
       if (event.customData.orderId) customData.order_id = event.customData.orderId;
       if (event.customData.contentName) customData.content_name = event.customData.contentName;
       if (event.customData.contentIds) customData.content_ids = event.customData.contentIds;
+      if (event.customData.predictedLtv90d !== undefined) customData.predicted_ltv_90d = event.customData.predictedLtv90d;
+      if (event.customData.ltvSegment) customData.ltv_segment = event.customData.ltvSegment;
+      if (event.customData.bidMultiplier !== undefined) customData.bid_multiplier = event.customData.bidMultiplier;
 
       const payload = {
         data: [{
@@ -396,6 +405,176 @@ export class MetaConnector extends BaseConnector {
     }
 
     return results;
+  }
+
+  // ── Campaign Write Operations ───────────────────────────
+
+  async updateCampaign(
+    accessToken: string,
+    campaignId: string,
+    updates: { dailyBudget?: number; status?: "ACTIVE" | "PAUSED"; name?: string }
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    const fields: Record<string, any> = {};
+    if (updates.dailyBudget !== undefined) fields.daily_budget = Math.round(updates.dailyBudget * 100);
+    if (updates.status !== undefined) fields.status = updates.status;
+    if (updates.name !== undefined) fields.name = updates.name;
+
+    return this.post<{ id: string }>(campaignId, accessToken, fields);
+  }
+
+  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { status: "PAUSED" });
+  }
+
+  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { status: "ACTIVE" });
+  }
+
+  async updateAdSet(
+    accessToken: string,
+    adSetId: string,
+    updates: { bidAmount?: number; dailyBudget?: number; status?: "ACTIVE" | "PAUSED" }
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    const fields: Record<string, any> = {};
+    if (updates.bidAmount !== undefined) fields.bid_amount = Math.round(updates.bidAmount * 100);
+    if (updates.dailyBudget !== undefined) fields.daily_budget = Math.round(updates.dailyBudget * 100);
+    if (updates.status !== undefined) fields.status = updates.status;
+
+    return this.post<{ id: string }>(adSetId, accessToken, fields);
+  }
+
+  async setBid(
+    accessToken: string,
+    adSetId: string,
+    bidAmount: number
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    return this.updateAdSet(accessToken, adSetId, { bidAmount });
+  }
+
+  // ── Custom Audiences ─────────────────────────────────────
+
+  async createCustomAudience(
+    accessToken: string,
+    params: {
+      name: string;
+     Subtype: "CUSTOM" | "LOOKALIKE";
+      description?: string;
+      customerFile?: { emails?: string[]; phones?: string[]; externalIds?: string[] };
+    }
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    const body: Record<string, any> = {
+      name: params.name,
+      subtype: params.Subtype,
+      description: params.description || "",
+      customer_file_source: "USER_PROVIDED",
+    };
+
+    if (params.customerFile) {
+      const fileEntries: string[][] = [];
+      if (params.customerFile.emails) {
+        for (const email of params.customerFile.emails) {
+          fileEntries.push(["", "", this.hashEmail(email), "", ""]);
+        }
+      }
+      if (params.customerFile.phones) {
+        for (const phone of params.customerFile.phones) {
+          fileEntries.push(["", "", "", this.hashPhone(phone), ""]);
+        }
+      }
+      if (params.customerFile.externalIds) {
+        for (const id of params.customerFile.externalIds) {
+          fileEntries.push(["", "", "", "", id]);
+        }
+      }
+      if (fileEntries.length > 0) {
+        body.schema = ["EMAIL", "PHONE", "EXTERNAL_ID"];
+        body.file = {
+          data: fileEntries,
+          format: "ARRAY",
+        };
+      }
+    }
+
+    const accountId = await this.getAdAccountId(accessToken);
+    return this.post<{ id: string }>(`${accountId}/customaudiences`, accessToken, body);
+  }
+
+  async addToCustomAudience(
+    accessToken: string,
+    audienceId: string,
+    users: { emails?: string[]; phones?: string[]; externalIds?: string[] }
+  ): Promise<PlatformApiResponse<{ audience_id: string; num_matched: number }>> {
+    const fileEntries: string[][] = [];
+    if (users.emails) {
+      for (const email of users.emails) {
+        fileEntries.push(["", "", this.hashEmail(email), "", ""]);
+      }
+    }
+    if (users.phones) {
+      for (const phone of users.phones) {
+        fileEntries.push(["", "", "", this.hashPhone(phone), ""]);
+      }
+    }
+    if (users.externalIds) {
+      for (const id of users.externalIds) {
+        fileEntries.push(["", "", "", "", id]);
+      }
+    }
+
+    return this.post<{ audience_id: string; num_matched: number }>(
+      `${audienceId}/users`,
+      accessToken,
+      {
+        schema: ["EMAIL", "PHONE", "EXTERNAL_ID"],
+        file: { data: fileEntries, format: "ARRAY" },
+        operation: "Add",
+      }
+    );
+  }
+
+  async removeFromCustomAudience(
+    accessToken: string,
+    audienceId: string,
+    users: { emails?: string[]; phones?: string[]; externalIds?: string[] }
+  ): Promise<PlatformApiResponse<{ audience_id: string; num_matched: number }>> {
+    const fileEntries: string[][] = [];
+    if (users.emails) {
+      for (const email of users.emails) {
+        fileEntries.push(["", "", this.hashEmail(email), "", ""]);
+      }
+    }
+    if (users.phones) {
+      for (const phone of users.phones) {
+        fileEntries.push(["", "", "", this.hashPhone(phone), ""]);
+      }
+    }
+    if (users.externalIds) {
+      for (const id of users.externalIds) {
+        fileEntries.push(["", "", "", "", id]);
+      }
+    }
+
+    return this.post<{ audience_id: string; num_matched: number }>(
+      `${audienceId}/users`,
+      accessToken,
+      {
+        schema: ["EMAIL", "PHONE", "EXTERNAL_ID"],
+        file: { data: fileEntries, format: "ARRAY" },
+        operation: "Remove",
+      }
+    );
+  }
+
+  private async getAdAccountId(accessToken: string): Promise<string> {
+    const result = await this.get<{ data: Array<{ id: string }> }>(
+      "me/adaccounts",
+      accessToken,
+      { fields: "id", limit: "1" }
+    );
+    if (result.success && result.data?.data?.[0]) {
+      return result.data.data[0].id;
+    }
+    throw new Error("No ad account found for this token");
   }
 
   // ── Webhook Signature Verification ─────────────────────

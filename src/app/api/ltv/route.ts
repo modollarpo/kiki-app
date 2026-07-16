@@ -1,8 +1,14 @@
-import { json, jsonError } from "@/lib/auth";
+import { json, jsonError, getUserFromRequest } from "@/lib/auth";
 import { predictLTV, predictLTVBatch, type SignalData } from "@/lib/ltv-engine";
+import { handleApiError } from "@/lib/logger";
 
 export async function POST(req: Request) {
   try {
+    // Tenant-scoped predictions — require an authenticated session.
+    if (!getUserFromRequest(req)) {
+      return jsonError("Authentication required", 401);
+    }
+
     const body = await req.json();
 
     if (Array.isArray(body.signals)) {
@@ -12,7 +18,7 @@ export async function POST(req: Request) {
 
     const result = await predictLTV(body as SignalData);
     return json(result);
-  } catch {
-    return jsonError("Invalid request body", 400);
+  } catch (e) {
+    return handleApiError(e, "ltv/handler");
   }
 }

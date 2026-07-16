@@ -43,6 +43,11 @@ export const auth = {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
+  signup: (name: string, email: string, password: string, companyName?: string) =>
+    request<AuthResponse>("/api/auth/signup", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password, companyName }),
+    }),
   me: (token: string) =>
     request<{ user: AuthResponse["user"] }>("/api/auth/me", { token }),
   logout: () => request("/api/auth/logout", { method: "POST" }),
@@ -75,7 +80,7 @@ export interface DashboardData {
   }>;
   wallet: { balance: number; cards: number };
   notifications: { unread: number; total: number };
-  system: { status: string; agentsRunning: number; eventsToday: number };
+  system: { status: string; agentsRunning: number; eventsToday: number; signalsTotal: number; fraudBlocked: number };
 }
 
 export const dashboard = {
@@ -137,7 +142,7 @@ export interface Agent {
 
 export const agents = {
   list: (token: string) =>
-    request<{ agents: Agent[]; summary: { total: number; running: number; paused: number; totalActions: number } }>("/api/agents", { token }),
+    request<{ agents: Agent[]; summary: { total: number; running: number; paused: number; totalActions: number }; guardrails: Array<{ label: string; value: string; status: string }> }>("/api/agents", { token }),
   toggle: (token: string, id: string, status: string) =>
     request<Agent>("/api/agents", { method: "PATCH", token, body: JSON.stringify({ id, status }) }),
 };

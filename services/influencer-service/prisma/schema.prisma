@@ -1,0 +1,69 @@
+// ============================================================
+// KIKI Agent™ — Prisma Schema: Influencer Service
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model InfluencerCreator {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  name             String
+  handle           String
+  platform         String
+  promoCode        String   @map("promo_code")
+  utmSource        String   @map("utm_source")
+  utmMedium        String   @default("influencer") @map("utm_medium")
+  utmCampaign      String?  @map("utm_campaign")
+  totalConversions Int      @default(0) @map("total_conversions")
+  totalRevenue     Float    @default(0) @map("total_revenue")
+  totalLtv         Float    @default(0) @map("total_ltv")
+  cac              Float    @default(0)
+  roi              Float    @default(0)
+  isActive         Boolean  @default(true) @map("is_active")
+  registeredAt     DateTime @default(now()) @map("registered_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, promoCode])
+  @@unique([tenantId, handle])
+  @@index([tenantId, platform])
+  @@map("influencer_creators")
+}
+
+model InfluencerConversion {
+  id           String   @id @default(cuid())
+  creatorId    String   @map("creator_id")
+  tenantId     String   @map("tenant_id")
+  mechanism    String
+  orderId      String?  @map("order_id")
+  revenue      Float
+  predictedLtv Float    @map("predicted_ltv")
+  ltvSegment   String   @map("ltv_segment")
+  attributedAt DateTime @default(now()) @map("attributed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([creatorId])
+  @@index([tenantId, mechanism])
+  @@map("influencer_conversions")
+}
+
+model DarkSocialGroup {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  referrerDomain  String   @map("referrer_domain")
+  unattributedConversions Int @default(0) @map("unattributed_conversions")
+  totalRevenue    Float    @default(0) @map("total_revenue")
+  estimatedInfluencerPct Float @map("estimated_influencer_pct")
+  periodStart     DateTime @map("period_start")
+  periodEnd       DateTime @map("period_end")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, referrerDomain, periodStart])
+  @@map("dark_social_groups")
+}

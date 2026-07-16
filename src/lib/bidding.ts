@@ -1,13 +1,17 @@
 // ============================================================
 // KIKI Agent Platform — Autonomous Bidding Orchestrator
-// Runs every 15 minutes (96 cycles/day), evaluates LTV/CAC,
-// day-parting, stop-loss, and cross-platform budget arbitrage.
+// Runs on configurable interval (default 5 min), evaluates
+// LTV/CAC, day-parting, stop-loss, and cross-platform budget
+// arbitrage. Uses Groq for fast batch scoring with heuristic
+// fallback.
 // ============================================================
 
 import { getDb } from "./db";
 import { predictLTV } from "./ltv-engine";
 import { eventBus, EVENTS } from "./events";
 import { getTenantContext } from "./tenant";
+import { scoreBidsBatch, isGroqConfigured, type GroqBidInput } from "./groq";
+import { decryptToken } from "./connectors/base";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -187,11 +191,70 @@ function evaluateBudgetArbitrage(
 
 // ── Main Bidding Cycle ─────────────────────────────────────
 
+const PROFIT_MARGIN_URL = process.env.PROFIT_MARGIN_URL || "http://localhost:3024";
+
+async function fetchPortfolioMargin(tenantId: string): Promise<number> {
+  try {
+    const res = await fetch(`${PROFIT_MARGIN_URL}/api/margins/portfolio?tenantId=${tenantId}`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return 50;
+    const data = await res.json();
+    return parseFloat(data.data?.summary?.avg_margin || "50");
+  } catch {
+    return 50;
+  }
+}
+
+// ── Heuristic bid scoring (fallback when Groq unavailable) ─
+function heuristicScoreBid(
+  metrics: CampaignMetrics,
+  avgLtv: number,
+  dayPartWeight: number,
+  now: Date
+): { newBid: number; changePercent: number; reason: string; confidence: number } {
+  const ltvEvaluation = evaluateLtvCacRatio(metrics, avgLtv);
+  const stopLoss = evaluateStopLoss(metrics, now.getHours());
+
+  let adjustedBid = metrics.bidAmount * dayPartWeight;
+
+  if (ltvEvaluation.signal === "increase") {
+    adjustedBid *= 1.2;
+  } else if (ltvEvaluation.signal === "decrease") {
+    adjustedBid *= 0.7;
+  }
+
+  let finalBid = adjustedBid;
+  let reason = `LTV/CAC ${ltvEvaluation.ratio.toFixed(1)}× (${ltvEvaluation.signal}) + day-part ${dayPartWeight.toFixed(2)}`;
+
+  if (stopLoss.triggered) {
+    finalBid = adjustedBid * 0.3;
+    reason = `STOP-LOSS: ${stopLoss.reason}`;
+
+    eventBus.emit("bidding.stop_loss", {
+      tenantId: metrics.tenantId,
+      campaignId: metrics.campaignId,
+      reason: stopLoss.reason,
+      action: stopLoss.action,
+    });
+  }
+
+  const changePercent = metrics.bidAmount > 0
+    ? ((finalBid - metrics.bidAmount) / metrics.bidAmount) * 100
+    : 0;
+
+  return { newBid: finalBid, changePercent, reason, confidence: ltvEvaluation.confidence };
+}
+
 export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> {
   const db = await getDb();
   const decisions: BidDecision[] = [];
   const now = new Date();
   const dayPartWeight = getDayPartWeight(now);
+
+  // Fetch portfolio margin from profit-margin-service
+  const avgMarginPct = await fetchPortfolioMargin(tenantId);
+  const marginFactor = avgMarginPct / 100;
 
   // 1. Get all active campaigns for this tenant
   const campaigns = await db.prepare(`
@@ -214,7 +277,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
     const conversions = campaign.conversions || 0;
     const revenue = campaign.revenue || 0;
     const cpa = conversions > 0 ? spend / conversions : campaign.budget || 100;
-    const roas = spend > 0 ? revenue / spend : 0;
+    const roas = spend > 0 ? (revenue * marginFactor) / spend : 0;
     const ltvCacRatio = cpa > 0 ? avgLtv / cpa : 0;
 
     campaignMetrics.push({
@@ -235,62 +298,100 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
     });
   }
 
-  // 3. Evaluate each campaign
-  for (const metrics of campaignMetrics) {
-    // LTV/CAC evaluation
+  // 3. Score bids — Groq batch (fast path) or heuristic (fallback)
+  const useGroq = isGroqConfigured() && campaignMetrics.length > 0;
+  let groqResults: Awaited<ReturnType<typeof scoreBidsBatch>> = [];
+
+  if (useGroq) {
+    // Build Groq batch input
     const ltvData = await db.prepare(`
       SELECT AVG(predicted_ltv) as avg FROM ltv_predictions
       WHERE tenant_id = ? AND created_at >= datetime('now', '-7 days')
     `).get(tenantId) as any;
+    const avgLtv = ltvData?.avg || 100;
 
-    const ltvEvaluation = evaluateLtvCacRatio(metrics, ltvData?.avg || 100);
+    const groqInput: GroqBidInput[] = campaignMetrics.map(m => ({
+      campaignId: m.campaignId,
+      name: `Campaign ${m.campaignId}`,
+      platform: m.platform,
+      roas: m.roas,
+      spend: m.currentSpend * 30,
+      budget: m.dailyBudget * 30,
+      cpa: m.cpa,
+      targetCpa: m.targetCpa,
+      targetRoas: m.targetRoas,
+      ltvCacRatio: m.ltvCacRatio,
+      currentBid: m.bidAmount,
+      dayPartWeight,
+    }));
 
-    // Stop-loss evaluation
-    const stopLoss = evaluateStopLoss(metrics, now.getHours());
+    groqResults = await scoreBidsBatch(groqInput);
+  }
 
-    // Day-part adjustment
-    const adjustedBid = metrics.bidAmount * dayPartWeight;
+  // 4. Build decisions — use Groq results where available, fallback to heuristic
+  for (const metrics of campaignMetrics) {
+    const groqResult = groqResults.find(r => r.campaignId === metrics.campaignId);
 
-    // LTV-based adjustment
-    let ltvAdjustedBid = adjustedBid;
-    if (ltvEvaluation.signal === "increase") {
-      ltvAdjustedBid = adjustedBid * 1.2; // +20%
-    } else if (ltvEvaluation.signal === "decrease") {
-      ltvAdjustedBid = adjustedBid * 0.7; // -30%
-    }
+    if (groqResult) {
+      // Groq fast path — apply result with stop-loss safety net
+      const stopLoss = evaluateStopLoss(metrics, now.getHours());
+      let finalBid = groqResult.newBid;
+      let reason = groqResult.reason;
+      let confidence = groqResult.confidence;
 
-    // Stop-loss override
-    let finalBid = ltvAdjustedBid;
-    let reason = `LTV/CAC ${ltvEvaluation.ratio.toFixed(1)}× (${ltvEvaluation.signal}) + day-part ${dayPartWeight.toFixed(2)}`;
+      if (stopLoss.triggered) {
+        finalBid = groqResult.newBid * 0.3;
+        reason = `STOP-LOSS: ${stopLoss.reason}`;
+        confidence = 0.9;
 
-    if (stopLoss.triggered) {
-      finalBid = ltvAdjustedBid * 0.3; // Reduce by 70%
-      reason = `STOP-LOSS: ${stopLoss.reason}`;
+        eventBus.emit("bidding.stop_loss", {
+          tenantId,
+          campaignId: metrics.campaignId,
+          reason: stopLoss.reason,
+          action: stopLoss.action,
+        });
+      }
 
-      // Emit stop-loss event
-      eventBus.emit("bidding.stop_loss", {
-        tenantId,
+      const changePercent = metrics.bidAmount > 0
+        ? ((finalBid - metrics.bidAmount) / metrics.bidAmount) * 100
+        : 0;
+
+      decisions.push({
         campaignId: metrics.campaignId,
-        reason: stopLoss.reason,
-        action: stopLoss.action,
+        campaignName: `Campaign ${metrics.campaignId}`,
+        platform: metrics.platform,
+        currentBid: metrics.bidAmount,
+        newBid: finalBid,
+        changePercent,
+        reason,
+        confidence,
+        ltvRatio: metrics.ltvCacRatio,
+        dayPartWeight,
+        stopLossTriggered: stopLoss.triggered,
+      });
+    } else {
+      // Heuristic fallback
+      const ltvData = await db.prepare(`
+        SELECT AVG(predicted_ltv) as avg FROM ltv_predictions
+        WHERE tenant_id = ? AND created_at >= datetime('now', '-7 days')
+      `).get(tenantId) as any;
+
+      const result = heuristicScoreBid(metrics, ltvData?.avg || 100, dayPartWeight, now);
+
+      decisions.push({
+        campaignId: metrics.campaignId,
+        campaignName: `Campaign ${metrics.campaignId}`,
+        platform: metrics.platform,
+        currentBid: metrics.bidAmount,
+        newBid: result.newBid,
+        changePercent: result.changePercent,
+        reason: result.reason,
+        confidence: result.confidence,
+        ltvRatio: metrics.ltvCacRatio,
+        dayPartWeight,
+        stopLossTriggered: result.reason.startsWith("STOP-LOSS"),
       });
     }
-
-    const changePercent = ((finalBid - metrics.bidAmount) / metrics.bidAmount) * 100;
-
-    decisions.push({
-      campaignId: metrics.campaignId,
-      campaignName: `Campaign ${metrics.campaignId}`,
-      platform: metrics.platform,
-      currentBid: metrics.bidAmount,
-      newBid: finalBid,
-      changePercent,
-      reason,
-      confidence: ltvEvaluation.confidence,
-      ltvRatio: ltvEvaluation.ratio,
-      dayPartWeight,
-      stopLossTriggered: stopLoss.triggered,
-    });
   }
 
   // 4. Cross-platform budget arbitrage
@@ -322,18 +423,27 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
     const platformInteg = integrations.find(i => i.platform === decision.platform);
     if (platformInteg && isPlatformSupported(decision.platform)) {
       try {
-        const campaignConfig = JSON.parse(platformInteg.config || "{}");
-        // Log the intended platform bid change (connector interface doesn't expose updateCampaign)
-        await db.prepare(`
-          INSERT INTO system_metrics (tenant_id, metric_name, metric_value, tags, created_at)
-          VALUES (?, 'bidding.platform_push_intended', ?, ?, datetime('now'))
-        `).run(tenantId, decision.newBid, JSON.stringify({
-          platform: decision.platform,
-          campaignId: decision.campaignId,
-          currentBid: decision.currentBid,
-          newBid: decision.newBid,
-          reason: decision.reason,
-        }));
+        const connector = getConnector(decision.platform as any);
+        const accessToken = decryptToken(platformInteg.access_token);
+        if (typeof connector.updateCampaign === "function") {
+          const result = await connector.updateCampaign(accessToken, decision.campaignId, {
+            dailyBudget: decision.newBid,
+          });
+          if (result.success) {
+            await db.prepare(`
+              INSERT INTO system_metrics (tenant_id, metric_name, metric_value, tags, created_at)
+              VALUES (?, 'bidding.platform_push_success', ?, ?, datetime('now'))
+            `).run(tenantId, decision.newBid, JSON.stringify({
+              platform: decision.platform,
+              campaignId: decision.campaignId,
+              currentBid: decision.currentBid,
+              newBid: decision.newBid,
+              reason: decision.reason,
+            }));
+          } else {
+            throw new Error(result.error || "updateCampaign returned success=false");
+          }
+        }
       } catch (e) {
         await db.prepare(`
           INSERT INTO system_metrics (tenant_id, metric_name, metric_value, tags, created_at)
@@ -369,6 +479,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
     campaignCount: campaigns.length,
     decisions: decisions.length,
     stopLosses: decisions.filter(d => d.stopLossTriggered).length,
+    groqScoring: useGroq,
     timestamp: now.toISOString(),
   });
 

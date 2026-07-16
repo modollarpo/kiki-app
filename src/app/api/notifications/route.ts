@@ -1,25 +1,31 @@
 import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const db = await getDb();
-  const notifications = await db.prepare("SELECT * FROM notifications WHERE tenant_id = ? ORDER BY created_at DESC").all(user.tenantId) as Array<{
-    id: string; tenant_id: string; user_id: string; severity: string;
-    title: string; body: string; read: number; link: string | null; created_at: string;
-  }>;
+  try {
+    const db = await getDb();
+    const notifications = await db.prepare("SELECT * FROM notifications WHERE tenant_id = ? ORDER BY created_at DESC").all(user.tenantId) as Array<{
+      id: string; tenant_id: string; user_id: string; severity: string;
+      title: string; body: string; read: number; link: string | null; created_at: string;
+    }>;
 
-  const unread = notifications.filter(n => !n.read).length;
+    const unread = notifications.filter(n => !n.read).length;
 
-  return json({
-    notifications: notifications.map(n => ({
-      id: n.id, tenantId: n.tenant_id, userId: n.user_id, severity: n.severity,
-      title: n.title, body: n.body, read: !!n.read, link: n.link, time: n.created_at,
-    })),
-    unread,
-  });
+    return json({
+      notifications: notifications.map(n => ({
+        id: n.id, tenantId: n.tenant_id, userId: n.user_id, severity: n.severity,
+        title: n.title, body: n.body, read: !!n.read, link: n.link, time: n.created_at,
+      })),
+      unread,
+    });
+  } catch (error) {
+    logger.error("notifications/GET failed", { message: error instanceof Error ? error.message : String(error) });
+    return jsonError("Failed to load notifications", 500);
+  }
 }
 
 export async function PATCH(req: Request) {
@@ -44,7 +50,7 @@ export async function PATCH(req: Request) {
 
     await db.prepare("UPDATE notifications SET read = 1 WHERE id = ?").run(id);
     return json({ ok: true });
-  } catch {
-    return jsonError("Invalid request body", 400);
+  } catch (e) {
+    return handleApiError(e, "notifications/mark-read failed");
   }
 }

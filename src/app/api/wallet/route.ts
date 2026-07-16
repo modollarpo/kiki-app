@@ -1,12 +1,19 @@
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { createVirtualCard } from "@/lib/wallet";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { validateBody, walletTopUpSchema } from "@/lib/validation";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const db = await getDb();
+  try {
+    const rl = checkRateLimit(`wallet:GET:${getClientIp(req)}`, { maxRequests: 60 });
+    if (!rl.allowed) return rateLimitResponse(rl);
+
+    const db = await getDb();
   const wallet = await (await db.prepare("SELECT * FROM wallets WHERE tenant_id = ?")).get(user.tenantId) as {
     id: string; tenant_id: string; balance: number; currency: string;
   } | undefined;
@@ -33,11 +40,18 @@ export async function GET(req: Request) {
       campaign: t.campaign, date: t.created_at, status: t.status,
     })),
   });
+  } catch (error) {
+    logger.error("wallet/GET failed", { message: error instanceof Error ? error.message : String(error) });
+    return jsonError("Failed to load wallet", 500);
+  }
 }
 
 export async function POST(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
+
+  const rl = checkRateLimit(`wallet:POST:${getClientIp(req)}`, { maxRequests: 30 });
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   try {
     const body = await req.json();
@@ -67,7 +81,6 @@ export async function POST(req: Request) {
     const newBalance = wallet.balance + amount;
     await (await db.prepare("UPDATE wallets SET balance = ? WHERE id = ?")).run(newBalance, wallet.id);
 
-    // Record transaction
     const txnId = genId("txn");
     await (await db.prepare(`
       INSERT INTO wallet_transactions (id, wallet_id, type, amount, description, status)

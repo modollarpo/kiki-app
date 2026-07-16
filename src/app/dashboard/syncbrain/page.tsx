@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button, StatCard, ProgressBar, AIThinking } from "@/components/ui";
@@ -113,63 +113,65 @@ export default function SyncBrainPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400, display: "grid", gridTemplateColumns: "1fr 340px", gap: 16, height: "calc(100vh - 56px)" }}>
+      <div className="flex flex-col lg:grid lg:grid-cols-[1fr_340px] gap-4 h-[calc(100dvh-56px)] max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         {/* Chat Panel */}
-        <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <div style={{ marginBottom: 16 }}>
-            <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>SyncBrain™</h1>
-            <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>AI-powered campaign intelligence · Powered by Azure OpenAI GPT-4o-mini / GPT-4o</p>
+        <div className="flex flex-col overflow-hidden">
+          <div className="mb-4">
+            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">SyncBrain™</h1>
+            <p className="font-mono text-[11px] text-gray-500">AI-powered campaign intelligence · Powered by Azure OpenAI GPT-4o-mini / GPT-4o</p>
           </div>
 
-          <Card accent={K.green} style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <Card accent={K.green} className="flex flex-col overflow-hidden flex-1">
             {/* Messages */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}>
+            <div className="flex-1 overflow-y-auto p-4 px-5">
               {messages.map((m, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", marginBottom: 14 }}>
-                  <div style={{
-                    maxWidth: "80%",
-                    padding: "12px 16px",
-                    borderRadius: 2,
-                    background: m.role === "user" ? K.blueD : K.g850,
-                    border: `1px solid ${m.role === "user" ? K.blue + "40" : K.g700}`,
-                  }}>
-                    <p style={{ fontFamily: "Inter,sans-serif", fontSize: 13, color: m.role === "user" ? K.blue4 : K.t2, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{m.content}</p>
+                <div key={i} className={`flex mb-3.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className="max-w-[80%] p-3 px-4 rounded-sm"
+                    style={{
+                      background: m.role === "user" ? K.blueD : K.g850,
+                      border: `1px solid ${m.role === "user" ? K.blue + "40" : K.g700}`,
+                    }}
+                  >
+                    <p className="font-sans text-[13px] leading-relaxed whitespace-pre-wrap" style={{ color: m.role === "user" ? K.blue4 : K.t2 }}>{m.content}</p>
                     {m.model && (
-                      <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
+                      <div className="mt-2 flex gap-2 items-center">
                         <Badge color={m.model.includes("4o") && !m.model.includes("mini") ? K.gold : K.mint} dot>{m.model}</Badge>
-                        {m.tokens && <span style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>{m.tokens} tokens</span>}
+                        {m.tokens && <span className="font-mono text-[10px] text-gray-600">{m.tokens} tokens</span>}
                       </div>
                     )}
                   </div>
                 </div>
               ))}
               {thinking && (
-                <div style={{ display: "flex", gap: 5, padding: "10px 14px", background: K.g850, borderRadius: 2, width: "fit-content", border: `1px solid ${K.green}30` }}>
-                  {[0, 1, 2].map(i => <span key={i} className="animate-kdls-pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: K.green, animationDelay: `${i * 0.2}s` }} />)}
-                  <span style={{ fontFamily: K.mono, fontSize: 10, color: K.green, marginLeft: 6 }}>Thinking...</span>
+                <div className="flex gap-[5px] py-2.5 px-3.5 w-fit rounded-sm" style={{ background: K.g850, border: `1px solid ${K.green}30` }}>
+                  {[0, 1, 2].map(i => <span key={i} className="animate-kdls-pulse w-1.5 h-1.5 rounded-full" style={{ background: K.green, animationDelay: `${i * 0.2}s` }} />)}
+                  <span className="font-mono text-[10px] ml-1.5" style={{ color: K.green }}>Thinking...</span>
                 </div>
               )}
               <div ref={endRef} />
             </div>
 
             {/* Quick prompts */}
-            <div style={{ padding: "8px 16px", borderTop: `1px solid ${K.g800}`, display: "flex", gap: 6, overflowX: "auto" }}>
+            <div className="flex gap-1.5 overflow-x-auto py-2 px-4" style={{ borderTop: `1px solid ${K.g800}` }}>
               {quickPrompts.map(s => (
                 <button key={s} onClick={() => setInput(s)}
-                  style={{ padding: "5px 12px", fontFamily: K.mono, fontSize: 10, background: K.g850, border: `1px solid ${K.g700}`, borderRadius: 20, color: K.t3, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>
+                  className="font-mono text-[10px] px-3 py-[5px] rounded-full flex-shrink-0 whitespace-nowrap cursor-pointer"
+                  style={{ background: K.g850, border: `1px solid ${K.g700}`, color: K.t3 }}>
                   {s}
                 </button>
               ))}
             </div>
 
             {/* Input */}
-            <div style={{ padding: "12px 16px", borderTop: `1px solid ${K.g800}`, display: "flex", gap: 8 }}>
+            <div className="flex gap-2 py-3 px-4" style={{ borderTop: `1px solid ${K.g800}` }}>
               <input
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && send()}
                 placeholder="Ask SyncBrain anything..."
-                style={{ flex: 1, background: K.g800, border: `1px solid ${K.g700}`, borderRadius: 2, padding: "11px 16px", fontFamily: "Inter,sans-serif", fontSize: 13, color: K.t1, outline: "none" }}
+                className="flex-1 font-sans text-[13px] px-4 py-[11px] rounded-sm outline-none"
+                style={{ background: K.g800, border: `1px solid ${K.g700}`, color: K.t1 }}
               />
               <Button onClick={send} loading={thinking}>Send →</Button>
             </div>
@@ -177,43 +179,59 @@ export default function SyncBrainPage() {
         </div>
 
         {/* Sidebar Stats */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, overflowY: "auto" }}>
+        <div className="flex flex-col gap-3 overflow-y-auto">
           <StatCard label="Agent Actions/hr" value={String(stats?.routingPerMin || 0)} accent={K.green} sub={`${stats?.activeCampaigns || 0} active campaigns`} />
           <StatCard label="Total Tokens Today" value={`${((stats?.totalTokens || 0) / 1000).toFixed(1)}K`} accent={K.blue} sub="AI model usage" />
           <StatCard label="Wallet Balance" value={`$${(stats?.walletBalance || 0).toLocaleString()}`} accent={K.teal} sub={`$${(stats?.totalSpend || 0).toLocaleString()} managed spend`} />
 
           <Card accent={K.blue}>
-            <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 12, color: K.t1, marginBottom: 12 }}>Model Routing</h3>
-            {[{ label: "GPT-4o-mini", pct: 62, color: K.blue, desc: "Classification, routing, Q&A" }, { label: "GPT-4o", pct: 38, color: K.gold, desc: "Creative, analysis, reasoning" }].map(m => (
-              <div key={m.label} style={{ marginBottom: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t2 }}>{m.label}</span>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, fontWeight: 700, color: K.t1 }}>{m.pct}%</span>
+            <h3 className="font-mono font-bold text-xs text-white mb-3">Model Routing</h3>
+            {(() => {
+              const total = stats?.agentTypes?.reduce((s, a) => s + a.count, 0) || 0;
+              if (total === 0) {
+                return <p className="font-mono text-[10px] text-gray-500">No routing data available</p>;
+              }
+              // Map agent types to model tiers
+              const miniTypes = ["bidding", "pacing", "signals"];
+              const standardTypes = ["creative", "syncbrain", "oaas"];
+              const miniCount = stats?.agentTypes?.filter(a => miniTypes.includes(a.type)).reduce((s, a) => s + a.count, 0) || 0;
+              const standardCount = stats?.agentTypes?.filter(a => standardTypes.includes(a.type)).reduce((s, a) => s + a.count, 0) || 0;
+              const miniPct = Math.round((miniCount / total) * 100);
+              const standardPct = 100 - miniPct;
+              return [
+                { label: "GPT-4o-mini", pct: miniPct, color: K.blue, desc: "Classification, routing, Q&A" },
+                { label: "GPT-4o", pct: standardPct, color: K.gold, desc: "Creative, analysis, reasoning" },
+              ].map(m => (
+                <div key={m.label} className="mb-3">
+                  <div className="flex justify-between mb-[3px]">
+                    <span className="font-mono text-[10px] text-gray-400">{m.label}</span>
+                    <span className="font-mono text-[10px] font-bold text-white">{m.pct}%</span>
+                  </div>
+                  <ProgressBar value={m.pct} max={100} color={m.color} height={3} glow />
+                  <p className="font-mono text-[10px] text-gray-600 mt-0.5">{m.desc}</p>
                 </div>
-                <ProgressBar value={m.pct} max={100} color={m.color} height={3} glow />
-                <p style={{ fontFamily: K.mono, fontSize: 8, color: K.t4, marginTop: 2 }}>{m.desc}</p>
-              </div>
-            ))}
+              ));
+            })()}
           </Card>
 
           <Card accent={K.teal}>
-            <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 12, color: K.t1, marginBottom: 12 }}>Recent Agent Actions</h3>
+            <h3 className="font-mono font-bold text-xs text-white mb-3">Recent Agent Actions</h3>
             {stats?.recentActions && stats.recentActions.length > 0 ? (
               stats.recentActions.slice(0, 5).map((action, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: `1px solid ${K.g800}` }}>
+                <div key={i} className="flex items-center gap-2 py-2" style={{ borderBottom: `1px solid ${K.g800}` }}>
                   <Badge color={K.teal} dot>{action.type}</Badge>
-                  <span style={{ fontFamily: K.mono, fontSize: 9, color: K.t2, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{action.details}</span>
+                  <span className="font-mono text-[10px] text-gray-400 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{action.details}</span>
                 </div>
               ))
             ) : (
-              <div style={{ padding: "12px 0", textAlign: "center" }}>
-                <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>No recent actions</span>
+              <div className="py-3 text-center">
+                <span className="font-mono text-[10px] text-gray-600">No recent actions</span>
               </div>
             )}
           </Card>
 
           <Card>
-            <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 12, color: K.t1, marginBottom: 12 }}>System Capabilities</h3>
+            <h3 className="font-mono font-bold text-xs text-white mb-3">System Capabilities</h3>
             {[
               "Campaign performance analysis",
               "Budget optimization recommendations",
@@ -222,9 +240,9 @@ export default function SyncBrainPage() {
               "Anomaly detection and alerting",
               "Creative performance scoring",
             ].map((cap, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}>
-                <span style={{ color: K.mint, fontSize: 10 }}>✓</span>
-                <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t2 }}>{cap}</span>
+              <div key={i} className="flex items-center gap-2 py-1.5">
+                <span className="text-emerald-400 text-[10px]">✓</span>
+                <span className="font-mono text-[10px] text-gray-400">{cap}</span>
               </div>
             ))}
           </Card>

@@ -1,0 +1,49 @@
+// ============================================================
+// KIKI Agent™ — Prisma Schema: Profit Margin Service
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ProductMargin {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  sku          String
+  productName  String   @map("product_name")
+  cogs         Float
+  price        Float
+  marginPct    Float    @map("margin_pct")
+  marginAmount Float    @map("margin_amount")
+  currency     String   @default("USD")
+  category     String?
+  lastUpdated  DateTime @default(now()) @map("last_updated")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, sku])
+  @@index([tenantId, marginPct])
+  @@map("product_margins")
+}
+
+model CampaignMarginSnapshot {
+  id                  String   @id @default(cuid())
+  tenantId            String   @map("tenant_id")
+  campaignId          String   @map("campaign_id")
+  platform            String
+  revenue             Float
+  spend               Float
+  cogs                Float
+  grossProfit         Float    @map("gross_profit")
+  profitRoas          Float    @map("profit_roas")
+  profitMarginPct     Float    @map("profit_margin_pct")
+  marginAdjustedLtv   Float    @map("margin_adjusted_ltv")
+  snapshotDate        DateTime @default(now()) @map("snapshot_date")
+
+  @@index([tenantId, campaignId])
+  @@map("campaign_margin_snapshots")
+}

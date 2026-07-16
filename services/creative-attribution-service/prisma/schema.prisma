@@ -1,0 +1,51 @@
+// ============================================================
+// KIKI Agent™ — Prisma Schema: Creative Attribution Service
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SignalAttributionRecord {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  signalId          String   @map("signal_id")
+  creativeId        String   @map("creative_id")
+  adId              String   @map("ad_id")
+  adsetId           String   @map("adset_id")
+  campaignId        String   @map("campaign_id")
+  platform          String
+  attributionModel  String   @map("attribution_model")
+  attributedRevenue Float    @default(0) @map("attributed_revenue")
+  attributedLtv     Float    @default(0) @map("attributed_ltv")
+  conversionValue   Float    @default(0) @map("conversion_value")
+  impressionTime    DateTime @map("impression_time")
+  conversionTime    DateTime @map("conversion_time")
+  attributionWindow Int      @default(24) @map("attribution_window")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, campaignId])
+  @@index([tenantId, creativeId])
+  @@index([tenantId, platform])
+  @@map("signal_attribution_records")
+}
+
+model AttributionSettings {
+  id              String @id @default(cuid())
+  tenantId        String @unique @map("tenant_id")
+  defaultModel    String @default("last_touch") @map("default_model")
+  metaWindowHours Int    @default(24) @map("meta_window_hours")
+  googleWindowDays Int   @default(30) @map("google_window_days")
+  tiktokWindowHours Int  @default(7) @map("tiktok_window_hours")
+  positionWeights JSON   @default("{\"first\":0.4,\"middle\":0.2,\"last\":0.4}") @map("position_weights")
+  decayHalfLifeDays Int  @default(7) @map("decay_half_life_days")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("attribution_settings")
+}

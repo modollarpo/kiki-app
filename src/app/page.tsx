@@ -7,16 +7,16 @@ import { K } from "@/lib/kdls";
 import { Button, Badge } from "@/components/ui";
 
 const TICKER = [
-  { label:"PLATFORM ROAS",    value:"4.23×",  color:K.mint  },
-  { label:"AVG LTV SIGNAL",   value:"$639",   color:K.mint  },
-  { label:"CAC REDUCTION",    value:"−38%",   color:K.mint  },
-  { label:"SIGNALS TODAY",    value:"1.2M",   color:K.teal  },
-  { label:"IVT BLOCKED",      value:"99.1%",  color:K.teal  },
-  { label:"SPEND MANAGED",    value:"$2.4B",  color:K.gold  },
-  { label:"AI DECISIONS/MIN", value:"23.4",   color:K.blue  },
-  { label:"LATENCY P99",      value:"48ms",   color:K.blue  },
-  { label:"PLATFORM UPTIME",  value:"99.97%", color:K.mint  },
-  { label:"ENRICHMENT RATE",  value:"94.2%",  color:K.teal  },
+  { label:"LTV-ENRICHED BIDDING",       value:"ACTIVE",      color:K.mint  },
+  { label:"28-FEATURE SIGNAL PROCESSING", value:"ONLINE",   color:K.mint  },
+  { label:"CROSS-PLATFORM ARBITRAGE",   value:"ENABLED",     color:K.mint  },
+  { label:"REAL-TIME CAPI DELIVERY",    value:"CONNECTED",   color:K.teal  },
+  { label:"FRAUD DETECTION ENGINE",     value:"RUNNING",     color:K.teal  },
+  { label:"AI-POWERED OPTIMIZATION",    value:"ENGAGED",     color:K.gold  },
+  { label:"ADAPTIVE BID MANAGEMENT",    value:"ACTIVE",      color:K.blue  },
+  { label:"SUB-SECOND RESPONSES",       value:"TARGET",      color:K.blue  },
+  { label:"99.9% UPTIME SLA",           value:"GUARANTEED",  color:K.mint  },
+  { label:"SMART DATA ENRICHMENT",      value:"ONLINE",      color:K.teal  },
 ];
 
 const TERMINAL = [
@@ -67,15 +67,15 @@ const HOW = [
 ];
 
 const PROOF = [
-  {co:"ZARA DIGITAL",  stat:"+41%",  sub:"LTV per acquisition in 60 days",      accent:K.mint },
-  {co:"FINEX CAPITAL", stat:"3.8×",  sub:"ROAS on acquisition campaigns",        accent:K.blue },
-  {co:"BLOOM HEALTH",  stat:"−38%",  sub:"CAC with same revenue volume",         accent:K.gold },
-  {co:"NORDLUX GROUP", stat:"$2.1M", sub:"Additional monthly revenue from signal",accent:K.oaas },
+  {co:"LTV ENRICHMENT",  stat:"4.3×",  sub:"Avg LTV vs raw order value when enriched",      accent:K.mint },
+  {co:"CROSS-PLATFORM",   stat:"8",     sub:"Ad platforms with native OAuth + CAPI",        accent:K.blue },
+  {co:"SIGNAL FEATURES",  stat:"28",    sub:"Feature vector per conversion event",          accent:K.gold },
+  {co:"AI AGENTS",        stat:"5",     sub:"Autonomous agents optimizing 24/7",            accent:K.oaas },
 ];
 
 const TESTIMONIALS = [
-  { q:"We were teaching Meta to find our worst customers for 3 years. KIKI fixed that in 60 days. LTV per acquisition up 41%, CAC down 22%.", who:"CMO", at:"Zara Digital" },
-  { q:"The Bidding Agent makes 847 bid adjustments per day. My team focuses on strategy. ROAS improved 58%. I can't imagine going back.", who:"Head of Growth", at:"Finex Capital" },
+  { q:"KIKI sends predicted LTV to Meta instead of raw conversion value. That alone changed what the algorithm optimizes for — and our acquisition quality improved measurably.", who:"Platform Capability", at:"LTV Enrichment" },
+  { q:"Instead of teaching platforms to find our worst customers, KIKI enriches every signal with predicted lifetime value before delivery. The math is transparent and the agents are auditable.", who:"Architecture", at:"Signal Pipeline" },
 ];
 
 const COMPARE = [
@@ -113,10 +113,10 @@ export default function HomePage() {
   }, []);
 
   const Check = ({v}:{v:boolean|string}) => (
-    <div style={{textAlign:"center"}}>
-      {v===true ?       <span style={{color:K.mint,fontSize:15}}>✓</span>
-      :v==="partial" ? <span style={{fontFamily:K.mono,fontSize:9,color:K.warn}}>PARTIAL</span>
-      :                <span style={{color:K.t4,fontSize:14}}>—</span>}
+    <div className="text-center">
+      {v===true ?       <span className="text-kmint text-[15px]">✓</span>
+      :v==="partial" ? <span className="font-mono text-[9px] text-kwarn">PARTIAL</span>
+      :                <span className="text-t4 text-[14px]">—</span>}
     </div>
   );
 
@@ -124,27 +124,27 @@ export default function HomePage() {
     <MarketingLayout>
 
       {/* ── LIVE TICKER ──────────────────────────────── */}
-      <div style={{height:32,background:"#030308",borderBottom:`1px solid ${K.g800}`,display:"flex",alignItems:"center",overflow:"hidden"}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,padding:"0 18px",borderRight:`1px solid ${K.g800}`,height:"100%",flexShrink:0}}>
+      <div className="h-8 bg-[#030308] border-b border-g800 flex items-center overflow-hidden">
+        <div className="flex items-center gap-1.5 px-[18px] border-r border-g800 h-full shrink-0">
           <span className="animate-kdls-pulse" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-          <span style={{fontFamily:K.mono,fontSize:8,letterSpacing:"0.2em",color:K.mint,fontWeight:700}}>LIVE</span>
+          <span className="font-mono text-[8px] tracking-[0.2em] text-kmint font-bold">LIVE</span>
         </div>
-        <div className="ticker-track" style={{display:"flex",height:"100%",alignItems:"center"}}>
+        <div className="ticker-track flex h-full items-center">
           {[...TICKER,...TICKER].map((item,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"0 28px",borderRight:`1px solid ${K.g800}`,height:"100%",flexShrink:0}}>
-              <span style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.1em",color:K.t4}}>{item.label}</span>
+            <div key={i} className="flex items-center gap-2.5 px-[28px] border-r border-g800 h-full shrink-0">
+              <span className="font-mono text-[9px] tracking-widest text-t4">{item.label}</span>
               <span style={{fontFamily:K.mono,fontSize:11,fontWeight:700,color:item.color}}>{item.value}</span>
             </div>
           ))}
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:5,padding:"0 18px",borderLeft:`1px solid ${K.g800}`,height:"100%",flexShrink:0,marginLeft:"auto"}}>
+        <div className="flex items-center gap-[5px] px-[18px] border-l border-g800 h-full shrink-0 ml-auto">
           <span style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-          <span style={{fontFamily:K.mono,fontSize:8,letterSpacing:"0.1em",color:K.t4}}>ALL SYSTEMS NOMINAL</span>
+          <span className="font-mono text-[8px] tracking-[0.1em] text-t4">ALL SYSTEMS NOMINAL</span>
         </div>
       </div>
 
       {/* ── HERO ─────────────────────────────────────── */}
-      <section style={{minHeight:"100vh",padding:"90px 48px 80px",position:"relative",display:"flex",flexDirection:"column",alignItems:"center",overflow:"hidden",background:K.void}}>
+      <section className="relative flex flex-col items-center min-h-screen overflow-hidden py-[90px] px-12" style={{background:K.void}}>
         {/* Grid */}
         <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)`,backgroundSize:"56px 56px",WebkitMaskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",maskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",pointerEvents:"none"}}/>
         {/* Glows */}
@@ -152,66 +152,66 @@ export default function HomePage() {
         <div style={{position:"absolute",width:400,height:400,top:200,right:-100,background:"radial-gradient(circle,rgba(49,243,195,0.05) 0%,transparent 70%)",filter:"blur(60px)",pointerEvents:"none"}}/>
 
         {/* Content */}
-        <div style={{position:"relative",zIndex:1,textAlign:"center",maxWidth:1000,opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(22px)",transition:"all 0.85s cubic-bezier(0.16,1,0.3,1)"}}>
+        <div className="relative z-[1] text-center max-w-[1000px]" style={{opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(22px)",transition:"all 0.85s cubic-bezier(0.16,1,0.3,1)"}}>
           {/* Eyebrow */}
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`,borderRadius:2,padding:"7px 16px",marginBottom:40}}>
+          <div className="inline-flex items-center gap-2 rounded-kdls px-4 py-[7px] mb-10" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
             <span className="animate-kdls-pulse" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
             <span style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.15em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · SOC2 TYPE II</span>
           </div>
 
           {/* Headline */}
-          <h1 style={{fontFamily:K.mono,fontWeight:700,fontSize:"clamp(40px,7vw,82px)",lineHeight:1.0,letterSpacing:"-0.045em",margin:"0 0 30px"}}>
-            <span style={{display:"block",color:"#7070a0",marginBottom:3}}>Your ad platforms are</span>
-            <span style={{display:"block",color:"#ccccdd",marginBottom:3}}>learning from</span>
-            <span style={{display:"block",background:`linear-gradient(110deg,${K.blue} 0%,#5599FF 40%,${K.mint} 100%)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
+          <h1 className="font-mono font-bold text-[clamp(40px,7vw,82px)] leading-none tracking-[-0.045em] mb-[30px]">
+            <span className="block text-[#7070a0] mb-[3px]">Your ad platforms are</span>
+            <span className="block text-[#ccccdd] mb-[3px]">learning from</span>
+            <span className="block" style={{background:`linear-gradient(110deg,${K.blue} 0%,#5599FF 40%,${K.mint} 100%)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
               the wrong signal.
             </span>
           </h1>
 
           {/* Sub */}
-          <p style={{fontFamily:"Inter,system-ui,sans-serif",fontSize:18,fontWeight:300,color:"#666688",lineHeight:1.8,maxWidth:580,margin:"0 auto 46px",letterSpacing:"-0.01em"}}>
+          <p className="max-w-[580px] mx-auto mb-[46px] font-[300] leading-[1.8] tracking-[-0.01em] text-[#666688]" style={{fontFamily:"Inter,system-ui,sans-serif",fontSize:18}}>
             KIKI intercepts every conversion, predicts 90-day customer LTV with ML, and feeds enriched signals to Meta, Google, TikTok, and 11 other platforms —{" "}
             <span style={{color:"#8888aa"}}>before they see the raw order value.</span>
           </p>
 
           {/* CTAs */}
-          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:14}}>
+          <div className="flex flex-wrap justify-center gap-3 mb-[14px]">
             <Button size="xl" onClick={()=>router.push("/auth/login")}>START FREE TRIAL →</Button>
             <Button variant="secondary" size="xl" onClick={()=>router.push("/features")}>WATCH 3-MIN DEMO ▸</Button>
           </div>
-          <p style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.12em",color:K.t4}}>
+          <p className="font-mono text-[9px] tracking-[0.12em] text-t4">
             NO CREDIT CARD &nbsp;·&nbsp; 14-DAY TRIAL &nbsp;·&nbsp; SOC2 TYPE II &nbsp;·&nbsp; GDPR &amp; CCPA
           </p>
         </div>
 
         {/* ── TERMINAL ─────────────────────────────────── */}
-        <div style={{position:"relative",zIndex:1,marginTop:72,width:"100%",maxWidth:900,border:`1px solid ${K.g700}`,borderRadius:4,background:"#04040D",overflow:"hidden",boxShadow:"0 40px 100px rgba(0,0,0,0.75),0 0 0 1px rgba(255,255,255,0.04)"}}>
+        <div className="relative z-[1] mt-[72px] w-full max-w-[900px] rounded-kdls overflow-hidden bg-[#04040D]" style={{border:`1px solid ${K.g700}`,boxShadow:"0 40px 100px rgba(0,0,0,0.75),0 0 0 1px rgba(255,255,255,0.04)"}}>
           {/* Chrome bar */}
-          <div style={{display:"flex",alignItems:"center",padding:"12px 18px",background:"#070710",borderBottom:`1px solid ${K.g800}`,gap:8}}>
-            <div style={{display:"flex",gap:6}}>
+          <div className="flex items-center gap-2 px-[18px] py-3 bg-[#070710] border-b border-g800">
+            <div className="flex gap-1.5">
               {[K.danger,K.warn,K.pos].map((c,i)=><div key={i} style={{width:11,height:11,borderRadius:"50%",background:c,opacity:0.75}}/>)}
             </div>
-            <span style={{flex:1,textAlign:"center",fontFamily:K.mono,fontSize:10,color:K.t4}}>kiki-capi-gateway &nbsp;·&nbsp; production &nbsp;·&nbsp; tenant: acme-corp</span>
-            <div style={{display:"flex",alignItems:"center",gap:5}}>
+            <span className="flex-1 text-center font-mono text-[10px] text-t4">kiki-capi-gateway &nbsp;·&nbsp; production &nbsp;·&nbsp; tenant: acme-corp</span>
+            <div className="flex items-center gap-[5px]">
               <span className="animate-kdls-pulse" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-              <span style={{fontFamily:K.mono,fontSize:9,color:K.mint}}>1.2M events/day</span>
+              <span className="font-mono text-[9px] text-kmint">1.2M events/day</span>
             </div>
           </div>
           {/* Column headers */}
-          <div style={{display:"grid",gridTemplateColumns:"100px 130px 66px 1fr",padding:"5px 20px 4px",background:"#060610",borderBottom:"1px solid rgba(255,255,255,0.03)"}}>
+          <div className="grid grid-cols-[100px_130px_66px_1fr] px-5 pt-[5px] pb-1 bg-[#060610]" style={{borderBottom:"1px solid rgba(255,255,255,0.03)"}}>
             {["TIMESTAMP","SERVICE","LEVEL","OUTPUT"].map(h=>(
-              <span key={h} style={{fontFamily:K.mono,fontSize:8,letterSpacing:"0.14em",color:K.t4}}>{h}</span>
+              <span key={h} className="font-mono text-[8px] tracking-[0.14em] text-t4">{h}</span>
             ))}
           </div>
           {/* Log lines */}
-          <div style={{padding:"14px 20px 20px",minHeight:190}}>
+          <div className="px-5 pt-[14px] pb-5 min-h-[190px]">
             {TERMINAL.slice(0,termIdx).map((line,i)=>(
-              <div key={i} style={{display:"grid",gridTemplateColumns:"100px 130px 66px 1fr",alignItems:"baseline",lineHeight:1.95}}>
-                <span style={{fontFamily:K.mono,fontSize:10,color:"#2a2a44"}}>{line.ts}</span>
-                <span style={{fontFamily:K.mono,fontSize:10,color:K.t3}}>{line.svc}</span>
+              <div key={i} className="grid grid-cols-[100px_130px_66px_1fr] items-baseline" style={{lineHeight:1.95}}>
+                <span className="font-mono text-[10px] text-[#2a2a44]">{line.ts}</span>
+                <span className="font-mono text-[10px] text-t3">{line.svc}</span>
                 <span style={{fontFamily:K.mono,fontSize:10,fontWeight:700,color:line.color}}>{line.lvl}</span>
                 {line.special?(
-                  <span style={{fontFamily:K.mono,fontSize:11}}>
+                  <span className="font-mono text-[11px]">
                     <span style={{color:K.t3}}>order=</span><span style={{color:"#8888aa"}}>149.00</span>
                     <span style={{color:K.t4}}> → </span>
                     <span style={{color:K.mint,fontWeight:700}}>ltv_signal=639.20</span>
@@ -230,27 +230,27 @@ export default function HomePage() {
         </div>
 
         {/* Stats bar */}
-        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:900,background:"#050510",border:`1px solid ${K.g800}`,borderTop:`1px solid ${K.g700}`,display:"flex",overflow:"hidden"}}>
-          {[["$2.4B","AD SPEND MANAGED"],["1.2M","SIGNALS / DAY"],["14","PLATFORM CONNECTORS"],["99.97%","PLATFORM UPTIME"],["38ms","ENRICHMENT LATENCY"]].map(([v,l],i,arr)=>(
-            <div key={l} style={{flex:"1 1 0",padding:"16px 18px",textAlign:"center",borderRight:i<arr.length-1?`1px solid ${K.g800}`:"none"}}>
-              <div style={{fontFamily:K.mono,fontSize:20,fontWeight:700,color:K.t1,letterSpacing:"-0.02em"}}>{v}</div>
-              <div style={{fontFamily:K.mono,fontSize:8,letterSpacing:"0.14em",color:K.t4,marginTop:5}}>{l}</div>
+        <div className="relative z-[1] w-full max-w-[900px] flex overflow-hidden" style={{background:"#050510",border:`1px solid ${K.g800}`,borderTop:`1px solid ${K.g700}`}}>
+          {[["8","PLATFORMS"],["28","SIGNAL FEATURES"],["5","AI AGENTS"],["4","LTV TIERS"],["<100ms","ENRICHMENT P99"]].map(([v,l],i,arr)=>(
+            <div key={l} className="flex-1 py-4 px-[18px] text-center" style={{borderRight:i<arr.length-1?`1px solid ${K.g800}`:"none"}}>
+              <div className="font-mono font-bold text-[20px] text-t1 tracking-[-0.02em]">{v}</div>
+              <div className="font-mono text-[8px] tracking-[0.14em] text-t4 mt-[5px]">{l}</div>
             </div>
           ))}
         </div>
 
         {/* Platform logos */}
-        <div style={{position:"relative",zIndex:1,marginTop:44,width:"100%",maxWidth:900,textAlign:"center"}}>
-          <p style={{fontFamily:K.mono,fontSize:8,letterSpacing:"0.18em",color:K.t4,marginBottom:18}}>ENRICHES SIGNALS ACROSS 14 AD PLATFORMS</p>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
+        <div className="relative z-[1] mt-11 w-full max-w-[900px] text-center">
+          <p className="font-mono text-[8px] tracking-[0.18em] text-t4 mb-4.5">ENRICHES SIGNALS ACROSS 14 AD PLATFORMS</p>
+          <div className="flex gap-2 flex-wrap justify-center">
             {PLATFORMS.map(p=>{
               const c=PLATFORM_COLORS[p]||K.t3;
               return(
-                <div key={p} style={{display:"flex",alignItems:"center",gap:7,padding:"6px 12px",background:`${c}08`,border:`1px solid ${c}18`,borderRadius:2,cursor:"default",transition:"all 0.2s"}}
+                <div key={p} className="flex items-center gap-[7px] py-[6px] px-3 rounded-kdls cursor-default transition-all duration-200" style={{background:`${c}08`,border:`1px solid ${c}18`}}
                   onMouseEnter={e=>{(e.currentTarget.style.background=`${c}14`);(e.currentTarget.style.borderColor=`${c}40`);}}
                   onMouseLeave={e=>{(e.currentTarget.style.background=`${c}08`);(e.currentTarget.style.borderColor=`${c}18`);}}>
-                  <span style={{fontFamily:K.mono,fontSize:9,fontWeight:700,color:c}}>{p[0]}</span>
-                  <span style={{fontFamily:K.mono,fontSize:9,color:"#555577"}}>{p}</span>
+                  <span className="font-mono text-[9px] font-bold" style={{color:c}}>{p[0]}</span>
+                  <span className="font-mono text-[9px] text-[#555577]">{p}</span>
                 </div>
               );
             })}
@@ -259,21 +259,21 @@ export default function HomePage() {
       </section>
 
       {/* ── HOW IT WORKS ───────────────────────────────── */}
-      <section style={{padding:"100px 48px",background:"#04040D",borderTop:`1px solid ${K.g800}`}}>
-        <div style={{maxWidth:1000,margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:56}}>
-            <p style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.2em",color:K.t4,marginBottom:14}}>HOW IT WORKS</p>
-            <h2 style={{fontFamily:K.mono,fontWeight:700,fontSize:"clamp(24px,4vw,44px)",color:K.t1,letterSpacing:"-0.035em"}}>
+      <section className="py-[100px] px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
+        <div className="max-w-[1000px] mx-auto">
+          <div className="text-center mb-14">
+            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">HOW IT WORKS</p>
+            <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em]">
               From conversion to enriched signal in 341ms.
             </h2>
           </div>
-          <div style={{display:"flex",gap:0,position:"relative"}}>
-            <div style={{position:"absolute",top:24,left:"8%",right:"8%",height:1,background:`linear-gradient(90deg,transparent,${K.g700},${K.g700},${K.g700},transparent)`}}/>
+          <div className="flex relative">
+            <div className="absolute top-6 left-[8%] right-[8%] h-px" style={{background:`linear-gradient(90deg,transparent,${K.g700},${K.g700},${K.g700},transparent)`}}/>
             {HOW.map((step)=>(
-              <div key={step.s} style={{flex:1,textAlign:"center",padding:"0 10px"}}>
-                <div style={{width:48,height:48,borderRadius:2,background:`${step.c}10`,border:`1px solid ${step.c}25`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",position:"relative",zIndex:1,fontFamily:K.mono,fontWeight:700,fontSize:13,color:step.c}}>{step.s}</div>
-                <p style={{fontFamily:K.mono,fontWeight:700,fontSize:12,color:step.c,marginBottom:8,letterSpacing:"0.04em"}}>{step.t}</p>
-                <p style={{fontFamily:"Inter,sans-serif",fontSize:12,color:K.t4,lineHeight:1.65}}>{step.b}</p>
+              <div key={step.s} className="flex-1 text-center px-[10px]">
+                <div className="w-12 h-12 rounded-kdls flex items-center justify-center mx-auto mb-4 relative z-[1] font-mono font-bold text-[13px]" style={{background:`${step.c}10`,border:`1px solid ${step.c}25`,color:step.c}}>{step.s}</div>
+                <p className="font-mono font-bold text-[12px] mb-2 tracking-[0.04em]" style={{color:step.c}}>{step.t}</p>
+                <p className="font-sans text-[12px] text-t4 leading-[1.65]">{step.b}</p>
               </div>
             ))}
           </div>
@@ -281,29 +281,29 @@ export default function HomePage() {
       </section>
 
       {/* ── FEATURES GRID ──────────────────────────────── */}
-      <section style={{padding:"100px 48px",borderTop:`1px solid ${K.g800}`,background:K.void}}>
-        <div style={{maxWidth:1060,margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:56}}>
-            <p style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.2em",color:K.t4,marginBottom:14}}>THE PLATFORM</p>
-            <h2 style={{fontFamily:K.mono,fontWeight:700,fontSize:"clamp(24px,4vw,44px)",color:K.t1,letterSpacing:"-0.035em"}}>Every tool your media team needs.</h2>
+      <section className="py-[100px] px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+        <div className="max-w-[1060px] mx-auto">
+          <div className="text-center mb-14">
+            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">THE PLATFORM</p>
+            <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em]">Every tool your media team needs.</h2>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:1,background:K.g800,border:`1px solid ${K.g800}`}}>
+          <div className="grid grid-cols-2 gap-px bg-g800" style={{border:`1px solid ${K.g800}`}}>
             {FEATURES.map((f,i)=>(
-              <div key={i} style={{background:K.g900,padding:40,position:"relative",overflow:"hidden",cursor:"default",transition:"background 0.2s"}}
+              <div key={i} className="p-10 relative overflow-hidden cursor-default transition-colors duration-200" style={{background:K.g900}}
                 onMouseEnter={e=>(e.currentTarget.style.background=K.g850)} onMouseLeave={e=>(e.currentTarget.style.background=K.g900)}>
-                <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${f.accent}80,transparent)`}}/>
-                <div style={{position:"absolute",right:-20,top:-20,width:120,height:120,borderRadius:"50%",background:`radial-gradient(circle,${f.accent}06 0%,transparent 70%)`}}/>
-                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
-                  <div style={{width:36,height:36,borderRadius:2,background:`${f.accent}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:f.accent,flexShrink:0}}>{f.icon}</div>
-                  <p style={{fontFamily:K.mono,fontSize:8,letterSpacing:"0.16em",color:f.accent,opacity:0.7}}>{f.n} · {f.tag}</p>
+                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,transparent,${f.accent}80,transparent)`}}/>
+                <div className="absolute -right-5 -top-5 w-[120px] h-[120px] rounded-full" style={{background:`radial-gradient(circle,${f.accent}06 0%,transparent 70%)`}}/>
+                <div className="flex items-center gap-[10px] mb-5">
+                  <div className="w-9 h-9 rounded-kdls flex items-center justify-center text-base shrink-0" style={{background:`${f.accent}12`,color:f.accent}}>{f.icon}</div>
+                  <p className="font-mono text-[8px] tracking-[0.16em] opacity-70" style={{color:f.accent}}>{f.n} · {f.tag}</p>
                 </div>
-                <h3 style={{fontFamily:K.mono,fontWeight:700,fontSize:"clamp(14px,2vw,19px)",color:K.t1,marginBottom:14,lineHeight:1.2,letterSpacing:"-0.02em",whiteSpace:"pre-line"}}>{f.title}</h3>
-                <p style={{fontFamily:"Inter,sans-serif",fontSize:13,color:K.t3,lineHeight:1.75,marginBottom:24}}>{f.body}</p>
-                <div style={{display:"flex",gap:1,background:K.g800,borderRadius:2,overflow:"hidden"}}>
+                <h3 className="font-mono font-bold text-[clamp(14px,2vw,19px)] text-t1 mb-3.5 leading-[1.2] tracking-[-0.02em] whitespace-pre-line">{f.title}</h3>
+                <p className="font-sans text-[13px] text-t3 leading-[1.75] mb-6">{f.body}</p>
+                <div className="flex gap-px bg-g800 rounded-kdls overflow-hidden">
                   {f.proof.map(p=>(
-                    <div key={p.l} style={{flex:1,padding:"10px 12px",background:K.g850,textAlign:"center"}}>
-                      <p style={{fontFamily:K.mono,fontSize:14,fontWeight:700,color:f.accent}}>{p.v}</p>
-                      <p style={{fontFamily:K.mono,fontSize:8,color:K.t4,marginTop:3,letterSpacing:"0.06em"}}>{p.l}</p>
+                    <div key={p.l} className="flex-1 py-[10px] px-3 bg-g850 text-center">
+                      <p className="font-mono text-sm font-bold" style={{color:f.accent}}>{p.v}</p>
+                      <p className="font-mono text-[8px] text-t4 mt-[3px] tracking-[0.06em]">{p.l}</p>
                     </div>
                   ))}
                 </div>
@@ -314,42 +314,42 @@ export default function HomePage() {
       </section>
 
       {/* ── SOCIAL PROOF ───────────────────────────────── */}
-      <section style={{padding:"100px 48px",background:"#04040D",borderTop:`1px solid ${K.g800}`}}>
-        <div style={{maxWidth:960,margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:56}}>
-            <p style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.2em",color:K.t4,marginBottom:14}}>RESULTS</p>
-            <h2 style={{fontFamily:K.mono,fontWeight:700,fontSize:"clamp(24px,4vw,40px)",color:K.t1,letterSpacing:"-0.03em"}}>Measured in revenue. Not vanity metrics.</h2>
+      <section className="py-[100px] px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
+        <div className="max-w-[960px] mx-auto">
+          <div className="text-center mb-14">
+            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">RESULTS</p>
+            <h2 className="font-mono font-bold text-[clamp(24px,4vw,40px)] text-t1 tracking-[-0.03em]">Measured in revenue. Not vanity metrics.</h2>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:K.g800,marginBottom:24}}>
+          <div className="grid grid-cols-4 gap-px bg-g800 mb-6">
             {PROOF.map((p,i)=>(
-              <div key={i} style={{background:K.g900,padding:32,textAlign:"center",cursor:"default",transition:"all 0.25s",position:"relative",overflow:"hidden"}}
+              <div key={i} className="p-8 text-center cursor-default transition-all duration-[250ms] relative overflow-hidden" style={{background:K.g900}}
                 onMouseEnter={e=>{(e.currentTarget.style.background=K.g850);(e.currentTarget.style.transform="translateY(-3px)");}}
                 onMouseLeave={e=>{(e.currentTarget.style.background=K.g900);(e.currentTarget.style.transform="none");}}>
-                <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${p.accent}80,transparent)`}}/>
-                <p style={{fontFamily:K.mono,fontSize:8,letterSpacing:"0.14em",color:K.t4,marginBottom:14}}>{p.co}</p>
-                <p style={{fontFamily:K.mono,fontSize:38,fontWeight:700,color:p.accent,letterSpacing:"-0.03em",lineHeight:1,marginBottom:10}}>{p.stat}</p>
-                <p style={{fontFamily:"Inter,sans-serif",fontSize:12,color:K.t4,lineHeight:1.5}}>{p.sub}</p>
+                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,transparent,${p.accent}80,transparent)`}}/>
+                <p className="font-mono text-[8px] tracking-[0.14em] text-t4 mb-3.5">{p.co}</p>
+                <p className="font-mono text-[38px] font-bold tracking-[-0.03em] leading-none mb-[10px]" style={{color:p.accent}}>{p.stat}</p>
+                <p className="font-sans text-[12px] text-t4 leading-[1.5]">{p.sub}</p>
               </div>
             ))}
           </div>
           {/* Testimonial rotator */}
-          <div style={{padding:44,background:K.g900,border:`1px solid ${K.g800}`,borderRadius:2,position:"relative",overflow:"hidden"}}>
-            <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${K.blue}50,transparent)`}}/>
-            <div style={{maxWidth:660,margin:"0 auto",textAlign:"center"}}>
-              <div style={{fontSize:28,color:K.t4,marginBottom:18,fontFamily:"Georgia,serif",lineHeight:1}}>"</div>
+          <div className="p-[44px] bg-g900 rounded-kdls relative overflow-hidden" style={{border:`1px solid ${K.g800}`}}>
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,transparent,${K.blue}50,transparent)`}}/>
+            <div className="max-w-[660px] mx-auto text-center">
+              <div className="text-[28px] text-t4 mb-4.5 font-['Georgia,serif'] leading-none">"</div>
               {TESTIMONIALS.map((t,i)=>(
                 <div key={i} style={{display:i===activeQ?"block":"none"}}>
-                  <p style={{fontFamily:"Inter,sans-serif",fontSize:15,color:K.t2,lineHeight:1.82,fontStyle:"italic",marginBottom:24}}>"{t.q}"</p>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-                    <div style={{width:36,height:36,borderRadius:"50%",background:K.blueD,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:K.mono,fontWeight:700,fontSize:11,color:K.blue4}}>{t.at.split(" ").map(w=>w[0]).join("")}</div>
-                    <div style={{textAlign:"left"}}>
-                      <p style={{fontFamily:K.mono,fontSize:11,fontWeight:700,color:K.t1}}>{t.who}</p>
-                      <p style={{fontFamily:K.mono,fontSize:10,color:K.t4}}>{t.at}</p>
+                  <p className="font-sans text-[15px] text-t2 leading-[1.82] italic mb-6">"{t.q}"</p>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center font-mono font-bold text-[11px]" style={{background:K.blueD,color:K.blue4}}>{t.at.split(" ").map(w=>w[0]).join("")}</div>
+                    <div className="text-left">
+                      <p className="font-mono text-[11px] font-bold text-t1">{t.who}</p>
+                      <p className="font-mono text-[10px] text-t4">{t.at}</p>
                     </div>
                   </div>
                 </div>
               ))}
-              <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:20}}>
+              <div className="flex gap-1.5 justify-center mt-5">
                 {TESTIMONIALS.map((_,i)=>(
                   <button key={i} onClick={()=>setActiveQ(i)} style={{width:i===activeQ?20:6,height:6,borderRadius:3,background:i===activeQ?K.blue:K.g700,border:"none",cursor:"pointer",transition:"all 0.3s"}}/>
                 ))}
@@ -360,29 +360,29 @@ export default function HomePage() {
       </section>
 
       {/* ── VS COMPARISON ──────────────────────────────── */}
-      <section style={{padding:"80px 48px",borderTop:`1px solid ${K.g800}`,background:K.void}}>
-        <div style={{maxWidth:860,margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:40}}>
-            <p style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.2em",color:K.t4,marginBottom:14}}>WHY KIKI</p>
-            <h2 style={{fontFamily:K.mono,fontWeight:700,fontSize:"clamp(22px,3.5vw,38px)",color:K.t1,letterSpacing:"-0.03em"}}>What you get vs. the alternatives.</h2>
+      <section className="py-20 px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+        <div className="max-w-[860px] mx-auto">
+          <div className="text-center mb-10">
+            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">WHY KIKI</p>
+            <h2 className="font-mono font-bold text-[clamp(22px,3.5vw,38px)] text-t1 tracking-[-0.03em]">What you get vs. the alternatives.</h2>
           </div>
-          <div style={{border:`1px solid ${K.g800}`,borderRadius:2,overflow:"hidden"}}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 90px 110px 90px",background:K.g950}}>
-              <div style={{padding:"13px 20px"}}><span style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.1em",color:K.t4}}>CAPABILITY</span></div>
+          <div className="rounded-kdls overflow-hidden" style={{border:`1px solid ${K.g800}`}}>
+            <div className="grid grid-cols-[1fr_90px_110px_90px] bg-g950">
+              <div className="py-[13px] px-5"><span className="font-mono text-[9px] tracking-widest text-t4">CAPABILITY</span></div>
               {[{l:"KIKI",c:K.blue},{l:"MANUAL",c:K.t4},{l:"BASIC TOOLS",c:K.t4}].map(h=>(
-                <div key={h.l} style={{padding:"13px 12px",textAlign:"center",borderLeft:`1px solid ${K.g800}`}}>
-                  <span style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.1em",color:h.c}}>{h.l}</span>
+                <div key={h.l} className="py-[13px] px-3 text-center" style={{borderLeft:`1px solid ${K.g800}`}}>
+                  <span className="font-mono text-[9px] tracking-widest" style={{color:h.c}}>{h.l}</span>
                 </div>
               ))}
             </div>
             {COMPARE.map((row,i)=>(
-              <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 90px 110px 90px",background:i%2===0?K.g900:K.g950,borderTop:`1px solid ${K.g800}`}}>
-                <div style={{padding:"13px 20px",display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{color:K.mint,fontSize:11,flexShrink:0}}>✓</span>
-                  <span style={{fontFamily:"Inter,sans-serif",fontSize:12,color:K.t2}}>{row.f}</span>
+              <div key={i} className="grid grid-cols-[1fr_90px_110px_90px]" style={{background:i%2===0?K.g900:K.g950,borderTop:`1px solid ${K.g800}`}}>
+                <div className="py-[13px] px-5 flex items-center gap-[10px]">
+                  <span className="text-kmint text-[11px] shrink-0">✓</span>
+                  <span className="font-sans text-[12px] text-t2">{row.f}</span>
                 </div>
                 {[row.k,row.m,row.b].map((v,j)=>(
-                  <div key={j} style={{padding:"13px 12px",borderLeft:`1px solid ${K.g800}`}}>
+                  <div key={j} className="py-[13px] px-3" style={{borderLeft:`1px solid ${K.g800}`}}>
                     <Check v={v}/>
                   </div>
                 ))}
@@ -393,35 +393,35 @@ export default function HomePage() {
       </section>
 
       {/* ── PRICING PREVIEW ────────────────────────────── */}
-      <section style={{padding:"80px 48px",background:"#04040D",borderTop:`1px solid ${K.g800}`}}>
-        <div style={{maxWidth:900,margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:40}}>
-            <p style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.2em",color:K.t4,marginBottom:14}}>PRICING</p>
-            <h2 style={{fontFamily:K.mono,fontWeight:700,fontSize:"clamp(22px,3.5vw,38px)",color:K.t1,letterSpacing:"-0.03em",marginBottom:24}}>Simple, transparent pricing.</h2>
-            <div style={{display:"inline-flex",gap:4,background:K.g850,borderRadius:2,padding:4}}>
+      <section className="py-20 px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
+        <div className="max-w-[900px] mx-auto">
+          <div className="text-center mb-10">
+            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">PRICING</p>
+            <h2 className="font-mono font-bold text-[clamp(22px,3.5vw,38px)] text-t1 tracking-[-0.03em] mb-6">Simple, transparent pricing.</h2>
+            <div className="inline-flex gap-1 bg-g850 rounded-kdls p-1">
               {["Annual (save 20%)","Monthly"].map((l,i)=>(
                 <button key={l} onClick={()=>setAnnual(i===0)} style={{padding:"7px 16px",fontFamily:K.mono,fontSize:10,fontWeight:600,borderRadius:2,border:"none",background:annual===(i===0)?K.g700:"transparent",color:annual===(i===0)?K.t1:K.t3,cursor:"pointer",transition:"all 0.15s"}}>{l}</button>
               ))}
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:24}}>
+          <div className="grid grid-cols-3 gap-3 mb-6">
             {PLANS.map(p=>(
               <div key={p.name}
                 style={{padding:28,background:p.hot?K.blueD:K.g900,border:`${p.hot?2:1}px solid ${p.hot?K.blue:K.g800}`,borderRadius:2,position:"relative",transition:"all 0.2s"}}
                 onMouseEnter={e=>{if(!p.hot)(e.currentTarget.style.background=K.g850);}}
                 onMouseLeave={e=>{if(!p.hot)(e.currentTarget.style.background=K.g900);}}>
-                {p.hot&&<div style={{position:"absolute",top:-11,left:"50%",transform:"translateX(-50%)"}}><Badge color={K.blue}>MOST POPULAR</Badge></div>}
-                <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${p.color}50,transparent)`}}/>
-                <p style={{fontFamily:K.mono,fontWeight:700,fontSize:18,color:K.t1,marginBottom:4}}>{p.name}</p>
-                <p style={{fontFamily:"Inter,sans-serif",fontSize:12,color:K.t3,marginBottom:20}}>{p.desc}</p>
+                {p.hot&&<div className="absolute -top-[11px] left-1/2 -translate-x-1/2"><Badge color={K.blue}>MOST POPULAR</Badge></div>}
+                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,transparent,${p.color}50,transparent)`}}/>
+                <p className="font-mono font-bold text-lg text-t1 mb-1">{p.name}</p>
+                <p className="font-sans text-[12px] text-t3 mb-5">{p.desc}</p>
                 {p.price!==null?(
-                  <div style={{marginBottom:22}}>
-                    <span style={{fontFamily:K.mono,fontSize:36,fontWeight:700,color:p.hot?K.blue4:K.t1,letterSpacing:"-0.02em"}}>${annual?Math.round(p.price*0.8).toLocaleString():p.price.toLocaleString()}</span>
-                    <span style={{fontFamily:K.mono,fontSize:13,color:K.t3}}>/mo</span>
-                    {annual&&<p style={{fontFamily:K.mono,fontSize:9,color:K.mint,marginTop:3}}>BILLED ANNUALLY · SAVE ${(p.price*0.2*12).toLocaleString()}/YR</p>}
+                  <div className="mb-[22px]">
+                    <span className="font-mono text-[36px] font-bold tracking-[-0.02em]" style={{color:p.hot?K.blue4:K.t1}}>${annual?Math.round(p.price*0.8).toLocaleString():p.price.toLocaleString()}</span>
+                    <span className="font-mono text-[13px] text-t3">/mo</span>
+                    {annual&&<p className="font-mono text-[9px] text-kmint mt-[3px]">BILLED ANNUALLY · SAVE ${(p.price*0.2*12).toLocaleString()}/YR</p>}
                   </div>
                 ):(
-                  <p style={{fontFamily:K.mono,fontSize:28,fontWeight:700,color:K.gold,marginBottom:22}}>Custom</p>
+                  <p className="font-mono text-[28px] font-bold text-kgold mb-[22px]">Custom</p>
                 )}
                 <Button variant={p.hot?"primary":p.price===null?"gold":"secondary"} size="md" full onClick={()=>router.push(p.price===null?"/contact":"/auth/login")}>
                   {p.cta} →
@@ -429,34 +429,34 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <p style={{textAlign:"center",fontFamily:K.mono,fontSize:10,color:K.t4}}>
+          <p className="text-center font-mono text-[10px] text-t4">
             All plans include signal enrichment, fraud protection, and 14-day free trial.{" "}
-            <a href="/pricing" style={{color:K.blue4,textDecoration:"none"}}>See full comparison →</a>
+            <a href="/pricing" className="no-underline" style={{color:K.blue4}}>See full comparison →</a>
           </p>
         </div>
       </section>
 
       {/* ── FINAL CTA ──────────────────────────────────── */}
-      <section style={{padding:"120px 48px",borderTop:`1px solid ${K.g800}`,textAlign:"center",background:K.void,position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:700,height:400,background:"radial-gradient(ellipse,rgba(0,92,255,0.10) 0%,transparent 65%)",filter:"blur(80px)",pointerEvents:"none"}}/>
-        <div style={{position:"absolute",bottom:0,left:"50%",transform:"translateX(-50%)",width:500,height:200,background:"radial-gradient(ellipse,rgba(49,243,195,0.06) 0%,transparent 70%)",filter:"blur(60px)",pointerEvents:"none"}}/>
-        <div style={{position:"relative",zIndex:1,maxWidth:640,margin:"0 auto"}}>
-          <p style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.2em",color:K.t4,marginBottom:20}}>GET STARTED IN UNDER 10 MINUTES</p>
-          <h2 style={{fontFamily:K.mono,fontWeight:700,fontSize:"clamp(28px,5.5vw,58px)",color:K.t1,marginBottom:20,letterSpacing:"-0.045em",lineHeight:1.02}}>
-            Your campaigns are teaching<br/>platforms the <span style={{color:K.blue}}>wrong lesson.</span>
+      <section className="py-[120px] px-12 text-center relative overflow-hidden" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] blur-[80px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(0,92,255,0.10) 0%,transparent 65%)"}}/>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] blur-[60px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(49,243,195,0.06) 0%,transparent 70%)"}}/>
+        <div className="relative z-[1] max-w-[640px] mx-auto">
+          <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-5">GET STARTED IN UNDER 10 MINUTES</p>
+          <h2 className="font-mono font-bold text-[clamp(28px,5.5vw,58px)] text-t1 mb-5 tracking-[-0.045em] leading-[1.02]">
+            Your campaigns are teaching<br/>platforms the <span className="text-kblue">wrong lesson.</span>
           </h2>
-          <p style={{fontFamily:"Inter,sans-serif",fontSize:16,color:K.t3,lineHeight:1.75,maxWidth:500,margin:"0 auto 40px"}}>
+          <p className="font-sans text-base text-t3 leading-[1.75] max-w-[500px] mx-auto mb-10">
             Connect your first ad account in 15 minutes. KIKI starts enriching every conversion immediately.
           </p>
-          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:24}}>
+          <div className="flex gap-3 justify-center flex-wrap mb-6">
             <Button size="xl" onClick={()=>router.push("/auth/login")}>START FREE — NO CREDIT CARD →</Button>
             <Button variant="secondary" size="xl" onClick={()=>router.push("/contact")}>BOOK ENTERPRISE DEMO</Button>
           </div>
-          <div style={{display:"flex",gap:24,justifyContent:"center",flexWrap:"wrap"}}>
+          <div className="flex gap-6 justify-center flex-wrap">
             {["SOC2 Type II","GDPR & CCPA","14-day free trial","No credit card"].map(t=>(
-              <div key={t} style={{display:"flex",alignItems:"center",gap:6}}>
-                <span style={{color:K.mint,fontFamily:K.mono,fontSize:12}}>✓</span>
-                <span style={{fontFamily:K.mono,fontSize:10,color:K.t3,letterSpacing:"0.04em"}}>{t}</span>
+              <div key={t} className="flex items-center gap-1.5">
+                <span className="text-kmint font-mono text-xs">✓</span>
+                <span className="font-mono text-[10px] text-t3 tracking-[0.04em]">{t}</span>
               </div>
             ))}
           </div>

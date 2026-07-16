@@ -1,0 +1,6 @@
+apiVersion: v2
+name: profit-margin-service
+description: Microservice for profit margin analysis and financial forecasting
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

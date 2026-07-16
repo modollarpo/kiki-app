@@ -1,0 +1,20 @@
+replicaCount: 1
+image:
+  repository: kikiagentprodacr.azurecr.io/influencer-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 3026
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 1
+    memory: 512Mi
+env:
+  PORT: "3026"
+  NODE_ENV: production
+  DATABASE_URL: ""
+  KAFKA_BROKERS: "kiki-kafka:9092"

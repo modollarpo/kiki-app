@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -60,6 +61,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
+    logger.error("margin/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }

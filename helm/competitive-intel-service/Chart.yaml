@@ -1,0 +1,6 @@
+apiVersion: v2
+name: competitive-intel-service
+description: Microservice for competitive intelligence and market monitoring
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

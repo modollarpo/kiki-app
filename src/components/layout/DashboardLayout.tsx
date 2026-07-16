@@ -10,6 +10,9 @@ import {
 import type { User } from "@/types";
 import { K } from "@/lib/kdls";
 import { Badge } from "@/components/ui";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import Image from "next/image";
 
 // ── Navigation Configuration ────────────────────────────────
 interface NavItem {
@@ -30,6 +33,7 @@ const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
       { href: "/dashboard/campaigns", icon: "⬡", label: "Campaigns", badgeSelector: () => "5", bc: K.mint },
       { href: "/dashboard/signals", icon: "◎", label: "Signal Stream", badge: "LIVE", bc: K.mint, pulse: true },
       { href: "/dashboard/agents", icon: "⚡", label: "AI Agents", badgeSelector: () => "6", bc: K.blue },
+      { href: "/dashboard/guides", icon: "📖", label: "Guides" },
     ],
   },
   {
@@ -49,6 +53,7 @@ const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
       { href: "/dashboard/wallet", icon: "◎", label: "Wallet & Cards" },
       { href: "/dashboard/billing", icon: "▣", label: "Billing" },
       { href: "/dashboard/margin", icon: "◈", label: "Profit Margin" },
+      { href: "/dashboard/profit-margin", icon: "◈", label: "Profit & Margin" },
       { href: "/dashboard/finance", icon: "◉", label: "Finance Ops" },
       { href: "/dashboard/influencer", icon: "◉", label: "Influencers" },
     ],
@@ -69,6 +74,7 @@ const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
     items: [
       { href: "/dashboard/crm", icon: "◉", label: "CRM" },
       { href: "/dashboard/creative-library", icon: "✦", label: "Creatives" },
+      { href: "/dashboard/creative-attribution", icon: "✦", label: "Creative Attribution" },
     ],
   },
   {
@@ -223,9 +229,9 @@ function CommandPalette({
                 style={{
                   padding: "6px 16px",
                   fontFamily: K.mono,
-                  fontSize: 9,
+                  fontSize: 10,
                   letterSpacing: "0.14em",
-                  color: K.t4,
+                  color: K.t3,
                 }}
               >
                 {group}
@@ -277,7 +283,7 @@ function CommandPalette({
                     >
                       {item.label}
                     </span>
-                    <span style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>
+                    <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t3 }}>
                       {group}
                     </span>
                   </button>
@@ -307,7 +313,7 @@ function CommandPalette({
           }}
         >
           {["↑↓ navigate", "↵ select", "esc close"].map((h) => (
-            <span key={h} style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>
+            <span key={h} style={{ fontFamily: K.mono, fontSize: 10, color: K.t3 }}>
               {h}
             </span>
           ))}
@@ -351,7 +357,7 @@ const SidebarContent = memo(function SidebarContent({
           flexShrink: 0,
         }}
       >
-        <img
+        <Image
           src="/images/kiki.png"
           alt="KIKI"
           width={28}
@@ -378,9 +384,9 @@ const SidebarContent = memo(function SidebarContent({
             <p
               style={{
                 fontFamily: K.mono,
-                fontSize: 8,
+                fontSize: 10,
                 letterSpacing: "0.12em",
-                color: K.t4,
+                color: K.t3,
                 marginTop: 2,
               }}
             >
@@ -429,9 +435,9 @@ const SidebarContent = memo(function SidebarContent({
               <p
                 style={{
                   fontFamily: K.mono,
-                  fontSize: 9,
+                  fontSize: 10,
                   letterSpacing: "0.18em",
-                  color: K.t4,
+                  color: K.t3,
                   padding: "0 8px",
                   marginBottom: 4,
                 }}
@@ -560,7 +566,7 @@ const SidebarContent = memo(function SidebarContent({
               >
                 {user?.name || "User"}
               </p>
-              <p style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>
+              <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>
                 {user?.plan || "free"} plan
               </p>
             </div>
@@ -638,7 +644,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", handler);
   }, [setCmdPaletteOpen]);
 
-  const sidebarWidth = isMobile ? 240 : sidebarCollapsed ? 60 : 230;
+  const sidebarWidth = isMobile ? 200 : sidebarCollapsed ? 60 : 230;
   const statusColor =
     systemStatus === "nominal"
       ? K.mint
@@ -659,7 +665,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     .replace(/-/g, " ");
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: K.void }}>
+    <div style={{ display: "flex", height: "100dvh", overflow: "hidden", background: K.void }}>
       {/* Mobile overlay */}
       {isMobile && mobileSidebarOpen && (
         <div
@@ -796,8 +802,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <kbd
                 style={{
                   fontFamily: K.mono,
-                  fontSize: 9,
-                  color: K.t4,
+                  fontSize: 10,
+                  color: K.t3,
                   background: K.g900,
                   border: `1px solid ${K.g700}`,
                   borderRadius: 2,
@@ -831,7 +837,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <span
                 style={{
                   fontFamily: K.mono,
-                  fontSize: 9,
+                  fontSize: 11,
                   letterSpacing: "0.1em",
                   color: statusColor,
                   whiteSpace: "nowrap",
@@ -841,6 +847,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </span>
             </div>
           )}
+
+          <ThemeToggle size={36} />
 
           <button
             onClick={() => router.push("/dashboard/notifications")}
@@ -873,7 +881,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   background: K.danger,
                   borderRadius: "50%",
                   fontFamily: K.mono,
-                  fontSize: 8,
+                  fontSize: 10,
                   fontWeight: 700,
                   color: "white",
                   display: "flex",
@@ -898,7 +906,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             WebkitOverflowScrolling: "touch",
           }}
         >
-          {children}
+          <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
 

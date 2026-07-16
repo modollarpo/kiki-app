@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getBillingStats, recordUsage, generateInvoice, createSubscription } from "@/lib/billing";
 import { getUserFromRequest } from "@/lib/auth";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -32,6 +34,12 @@ export async function POST(req: NextRequest) {
     const user = getUserFromRequest(req);
     if (!user) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Abuse protection: 60 billing requests per IP per minute.
+    const rl = rateLimit(`billing:${clientKey(req)}`, 60, 60_000);
+    if (!rl.ok) {
+      return NextResponse.json({ success: false, error: "Rate limit exceeded" }, { status: 429 });
     }
 
     const body = await req.json();
@@ -79,6 +87,7 @@ export async function POST(req: NextRequest) {
         );
     }
   } catch (error) {
+    logger.error("billing/POST failed", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { success: false, error: String(error) },
       { status: 500 }

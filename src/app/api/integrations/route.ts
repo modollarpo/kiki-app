@@ -21,6 +21,7 @@ import { encryptToken, decryptToken } from "@/lib/connectors/base";
 import { type PlatformId } from "@/lib/connectors/types";
 import { getUserFromRequest } from "@/lib/auth";
 import { eventBus } from "@/lib/events";
+import { logger, handleApiError } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -93,8 +94,8 @@ export async function GET(req: NextRequest) {
         }
 
         const connector = getConnector(platform);
-        const { url, state } = await connector.generateOAuthUrl(user.tenantId);
-        return NextResponse.json({ success: true, data: { url, state } });
+        const { url, state, codeVerifier } = await connector.generateOAuthUrl(user.tenantId);
+        return NextResponse.json({ success: true, data: { url, state, codeVerifier } });
       }
 
       // ── Send CAPI event to all platforms ─────────────
@@ -168,7 +169,7 @@ export async function GET(req: NextRequest) {
       }
     }
   } catch (error) {
-    console.error("Integrations API error:", error);
+    logger.error("integrations/GET", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { success: false, error: String(error) },
       { status: 500 }
@@ -219,11 +220,12 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        // Delete used state
+        // Delete used state (retrieve code_verifier before deleting)
+        const codeVerifier = stateRecord.code_verifier || undefined;
         await db.prepare("DELETE FROM oauth_states WHERE state = ?").run(state);
 
-        // Exchange code for tokens
-        const tokens = await connector.handleCallback(code, state);
+        // Exchange code for tokens (with PKCE verifier)
+        const tokens = await connector.handleCallback(code, state, codeVerifier);
 
         // Get account info
         const accountResult = await connector.getAccountInfo(tokens.accessToken);
@@ -340,7 +342,7 @@ export async function POST(req: NextRequest) {
         );
     }
   } catch (error) {
-    console.error("Integrations API error:", error);
+    logger.error("integrations/POST", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { success: false, error: String(error) },
       { status: 500 }

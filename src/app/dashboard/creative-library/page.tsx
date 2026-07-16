@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, StatCard, AIThinking } from "@/components/ui";
@@ -71,22 +71,23 @@ export default function CreativeLibraryPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "24px 28px", maxWidth: 1400 }}>
-        <div style={{ marginBottom: 22 }}>
-          <h1 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 18, color: K.t1, letterSpacing: "-0.02em", marginBottom: 4 }}>Creative Library</h1>
-          <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>Manage and analyze your creative assets across all platforms</p>
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
+        <div className="mb-5">
+          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Creative Library</h1>
+          <p className="font-mono text-[11px] text-gray-500">Manage and analyze your creative assets across all platforms</p>
         </div>
 
         {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: 60 }}>
+          <div className="flex justify-center py-15">
             <AIThinking text="Loading creative assets..." />
           </div>
         ) : (
           <>
-            <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+            <div className="flex gap-1.5 mb-4">
               {["All", "Image", "Video"].map((f) => (
                 <button key={f} onClick={() => setFilter(f)}
-                  style={{ padding: "6px 16px", fontFamily: K.mono, fontSize: 10, fontWeight: 600, borderRadius: 2, border: `1px solid ${filter === f ? K.blue + "40" : K.g700}`, background: filter === f ? K.blue + "20" : K.g900, color: filter === f ? K.blue : K.t3, cursor: "pointer" }}>
+                  className="font-mono text-[10px] font-semibold px-4 py-1.5 rounded-sm cursor-pointer"
+                  style={{ border: `1px solid ${filter === f ? K.blue + "40" : K.g700}`, background: filter === f ? K.blue + "20" : K.g900, color: filter === f ? K.blue : K.t3 }}>
                   {f}
                 </button>
               ))}
@@ -94,34 +95,34 @@ export default function CreativeLibraryPage() {
 
             {filtered.length === 0 ? (
               <Card>
-                <div style={{ padding: 40, textAlign: "center" }}>
-                  <p style={{ fontFamily: K.mono, fontSize: 12, color: K.t4 }}>No creative assets found. Create campaigns to populate this library.</p>
+                <div className="p-10 text-center">
+                  <p className="font-mono text-xs text-gray-600">No creative assets found. Create campaigns to populate this library.</p>
                 </div>
               </Card>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12, marginBottom: 16 }}>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3 mb-4">
                 {filtered.map(asset => (
                   <Card key={asset.id} accent={platformColors[asset.platform] || K.t3}>
-                    <div style={{ height: 100, borderRadius: 2, background: (platformColors[asset.platform] || K.t3) + "15", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-                      <span style={{ fontFamily: K.mono, fontSize: 11, color: platformColors[asset.platform] || K.t3 }}>{asset.name}</span>
+                    <div className="h-[100px] rounded-sm flex items-center justify-center mb-3" style={{ background: (platformColors[asset.platform] || K.t3) + "15" }}>
+                      <span className="font-mono text-[11px]" style={{ color: platformColors[asset.platform] || K.t3 }}>{asset.name}</span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 600, color: K.t1 }}>{asset.name}</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-mono text-[11px] font-semibold text-white">{asset.name}</span>
                       <Badge color={K.t3}>{asset.type}</Badge>
                     </div>
                     <Badge color={platformColors[asset.platform] || K.t3}>{asset.platform}</Badge>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 12 }}>
-                      <div style={{ padding: "8px 10px", background: K.g900, borderRadius: 2, textAlign: "center" }}>
-                        <div style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>CTR</div>
-                        <div style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.mint }}>{asset.ctr}%</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
+                      <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
+                        <div className="font-mono text-[10px] text-gray-600">CTR</div>
+                        <div className="font-mono text-xs font-bold text-kmint">{asset.ctr}%</div>
                       </div>
-                      <div style={{ padding: "8px 10px", background: K.g900, borderRadius: 2, textAlign: "center" }}>
-                        <div style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>Conv.</div>
-                        <div style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.blue }}>{asset.conversions.toLocaleString()}</div>
+                      <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
+                        <div className="font-mono text-[10px] text-gray-600">Conv.</div>
+                        <div className="font-mono text-xs font-bold text-kblue">{asset.conversions.toLocaleString()}</div>
                       </div>
-                      <div style={{ padding: "8px 10px", background: K.g900, borderRadius: 2, textAlign: "center" }}>
-                        <div style={{ fontFamily: K.mono, fontSize: 9, color: K.t4 }}>ROAS</div>
-                        <div style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.gold }}>{asset.roas}x</div>
+                      <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
+                        <div className="font-mono text-[10px] text-gray-600">ROAS</div>
+                        <div className="font-mono text-xs font-bold text-kgold">{asset.roas}x</div>
                       </div>
                     </div>
                     <ProgressBar value={parseFloat(asset.ctr) * 20} max={100} color={platformColors[asset.platform] || K.t3} height={3} />
@@ -132,8 +133,8 @@ export default function CreativeLibraryPage() {
 
             {summary && (
               <Card>
-                <h3 style={{ fontFamily: K.mono, fontWeight: 700, fontSize: 12, color: K.t1, marginBottom: 12 }}>Performance Summary</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+                <h3 className="font-mono font-bold text-xs text-white mb-3">Performance Summary</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <StatCard label="Total Assets" value={String(summary.totalAssets)} accent={K.mint} />
                   <StatCard label="Avg CTR" value={`${summary.avgCtr}%`} accent={K.mint} />
                   <StatCard label="Total Conversions" value={summary.totalConversions.toLocaleString()} accent={K.mint} />
