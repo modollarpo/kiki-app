@@ -7,18 +7,43 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+env:
+  RESOURCE_GROUP: kiki-rg
+  ACR_NAME: kikiregistry
+  CONTAINER_APP: kiki-app
+  IMAGE: kiki-app
+
 jobs:
   build-and-deploy:
-    name: Build image & deploy to Container App
+    name: Type-check, test & deploy to Container App
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --engine-strict=false
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
 
       - name: Azure Login
         uses: azure/login@v2
@@ -29,15 +54,15 @@ jobs:
         # Remote build (no runner Docker needed). Tags: latest + immutable commit sha.
         run: |
           az acr build \
-            -r kikiagentacr \
-            -t "kiki-app:latest" \
-            -t "kiki-app:${{ github.sha }}" \
+            -r ${{ env.ACR_NAME }} \
+            -t "${{ env.IMAGE }}:latest" \
+            -t "${{ env.IMAGE }}:${{ github.sha }}" \
             -f Dockerfile .
 
       - name: Deploy to Container App
         # Unique immutable tag forces a fresh image pull + new revision.
         run: |
           az containerapp update \
-            -g kiki-agent-rg \
-            -n kiki-app \
-            --image "kikiagentacr.azurecr.io/kiki-app:${{ github.sha }}"
+            -g ${{ env.RESOURCE_GROUP }} \
+            -n ${{ env.CONTAINER_APP }} \
+            --image "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE }}:${{ github.sha }}"
