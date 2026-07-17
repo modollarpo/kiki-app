@@ -320,7 +320,9 @@ const SCHEMA = `
     "limit" REAL NOT NULL DEFAULT 10000,
     spent REAL NOT NULL DEFAULT 0,
     campaign TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT 'active'
+    status TEXT NOT NULL DEFAULT 'active',
+    issuer TEXT NOT NULL DEFAULT 'local',
+    issuer_card_id TEXT
   );
 
   CREATE TABLE IF NOT EXISTS wallet_transactions (
