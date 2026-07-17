@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // Real-time Event System — Server-Sent Events for live updates
 // ============================================================
@@ -25,7 +26,7 @@ class EventBus {
         try {
           listener(event, data);
         } catch (e) {
-          console.error(`[EventBus] Listener error for ${event}:`, e);
+          logger.error(`[EventBus] Listener error for ${event}:`, { error: e instanceof Error ? (e).message : String(e) });
         }
       }
     }
@@ -83,4 +84,9 @@ export const EVENTS = {
   // System events
   SYSTEM_METRIC: "system:metric",
   WALLET_UPDATED: "wallet:updated",
+
+  // Wallet card lifecycle
+  WALLET_CARD_FROZEN: "wallet:card_frozen",
+  WALLET_CARD_UNFROZEN: "wallet:card_unfrozen",
+  WALLET_UNFREEZE_REQUESTED: "wallet:unfreeze_requested",
 } as const;

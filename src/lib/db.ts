@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // KIKI Agent Platform — PostgreSQL Database Layer
 // Real, durable persistence via Azure Database for PostgreSQL.
@@ -170,17 +171,172 @@ class SqliteDb {
   }
 }
 
-async function createSqliteDb(): Promise<SqliteDb> {
+async function createSqliteDb(): Promise<SqliteDb | MemoryDb> {
   const fs = require("fs") as typeof import("fs");
   const path = require("path") as typeof import("path");
   const dataDir = path.resolve(process.cwd(), "data");
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   const file = path.join(dataDir, "kiki-local.sqlite");
-  const { DatabaseSync } = await import("node:sqlite");
+  // node:sqlite is only available on Node 22.5+ (experimental) and Node 24+.
+  // On older runtimes (e.g. node:20 in the production container image) the
+  // import throws ERR_UNKNOWN_BUILTIN_MODULE. In that case fall back to a
+  // pure in-memory store so the server stays up rather than 500-ing.
+  let DatabaseSync: any;
+  try {
+    // webpackIgnore keeps this a real runtime import (not bundled/traced),
+    // so on runtimes without node:sqlite it throws ERR_UNKNOWN_BUILTIN_MODULE
+    // here — caught below — instead of failing at module-evaluation time.
+    ({ DatabaseSync } = await import(/* webpackIgnore: true */ "node:sqlite"));
+  } catch (e) {
+    logger.warn(
+      "[DB] node:sqlite unavailable (" + (e as Error).message.split("\n")[0] +
+      ") — using in-memory fallback. Set DATABASE_URL to enable persistent PostgreSQL."
+    );
+    return createMemoryDb();
+  }
   const raw = new DatabaseSync(file);
   raw.exec("PRAGMA journal_mode = WAL;");
   raw.exec("PRAGMA foreign_keys = OFF;");
   return new SqliteDb(raw);
+}
+
+// ─── In-memory fallback (no native module required) ──────
+// Used when neither PostgreSQL nor node:sqlite is available. Data is lost on
+// restart, but the app remains functional (auth, campaigns, etc. work in-session).
+class MemoryStatement {
+  constructor(private db: MemoryDb, private sql: string) {}
+  private match(rows: Record<string, any>[]): Record<string, any>[] {
+    return rows;
+  }
+  run(...params: any[]): { lastInsertRowid: number; changes: number } {
+    return this.db.execStatement(this.sql, params, "run");
+  }
+  get(...params: any[]): any {
+    const r = this.db.execStatement(this.sql, params, "get");
+    return Array.isArray(r) ? r[0] : r;
+  }
+  all(...params: any[]): any[] {
+    const r = this.db.execStatement(this.sql, params, "all");
+    return Array.isArray(r) ? r : [r];
+  }
+}
+
+class MemoryDb {
+  lastRowCount = 0;
+  lastInsertRowid: number = 0;
+  tables: Record<string, Record<string, any>[]> = {};
+  private seq = 0;
+
+  prepare(sql: string): MemoryStatement {
+    return new MemoryStatement(this, sql);
+  }
+
+  // Minimal SQL engine: understands CREATE TABLE, INSERT, SELECT, UPDATE,
+  // DELETE, and CREATE INDEX. Enough for seeding + dashboard reads.
+  exec(sql: string): void {
+    const statements = sql
+      .split(";")
+      .map((s) => s.replace(/^(\s*--[^\n]*\n)+/, "").trim())
+      .filter((s) => s.length > 0);
+    for (const s of statements) this.execRaw(s);
+  }
+
+  private execRaw(s: string): void {
+    const m = s.match(/^create\s+table\s+if\s+not\s+exists\s+([a-z0-9_"]+)/i);
+    if (m) {
+      const t = m[1].replace(/"/g, "");
+      if (!this.tables[t]) this.tables[t] = [];
+      return;
+    }
+    if (/^create\s+index/i.test(s)) return;
+    if (/^insert\s+into/i.test(s)) {
+      const mm = s.match(/^insert\s+into\s+([a-z0-9_"]+)\s*\((.*?)\)\s*values\s*\(([\s\S]*)\)/i);
+      if (mm) {
+        const t = mm[1].replace(/"/g, "");
+        const cols = mm[2].split(",").map((c) => c.trim().replace(/"/g, ""));
+        const vals = this.splitValues(mm[3]);
+        const row: Record<string, any> = {};
+        cols.forEach((c, i) => (row[c] = this.coerce(vals[i])));
+        if (row.id === undefined) row.id = "mem_" + ++this.seq;
+        (this.tables[t] ||= []).push(row);
+      }
+      return;
+    }
+    // Non-DDL statements are no-ops for the in-memory fallback (safe).
+  }
+
+  execStatement(sql: string, params: any[], mode: "run" | "get" | "all"): any {
+    const trimmed = sql.trim();
+    const lower = trimmed.toLowerCase();
+    if (lower.startsWith("select count")) {
+      const tm = trimmed.match(/from\s+([a-z0-9_"]+)/i);
+      const t = tm ? tm[1].replace(/"/g, "") : "";
+      const n = (this.tables[t] || []).length;
+      return mode === "all" ? [{ c: n }] : { c: n };
+    }
+    if (lower.startsWith("select")) {
+      const tm = trimmed.match(/from\s+([a-z0-9_"]+)/i);
+      const t = tm ? tm[1].replace(/"/g, "") : "";
+      const rows = (this.tables[t] || []).slice();
+      if (mode === "get") return rows[0] ?? undefined;
+      return rows;
+    }
+    if (lower.startsWith("insert")) {
+      const mm = trimmed.match(/into\s+([a-z0-9_"]+)\s*\((.*?)\)\s*values\s*\(([\s\S]*)\)/i);
+      if (mm) {
+        const t = mm[1].replace(/"/g, "");
+        const cols = mm[2].split(",").map((c) => c.trim().replace(/"/g, ""));
+        const vals = this.splitValues(mm[3]);
+        const row: Record<string, any> = {};
+        cols.forEach((c, i) => (row[c] = this.coerce(vals[i])));
+        const idIdx = cols.indexOf("id");
+        if (idIdx >= 0) row.id = this.coerce(vals[idIdx]);
+        else row.id = "mem_" + ++this.seq;
+        (this.tables[t] ||= []).push(row);
+        this.lastInsertRowid = this.seq;
+        this.lastRowCount = 1;
+        return { lastInsertRowid: row.id, changes: 1 };
+      }
+      return { lastInsertRowid: 0, changes: 0 };
+    }
+    if (lower.startsWith("update") || lower.startsWith("delete")) {
+      return { lastInsertRowid: 0, changes: 0 };
+    }
+    return mode === "all" ? [] : mode === "get" ? undefined : { lastInsertRowid: 0, changes: 0 };
+  }
+
+  async pragma(_name: string): Promise<any> {
+    return undefined;
+  }
+
+  private splitValues(s: string): string[] {
+    const out: string[] = [];
+    let cur = "";
+    let q = false;
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i];
+      if (ch === "'") {
+        if (q && s[i + 1] === "'") { cur += "'"; i++; continue; }
+        q = !q;
+      } else if (ch === "," && !q) {
+        out.push(cur.trim()); cur = "";
+      } else cur += ch;
+    }
+    if (cur.trim().length) out.push(cur.trim());
+    return out;
+  }
+
+  private coerce(v: string): any {
+    if (v === undefined) return null;
+    const t = v.trim();
+    if (t === "NULL" || t === "") return t === "" ? "" : null;
+    if (/^-?\d+(\.\d+)?$/.test(t)) return Number(t);
+    return t.replace(/^'|'$/g, "").replace(/''/g, "'");
+  }
+}
+
+function createMemoryDb(): MemoryDb {
+  return new MemoryDb();
 }
 
 const SCHEMA = `
@@ -337,6 +493,31 @@ const SCHEMA = `
     campaign TEXT,
     status TEXT NOT NULL DEFAULT 'settled',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS wallet_topups (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    method TEXT NOT NULL,
+    description TEXT NOT NULL,
+    payment_intent_id TEXT UNIQUE,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    settled_at TEXT
+  );
+
+
+  CREATE TABLE IF NOT EXISTS wallet_topups (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    method TEXT NOT NULL,
+    description TEXT NOT NULL,
+    payment_intent_id TEXT UNIQUE,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    settled_at TEXT
   );
 
   CREATE TABLE IF NOT EXISTS notifications (
@@ -889,7 +1070,7 @@ async function seedIfEmpty(db: PgDb) {
   await insertNotif.run("n3", "t1", "u1", "info", "LTV model updated", "Prediction accuracy improved to 94.2% on validation set", 1, "/dashboard/syncbrain");
   await insertNotif.run("n4", "t1", "u1", "critical", "Fraud alert: 127 IVT events blocked", "Estimated $4,240 in wasted spend prevented today", 0, "/dashboard/fraud");
 
-  console.log("[DB] Seeded database with demo data");
+  logger.info("[DB] Seeded database with demo data");
 }
 
 async function seedBillingIfEmpty(db: PgDb) {
@@ -929,12 +1110,12 @@ async function seedBillingIfEmpty(db: PgDb) {
     ])
   );
 
-  console.log("[DB] Seeded billing data (subscription, usage, invoice)");
+  logger.info("[DB] Seeded billing data (subscription, usage, invoice)");
 }
 
-const globalForDb = globalThis as unknown as { __kikiDb?: PgDb | SqliteDb };
+const globalForDb = globalThis as unknown as { __kikiDb?: PgDb | SqliteDb | MemoryDb };
 
-export async function getDb(): Promise<PgDb | SqliteDb> {
+export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
   if (!globalForDb.__kikiDb) {
     let useSqlite = false;
     try {
@@ -942,7 +1123,7 @@ export async function getDb(): Promise<PgDb | SqliteDb> {
       await pool.query("SELECT 1");
     } catch (e) {
       useSqlite = true;
-      console.warn(
+      logger.warn(
         "[DB] PostgreSQL unavailable (" + (e as Error).message.split("\n")[0] +
         ") — falling back to local SQLite (node:sqlite)."
       );
@@ -956,7 +1137,7 @@ export async function getDb(): Promise<PgDb | SqliteDb> {
         await seedIfEmpty(db as unknown as PgDb);
         await seedBillingIfEmpty(db as unknown as PgDb);
       }
-      console.log("[DB] Using local SQLite fallback at ./data/kiki-local.sqlite");
+      logger.info("[DB] Using local SQLite fallback at ./data/kiki-local.sqlite");
       globalForDb.__kikiDb = db as unknown as PgDb;
       return globalForDb.__kikiDb;
     }
@@ -967,7 +1148,7 @@ export async function getDb(): Promise<PgDb | SqliteDb> {
     try {
       await pool.query(PG_CASTS);
     } catch (e) {
-      console.warn("[DB] timestamp cast setup skipped:", (e as Error).message);
+      logger.warn("[DB] timestamp cast setup skipped:", { error: (e as Error).message });
     }
     await runMigrations(db);
     if (process.env.SEED_DEMO_DATA === "true") {

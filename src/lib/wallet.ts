@@ -125,7 +125,7 @@ export async function checkAndFreezeOnCAC(
 
     const freezeReason = `CAC $${actualCac.toFixed(2)} exceeds ${CAC_THRESHOLD_MULTIPLIER}× target $${targetCac.toFixed(2)}`;
 
-    eventBus.emit("wallet.card_frozen" as any, {
+    eventBus.emit(EVENTS.WALLET_CARD_FROZEN, {
       cardId,
       campaignId,
       reason: freezeReason,
@@ -179,7 +179,7 @@ export async function checkAndFreezeOnDailyLimit(cardId: string): Promise<Freeze
 
     const reason = `Daily spend $${todaySpend.total.toFixed(2)} reached limit $${dailyLimit.toFixed(2)}`;
 
-    eventBus.emit("wallet.card_frozen" as any, {
+    eventBus.emit(EVENTS.WALLET_CARD_FROZEN, {
       cardId,
       reason,
       dailySpend: todaySpend.total,
@@ -216,7 +216,7 @@ export async function checkAndFreezeOnBalance(cardId: string): Promise<FreezeRes
       UPDATE wallet_cards SET status = 'frozen' WHERE id = ?
     `).run(cardId);
 
-    eventBus.emit("wallet.card_frozen" as any, {
+    eventBus.emit(EVENTS.WALLET_CARD_FROZEN, {
       cardId,
       reason: "Wallet balance depleted",
     });
@@ -251,7 +251,7 @@ export async function unfreezeCard(
   // For high-value unfreeze, enforce biometric confirmation before proceeding.
   if (requiresBiometric && card.limit > 100) {
     if (!biometricToken) {
-      eventBus.emit("wallet.unfreeze_requested" as any, {
+      eventBus.emit(EVENTS.WALLET_UNFREEZE_REQUESTED, {
         cardId,
         requiresBiometric: true,
         cardLimit: card.limit,
@@ -269,7 +269,7 @@ export async function unfreezeCard(
     UPDATE wallet_cards SET status = 'active' WHERE id = ?
   `).run(cardId);
 
-  eventBus.emit("wallet.card_unfrozen" as any, { cardId });
+  eventBus.emit(EVENTS.WALLET_CARD_UNFROZEN, { cardId });
 
   return { success: true };
 }
@@ -422,33 +422,65 @@ export async function topUpWallet(
   amount: number,
   method: "card" | "bank_transfer" | "invoice",
   description: string
-): Promise<{ success: boolean; walletId: string; balance: number; error?: string; paymentIntentId?: string }> {
+): Promise<{ success: boolean; walletId: string; balance: number; error?: string; paymentIntentId?: string; clientSecret?: string; requiresConfirmation?: boolean }> {
   const db = await getDb();
 
   if (amount <= 0) {
     return { success: false, walletId: "", balance: 0, error: "Amount must be positive" };
   }
 
-  // When a real PSP is configured, create the charge/payment intent first.
-  // Failure here is surfaced but does not credit the wallet (no free money).
+  // When a real PSP is configured, create the payment intent first and
+  // DO NOT credit the wallet yet. The balance is added only after the
+  // `payment_intent.succeeded` webhook confirmation (see confirmTopUp).
+  // This prevents free money on failed/abandoned charges.
   let paymentIntentId: string | undefined;
-  if (method === "card" && stripeEnabled && stripe) {
+  let clientSecret: string | undefined;
+  const pspEnabled = method === "card" && stripeEnabled && stripe;
+  if (pspEnabled && stripe) {
     try {
       const pi = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100),
         currency: "usd",
         description: `${description} (wallet top-up)`,
-        metadata: { tenantId, method },
+        metadata: { tenantId, method, pendingTopUp: "1" },
         automatic_payment_methods: { enabled: true },
       });
       paymentIntentId = pi.id;
-      // In production the wallet is credited only after webhook confirmation
-      // (payment_intent.succeeded). For now we credit immediately so the demo
-      // flow works; replace with webhook-gated credit before go-live.
+      clientSecret = pi.client_secret || undefined;
     } catch (err) {
       return { success: false, walletId: "", balance: 0, error: `Payment failed: ${(err as Error).message}` };
     }
+
+    // Persist a pending top-up keyed by payment intent so the webhook can
+    // settle it. Wallet balance is NOT changed here.
+    const pendingId = `top_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+    await db.prepare(`
+      INSERT INTO wallet_topups (id, tenant_id, amount, method, description, payment_intent_id, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+    `).run(pendingId, tenantId, amount, method, description, paymentIntentId);
+
+    return {
+      success: true,
+      walletId: "",
+      balance: 0,
+      paymentIntentId,
+      clientSecret,
+      requiresConfirmation: true,
+    };
   }
+
+  // No PSP configured (local/demo): credit immediately.
+  return creditTopUp(tenantId, amount, method, description);
+}
+
+/** Credits a wallet immediately (local/demo mode, no PSP). */
+async function creditTopUp(
+  tenantId: string,
+  amount: number,
+  method: "card" | "bank_transfer" | "invoice",
+  description: string
+): Promise<{ success: boolean; walletId: string; balance: number; error?: string }> {
+  const db = await getDb();
 
   // Get or create wallet
   let wallet =   await db.prepare(`
@@ -491,7 +523,35 @@ export async function topUpWallet(
     balance: wallet.balance,
   });
 
-  return { success: true, walletId: wallet.id, balance: wallet.balance, paymentIntentId };
+  return { success: true, walletId: wallet.id, balance: wallet.balance };
+}
+
+/**
+ * Settles a pending top-up after Stripe `payment_intent.succeeded`.
+ * Called by the Stripe webhook handler. Idempotent: a payment intent is
+ * credited at most once.
+ */
+export async function confirmTopUp(paymentIntentId: string): Promise<{ success: boolean; error?: string }> {
+  const db = await getDb();
+  const pending =   await db.prepare(`
+    SELECT id, tenant_id, amount, method, description, status
+    FROM wallet_topups WHERE payment_intent_id = ?
+  `).get(paymentIntentId) as any;
+
+  if (!pending) {
+    return { success: false, error: "Unknown payment intent" };
+  }
+  if (pending.status === "settled") {
+    return { success: true };
+  }
+
+  await creditTopUp(pending.tenant_id, pending.amount, pending.method, pending.description);
+
+  await db.prepare(`
+    UPDATE wallet_topups SET status = 'settled', settled_at = datetime('now') WHERE id = ?
+  `).run(pending.id);
+
+  return { success: true };
 }
 
 // ── Wallet Balance Check ───────────────────────────────────
