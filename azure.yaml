@@ -8,7 +8,7 @@ services:
       path: Dockerfile
     image: kiki-app
     azure:
-      resourceGroup: kiki-rg
+      resourceGroup: kiki-agent-rg
       region: swedencentral
       containerApp:
         name: kiki-app

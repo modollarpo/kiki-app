@@ -3,16 +3,31 @@
 // Pipeline:
 //   1. Push current branch to origin/main (production)
 //   2. Deploy to Azure, trying in order:
-//        a. `azd up`            (Azure Developer CLI) — preferred, matches azure.yaml
-//        b. `az` Container App  (build -> ACR -> az containerapp update) — fallback
+//        a. `azd up`            (Azure Developer CLI) -- preferred, matches azure.yaml
+//        b. `az` Container App  (build -> ACR -> az containerapp update) -- fallback
 //        c. skip with a notice  (neither tool available in this environment)
 //
 // Safety checks (type-check/lint/test) run automatically via the
 // `predeploy` npm script before this runs.
+//
+// Production environment (confirmed 2026-07-17):
+//   Resource Group : kiki-agent-rg
+//   Region         : swedencentral
+//   Container App  : kiki-app
+//   Environment    : kiki-env
+//   ACR            : kikiagentacr.azurecr.io
+//   Live URL       : https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io
 
 import { spawnSync } from "node:child_process";
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+
+// -- Production constants (verified against Azure) ---------
+const PROD = {
+  resourceGroup: "kiki-agent-rg",
+  containerApp: "kiki-app",
+  acr: "kikiagentacr",
+  acrServer: "kikiagentacr.azurecr.io",
+  imageName: "kiki-app",
+};
 
 function run(cmd, args, opts = {}) {
   const res = spawnSync(cmd, args, { stdio: "inherit", ...opts });
@@ -27,85 +42,69 @@ function which(bin) {
   return r.status === 0;
 }
 
-// Minimal parser for the simple azure.yaml used by this project.
-function readAzureConfig() {
-  const p = resolve(process.cwd(), "azure.yaml");
-  if (!existsSync(p)) return null;
-  const txt = readFileSync(p, "utf8");
-  const get = (re) => {
-    const m = txt.match(re);
-    return m ? m[1].trim().replace(/^["']|["']$/g, "") : null;
-  };
-  return {
-    resourceGroup: get(/resourceGroup:\s*([^\n]+)/),
-    region: get(/region:\s*([^\n]+)/),
-    containerApp: get(/containerApp:\s*\n\s*name:\s*([^\n]+)/),
-    image: get(/image:\s*([^\n]+)/) || "kiki-app",
-  };
-}
+// Generate a short timestamp tag for the image (e.g. 20260717143000)
+const tag = new Date()
+  .toISOString()
+  .replace(/[-T:Z.]/g, "")
+  .slice(0, 14);
+const targetImage = `${PROD.acrServer}/${PROD.imageName}:${tag}`;
 
-console.log("→ Pushing to origin/main (production)...");
+console.log("-> Pushing to origin/main (production)...");
 run("git", ["push", "origin", "main"]);
 
-// ── Attempt 1: azd ────────────────────────────────────────
+// -- Attempt 1: azd ----------------------------------------
 if (which("azd")) {
-  console.log("→ azd detected — deploying to Azure (azd up)...");
-  const code = run("azd", ["up"], { shell: true });
+  console.log("-> azd detected -- deploying to Azure (azd up)...");
+  const code = run("azd", ["up", "--no-prompt"], { shell: true });
   if (code === 0) {
-    console.log("✓ Deploy complete.");
+    console.log("Deploy complete via azd.");
     process.exit(0);
   }
-  console.warn("⚠ azd up failed (exit " + code + ") — falling back to az...");
+  console.warn("azd up failed (exit " + code + ") -- falling back to az CLI...");
 }
 
-// ── Attempt 2: az Container App deploy ──────────────────────
+// -- Attempt 2: az Container App deploy --------------------
 if (which("az")) {
-  const cfg = readAzureConfig();
-  if (cfg && cfg.resourceGroup && cfg.containerApp) {
-    const appName = cfg.containerApp;
-    const rg = cfg.resourceGroup;
-    const imageName = cfg.image || "kiki-app";
-    const acr = `${imageName.replace(/[^a-z0-9]/gi, "").toLowerCase()}registry.azurecr.io/${imageName}:latest`;
-    try {
-      console.log(`→ az detected — deploying ${appName} to ${rg} via Container Apps...`);
+  try {
+    console.log(`-> az detected -- building image via ACR (${PROD.acr})...`);
+    console.log(`   Image: ${targetImage}`);
 
-      // Locate the ACR login server tied to this resource group.
-      const acrList = spawnSync(
-        "az",
-        ["acr", "list", "--resource-group", rg, "--query", "[0].loginServer", "-o", "tsv"],
-        { encoding: "utf8", shell: true }
-      );
-      const loginServer = (acrList.stdout || "").trim();
-      const targetImage = loginServer ? `${loginServer}/${imageName}:latest` : acr;
-
-      // Build + push image (requires Docker).
-      console.log(`→ Building image ${targetImage}...`);
-      if (run("docker", ["build", "-t", targetImage, "."], { shell: true }) !== 0) {
-        throw new Error("docker build failed");
-      }
-      console.log("→ Pushing image to ACR...");
-      if (run("az", ["acr", "login", "--name", loginServer.split(".")[0]], { shell: true }) !== 0) {
-        throw new Error("az acr login failed");
-      }
-      if (run("docker", ["push", targetImage], { shell: true }) !== 0) {
-        throw new Error("docker push failed");
-      }
-
-      // Update the running Container App to use the new image.
-      console.log(`→ Updating Container App ${appName}...`);
-      if (run("az", ["containerapp", "update", "--name", appName, "--resource-group", rg, "--image", targetImage], { shell: true }) !== 0) {
-        throw new Error("az containerapp update failed");
-      }
-      console.log("✓ Deploy complete.");
-      process.exit(0);
-    } catch (e) {
-      console.warn("⚠ az deploy skipped:", e.message);
+    // Build + push image directly in Azure Container Registry (no local Docker required).
+    if (
+      run("az", [
+        "acr", "build",
+        "--registry", PROD.acr,
+        "--resource-group", PROD.resourceGroup,
+        "--image", `${PROD.imageName}:${tag}`,
+        "--image", `${PROD.imageName}:latest`,
+        ".",
+      ], { shell: true }) !== 0
+    ) {
+      throw new Error("az acr build failed");
     }
-  } else {
-    console.warn("⚠ az deploy skipped: couldn't read container app config from azure.yaml");
+
+    // Update the running Container App to use the new image.
+    console.log(`-> Updating Container App '${PROD.containerApp}' in '${PROD.resourceGroup}'...`);
+    if (
+      run("az", [
+        "containerapp", "update",
+        "--name", PROD.containerApp,
+        "--resource-group", PROD.resourceGroup,
+        "--image", targetImage,
+      ], { shell: true }) !== 0
+    ) {
+      throw new Error("az containerapp update failed");
+    }
+
+    console.log("Deploy complete.");
+    console.log(`  Live: https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io`);
+    process.exit(0);
+  } catch (e) {
+    console.warn("az deploy failed:", e.message);
+    process.exit(1);
   }
 }
 
-// ── Fallback ───────────────────────────────────────────────
-console.log("→ Azure CLI/azd not available here — code is live on push to origin/main.");
-console.log("✓ Deploy complete (git push only).");
+// -- Fallback ----------------------------------------------
+console.log("-> Azure CLI/azd not available -- code is live on push to origin/main.");
+console.log("Deploy complete (git push only).");
