@@ -75,6 +75,7 @@ export default function ContractsPage() {
       await generatePDF({
         filename,
         title: contract.title,
+        sections: contract.sections,
         content: contract.content,
         metadata: { Version: contract.version, Effective: contract.effective, "Last Updated": doc.updated },
         watermark: "KIKI",

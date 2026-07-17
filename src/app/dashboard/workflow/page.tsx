@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button } from "@/components/ui";
@@ -16,7 +16,7 @@ export default function WorkflowPage() {
   const { token } = useAuth();
   const { data, loading: insightsLoading } = useInsights();
   const fires = data?.workflow?.length ?? 0;
-  const budgetSaved = data?.savings?.total ?? 0;
+  const budgetSaved = 0; // Savings page/feature has been deleted
   const workflowFromInsights = data?.workflow ?? [];
   const [events, setEvents] = useState<WorkflowEvent[]>([]);
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RoleGuard } from "@/components/layout/RoleGuard";
 import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
@@ -69,8 +70,9 @@ export default function AdminPage() {
   const errored = services.filter(s => s.status === "error").length;
 
   return (
-    <DashboardLayout>
-      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
+    <RoleGuard allowedRoles={["admin", "superadmin"]}>
+      <DashboardLayout>
+        <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
           <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Admin Health</h1>
           <p className="font-mono text-[11px] text-gray-500">Platform service status · Uptime · Latency · Region health</p>
@@ -161,5 +163,6 @@ export default function AdminPage() {
         </div>
       </div>
     </DashboardLayout>
+    </RoleGuard>
   );
 }

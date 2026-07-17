@@ -25,9 +25,9 @@ function meta(
     title: fullTitle,
     description,
     keywords: keywords.join(", "),
-    authors: [{ name: "KIKI Agent Inc." }],
-    creator: "KIKI Agent Inc.",
-    publisher: "KIKI Agent Inc.",
+    authors: [{ name: "KIKI Agent" }],
+    creator: "KIKI Agent",
+    publisher: "KIKI Agent (STOREGRILL INC LTD)",
     robots,
     alternates: { canonical: `${BASE_URL}${path}` },
     openGraph: {

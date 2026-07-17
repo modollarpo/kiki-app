@@ -1,8 +1,11 @@
-﻿"use client";
+"use client";
+import { useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Button } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 const PLATFORMS = [
   { name: "Meta (Facebook/Instagram)", permissions: ["ads_management", "business_management", "pages_read_engagement"], time: "2-4 weeks for app review", color: "#1877F2" },
@@ -16,6 +19,10 @@ const PLATFORMS = [
 ];
 
 export default function ConnectAccountsGuide() {
+  const { token } = useAuth();
+  const router = useRouter();
+  useEffect(() => { if (!token) router.push("/auth/login"); }, [token, router]);
+  if (!token) return null;
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[800px]">

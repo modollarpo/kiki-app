@@ -69,7 +69,8 @@ const JSONLD = JSON.stringify({
   },
   publisher: {
     "@type": "Organization",
-    name: "KIKI Agent Inc.",
+    name: "KIKI Agent",
+    alternateName: "STOREGRILL INC LTD (Company No. 14581073)",
     url: "https://kiki.ai",
     logo: {
       "@type": "ImageObject",

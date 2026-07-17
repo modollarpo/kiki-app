@@ -124,7 +124,7 @@ export default function OaaSAgreementPage() {
                   filename: "kiki-oaas-agreement.pdf",
                   title: "OaaS Master Services Agreement",
                   content: [
-                    "This OaaS Master Services Agreement ('Agreement') is entered into by and between KIKI Agent Inc. ('Provider') and the undersigned ('Client').",
+                    "This OaaS Master Services Agreement ('Agreement') is entered into by and between KIKI Agent, a product of STOREGRILL INC LTD ('Provider'), and the undersigned ('Client').",
                     "Service Tier: " + selected,
                     "Monthly Fee: " + (tier.price ? "$" + tier.price.toLocaleString() : "Custom pricing as agreed in writing"),
                     "Term: 12 months from execution date. Auto-renews for successive 12-month periods unless either party provides 60 days written notice of non-renewal.",

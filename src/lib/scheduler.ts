@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // Background Scheduler — Runs agents on intervals
 // Bidding: configurable via BIDDING_INTERVAL_MS (default 5 min)
@@ -60,16 +61,16 @@ export async function startScheduler(): Promise<void> {
   // Validate environment first
   validateEnvironment();
 
-  console.log("[Scheduler] Starting background agent scheduler");
-  console.log(`[Scheduler] Bidding interval: ${BIDDING_INTERVAL_SEC}s (${isGroqConfigured() ? "Groq fast-path" : "heuristic fallback"})`);
+  logger.info("[Scheduler] Starting background agent scheduler");
+  logger.info(`[Scheduler] Bidding interval: ${BIDDING_INTERVAL_SEC}s (${isGroqConfigured() ? "Groq fast-path" : "heuristic fallback"})`);
 
   // Start auto-freeze monitor for virtual cards
   await startAutoFreezeMonitor();
-  console.log("[Scheduler] Auto-freeze monitor started");
+  logger.info("[Scheduler] Auto-freeze monitor started");
 
   // Start platform auto-sync (every 5 minutes)
   await startAutoSync(300000);
-  console.log("[Scheduler] Platform auto-sync started");
+  logger.info("[Scheduler] Platform auto-sync started");
 
   // ── Continuous Feedback Collection (every 1 hour) ────────
   setTimeout(async () => {
@@ -79,7 +80,7 @@ export async function startScheduler(): Promise<void> {
     if (!schedulerRunning) return;
     await collectFeedbackForAllTenants();
   }, FEEDBACK_INTERVAL));
-  console.log("[Scheduler] Feedback collection started (every 1h)");
+  logger.info("[Scheduler] Feedback collection started (every 1h)");
 
   // ── Continuous Model Training (every 6 hours) ────────────
   setTimeout(async () => {
@@ -89,7 +90,7 @@ export async function startScheduler(): Promise<void> {
     if (!schedulerRunning) return;
     await trainModelsForAllTenants();
   }, TRAINING_INTERVAL));
-  console.log("[Scheduler] Continuous training started (every 6h)");
+  logger.info("[Scheduler] Continuous training started (every 6h)");
 
   // ── Metacognition Cycle (every 4 hours) ──────────────────
   setTimeout(async () => {
@@ -99,7 +100,7 @@ export async function startScheduler(): Promise<void> {
     if (!schedulerRunning) return;
     await runMetacognitionForAllTenants();
   }, METACOGNITION_INTERVAL));
-  console.log("[Scheduler] Metacognition cycle started (every 4h)");
+  logger.info("[Scheduler] Metacognition cycle started (every 4h)");
 
   // ── Data Retention Cleanup (every 24 hours) ──────────────
   setTimeout(async () => {
@@ -109,7 +110,7 @@ export async function startScheduler(): Promise<void> {
     if (!schedulerRunning) return;
     await runRetentionCleanupForAllTenants();
   }, RETENTION_INTERVAL));
-  console.log("[Scheduler] Data retention cleanup started (every 24h)");
+  logger.info("[Scheduler] Data retention cleanup started (every 24h)");
 
   // ── Token Refresh Watchdog (every 1 hour) ───────────────
   setTimeout(async () => {
@@ -119,7 +120,7 @@ export async function startScheduler(): Promise<void> {
     if (!schedulerRunning) return;
     await runTokenRefreshForAllTenants();
   }, TOKEN_REFRESH_INTERVAL));
-  console.log("[Scheduler] Token refresh watchdog started (every 1h)");
+  logger.info("[Scheduler] Token refresh watchdog started (every 1h)");
 
   // ── Campaign Metrics Collector (every 15 min) ───────────
   setTimeout(async () => {
@@ -129,7 +130,7 @@ export async function startScheduler(): Promise<void> {
     if (!schedulerRunning) return;
     await runMetricsCollection();
   }, METRICS_COLLECT_INTERVAL));
-  console.log("[Scheduler] Campaign metrics collector started (every 15min)");
+  logger.info("[Scheduler] Campaign metrics collector started (every 15min)");
 
   // ── Audience Portability Sync (every 6 hours) ───────────
   setTimeout(async () => {
@@ -139,7 +140,7 @@ export async function startScheduler(): Promise<void> {
     if (!schedulerRunning) return;
     await syncAudiencesForAllTenants();
   }, AUDIENCE_SYNC_INTERVAL));
-  console.log("[Scheduler] Audience portability sync started (every 6h)");
+  logger.info("[Scheduler] Audience portability sync started (every 6h)");
 
   // ── Frequency Governor Check (every 5 min) ──────────────
   setTimeout(async () => {
@@ -149,7 +150,7 @@ export async function startScheduler(): Promise<void> {
     if (!schedulerRunning) return;
     await checkFrequencyForAllTenants();
   }, FREQUENCY_CHECK_INTERVAL));
-  console.log("[Scheduler] Frequency governor started (every 5min)");
+  logger.info("[Scheduler] Frequency governor started (every 5min)");
 
   // ── Platform Arbitrage (every 6 hours) ──────────────────
   setTimeout(async () => {
@@ -159,7 +160,7 @@ export async function startScheduler(): Promise<void> {
     if (!schedulerRunning) return;
     await runArbitrageCycle();
   }, ARBITRAGE_INTERVAL));
-  console.log("[Scheduler] Platform arbitrage started (every 6h)");
+  logger.info("[Scheduler] Platform arbitrage started (every 6h)");
 
   // Run each agent on its own interval
   for (const [type, intervalSec] of Object.entries(AGENT_INTERVALS)) {
@@ -244,10 +245,10 @@ async function collectFeedbackForAllTenants(): Promise<void> {
       totalFeedback += walletResult.newFeedbackCount + platformResult.newFeedbackCount + commerceResult.newFeedbackCount;
 
       if (walletResult.newFeedbackCount > 0 || platformResult.newFeedbackCount > 0 || commerceResult.newFeedbackCount > 0) {
-        console.log(`[Scheduler] Feedback collected for ${tenant_id}: wallet=${walletResult.newFeedbackCount}, platform=${platformResult.newFeedbackCount}, commerce=${commerceResult.newFeedbackCount}`);
+        logger.info(`[Scheduler] Feedback collected for ${tenant_id}: wallet=${walletResult.newFeedbackCount}, platform=${platformResult.newFeedbackCount}, commerce=${commerceResult.newFeedbackCount}`);
       }
     } catch (e) {
-      console.error(`[Scheduler] Feedback collection failed for tenant ${tenant_id}:`, e);
+      logger.error(`[Scheduler] Feedback collection failed for tenant ${tenant_id}:`, { error: e instanceof Error ? (e).message : String(e) });
     }
   }
 
@@ -267,7 +268,7 @@ async function trainModelsForAllTenants(): Promise<void> {
     try {
       const result = await trainModel(tenant_id);
       if (result.promoted) {
-        console.log(`[Scheduler] Model ${result.version} promoted for ${tenant_id}: R²=${result.newR2}`);
+        logger.info(`[Scheduler] Model ${result.version} promoted for ${tenant_id}: R²=${result.newR2}`);
         eventBus.emit("ltv.model_promoted", {
           tenantId: tenant_id,
           version: result.version,
@@ -276,11 +277,11 @@ async function trainModelsForAllTenants(): Promise<void> {
         });
       }
       if (result.driftDetected) {
-        console.log(`[Scheduler] Drift detected for ${tenant_id}`);
+        logger.info(`[Scheduler] Drift detected for ${tenant_id}`);
         eventBus.emit("ltv.drift_detected", { tenantId: tenant_id });
       }
     } catch (e) {
-      console.error(`[Scheduler] Training failed for tenant ${tenant_id}:`, e);
+      logger.error(`[Scheduler] Training failed for tenant ${tenant_id}:`, { error: e instanceof Error ? (e).message : String(e) });
     }
   }
 }
@@ -296,7 +297,7 @@ async function runMetacognitionForAllTenants(): Promise<void> {
     try {
       const reflection = await runSelfReflection(tenant_id);
       if (reflection.adaptationNeeded) {
-        console.log(`[Scheduler] Adaptation needed for ${tenant_id}, applying strategy`);
+        logger.info(`[Scheduler] Adaptation needed for ${tenant_id}, applying strategy`);
         const strategy = await adaptStrategy(tenant_id);
         if (strategy) {
           eventBus.emit("metacognition.strategy_applied", {
@@ -307,7 +308,7 @@ async function runMetacognitionForAllTenants(): Promise<void> {
         }
       }
     } catch (e) {
-      console.error(`[Scheduler] Metacognition failed for tenant ${tenant_id}:`, e);
+      logger.error(`[Scheduler] Metacognition failed for tenant ${tenant_id}:`, { error: e instanceof Error ? (e).message : String(e) });
     }
   }
 }
@@ -328,10 +329,10 @@ async function runRetentionCleanupForAllTenants(): Promise<void> {
       const deleted = Object.values(result.recordsDeleted).reduce((s, v) => s + v, 0);
       totalDeleted += deleted;
       if (deleted > 0) {
-        console.log(`[Scheduler] Retention cleanup for ${tenant_id}: ${deleted} records deleted`);
+        logger.info(`[Scheduler] Retention cleanup for ${tenant_id}: ${deleted} records deleted`);
       }
     } catch (e) {
-      console.error(`[Scheduler] Retention cleanup failed for tenant ${tenant_id}:`, e);
+      logger.error(`[Scheduler] Retention cleanup failed for tenant ${tenant_id}:`, { error: e instanceof Error ? (e).message : String(e) });
     }
   }
 
@@ -356,7 +357,7 @@ async function runBiddingForAllTenants(): Promise<void> {
         stopLosses: decisions.filter(d => d.stopLossTriggered).length,
       });
     } catch (e) {
-      console.error(`[Scheduler] Bidding cycle failed for tenant ${tenant_id}:`, e);
+      logger.error(`[Scheduler] Bidding cycle failed for tenant ${tenant_id}:`, { error: e instanceof Error ? (e).message : String(e) });
     }
   }
 }
@@ -366,11 +367,11 @@ async function runTokenRefreshForAllTenants(): Promise<void> {
   try {
     const refreshed = await checkAndRefreshExpiringTokens();
     if (refreshed > 0) {
-      console.log(`[Scheduler] Token refresh: ${refreshed} tokens refreshed`);
+      logger.info(`[Scheduler] Token refresh: ${refreshed} tokens refreshed`);
       eventBus.emit("token.refresh_cycle_complete" as any, { refreshed });
     }
   } catch (e) {
-    console.error("[Scheduler] Token refresh failed:", e);
+    logger.error("[Scheduler] Token refresh failed:", { error: e instanceof Error ? (e).message : String(e) });
   }
 }
 
@@ -379,7 +380,7 @@ async function runMetricsCollection(): Promise<void> {
   try {
     await collectCampaignMetrics();
   } catch (e) {
-    console.error("[Scheduler] Metrics collection failed:", e);
+    logger.error("[Scheduler] Metrics collection failed:", { error: e instanceof Error ? (e).message : String(e) });
   }
 }
 
@@ -394,10 +395,10 @@ async function syncAudiencesForAllTenants(): Promise<void> {
     try {
       const segments = await syncAudienceSegments(tenant_id);
       if (segments.length > 0) {
-        console.log(`[Scheduler] Audience sync: ${segments.length} segments for ${tenant_id}`);
+        logger.info(`[Scheduler] Audience sync: ${segments.length} segments for ${tenant_id}`);
       }
     } catch (e) {
-      console.error(`[Scheduler] Audience sync failed for tenant ${tenant_id}:`, e);
+      logger.error(`[Scheduler] Audience sync failed for tenant ${tenant_id}:`, { error: e instanceof Error ? (e).message : String(e) });
     }
   }
 }
@@ -413,7 +414,7 @@ async function checkFrequencyForAllTenants(): Promise<void> {
     try {
       await checkFrequencyGovernor(tenant_id);
     } catch (e) {
-      console.error(`[Scheduler] Frequency governor failed for tenant ${tenant_id}:`, e);
+      logger.error(`[Scheduler] Frequency governor failed for tenant ${tenant_id}:`, { error: e instanceof Error ? (e).message : String(e) });
     }
   }
 }
@@ -425,7 +426,7 @@ export function stopScheduler(): void {
     clearInterval(interval);
   }
   intervals = [];
-  console.log("[Scheduler] Stopped");
+  logger.info("[Scheduler] Stopped");
 }
 
 // ── Check if running ──────────────────────────────────────

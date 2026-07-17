@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // Agent Execution Engine — Runs the 6 AI agents autonomously
 // Each agent performs real optimization tasks using Azure OpenAI
@@ -32,7 +33,7 @@ async function callAI(prompt: string, systemPrompt: string, tier: ModelTier = "m
   // Fast path: Groq
   if (tier === "fast") {
     if (!isGroqConfigured()) {
-      console.warn("[Agent] Groq not configured, falling back to Azure mini");
+      logger.warn("[Agent] Groq not configured, falling back to Azure mini");
       tier = "mini";
     } else {
       return callGroq(prompt, systemPrompt, { maxTokens: 512, temperature: 0.3 });
@@ -61,7 +62,7 @@ async function callAI(prompt: string, systemPrompt: string, tier: ModelTier = "m
       return data.choices?.[0]?.message?.content || "";
     }
   } catch (e) {
-    console.warn("[Agent] AI call failed:", e);
+    logger.warn("[Agent] AI call failed:", { error: e instanceof Error ? (e).message : String(e) });
   }
   return "";
 }
@@ -445,7 +446,7 @@ export async function runAllAgents(): Promise<AgentTaskResult[]> {
       const result = await runAgent(a.id);
       if (result) results.push(result);
     } catch (e) {
-      console.error(`[Agent] Error running ${a.id}:`, e);
+      logger.error(`[Agent] Error running ${a.id}:`, { error: e instanceof Error ? (e).message : String(e) });
     }
   }
 

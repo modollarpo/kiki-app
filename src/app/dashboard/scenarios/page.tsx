@@ -1,8 +1,10 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, ProgressBar, Button } from "@/components/ui";
 import { K, fmt } from "@/lib/kdls";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 interface Scenario {
   id: string; name: string; description: string; budgetChange: number;
@@ -10,12 +12,15 @@ interface Scenario {
 }
 
 export default function ScenariosPage() {
+  const { token } = useAuth();
+  const router = useRouter();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selected, setSelected] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/scenarios")
+    if (!token) { router.push("/auth/login"); return; }
+    fetch("/api/scenarios", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => {
         if (d.success) {
@@ -25,7 +30,7 @@ export default function ScenariosPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [token, router]);
 
   const getRiskColor = (risk: string) => risk === "high" ? K.danger : risk === "medium" ? K.warn : K.mint;
 

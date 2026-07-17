@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // Azure OpenAI Configuration — Cheapest functional models
 // ============================================================
@@ -142,7 +143,7 @@ export async function callAzureOpenAI(
       throw new Error(`Azure OpenAI returned ${response.status}: ${response.statusText}`);
     }, { maxRetries: 3, baseDelayMs: 1000, maxDelayMs: 10000 });
   } catch (e) {
-    console.warn(`[Azure OpenAI] ${tier} call failed after retries:`, e);
+    logger.warn(`[Azure OpenAI] ${tier} call failed after retries:`, { error: e instanceof Error ? (e).message : String(e) });
     return { content: "", tokens: 0 };
   }
 }

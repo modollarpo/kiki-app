@@ -1,10 +1,12 @@
-﻿"use client";
+"use client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, ProgressBar, Button, StatusBadge, AIThinking } from "@/components/ui";
 import { K, fmt } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function WarehousePage() {
+  const { token } = useAuth();
   const { data, loading } = useInsights();
   const features = data?.warehouse || [];
 
@@ -35,7 +37,7 @@ export default function WarehousePage() {
               <Card>
                 <div className="p-10 text-center">
                   <p className="font-mono text-xs text-gray-600 mb-3">No feature snapshots yet. Run the LTV training engine to populate the feature store.</p>
-                  <Button variant="primary" size="sm" onClick={() => { fetch("/api/ltv/training", { method: "POST", headers: { "Content-Type": "application/json" } }).then(() => location.reload()); }}>Train Model →</Button>
+                  <Button variant="primary" size="sm" onClick={() => { fetch("/api/ltv/training", { method: "POST", headers: { "Content-Type": "application/json", ...(token && { Authorization: `Bearer ${token}` }) } }).then(() => location.reload()); }}>Train Model →</Button>
                 </div>
               </Card>
             ) : (

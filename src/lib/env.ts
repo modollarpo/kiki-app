@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // KIKI Agent Platform — Environment Validation
 // Validates all required env vars at startup, fails fast if missing
@@ -106,15 +107,15 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
   validationErrors = errors;
 
   if (errors.length > 0) {
-    console.error("[ENV VALIDATION] FAILED:");
-    errors.forEach(e => console.error(`  ✗ ${e}`));
+    logger.error("[ENV VALIDATION] FAILED:");
+    errors.forEach(e => logger.error(`  ✗ ${e}`));
   }
   if (warnings.length > 0) {
-    console.warn("[ENV VALIDATION] WARNINGS:");
-    warnings.forEach(w => console.warn(`  ⚠ ${w}`));
+    logger.warn("[ENV VALIDATION] WARNINGS:");
+    warnings.forEach(w => logger.warn(`  ⚠ ${w}`));
   }
   if (errors.length === 0 && warnings.length === 0) {
-    console.log("[ENV VALIDATION] All checks passed");
+    logger.info("[ENV VALIDATION] All checks passed");
   }
 
   return { valid: errors.length === 0, errors, warnings };
@@ -128,7 +129,7 @@ export function getEncryptionKey(): Buffer {
     return Buffer.from(keyHex, "hex");
   }
   // Fallback: generate random key (WARNING: tokens lost on restart)
-  console.warn("[CRYPTO] No ENCRYPTION_KEY set — generating random key. OAuth tokens will NOT persist across restarts.");
+  logger.warn("[CRYPTO] No ENCRYPTION_KEY set — generating random key. OAuth tokens will NOT persist across restarts.");
   return crypto.randomBytes(32);
 }
 

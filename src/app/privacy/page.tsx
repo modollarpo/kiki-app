@@ -11,7 +11,7 @@ const S = [
   { h:"5. Data Security", b:"All data encrypted at rest (AES-256) and in transit (TLS 1.3). SOC2 Type II certified. Azure Key Vault for secrets management. mTLS between all internal services. Zero-trust RBAC. Quarterly third-party penetration testing. Immutable audit logging." },
   { h:"6. Sub-processors", b:"KIKI Agent uses: Microsoft Azure (infrastructure, EU/US/APAC regions), Stripe (payments, PCI DSS L1), SendGrid (email), OpenAI/Anthropic/Google (AI model inference — no data retained per DPA), DataDog (monitoring). Full list at kiki.ai/sub-processors." },
   { h:"7. Cookies & Tracking", b:"We use strictly necessary cookies for authentication and security. With your consent, we use privacy-preserving analytics (PostHog, no cross-site tracking). We never use advertising or third-party tracking cookies on our platform." },
-  { h:"8. Contact & DPA", b:"Privacy Officer: privacy@kiki.ai | KIKI Agent Inc., 350 Mission Street, San Francisco CA 94105 | EU Representative: KIKI Agent EU Ltd., Dublin, Ireland | Data Processing Addendum available at kiki.ai/dpa or on request." },
+  { h:"8. Contact & DPA", b:"Privacy Officer: privacy@kiki.ai | KIKI Agent, a product of STOREGRILL INC LTD (Company No. 14581073, Coventry, CV3 2FP, England) | EU Representative: KIKI Agent EU Ltd., Dublin, Ireland | Data Processing Addendum available at kiki.ai/dpa or on request." },
 ];
 
 export default function PrivacyPage() {
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
           <p className="font-mono text-[11px] text-t3">Last updated: March 20, 2026 · Effective: March 20, 2026</p>
         </div>
         <div className="p-3.5 mb-7 rounded-sm" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
-          <p className="font-sans text-[13px] text-t2 leading-[1.7]">This policy describes how KIKI Agent Inc. collects, uses, and protects your information. As a data processor, we handle conversion data strictly according to your instructions.</p>
+          <p className="font-sans text-[13px] text-t2 leading-[1.7]">This policy describes how KIKI Agent, a product of STOREGRILL INC LTD, collects, uses, and protects your information. As a data processor, we handle conversion data strictly according to your instructions.</p>
         </div>
         <div className="prose">
           {S.map((s,i) => (
