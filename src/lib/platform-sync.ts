@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // KIKI Agent Platform — Platform Sync Service
 // Pulls real campaign data from connected platforms
@@ -193,7 +194,7 @@ export function startAutoSync(intervalMs: number = 300000): void { // Default: 5
     }
   }, intervalMs);
 
-  console.log("[PlatformSync] Auto-sync started (interval:", intervalMs, "ms)");
+  logger.info(`[PlatformSync] Auto-sync started (interval: ${intervalMs} ms)`);
 }
 
 export function stopAutoSync(): void {

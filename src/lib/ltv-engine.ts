@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // LTV Prediction Engine — Predicts 90-day customer lifetime value
 // Uses Azure OpenAI for intelligent prediction + heuristic fallback
@@ -202,7 +203,7 @@ Return JSON: {"ltv": number, "confidence": 0.0-1.0, "factors": ["reason1", "reas
       };
     }
   } catch (e) {
-    console.warn("[LTV] AI prediction failed, using heuristic:", e);
+    logger.warn("[LTV] AI prediction failed, using heuristic:", { error: e instanceof Error ? e.message : String(e) });
   }
 
   return heuristicPredict(signal, undefined, trainedWeights);

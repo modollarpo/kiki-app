@@ -1,44 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
-
-const SERVICE_URL = process.env.MMM_URL || "http://localhost:3022";
+import { proxyToService } from "@/lib/service-proxy";
 
 export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
-  try {
-    const res = await fetch(`${SERVICE_URL}/api/runs`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...body, tenantId: user.tenantId }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
-  } catch {
-    clearTimeout(timeout);
-    return NextResponse.json({ success: false, error: "Service unavailable" }, { status: 503 });
-  }
+  return proxyToService(req, {
+    path: "/api/runs",
+    method: "POST",
+    body: { ...body, tenantId: user.tenantId },
+    serviceName: "Media Mix Modelling",
+    envVar: "MMM_URL",
+  });
 }
 
 export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
-  try {
-    const res = await fetch(`${SERVICE_URL}/api/recommendations?tenantId=${user.tenantId}`, {
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
-  } catch {
-    clearTimeout(timeout);
-    return NextResponse.json({ success: false, error: "Service unavailable" }, { status: 503 });
-  }
+  return proxyToService(req, {
+    path: "/api/recommendations",
+    method: "GET",
+    query: `tenantId=${user.tenantId}`,
+    serviceName: "Media Mix Modelling",
+    envVar: "MMM_URL",
+  });
 }

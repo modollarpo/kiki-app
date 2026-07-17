@@ -142,6 +142,61 @@ export interface Wallet {
   transactions: WalletTransaction[];
 }
 
+// ── Raw DB row shapes (for typed casts on query results) ─────
+// The Postgres adapter returns `any` from `.get()/.all()`, so call sites
+// cast to these shapes instead of `any` to keep type safety end-to-end.
+export interface WalletCardRow {
+  id: string;
+  wallet_id: string;
+  last4: string;
+  brand: string;
+  limit: number;
+  spent: number;
+  campaign: string;
+  status: "active" | "frozen" | "expired";
+  daily_limit: number;
+  daily_spent: number;
+  biometric_token: string | null;
+  issuer: "local" | "stripe" | null;
+  issuer_card_id: string | null;
+}
+
+export interface WalletRow {
+  id: string;
+  tenant_id: string;
+  balance: number;
+  currency: string;
+}
+
+export interface WalletTransactionRow {
+  id: string;
+  wallet_id: string;
+  type: "credit" | "debit" | "refund";
+  amount: number;
+  description: string;
+  campaign: string | null;
+  status: "pending" | "settled" | "failed";
+  created_at: string;
+}
+
+export interface WalletTopupRow {
+  id: string;
+  tenant_id: string;
+  amount: number;
+  method: string;
+  description: string;
+  payment_intent_id: string | null;
+  status: "pending" | "settled";
+}
+
+export interface CampaignRow {
+  id: string;
+  target_cpa: number;
+  spend: number;
+  conversions: number;
+  name: string;
+}
+
 // ── Notifications ────────────────────────────────────────
 export interface Notification {
   id: string;

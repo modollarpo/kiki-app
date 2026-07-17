@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // Unified Webhook Handler — Routes platform webhooks to CAPI
 // ============================================================
@@ -7,7 +8,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { enrichConversionEvent } from "@/lib/capi";
 import { eventBus } from "@/lib/events";
-import { logger } from "@/lib/logger";
 
 export interface WebhookPayload {
   platform: string;

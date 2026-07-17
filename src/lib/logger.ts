@@ -8,8 +8,8 @@ type Level = "info" | "warn" | "error" | "debug";
 
 const isProd = process.env.NODE_ENV === "production";
 
-function emit(level: Level, msg: string, meta?: Record<string, unknown>): void {
-  const entry = { ts: new Date().toISOString(), level, msg, ...(meta ?? {}) };
+function emit(level: Level, msg: string, meta?: unknown): void {
+  const entry = { ts: new Date().toISOString(), level, msg, ...(typeof meta === "object" && meta !== null ? meta : { meta }) };
   if (isProd) {
     process.stdout.write(JSON.stringify(entry) + "\n");
   } else {
@@ -20,11 +20,11 @@ function emit(level: Level, msg: string, meta?: Record<string, unknown>): void {
 }
 
 export const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => emit("info", msg, meta),
-  warn: (msg: string, meta?: Record<string, unknown>) => emit("warn", msg, meta),
-  error: (msg: string, meta?: Record<string, unknown>) => emit("error", msg, meta),
+  info: (msg: string, meta?: unknown) => emit("info", msg, meta),
+  warn: (msg: string, meta?: unknown) => emit("warn", msg, meta),
+  error: (msg: string, meta?: unknown) => emit("error", msg, meta),
   // Debug logs are suppressed in production to avoid noisy/expensive output.
-  debug: (msg: string, meta?: Record<string, unknown>) => {
+  debug: (msg: string, meta?: unknown) => {
     if (!isProd) emit("debug", msg, meta);
   },
 };

@@ -1,21 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 
-// Public paths that don't require authentication
+// Public paths that don't require authentication. These MUST be exact,
+// real routes — NEVER use a broad substring like `pathname.includes(".")`,
+// which would let an attacker craft `/api/admin.evil` to bypass auth.
 const PUBLIC_PATHS = [
   "/",
-  "/login",
-  "/register",
   "/privacy",
   "/terms",
   "/nda",
+  "/auth/login",
+  "/auth/signup",
+  "/auth/register",
   "/api/auth/login",
-  "/api/auth/register",
+  "/api/auth/signup",
   "/api/auth/logout",
   // Webhook endpoints (authenticated via platform signatures, not JWT)
   "/api/webhooks/",
-  // Health check
-  "/api/health",
   "/api/status",
 ];
 
@@ -50,15 +51,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow static files and Next.js internals
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/images") ||
-    pathname.startsWith("/favicon") ||
-    pathname.includes(".")
-  ) {
-    return NextResponse.next();
-  }
+  // Note: static assets (_next/static, _next/image, favicon.ico, images/)
+  // are excluded by the matcher config below, so they never reach here.
+  // We deliberately do NOT add a `pathname.includes(".")` bypass — it would
+  // let any dotted path (e.g. `/api/secret.leak`) skip authentication.
 
   // Check for auth token in cookies or Authorization header
   const token =
