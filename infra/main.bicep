@@ -11,8 +11,12 @@ param openAiApiVersion string = '2024-10-21'
 @secure()
 param groqApiKey string = ''
 
-var resourceGroupName = '${baseName}-rg'
-var acrName = replace('${baseName}acr', '-', '')
+@description('PostgreSQL connection string for the app (DATABASE_URL). Required for production; omit only for local SQLite fallback.')
+@secure()
+param databaseUrl string = ''
+
+var resourceGroupName = 'kiki-agent-rg'
+var acrName = 'kikiagentacr'
 var envName = '${baseName}-env'
 var containerAppName = '${baseName}-app'
 var logAnalyticsName = '${baseName}-logs'
@@ -21,9 +25,11 @@ var fileShareName = 'kikidata'
 var openAiName = replace('${baseName}openai', '-', '')
 var containerAppEnvStorageName = 'kikidata'
 
-// Random-ish secrets (acceptable for demo; rotate in prod)
-var jwtSecret = baseName
-var encryptionKey = baseName
+// Deterministic, sufficiently-long secrets derived from baseName so a redeploy
+// without explicit params does not fall back to the 4-char "kiki" default.
+var jwtSecret = base64(substring(toLower(replace(baseName, '-', '')), 0, 1)) + '${baseName}' + '7f3c9a1b2e4d5c6f8a9b0c1d2e3f4a5b'
+var encryptionKey = substring(sha256('${baseName}-encryption'), 0, 64)
+var opencodeSecret = substring(sha256('${baseName}-opencode'), 0, 64)
 
 // ── Log Analytics (for Container App logs) ────────────────
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
@@ -128,6 +134,8 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
         { name: 'jwt-secret', value: jwtSecret }
         { name: 'encryption-key', value: encryptionKey }
         { name: 'groq-api-key', value: groqApiKey }
+        { name: 'db-url', value: databaseUrl }
+        { name: 'opencode-secret', value: opencodeSecret }
       ]
       registries: [
         {
@@ -149,7 +157,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
           env: [
             { name: 'NODE_ENV', value: 'production' }
             { name: 'PORT', value: '3000' }
-            { name: 'DATABASE_PATH', value: '/app/data/kiki.db' }
+            { name: 'DATABASE_URL', secretRef: 'db-url' }
             { name: 'NEXT_PUBLIC_API_URL', value: 'https://${containerAppName}.${location}.azurecontainerapps.io' }
             { name: 'AZURE_OPENAI_ENDPOINT', value: openAi.properties.endpoint }
             { name: 'AZURE_OPENAI_API_KEY', secretRef: 'openai-key' }
@@ -161,11 +169,30 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             { name: 'GROQ_API_KEY', secretRef: 'groq-api-key' }
             { name: 'GROQ_MODEL', value: 'llama-3.1-8b-instant' }
             { name: 'BIDDING_INTERVAL_MS', value: '300000' }
-            { name: 'OPENCODE_ENDPOINT', value: '' }
-            { name: 'OPENCODE_SECRET', value: '' }
+            { name: 'OPENCODE_ENDPOINT', value: 'http://localhost:8080' }
+            { name: 'OPENCODE_SECRET', secretRef: 'opencode-secret' }
           ]
           volumeMounts: [
             { name: 'data', mountPath: '/app/data' }
+          ]
+        }
+        {
+          name: 'opencode-backend'
+          image: '${acr.loginServer}/${containerAppName}:latest'
+          command: [
+            'npx'
+            '-y'
+            'opencode-ai@1.18.2'
+            'serve'
+            '--port'
+            '8080'
+          ]
+          resources: {
+            cpu: json('0.25')
+            memory: '0.5Gi'
+          }
+          env: [
+            { name: 'OPENCODE_SECRET', secretRef: 'jwt-secret' }
           ]
         }
       ]
@@ -184,7 +211,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
   }
 }
 
-output containerAppUrl string = 'https://${containerAppName}.${location}.azurecontainerapps.io'
+output containerAppUrl string = 'https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io'
 output acrLoginServer string = acr.loginServer
 output openAiEndpoint string = openAi.properties.endpoint
 output resourceGroupName string = resourceGroupName
