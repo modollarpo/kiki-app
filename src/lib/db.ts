@@ -15,11 +15,12 @@ import { hashPassword } from "./auth";
 // module-evaluation time.
 
 // Production MUST provide DATABASE_URL (e.g. via Azure Key Vault / env).
-// No credentials are hardcoded here — the fallback is a local dev database
-// without authentication. Never commit real secrets to source.
+// No credentials are hardcoded here. The fallback points at a loopback dev
+// database so a missing DATABASE_URL fails fast and visibly in production
+// rather than silently using weak default credentials.
 const connectionString =
   process.env.DATABASE_URL ||
-  "postgres://postgres:postgres@localhost:5432/kiki?sslmode=disable";
+  "postgresql://kiki@localhost:5432/kiki?sslmode=prefer";
 
 const pool = new Pool({
   connectionString,
@@ -192,9 +193,11 @@ const SCHEMA = `
     tenant_id TEXT NOT NULL,
     tenant_name TEXT NOT NULL,
     plan TEXT NOT NULL DEFAULT 'starter',
+    status TEXT NOT NULL DEFAULT 'active',
     avatar_initials TEXT NOT NULL DEFAULT 'U',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_login_at TEXT
+    last_login_at TEXT,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS campaigns (
