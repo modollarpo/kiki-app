@@ -150,7 +150,7 @@ All routes live under `src/app/api/[slug]/route.ts`. Auth via `Authorization: Be
 | `/api/billing` | GET/POST | Billing + invoices |
 | `/api/margin` | GET | Profit margin analysis |
 | `/api/profit-margin` | GET/POST | Profit & margin |
-| `/api/finance` | GET | Finance operations |
+| `/api/commerce` | GET/POST | Commerce operations |
 | `/api/influencer` | GET/POST | Influencer management |
 | `/api/oaas` | GET/POST | OaaS task queue |
 | `/api/workflow` | GET/POST | Automation workflows |
