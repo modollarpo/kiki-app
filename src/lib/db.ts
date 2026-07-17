@@ -177,16 +177,10 @@ async function createSqliteDb(): Promise<SqliteDb | MemoryDb> {
   const dataDir = path.resolve(process.cwd(), "data");
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   const file = path.join(dataDir, "kiki-local.sqlite");
-  // node:sqlite is only available on Node 22.5+ (experimental) and Node 24+.
-  // On older runtimes (e.g. node:20 in the production container image) the
-  // import throws ERR_UNKNOWN_BUILTIN_MODULE. In that case fall back to a
-  // pure in-memory store so the server stays up rather than 500-ing.
   let DatabaseSync: any;
   try {
-    // webpackIgnore keeps this a real runtime import (not bundled/traced),
-    // so on runtimes without node:sqlite it throws ERR_UNKNOWN_BUILTIN_MODULE
-    // here — caught below — instead of failing at module-evaluation time.
-    ({ DatabaseSync } = await import(/* webpackIgnore: true */ "node:sqlite"));
+    const sqliteModule = await import(/* @vite-ignore */ /* webpackIgnore: true */ "node:sqlite");
+    DatabaseSync = sqliteModule.DatabaseSync;
   } catch (e) {
     logger.warn(
       "[DB] node:sqlite unavailable (" + (e as Error).message.split("\n")[0] +
