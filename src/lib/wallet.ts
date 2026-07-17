@@ -6,6 +6,8 @@
 import crypto from "crypto";
 import { getDb } from "./db";
 import { eventBus, EVENTS } from "./events";
+import { cardIssuer } from "./card-issuer";
+import { stripe, stripeEnabled } from "./stripe";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -23,6 +25,8 @@ export interface VirtualCard {
   status: "active" | "frozen" | "cancelled";
   freezeReason?: string;
   createdAt: string;
+  issuer?: "local" | "stripe";
+  issuerCardId?: string;
 }
 
 export interface FreezeResult {
@@ -49,13 +53,20 @@ export async function createVirtualCard(
 ): Promise<VirtualCard> {
   const db = await getDb();
   const cardId = `vc_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
-  const last4 = crypto.randomBytes(2).toString("hex").slice(0, 4);
-  const brand = ["Visa", "Mastercard", "Amex"][Math.floor(Math.random() * 3)];
+
+  // Delegate number/brand issuance to the configured provider (local or Stripe).
+  const issued = await cardIssuer.issueCard({
+    tenantId,
+    walletId,
+    campaignName,
+    totalLimit,
+    dailyLimit,
+  });
 
   await db.prepare(`
-    INSERT INTO wallet_cards (id, wallet_id, last4, brand, "limit", spent, campaign, status)
-    VALUES (?, ?, ?, ?, ?, 0, ?, 'active')
-  `).run(cardId, walletId, last4, brand, totalLimit, campaignName);
+    INSERT INTO wallet_cards (id, wallet_id, last4, brand, "limit", spent, campaign, status, issuer, issuer_card_id)
+    VALUES (?, ?, ?, ?, ?, 0, ?, 'active', ?, ?)
+  `).run(cardId, walletId, issued.last4, issued.brand, totalLimit, campaignName, issued.issuer, issued.issuerCardId ?? null);
 
   // Store campaign mapping and daily limit
   await db.prepare(`
@@ -65,8 +76,8 @@ export async function createVirtualCard(
   return {
     id: cardId,
     walletId,
-    last4,
-    brand,
+    last4: issued.last4,
+    brand: issued.brand,
     limit: totalLimit,
     spent: 0,
     dailyLimit,
@@ -74,6 +85,8 @@ export async function createVirtualCard(
     campaignId,
     campaignName,
     status: "active",
+    issuer: issued.issuer,
+    issuerCardId: issued.issuerCardId,
     createdAt: new Date().toISOString(),
   };
 }
@@ -219,12 +232,13 @@ export async function checkAndFreezeOnBalance(cardId: string): Promise<FreezeRes
   return null;
 }
 
-// ── Unfreeze Card (requires biometric for > $100) ─────────
+// ── Unfreeze Card (requires biometric confirmation for > $100) ─────────
 
 export async function unfreezeCard(
   cardId: string,
-  requiresBiometric: boolean = false
-): Promise<{ success: boolean; error?: string }> {
+  opts: { requiresBiometric?: boolean; biometricToken?: string } = {}
+): Promise<{ success: boolean; error?: string; requiresBiometric?: boolean }> {
+  const { requiresBiometric = false, biometricToken } = opts;
   const db = await getDb();
   const card =   await db.prepare(`
     SELECT * FROM wallet_cards WHERE id = ? AND status = 'frozen'
@@ -234,15 +248,21 @@ export async function unfreezeCard(
     return { success: false, error: "Card not found or not frozen" };
   }
 
-  // For high-value unfreeze, require biometric confirmation
+  // For high-value unfreeze, enforce biometric confirmation before proceeding.
   if (requiresBiometric && card.limit > 100) {
-    // In production, this would trigger a biometric prompt
-    // For now, we just log it
-    eventBus.emit("wallet.unfreeze_requested" as any, {
-      cardId,
-      requiresBiometric: true,
-      cardLimit: card.limit,
-    });
+    if (!biometricToken) {
+      eventBus.emit("wallet.unfreeze_requested" as any, {
+        cardId,
+        requiresBiometric: true,
+        cardLimit: card.limit,
+      });
+      return { success: false, error: "Biometric confirmation required to unfreeze this card", requiresBiometric: true };
+    }
+    // In production this token would be verified against the biometric provider.
+    // Here we accept a non-empty token as proof-of-confirmation.
+    if (biometricToken.length < 8) {
+      return { success: false, error: "Invalid biometric token", requiresBiometric: true };
+    }
   }
 
   await db.prepare(`
@@ -333,6 +353,14 @@ export async function getCampaignCards(tenantId: string): Promise<VirtualCard[]>
       // Legacy/seed cards store a plain campaign name in this column.
       info = { campaignName: card.campaign };
     }
+    // Compute today's spend for this card (used by daily-limit enforcement).
+    const today =   (db as any).prepare
+      ? (db.prepare(`
+          SELECT COALESCE(SUM(amount), 0) as total FROM wallet_transactions
+          WHERE wallet_id = ? AND campaign = ? AND type = 'debit'
+          AND created_at >= date('now')
+        `).get(card.wallet_id, card.campaign) as any)
+      : { total: 0 };
     return {
       id: card.id,
       walletId: card.wallet_id,
@@ -341,10 +369,12 @@ export async function getCampaignCards(tenantId: string): Promise<VirtualCard[]>
       limit: card.limit,
       spent: card.spent,
       dailyLimit: info.dailyLimit || 0,
-      dailySpent: 0,
+      dailySpent: today?.total || 0,
       campaignId: info.campaignId || "",
       campaignName: info.campaignName || card.campaign,
       status: card.status,
+      issuer: (card as any).issuer,
+      issuerCardId: (card as any).issuer_card_id,
       createdAt: card.created_at,
     };
   });
@@ -392,11 +422,32 @@ export async function topUpWallet(
   amount: number,
   method: "card" | "bank_transfer" | "invoice",
   description: string
-): Promise<{ success: boolean; walletId: string; balance: number; error?: string }> {
+): Promise<{ success: boolean; walletId: string; balance: number; error?: string; paymentIntentId?: string }> {
   const db = await getDb();
 
   if (amount <= 0) {
     return { success: false, walletId: "", balance: 0, error: "Amount must be positive" };
+  }
+
+  // When a real PSP is configured, create the charge/payment intent first.
+  // Failure here is surfaced but does not credit the wallet (no free money).
+  let paymentIntentId: string | undefined;
+  if (method === "card" && stripeEnabled && stripe) {
+    try {
+      const pi = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100),
+        currency: "usd",
+        description: `${description} (wallet top-up)`,
+        metadata: { tenantId, method },
+        automatic_payment_methods: { enabled: true },
+      });
+      paymentIntentId = pi.id;
+      // In production the wallet is credited only after webhook confirmation
+      // (payment_intent.succeeded). For now we credit immediately so the demo
+      // flow works; replace with webhook-gated credit before go-live.
+    } catch (err) {
+      return { success: false, walletId: "", balance: 0, error: `Payment failed: ${(err as Error).message}` };
+    }
   }
 
   // Get or create wallet
@@ -440,7 +491,7 @@ export async function topUpWallet(
     balance: wallet.balance,
   });
 
-  return { success: true, walletId: wallet.id, balance: wallet.balance };
+  return { success: true, walletId: wallet.id, balance: wallet.balance, paymentIntentId };
 }
 
 // ── Wallet Balance Check ───────────────────────────────────
