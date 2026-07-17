@@ -289,6 +289,11 @@ export const status = {
   get: () => request<{ status: string; services: Array<{ name: string; status: string; p99: number; uptime: number }> }>("/api/status"),
 };
 
+// ── Insights ────────────────────────────────────────────
+export const insights = {
+  get: (token: string) => request<any>("/api/insights", { token }),
+};
+
 // ── AI Chat (Azure OpenAI) ──────────────────────────────
 export interface ChatMessage {
   role: "system" | "user" | "assistant";

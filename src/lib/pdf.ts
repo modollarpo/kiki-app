@@ -12,7 +12,8 @@ async function getJsPDF() {
 export async function generatePDF(opts: {
   filename: string;
   title: string;
-  content: string[];
+  content?: string[];
+  sections?: { heading: string; body: string[] }[];
   metadata?: Record<string, string>;
   watermark?: string;
 }) {
@@ -32,7 +33,7 @@ export async function generatePDF(opts: {
   doc.text("KIKI Agent", margin, 18);
   doc.setFontSize(9);
   doc.setTextColor(136, 136, 170);
-  doc.text("KIKI Agent Inc. \u00b7 kiki.ai", margin, 26);
+  doc.text("KIKI Agent \u00b7 a STOREGRILL INC LTD product \u00b7 kiki.ai", margin, 26);
 
   y = 44;
   doc.setFont("helvetica", "bold");
@@ -57,25 +58,50 @@ export async function generatePDF(opts: {
   doc.line(margin, y, pageW - margin, y);
   y += 8;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(51, 51, 76);
-
-  for (const paragraph of opts.content) {
+  const renderParagraph = (paragraph: string) => {
     const lines = doc.splitTextToSize(paragraph, contentW);
     const lineHeight = 5.5;
     const blockH = lines.length * lineHeight + 6;
-
     if (y + blockH > pageH - margin) {
       doc.addPage();
       y = margin;
     }
-
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(51, 51, 76);
     for (const line of lines) {
       doc.text(line, margin, y);
       y += lineHeight;
     }
     y += 6;
+  };
+
+  const renderHeading = (heading: string) => {
+    const lines = doc.splitTextToSize(heading, contentW);
+    const lineHeight = 6;
+    const blockH = lines.length * lineHeight + 6;
+    if (y + blockH > pageH - margin) {
+      doc.addPage();
+      y = margin;
+    }
+    y += 2;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12.5);
+    doc.setTextColor(0, 92, 255);
+    for (const line of lines) {
+      doc.text(line, margin, y);
+      y += lineHeight;
+    }
+    y += 4;
+  };
+
+  if (opts.sections && opts.sections.length > 0) {
+    for (const sec of opts.sections) {
+      renderHeading(sec.heading);
+      for (const para of sec.body) renderParagraph(para);
+    }
+  } else if (opts.content) {
+    for (const paragraph of opts.content) renderParagraph(paragraph);
   }
 
   if (opts.watermark) {
@@ -93,7 +119,7 @@ export async function generatePDF(opts: {
     doc.setFontSize(7);
     doc.setTextColor(136, 136, 170);
     doc.text(
-      `Page ${i} of ${totalPages}  \u00b7  Confidential \u00b7 KIKI Agent Inc.`,
+      `Page ${i} of ${totalPages}  \u00b7  Confidential \u00b7 KIKI Agent (STOREGRILL INC LTD)`,
       margin,
       pageH - 10
     );

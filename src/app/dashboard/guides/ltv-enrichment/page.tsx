@@ -1,10 +1,17 @@
-﻿"use client";
+"use client";
+import { useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function LtvEnrichmentGuide() {
+  const { token } = useAuth();
+  const router = useRouter();
+  useEffect(() => { if (!token) router.push("/auth/login"); }, [token, router]);
+  if (!token) return null;
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[800px]">

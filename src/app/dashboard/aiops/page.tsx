@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RoleGuard } from "@/components/layout/RoleGuard";
 import { StatCard, Card, Badge, ProgressBar, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
@@ -77,8 +78,9 @@ export default function AIOpsPage() {
   const isLoading = loading || insightsLoading;
 
   return (
-    <DashboardLayout>
-      <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
+    <RoleGuard allowedRoles={["admin", "superadmin"]}>
+      <DashboardLayout>
+        <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
         <div className="mb-[22px]">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">AI Ops &amp; MLOps</h1>
           <p className="font-mono text-[11px] text-t3">Model registry · training queue · experiments</p>
@@ -134,5 +136,6 @@ export default function AIOpsPage() {
         </div>
       </div>
     </DashboardLayout>
+    </RoleGuard>
   );
 }

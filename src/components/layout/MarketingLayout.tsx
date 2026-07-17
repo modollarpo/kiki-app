@@ -195,7 +195,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
 
           {/* Bottom bar */}
           <div style={{ borderTop:`1px solid ${K.g800}`, paddingTop:20, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
-            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:"0.1em", color:K.t3, lineHeight:1.8 }}>KIKI AGENT™ is a product of STOREGRILL INC LTD<br/>Company No. 14581073 · 18 Hampshire Close, Binley, Coventry, CV3 2FP, England<br/>Registered in England & Wales · © 2026 All Rights Reserved</span>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:"0.1em", color:K.t3, lineHeight:1.8 }}>KIKI AGENT™ is a product of STOREGRILL INC LTD<br/>Company No. 14581073 · Coventry, CV3 2FP, England<br/>Registered in England & Wales · © 2026 All Rights Reserved</span>
             <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:K.t3 }}>Built with precision · v2.4.0</span>
           </div>
         </div>

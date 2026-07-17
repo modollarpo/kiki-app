@@ -40,7 +40,7 @@ export default function SecurityPage() {
             </div>
             <div className="flex gap-2.5">
               <Button variant="secondary" size="md" onClick={() => downloadSimplePDF("kiki-security-whitepaper.pdf", "Security Whitepaper", [
-  "KIKI Agent Inc. — Security Architecture Whitepaper",
+  "KIKI Agent (STOREGRILL INC LTD) — Security Architecture Whitepaper",
   "Version 1.0 · Effective March 2026 · Classification: Confidential",
   "1. SOC 2 Type II: Independently audited annually by a Big 4 accounting firm. Full report available under NDA upon request.",
   "2. End-to-End Encryption: TLS 1.3 for data in transit. AES-256-GCM for data at rest. All secrets managed via Azure Key Vault with HSM backing.",

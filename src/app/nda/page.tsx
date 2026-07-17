@@ -15,13 +15,13 @@ export default function NDAPage() {
   const [role, setRole] = useState("");
 
   const NDA_TEXT = [
-    { n:"1. Purpose", t:"This Mutual Non-Disclosure Agreement ('Agreement') governs the exchange of confidential information between KIKI Agent Inc. ('KIKI') and the receiving party ('Recipient') for the purpose of evaluating a potential business relationship, including but not limited to integration partnerships, OaaS engagements, enterprise subscriptions, and reseller arrangements." },
+    { n:"1. Purpose", t:"This Mutual Non-Disclosure Agreement ('Agreement') governs the exchange of confidential information between KIKI Agent, a product of STOREGRILL INC LTD ('KIKI'), and the receiving party ('Recipient') for the purpose of evaluating a potential business relationship, including but not limited to integration partnerships, OaaS engagements, enterprise subscriptions, and reseller arrangements." },
     { n:"2. Definition of Confidential Information", t:"'Confidential Information' means any technical, business, financial, or operational information disclosed by either party that is designated as confidential or should reasonably be understood to be confidential. This includes: AI model architectures, pricing strategies, customer data, business roadmaps, and unpublished financial data." },
     { n:"3. Obligations", t:"Each party agrees to: (a) hold Confidential Information in strict confidence using at least the same degree of care as it uses to protect its own confidential information (but not less than reasonable care); (b) not disclose Confidential Information to any third party without prior written consent; (c) use Confidential Information solely for the Purpose." },
     { n:"4. Exclusions", t:"Obligations do not apply to information that: (a) is or becomes publicly known through no fault of the Recipient; (b) was rightfully known to the Recipient prior to disclosure; (c) is independently developed by the Recipient without use of Confidential Information; (d) is required to be disclosed by law or court order (with prior written notice where permitted)." },
     { n:"5. Term", t:"This Agreement is effective upon signature and continues for 3 years. Obligations with respect to Confidential Information disclosed during the term survive for an additional 3 years following termination. KIKI's source code and AI model weights are protected indefinitely." },
     { n:"6. Remedies", t:"The parties acknowledge that breach of this Agreement may cause irreparable harm for which monetary damages would be inadequate. Either party may seek injunctive relief without the requirement to post a bond. This does not limit other remedies available at law or equity." },
-    { n:"7. Governing Law", t:"This Agreement shall be governed by the laws of California, United States, without regard to conflict of law provisions. Disputes shall be resolved in the courts of San Francisco County, California." },
+    { n:"7. Governing Law", t:"This Agreement shall be governed by the laws of England & Wales, without regard to conflict of law provisions. Disputes shall be resolved in the courts of England & Wales." },
   ];
 
   return (
@@ -31,20 +31,21 @@ export default function NDAPage() {
           <div className="text-center py-[60px]">
             <div className="text-[56px] mb-5">🤝</div>
             <h1 className="font-mono font-bold text-[clamp(20px,3.5vw,32px)] text-kmint mb-3">NDA Executed</h1>
-            <p className="font-sans text-[15px] text-t3 max-w-[440px] mx-auto mb-7 leading-[1.7]">Thank you, {name}. The Mutual NDA between {company} and KIKI Agent Inc. has been executed. A signed copy will be emailed within 2 hours.</p>
+            <p className="font-sans text-[15px] text-t3 max-w-[440px] mx-auto mb-7 leading-[1.7]">Thank you, {name}. The Mutual NDA between {company} and KIKI Agent (a product of STOREGRILL INC LTD) has been executed. A signed copy will be emailed within 2 hours.</p>
             <div className="flex gap-2.5 justify-center flex-wrap">
               <Button size="lg" onClick={async () => {
                 const contract = getContract("mutual-nda");
+                const baseContent = contract?.sections?.flatMap(s => [s.heading, ...s.body]) ?? contract?.content ?? [];
                 const content = contract
                   ? [
-                      ...contract.content,
+                      ...baseContent,
                       "",
                       "EXECUTED BY:",
                       name,
                       role + ", " + company,
                       "Date: " + new Date().toISOString().split("T")[0],
                       "",
-                      "KIKI Agent Inc.",
+                      "KIKI Agent (STOREGRILL INC LTD)",
                       "By: ____________________    Date: ____________",
                     ]
                   : ["Mutual NDA executed by " + name + " (" + role + ", " + company + ")"];

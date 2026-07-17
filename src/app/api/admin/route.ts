@@ -15,7 +15,7 @@ interface StatusCount { status: string; count: number }
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
-  if (user.role !== "admin" && user.role !== "owner") {
+  if (user.role !== "admin" && user.role !== "superadmin") {
     return jsonError("Forbidden: admin access required", 403);
   }
 

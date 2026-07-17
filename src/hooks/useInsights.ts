@@ -5,9 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 interface InsightsResponse {
   finance?: any;
   oaas?: { tasks: any[] };
-  partners?: any[];
-  savings?: any;
   workflow?: any[];
+  savings?: { total?: number; [key: string]: any };
   admin?: any;
   aiops?: any;
   anomaly?: any[];

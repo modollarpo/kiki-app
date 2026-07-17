@@ -25,7 +25,7 @@ interface NavItem {
   badgeSelector?: () => string | number;
 }
 
-const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
+const NAV_GROUPS: { group: string; allowedRoles?: string[]; items: NavItem[] }[] = [
   {
     group: "OVERVIEW",
     items: [
@@ -42,6 +42,7 @@ const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
       { href: "/dashboard/syncbrain", icon: "⬡", label: "SyncBrain™" },
       { href: "/dashboard/analytics", icon: "◈", label: "Performance" },
       { href: "/dashboard/competitive", icon: "◉", label: "Competitive" },
+      { href: "/dashboard/intelligence", icon: "⬡", label: "Intelligence" },
       { href: "/dashboard/scenarios", icon: "▸", label: "Scenario Planner" },
       { href: "/dashboard/mmm", icon: "▣", label: "Mix Modelling" },
       { href: "/dashboard/b2b", icon: "⬟", label: "B2B Attribution" },
@@ -49,6 +50,7 @@ const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "FINANCE",
+    allowedRoles: ["admin", "superadmin", "finance"],
     items: [
       { href: "/dashboard/wallet", icon: "◎", label: "Wallet & Cards" },
       { href: "/dashboard/billing", icon: "▣", label: "Billing" },
@@ -80,11 +82,14 @@ const NAV_GROUPS: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "SYSTEM",
+    allowedRoles: ["admin", "superadmin"],
     items: [
       { href: "/dashboard/aiops", icon: "⬡", label: "AI Ops" },
       { href: "/dashboard/admin", icon: "⚙", label: "Admin Health" },
       { href: "/dashboard/developer", icon: "⬟", label: "Developer" },
       { href: "/dashboard/audit", icon: "⬗", label: "Audit Log" },
+      { href: "/dashboard/notifications", icon: "🔔", label: "Notifications" },
+      { href: "/dashboard/kyc", icon: "🛡", label: "KYC & Verification" },
       { href: "/dashboard/consent", icon: "🔒", label: "Consent & Privacy" },
       { href: "/dashboard/agency", icon: "⬡", label: "Agency View" },
       { href: "/dashboard/settings", icon: "⚙", label: "Settings" },
@@ -429,12 +434,13 @@ const SidebarContent = memo(function SidebarContent({
         </div>
       )}
 
-      {/* Nav */}
       <nav
         aria-label="Dashboard navigation"
         style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }}
       >
-        {NAV_GROUPS.map((group) => (
+        {NAV_GROUPS.filter(
+          (group) => !group.allowedRoles || (user && group.allowedRoles.includes(user.role))
+        ).map((group) => (
           <div key={group.group} style={{ marginBottom: 14 }}>
             {(!sidebarCollapsed || isMobile) && (
               <p

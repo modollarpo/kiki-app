@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RoleGuard } from "@/components/layout/RoleGuard";
 import { Card, Badge, Button } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
@@ -40,8 +41,9 @@ export default function AuditPage() {
   const filtered = filter === "all" ? EVENTS : EVENTS.filter(e => e.severity === filter);
 
   return (
-    <DashboardLayout>
-      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
+    <RoleGuard allowedRoles={["admin", "superadmin"]}>
+      <DashboardLayout>
+        <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="flex justify-between items-start mb-5">
           <div>
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Audit Log</h1>
@@ -85,5 +87,6 @@ export default function AuditPage() {
         </Card>
       </div>
     </DashboardLayout>
+    </RoleGuard>
   );
 }

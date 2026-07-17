@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // Groq Configuration — Ultra-low latency LLM inference
 // Llama 3.1 8B: <200ms for bidding, pacing, and fast routing
@@ -78,7 +79,7 @@ export async function callGroq(
       throw new Error(`Groq API returned ${response.status}: ${response.statusText}`);
     }, { maxRetries: 2, baseDelayMs: 200, maxDelayMs: 1000 });
   } catch (e) {
-    console.warn("[Groq] Fast inference failed after retries:", e);
+    logger.warn("[Groq] Fast inference failed after retries:", { error: e instanceof Error ? (e).message : String(e) });
   }
 
   return "";
@@ -151,7 +152,7 @@ confidence must be 0.0-1.0. changePercent = ((newBid - currentBid) / currentBid)
       ) as GroqBidOutput[];
     }
   } catch {
-    console.warn("[Groq] Failed to parse bid scoring response");
+    logger.warn("[Groq] Failed to parse bid scoring response");
   }
 
   return [];

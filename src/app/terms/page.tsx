@@ -10,7 +10,7 @@ const S = [
   { h:"6. Fees & Payment", b:"Subscription fees are charged monthly or annually in advance. Signal volume and seat overages are billed in arrears within 5 business days. Late payment (>30 days) results in service suspension after notice. Annual plans are non-refundable except as required by applicable law." },
   { h:"7. Limitation of Liability", b:"TO THE MAXIMUM EXTENT PERMITTED BY LAW, KIKI AGENT'S TOTAL LIABILITY SHALL NOT EXCEED FEES PAID IN THE 3 MONTHS PRECEDING THE CLAIM. KIKI AGENT IS NOT LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS OR DATA LOSS." },
   { h:"8. Termination", b:"Either party may terminate with 30 days written notice. KIKI Agent may terminate immediately for material breach, non-payment exceeding 60 days, illegal use, or conduct threatening platform security. Upon termination, you have 30 days to export data before secure deletion." },
-  { h:"9. Governing Law", b:"These Terms are governed by California law. Disputes resolved by binding arbitration in San Francisco, CA (AAA rules), except injunctive relief. Class action waiver applies. EU/UK customers may have additional rights under local consumer law." },
+  { h:"9. Governing Law", b:"KIKI Agent is a product of STOREGRILL INC LTD (Company No. 14581073, registered in England & Wales, Coventry, CV3 2FP, England). These Terms are governed by the laws of England & Wales. Disputes resolved in the courts of England & Wales. EU/UK customers may have additional rights under local consumer law." },
 ];
 
 export default function TermsPage() {

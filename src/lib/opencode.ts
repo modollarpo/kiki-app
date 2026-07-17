@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // ============================================================
 // OpenCode Client — Headless agent backend connector
 // Connects to an OpenCode serve instance for conversational
@@ -58,7 +59,7 @@ export async function createSession(directory: string = "./src"): Promise<OpenCo
       return { id: data.id || data.sessionId, directory };
     }
   } catch (e) {
-    console.warn("[OpenCode] Session creation failed:", e);
+    logger.warn("[OpenCode] Session creation failed:", { error: e instanceof Error ? (e).message : String(e) });
   }
 
   return null;
@@ -89,7 +90,7 @@ export async function sendMessage(
       };
     }
   } catch (e) {
-    console.warn("[OpenCode] Message send failed:", e);
+    logger.warn("[OpenCode] Message send failed:", { error: e instanceof Error ? (e).message : String(e) });
   }
 
   return null;
@@ -124,7 +125,7 @@ export async function chat(
       };
     }
   } catch (e) {
-    console.warn("[OpenCode] Chat failed:", e);
+    logger.warn("[OpenCode] Chat failed:", { error: e instanceof Error ? (e).message : String(e) });
   }
 
   return null;
