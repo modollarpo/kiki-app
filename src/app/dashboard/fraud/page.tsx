@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, StatCard, Button } from "@/components/ui";
@@ -46,7 +46,7 @@ export default function FraudIVTPage() {
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
-        <div className="mb-5 flex items-start justify-between">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Fraud & IVT Detection</h1>
             <p className="font-mono text-[11px] text-gray-500">
@@ -63,13 +63,13 @@ export default function FraudIVTPage() {
           <StatCard label="Savings" value={`$${(stats?.estimatedSavings || 0).toLocaleString()}`} accent={K.gold} sub="Prevented wasted spend" loading={loading} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
           <Card accent={K.danger}>
             <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">IVT Types Detected</h3>
             {ivtTypes.map((ivt, i) => (
-              <div key={i} className="flex items-center justify-between p-2.5 px-3 mb-2 rounded-sm bg-g850 border border-g700">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-[3px]">
+              <div key={i} className="flex flex-wrap items-center justify-between gap-2 p-2.5 px-3 mb-2 rounded-sm bg-g850 border border-g700">
+                <div className="flex-1 min-w-[120px]">
+                  <div className="flex flex-wrap items-center gap-2 mb-[3px]">
                     <Badge color={ivt.severity === "high" ? K.danger : K.warn} dot>{ivt.severity}</Badge>
                     <span className="font-mono text-xs font-bold text-white">{ivt.type}</span>
                   </div>

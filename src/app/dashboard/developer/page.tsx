@@ -100,7 +100,7 @@ export default function DeveloperPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
           <Card padding={0}>
             <div className="px-5 py-3.5 flex justify-between items-center border-b border-g800">
               <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">API Keys <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h2>
@@ -125,7 +125,7 @@ export default function DeveloperPage() {
                       {showKey === i ? "Hide" : "Show"}
                     </Button>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-4">
                     <span className="font-mono text-[10px] text-gray-600">Created: {k.created}</span>
                     <span className="font-mono text-[10px] text-gray-600">Last used: {k.lastUsed}</span>
                     <span className="font-mono text-[10px] text-gray-600">Calls: {k.calls}</span>
@@ -160,7 +160,7 @@ export default function DeveloperPage() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <Card>
             <h2 className="font-mono font-bold text-[13px] text-white mb-3.5 flex items-center gap-2">Rate Limits <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h2>
             {loading ? (
@@ -193,7 +193,7 @@ export default function DeveloperPage() {
                     <span className="font-mono text-[11px] font-semibold text-white">{a.actionType}</span>
                     <Badge color={a.status === "success" ? K.mint : a.status === "error" ? K.danger : K.warn}>{a.status}</Badge>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-4">
                     <span className="font-mono text-[10px] text-gray-600">Agent: {a.agentType}</span>
                     <span className="font-mono text-[10px] text-gray-600">{a.durationMs}ms</span>
                     <span className="font-mono text-[10px] text-gray-600">{new Date(a.createdAt).toLocaleTimeString()}</span>

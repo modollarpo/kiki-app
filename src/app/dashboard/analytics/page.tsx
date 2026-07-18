@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, ProgressBar, Button, AIThinking } from "@/components/ui";
@@ -85,7 +85,9 @@ export default function AnalyticsPage() {
                 <div className="px-5 py-3.5" style={{ borderBottom: `1px solid ${K.g800}` }}>
                   <h2 className="font-mono font-bold text-[13px] text-white">ROAS by Channel</h2>
                 </div>
-                <div className="grid grid-cols-[140px_80px_90px_100px_90px_80px] gap-3 px-5 py-2" style={{ borderBottom: `1px solid ${K.g800}`, background: K.g950 }}>
+                <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+                  <div className="min-w-[600px]">
+                    <div className="grid grid-cols-[140px_80px_90px_100px_90px_80px] gap-3 px-5 py-2" style={{ borderBottom: `1px solid ${K.g800}`, background: K.g950 }}>
                   {["CHANNEL", "ROAS", "CPA", "CONVERSIONS", "SPEND", "SHARE"].map(h => (
                     <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
                   ))}
@@ -116,7 +118,9 @@ export default function AnalyticsPage() {
                     );
                   })
                 )}
-              </Card>
+                </div>
+              </div>
+            </Card>
 
               <Card>
                 <h2 className="font-mono font-bold text-[13px] text-white mb-4">Conversion Funnel</h2>

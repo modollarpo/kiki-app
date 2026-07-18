@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, StatCard, AIThinking } from "@/components/ui";
@@ -83,7 +83,7 @@ export default function CreativeLibraryPage() {
           </div>
         ) : (
           <>
-            <div className="flex gap-1.5 mb-4">
+            <div className="flex flex-wrap gap-1.5 mb-4">
               {["All", "Image", "Video"].map((f) => (
                 <button key={f} onClick={() => setFilter(f)}
                   className="font-mono text-[10px] font-semibold px-4 py-1.5 rounded-sm cursor-pointer"
@@ -106,8 +106,8 @@ export default function CreativeLibraryPage() {
                     <div className="h-[100px] rounded-sm flex items-center justify-center mb-3" style={{ background: (platformColors[asset.platform] || K.t3) + "15" }}>
                       <span className="font-mono text-[11px]" style={{ color: platformColors[asset.platform] || K.t3 }}>{asset.name}</span>
                     </div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-mono text-[11px] font-semibold text-white">{asset.name}</span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <span className="font-mono text-[11px] font-semibold text-white truncate max-w-full">{asset.name}</span>
                       <Badge color={K.t3}>{asset.type}</Badge>
                     </div>
                     <Badge color={platformColors[asset.platform] || K.t3}>{asset.platform}</Badge>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button, StatCard, AIThinking } from "@/components/ui";
@@ -115,7 +115,7 @@ export default function SignalsPage() {
             {Object.keys(platformBreakdown).length > 0 && (
               <Card accent={K.blue} className="mb-4">
                 <h3 className="font-mono font-bold text-xs text-t1 mb-3">Platform Breakdown</h3>
-                <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(Object.keys(platformBreakdown).length, 6)}, 1fr)` }}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   {Object.entries(platformBreakdown).map(([platform, count]) => (
                     <div key={platform} className="p-3 bg-g850 rounded-kdls border border-g800"
                       style={{ borderColor: `${platformColors[platform] || K.t3}30` }}>
@@ -139,29 +139,33 @@ export default function SignalsPage() {
                   </div>
                 )}
               </div>
-              {recentSignals.length === 0 ? (
-                <div className="py-10 text-center">
-                  <p className="font-mono text-xs text-t4">No signals processed yet. Send a signal via POST /api/signals to see data here.</p>
+              <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+                <div className="min-w-[700px]">
+                  {recentSignals.length === 0 ? (
+                    <div className="py-10 text-center">
+                      <p className="font-mono text-xs text-t4">No signals processed yet. Send a signal via POST /api/signals to see data here.</p>
+                    </div>
+                  ) : (
+                    recentSignals.map((signal, i) => (
+                      <div key={signal.id || i}
+                        className="px-5 py-3 grid grid-cols-[140px_120px_1fr_120px_100px_80px] gap-3 items-center"
+                        style={{ borderBottom: i < recentSignals.length - 1 ? `1px solid ${K.g900}` : undefined }}>
+                        <div>
+                          <Badge color={platformColors[signal.platform] || K.t3} dot>{signal.platform}</Badge>
+                        </div>
+                        <span className="font-mono text-[11px] text-t2">{signal.eventType}</span>
+                        <div>
+                          <p className="font-mono text-[11px] text-t1 mb-[2px]">LTV: ${signal.ltvPredicted.toFixed(2)}</p>
+                          <p className="font-mono text-[10px] text-t4">Confidence: {(signal.ltvConfidence * 100).toFixed(1)}%</p>
+                        </div>
+                        <Badge color={signal.segment === "high" ? K.mint : signal.segment === "medium" ? K.gold : K.t3}>{signal.segment}</Badge>
+                        <span className="font-mono text-[11px] text-t2">{signal.bidMultiplier.toFixed(2)}x</span>
+                        <Badge color={signal.enriched ? K.mint : K.warn}>{signal.enriched ? "✓" : "..."}</Badge>
+                      </div>
+                    ))
+                  )}
                 </div>
-              ) : (
-                recentSignals.map((signal, i) => (
-                  <div key={signal.id || i}
-                    className="px-5 py-3 grid grid-cols-[140px_120px_1fr_120px_100px_80px] gap-3 items-center"
-                    style={{ borderBottom: i < recentSignals.length - 1 ? `1px solid ${K.g900}` : undefined }}>
-                    <div>
-                      <Badge color={platformColors[signal.platform] || K.t3} dot>{signal.platform}</Badge>
-                    </div>
-                    <span className="font-mono text-[11px] text-t2">{signal.eventType}</span>
-                    <div>
-                      <p className="font-mono text-[11px] text-t1 mb-[2px]">LTV: ${signal.ltvPredicted.toFixed(2)}</p>
-                      <p className="font-mono text-[10px] text-t4">Confidence: {(signal.ltvConfidence * 100).toFixed(1)}%</p>
-                    </div>
-                    <Badge color={signal.segment === "high" ? K.mint : signal.segment === "medium" ? K.gold : K.t3}>{signal.segment}</Badge>
-                    <span className="font-mono text-[11px] text-t2">{signal.bidMultiplier.toFixed(2)}x</span>
-                    <Badge color={signal.enriched ? K.mint : K.warn}>{signal.enriched ? "✓" : "..."}</Badge>
-                  </div>
-                ))
-              )}
+              </div>
             </Card>
           </>
         )}

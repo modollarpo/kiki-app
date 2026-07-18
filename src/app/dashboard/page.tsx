@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, Button, AIThinking, ProgressBar, StatusBadge } from "@/components/ui";
@@ -129,14 +129,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Grid: Campaigns + Agents */}
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(280px,320px)] gap-3 mb-3">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] gap-3 mb-3">
           <Card padding={0}>
             <div className="px-5 py-[14px] border-b border-kcardborder flex items-center justify-between">
               <h2 className="font-mono font-bold text-[13px] text-t1">Active Campaigns</h2>
               <Button size="sm" onClick={() => router.push("/dashboard/campaigns")}>View All →</Button>
             </div>
             {/* Table header */}
-            <div className="grid grid-cols-[1fr_65px_65px_65px_65px] gap-2 px-5 py-2 border-b border-kcardborder bg-g950">
+            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <div className="min-w-[500px]">
+                <div className="grid grid-cols-[1fr_65px_65px_65px_65px] gap-2 px-5 py-2 border-b border-kcardborder bg-g950">
               {["NAME", "STATUS", "ROAS", "BUDGET", "AGENT"].map(h => (
                 <span key={h} className="font-mono text-[10px] tracking-widest text-t3">{h}</span>
               ))}
@@ -161,6 +163,8 @@ export default function DashboardPage() {
                 <div className="h-[3px] w-[80%] bg-g850 rounded-kdls" />
               </div>
             ))}
+              </div>
+            </div>
           </Card>
 
           <Card accent={K.blue}>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, ProgressBar } from "@/components/ui";
@@ -51,26 +51,30 @@ export default function FinancePage() {
             <div className="px-5 py-3.5 border-b border-g800">
               <h2 className="font-mono font-bold text-[13px] text-white">P&L Trend ($K)</h2>
             </div>
-            <div className="grid grid-cols-[80px_100px_100px_100px_120px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
-              {["MONTH", "REVENUE", "COSTS", "PROFIT", "MARGIN"].map(h => (
-                <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
-              ))}
-            </div>
-            {(MONTHLY_PNL.length ? MONTHLY_PNL : [{ month: "Jul", revenue: 0, costs: 0, profit: 0 }]).map((m: { month: string; revenue: number; costs: number; profit: number }, i: number) => {
-              const margin = m.revenue > 0 ? ((m.profit / m.revenue) * 100).toFixed(1) : "0.0";
-              return (
-                <div key={i} className="grid grid-cols-[80px_100px_100px_100px_120px] gap-3 px-5 py-2.5 items-center hover:bg-[var(--card-hover)] border-b border-g900">
-                  <span className="font-mono text-[11px] font-semibold text-white">{m.month}</span>
-                  <span className="font-mono text-[11px] text-kmint">${m.revenue}K</span>
-                  <span className="font-mono text-[11px] text-gray-400">${m.costs}K</span>
-                  <span className="font-mono text-[11px] font-bold" style={{ color: m.profit >= 80 ? K.mint : K.warn }}>${m.profit}K</span>
-                  <div>
-                    <span className="font-mono text-[10px] text-gray-500 mr-1.5">{margin}%</span>
-                    <ProgressBar value={parseFloat(margin as string)} color={parseFloat(margin as string) >= 20 ? K.mint : K.warn} height={3} />
-                  </div>
+            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <div className="min-w-[600px]">
+                <div className="grid grid-cols-[80px_100px_100px_100px_120px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
+                  {["MONTH", "REVENUE", "COSTS", "PROFIT", "MARGIN"].map(h => (
+                    <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
+                  ))}
                 </div>
-              );
-            })}
+                {(MONTHLY_PNL.length ? MONTHLY_PNL : [{ month: "Jul", revenue: 0, costs: 0, profit: 0 }]).map((m: { month: string; revenue: number; costs: number; profit: number }, i: number) => {
+                  const margin = m.revenue > 0 ? ((m.profit / m.revenue) * 100).toFixed(1) : "0.0";
+                  return (
+                    <div key={i} className="grid grid-cols-[80px_100px_100px_100px_120px] gap-3 px-5 py-2.5 items-center hover:bg-[var(--card-hover)] border-b border-g900">
+                      <span className="font-mono text-[11px] font-semibold text-white">{m.month}</span>
+                      <span className="font-mono text-[11px] text-kmint">${m.revenue}K</span>
+                      <span className="font-mono text-[11px] text-gray-400">${m.costs}K</span>
+                      <span className="font-mono text-[11px] font-bold" style={{ color: m.profit >= 80 ? K.mint : K.warn }}>${m.profit}K</span>
+                      <div>
+                        <span className="font-mono text-[10px] text-gray-500 mr-1.5">{margin}%</span>
+                        <ProgressBar value={parseFloat(margin as string)} color={parseFloat(margin as string) >= 20 ? K.mint : K.warn} height={3} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </Card>
 
           <Card>

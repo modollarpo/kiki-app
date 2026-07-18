@@ -61,7 +61,7 @@ export default function ConsentPrivacyPage() {
           <p className="mt-1 text-sm text-gray-500">Manage user consent, privacy compliance, and data protection</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Overall Compliance" value={loading ? "…" : `${overallCompliance}%`} sub={compliance?.gdprEnabled ? "GDPR enabled" : "GDPR pending"} accent={K.mint} />
           <StatCard label="Consent Rate" value={loading ? "…" : `${overallConsentRate}%`} sub={compliance?.ccpaEnabled ? "CCPA enabled" : "CCPA pending"} accent={K.mint} />
           <StatCard label="Total Users" value={loading ? "…" : totalUsers > 0 ? totalUsers.toLocaleString() : "—"} sub={compliance ? `Retention: ${compliance.dataRetentionDays}d` : "Loading…"} accent={K.mint} />

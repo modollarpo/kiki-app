@@ -16,7 +16,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "predeploy": "npm run type-check && npm run lint && npm run test",
-    "deploy": "node scripts/deploy.mjs"
+    "deploy": "node scripts/deploy.mjs",
+    "video": "cd packages/demo-video && npm start",
+    "video:build": "cd packages/demo-video && npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

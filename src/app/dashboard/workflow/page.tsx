@@ -115,7 +115,7 @@ export default function WorkflowPage() {
           ) : (
             filtered.map((wf, i) => (
               <Card key={i} accent={wf.color}>
-                <div className="flex justify-between items-start mb-3">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2.5 mb-1">
                       <h3 className="font-mono font-bold text-[13px] text-white">{wf.name}</h3>
@@ -123,7 +123,7 @@ export default function WorkflowPage() {
                     </div>
                     <p className="font-sans text-[11px] text-gray-500 leading-relaxed max-w-[600px]">{wf.description}</p>
                   </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="flex flex-wrap items-center gap-3 sm:flex-shrink-0">
                     <div className="text-right">
                       <p className="font-mono text-[10px] text-gray-600">Last fired</p>
                       <p className="font-mono text-[11px] font-semibold text-gray-400">

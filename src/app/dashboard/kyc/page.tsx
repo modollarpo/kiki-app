@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, ProgressBar, Button, AIThinking } from "@/components/ui";
@@ -98,7 +98,7 @@ export default function KycPage() {
               <StatCard label="Failed Checks" value={String(checks.filter(c => c.status === "failed").length)} accent={K.danger} />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               <Card accent={K.gold}>
                 <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Business Entities</h3>
                 {entities.map(e => (

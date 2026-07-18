@@ -94,40 +94,42 @@ export default function AdminPage() {
               <p className="font-mono text-[11px] text-gray-500">No services monitored. Connect platforms to start monitoring.</p>
             </div>
           ) : (
-            <>
-              <div className="grid grid-cols-[180px_120px_80px_100px_120px_100px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
-                {["SERVICE", "CATEGORY", "STATUS", "UPTIME", "p99 LATENCY", "REGION"].map(h => (
-                  <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
+            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <div className="min-w-[700px]">
+                <div className="grid grid-cols-[180px_120px_80px_100px_120px_100px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
+                  {["SERVICE", "CATEGORY", "STATUS", "UPTIME", "p99 LATENCY", "REGION"].map(h => (
+                    <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
+                  ))}
+                </div>
+                {services.map((svc, i) => (
+                  <div key={i} className="grid grid-cols-[180px_120px_80px_100px_120px_100px] gap-3 px-5 py-3 items-center hover:bg-[var(--card-hover)] border-b border-g900">
+                    <div className="flex items-center gap-2">
+                      <StatusDot status={svc.status} />
+                      <span className="font-mono text-[11px] font-semibold text-white">{svc.name}</span>
+                    </div>
+                    <span className="font-mono text-[10px] text-gray-500">{svc.category}</span>
+                    <Badge color={svc.status === "healthy" ? K.mint : svc.status === "degraded" ? K.warn : K.danger} dot pulse={svc.status === "healthy"}>
+                      {svc.status === "healthy" ? "OK" : svc.status === "degraded" ? "WARN" : "ERR"}
+                    </Badge>
+                    <div>
+                      <span className="font-mono text-[11px] font-semibold" style={{ color: svc.uptime >= 99.95 ? K.mint : svc.uptime >= 99.8 ? K.warn : K.danger }}>
+                        {svc.uptime > 0 ? `${svc.uptime.toFixed(2)}%` : "—"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-mono text-[11px]" style={{ color: svc.p99 < 50 ? K.mint : svc.p99 < 200 ? K.warn : K.danger }}>
+                        {svc.p99 > 0 ? `${svc.p99}ms` : "—"}
+                      </span>
+                    </div>
+                    <span className="font-mono text-[10px] text-gray-600">{svc.region}</span>
+                  </div>
                 ))}
               </div>
-              {services.map((svc, i) => (
-                <div key={i} className="grid grid-cols-[180px_120px_80px_100px_120px_100px] gap-3 px-5 py-3 items-center hover:bg-[var(--card-hover)] border-b border-g900">
-                  <div className="flex items-center gap-2">
-                    <StatusDot status={svc.status} />
-                    <span className="font-mono text-[11px] font-semibold text-white">{svc.name}</span>
-                  </div>
-                  <span className="font-mono text-[10px] text-gray-500">{svc.category}</span>
-                  <Badge color={svc.status === "healthy" ? K.mint : svc.status === "degraded" ? K.warn : K.danger} dot pulse={svc.status === "healthy"}>
-                    {svc.status === "healthy" ? "OK" : svc.status === "degraded" ? "WARN" : "ERR"}
-                  </Badge>
-                  <div>
-                    <span className="font-mono text-[11px] font-semibold" style={{ color: svc.uptime >= 99.95 ? K.mint : svc.uptime >= 99.8 ? K.warn : K.danger }}>
-                      {svc.uptime > 0 ? `${svc.uptime.toFixed(2)}%` : "—"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-mono text-[11px]" style={{ color: svc.p99 < 50 ? K.mint : svc.p99 < 200 ? K.warn : K.danger }}>
-                      {svc.p99 > 0 ? `${svc.p99}ms` : "—"}
-                    </span>
-                  </div>
-                  <span className="font-mono text-[10px] text-gray-600">{svc.region}</span>
-                </div>
-              ))}
-            </>
+            </div>
           )}
         </Card>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">
           <Card>
             <h2 className="font-mono font-bold text-[13px] text-white mb-3.5">Capacity Utilization</h2>
             {hasCapacityData ? capacityMetrics.map((r, i) => (

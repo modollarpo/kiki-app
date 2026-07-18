@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -69,43 +69,45 @@ export default function CompetitiveIntelligencePage() {
         <div className="mb-4">
           <Card accent={K.mint}>
             <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Competitor Spend Tracker</h3>
-            <div className="flex flex-col gap-2">
-              {competitors.map((comp, i) => {
-                const isYou = comp.name === "Your Account";
-                return (
-                  <div key={i} className={`flex items-center gap-3 px-[14px] py-3 rounded-kdls ${isYou ? "bg-g850 border-l-[3px] border-l-kmint" : "bg-g900"}`}>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-mono text-xs font-semibold text-t1">{comp.name}</span>
-                        {isYou && <Badge color={K.mint}>You</Badge>}
-                        <Badge color={comp.platform === "meta" ? "#1877F2" : comp.platform === "google" ? "#4285F4" : comp.platform === "tiktok" ? "#000" : K.t3}>{comp.platform}</Badge>
+            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <div className="flex flex-col gap-2 min-w-[600px]">
+                {competitors.map((comp, i) => {
+                  const isYou = comp.name === "Your Account";
+                  return (
+                    <div key={i} className={`flex items-center gap-3 px-[14px] py-3 rounded-kdls ${isYou ? "bg-g850 border-l-[3px] border-l-kmint" : "bg-g900"}`}>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-mono text-xs font-semibold text-t1">{comp.name}</span>
+                          {isYou && <Badge color={K.mint}>You</Badge>}
+                          <Badge color={comp.platform === "meta" ? "#1877F2" : comp.platform === "google" ? "#4285F4" : comp.platform === "tiktok" ? "#000" : K.t3}>{comp.platform}</Badge>
+                        </div>
                       </div>
+                      <div className="text-right min-w-[80px]">
+                        <p className="font-mono text-xs font-bold text-t1">${(comp.spend / 1000).toFixed(0)}K</p>
+                        <p className="font-mono text-[10px] text-t4">spend</p>
+                      </div>
+                      <div className="text-right min-w-[60px]">
+                        <p className={`font-mono text-xs font-bold ${comp.roas >= 4 ? "text-kmint" : comp.roas >= 2.5 ? "text-kwarn" : "text-kdanger"}`}>{comp.roas}×</p>
+                        <p className="font-mono text-[10px] text-t4">ROAS</p>
+                      </div>
+                      <div className="text-right min-w-[60px]">
+                        <p className="font-mono text-xs font-bold text-t1">${comp.cpa.toFixed(2)}</p>
+                        <p className="font-mono text-[10px] text-t4">CPA</p>
+                      </div>
+                      <div className="text-right min-w-[60px]">
+                        <p className="font-mono text-xs font-bold text-kgold">{comp.marketShare}%</p>
+                        <p className="font-mono text-[10px] text-t4">share</p>
+                      </div>
+                      <span className={`font-mono text-sm ${comp.trend === "up" ? "text-kmint" : "text-kdanger"}`}>{comp.trend === "up" ? "↑" : "↓"}</span>
                     </div>
-                    <div className="text-right min-w-[80px]">
-                      <p className="font-mono text-xs font-bold text-t1">${(comp.spend / 1000).toFixed(0)}K</p>
-                      <p className="font-mono text-[10px] text-t4">spend</p>
-                    </div>
-                    <div className="text-right min-w-[60px]">
-                      <p className={`font-mono text-xs font-bold ${comp.roas >= 4 ? "text-kmint" : comp.roas >= 2.5 ? "text-kwarn" : "text-kdanger"}`}>{comp.roas}×</p>
-                      <p className="font-mono text-[10px] text-t4">ROAS</p>
-                    </div>
-                    <div className="text-right min-w-[60px]">
-                      <p className="font-mono text-xs font-bold text-t1">${comp.cpa.toFixed(2)}</p>
-                      <p className="font-mono text-[10px] text-t4">CPA</p>
-                    </div>
-                    <div className="text-right min-w-[60px]">
-                      <p className="font-mono text-xs font-bold text-kgold">{comp.marketShare}%</p>
-                      <p className="font-mono text-[10px] text-t4">share</p>
-                    </div>
-                    <span className={`font-mono text-sm ${comp.trend === "up" ? "text-kmint" : "text-kdanger"}`}>{comp.trend === "up" ? "↑" : "↓"}</span>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <Card accent={K.blue}>
             <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Market Trends</h3>
             {trends.map((t, i) => (

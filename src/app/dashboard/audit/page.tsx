@@ -44,13 +44,13 @@ export default function AuditPage() {
     <RoleGuard allowedRoles={["admin", "superadmin"]}>
       <DashboardLayout>
         <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
-        <div className="flex justify-between items-start mb-5">
+        <div className="flex flex-wrap justify-between items-start gap-3 mb-5">
           <div>
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Audit Log</h1>
             <p className="font-mono text-[11px] text-gray-500">All system events · User actions · Security events · {loading ? "…" : `${EVENTS.length} events`}</p>
           </div>
-          <div className="flex gap-2">
-            <div className="flex gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
+          <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
               {["all", "info", "warn", "critical"].map(f => (
                 <button key={f} onClick={() => setFilter(f)}
                   className="font-mono text-[10px] font-semibold tracking-wider px-3 py-[5px] rounded-sm cursor-pointer uppercase"
@@ -64,13 +64,15 @@ export default function AuditPage() {
         </div>
 
         <Card padding={0}>
-          <div className="grid grid-cols-[80px_140px_100px_200px_1fr_80px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
-            {["TIME", "ACTOR", "ACTION", "RESOURCE", "DETAIL", "LEVEL"].map(h => (
-              <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
-            ))}
-          </div>
-          {filtered.map((e, i) => (
-            <div key={i} className="grid grid-cols-[80px_140px_100px_200px_1fr_80px] gap-3 px-5 py-2.5 items-center hover:bg-[var(--card-hover)] border-b border-g900">
+          <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <div className="min-w-[800px]">
+              <div className="grid grid-cols-[80px_140px_100px_200px_1fr_80px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
+                {["TIME", "ACTOR", "ACTION", "RESOURCE", "DETAIL", "LEVEL"].map(h => (
+                  <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
+                ))}
+              </div>
+              {filtered.map((e, i) => (
+                <div key={i} className="grid grid-cols-[80px_140px_100px_200px_1fr_80px] gap-3 px-5 py-2.5 items-center hover:bg-[var(--card-hover)] border-b border-g900">
               <span className="font-mono text-[10px] text-gray-600">{e.time}</span>
               <div>
                 <span className="font-mono text-[10px] font-semibold text-white">{e.actor}</span>
@@ -82,8 +84,10 @@ export default function AuditPage() {
               <Badge color={e.severity === "critical" ? K.danger : e.severity === "warn" ? K.warn : K.t3} dot pulse={e.severity === "critical"}>
                 {e.severity.toUpperCase()}
               </Badge>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </Card>
       </div>
     </DashboardLayout>

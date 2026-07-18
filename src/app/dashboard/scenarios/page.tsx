@@ -68,7 +68,7 @@ export default function ScenariosPage() {
                   </div>
                   <p className="font-mono text-[11px] text-gray-500 mb-3">{sc.description}</p>
 
-                  <div className="flex items-center gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
                     <div>
                       <p className="font-mono text-[10px] text-gray-600 mb-0.5">BUDGET CHANGE</p>
                       <p className="font-mono text-[13px] font-bold" style={{ color: sc.budgetChange > 0 ? K.mint : sc.budgetChange < 0 ? K.danger : K.t2 }}>{sc.budgetChange > 0 ? "+" : ""}{sc.budgetChange}%</p>

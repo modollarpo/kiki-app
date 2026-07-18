@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, Button, AIThinking } from "@/components/ui";
@@ -163,7 +163,7 @@ export default function BillingPage() {
                 <p className="font-mono text-xs text-gray-600">No invoices yet. Invoices are generated monthly based on your usage.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
                 {invoices.map((inv, i) => (
                   <div key={inv.id} className="grid grid-cols-[1fr_120px_120px_100px_90px] gap-3 px-5 py-3.5 items-center hover:bg-[var(--card-hover)] min-w-[600px]"
                     style={{ borderBottom: i < invoices.length - 1 ? `1px solid ${K.g900}` : undefined }}>

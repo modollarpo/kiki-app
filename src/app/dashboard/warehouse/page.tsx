@@ -43,8 +43,8 @@ export default function WarehousePage() {
             ) : (
               <Card accent={K.teal}>
                 <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Feature Store ({features.length})</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
+                <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+                  <table className="w-full border-collapse min-w-[600px]">
                     <thead>
                       <tr>
                         {["Feature", "Value", "Samples", "Mean", "Std Dev", "Updated"].map(h => (

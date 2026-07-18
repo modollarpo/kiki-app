@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
@@ -45,9 +45,9 @@ export default function AnomalyDetectionPage() {
           <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Recent Anomalies</h3>
           <div className="flex flex-col gap-2">
             {anomalies.map((anomaly, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 px-3.5 rounded-sm bg-g900" style={{ borderLeft: `3px solid ${getSeverityColor(anomaly.severity)}` }}>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+              <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-3 p-3 px-3.5 rounded-sm bg-g900" style={{ borderLeft: `3px solid ${getSeverityColor(anomaly.severity)}` }}>
+                <div className="flex-1 min-w-[120px]">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
                     <Badge color={getSeverityColor(anomaly.severity)} dot>{anomaly.severity}</Badge>
                     <span className="font-mono text-xs font-bold text-white">{anomaly.type}</span>
                     <span className="font-mono text-[10px] text-gray-600">#{anomaly.id}</span>
@@ -64,7 +64,7 @@ export default function AnomalyDetectionPage() {
           </div>
         </Card>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <Card accent={K.blue}>
             <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Detection Rules</h3>
             {[

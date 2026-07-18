@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button, Input } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
@@ -81,7 +81,7 @@ export default function SettingsPage() {
         <Card className="mb-3">
           <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Security</h3>
           {[{l:"Two-factor auth",v:"Enabled",c:K.mint},{l:"Session timeout",v:"24 hours",c:K.t2},{l:"API keys",v:"2 active",c:K.t2}].map(r => (
-            <div key={r.l} className="flex items-center justify-between py-2.5 border-b border-g800">
+            <div key={r.l} className="flex flex-wrap items-center justify-between gap-2 py-2.5 border-b border-g800">
               <span className="font-mono text-[11px] text-gray-400">{r.l}</span>
               <span className="font-mono text-[11px] font-bold" style={{ color: r.c }}>{r.v}</span>
             </div>
