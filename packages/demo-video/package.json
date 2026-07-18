@@ -1,0 +1,22 @@
+{
+  "name": "@kiki/demo-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KIKI Agent™ — 3-minute demo video (Remotion)",
+  "scripts": {
+    "start": "npx remotion studio",
+    "build": "npx remotion render KIKIDemo out/kiki-demo.mp4",
+    "build:gif": "npx remotion render KIKIDemo out/kiki-demo.gif --image-format png",
+    "preview": "npx remotion preview"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.260",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.260"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.31",
+    "typescript": "^5.4.0"
+  }
+}
