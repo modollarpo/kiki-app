@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button } from "@/components/ui";
@@ -43,7 +43,7 @@ export default function NotificationsPage() {
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
-        <div className="mb-[22px] flex items-start justify-between">
+        <div className="mb-[22px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Notifications</h1>
             <p className="font-mono text-[11px] text-t3">

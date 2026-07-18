@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, Button, ProgressBar } from "@/components/ui";
@@ -66,7 +66,7 @@ export default function OaasPage() {
           <StatCard label="Generated Tasks" value={loading ? "…" : String(allTasks.length)} accent={K.gold} sub="from live campaigns" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div className="flex flex-col gap-2.5">
             <h3 className="font-mono text-[11px] tracking-[0.12em] uppercase text-gray-600 mb-1">Pending Review ({pending.length})</h3>
             {pending.map(task => (
@@ -79,7 +79,7 @@ export default function OaasPage() {
                     </div>
                     <p className="font-mono text-xs font-bold text-white mb-1">{task.title}</p>
                     <p className="font-mono text-[10px] text-gray-500 mb-2">{task.details}</p>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                       <span className="font-mono text-[10px] text-gray-600">Agent: <span className="text-gray-400">{task.agent}</span></span>
                       <span className="font-mono text-[10px] text-gray-600">Impact: <span className="font-bold text-kmint">{task.expectedImpact}</span></span>
                       <span className="font-mono text-[10px] text-gray-600">Confidence: <span className="text-kblue">{task.confidence}%</span></span>

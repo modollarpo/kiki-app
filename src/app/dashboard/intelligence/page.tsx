@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -60,7 +60,7 @@ export default function IntelligencePage() {
             <div className="flex flex-col gap-2">
               {insights.map((insight, i) => (
                 <div key={i} className="p-3.5 rounded-sm bg-g850" style={{ borderLeft: `3px solid ${getInsightColor(insight.type)}` }}>
-                  <div className="flex justify-between items-center mb-1.5">
+                  <div className="flex flex-wrap justify-between items-center gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
                       <Badge color={getInsightColor(insight.type)}>{insight.type}</Badge>
                       <span className="font-mono text-xs font-semibold text-white">{insight.title}</span>
@@ -80,7 +80,7 @@ export default function IntelligencePage() {
             <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Predictions</h3>
             {predictions.map((pred, i) => (
               <div key={i} className="p-3.5 mb-2 rounded-sm bg-g850">
-                <div className="flex justify-between items-center mb-1.5">
+                <div className="flex flex-wrap justify-between items-center gap-2 mb-1.5">
                   <span className="font-mono text-[11px] text-gray-400">{pred.metric}</span>
                   <span className="font-mono text-[10px] text-gray-500">{pred.confidence}% conf</span>
                 </div>

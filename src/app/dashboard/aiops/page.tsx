@@ -93,7 +93,7 @@ export default function AIOpsPage() {
           <StatCard label="Deployed Models" value={isLoading ? "…" : String(deployed)} accent={K.teal} sub="ML registry" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
           <Card accent={K.mint}>
             <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Model Registry <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h3>
             {models.map((m, i) => (
@@ -102,7 +102,7 @@ export default function AIOpsPage() {
                   <span className="font-mono text-[11px] font-bold text-t1">{m.name}</span>
                   <Badge color={m.status === "deployed" ? K.mint : m.status === "error" ? K.danger : K.warn}>{m.status.toUpperCase()}</Badge>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                   <span className="font-mono text-[10px] text-t2">{m.type}</span>
                   <span className="font-mono text-[10px] text-t2">{m.accuracy}</span>
                   <span className="font-mono text-[10px] text-t2">{m.latency}</span>
@@ -117,11 +117,11 @@ export default function AIOpsPage() {
             <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Experiments <Badge color={K.blue} className="text-[10px]">LIVE</Badge></h3>
             {experiments.map((e, i) => (
               <div key={i} className="mb-[14px]">
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                   <span className="font-mono text-[11px] font-bold text-t1">{e.name}</span>
                   <Badge color={e.status === "running" ? K.blue : e.status === "failed" ? K.danger : K.t3}>{e.status}</Badge>
                 </div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                   <span className="font-mono text-[10px] text-t2">{e.metric}</span>
                   <span className="font-mono text-[10px] text-t4">{e.progress}%</span>
                 </div>

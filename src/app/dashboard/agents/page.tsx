@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, Button, StatusBadge, AIThinking } from "@/components/ui";
@@ -107,7 +107,7 @@ export default function AgentsPage() {
           <StatCard label="Avg Uptime" value="99.7%" accent={K.teal} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div className="flex flex-col gap-[10px]">
             {agentList.map(agent => (
               <Card key={agent.id} accent={agent.status === "running" ? agent.color : undefined}>

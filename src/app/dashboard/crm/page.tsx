@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -54,7 +54,7 @@ export default function CRMPage() {
           <StatCard label="Avg Deal Size" value={stats ? `$${(stats.avgDealSize / 1000).toFixed(1)}K` : "—"} delta={3.2} sub="+$3.2K vs last quarter" accent={K.gold} loading={loading} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
           <Card accent={K.mint}>
             <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Segments</h3>
             {segments.map((seg, i) => (
@@ -74,12 +74,12 @@ export default function CRMPage() {
           <Card accent={K.blue}>
             <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Lead Scoring</h3>
             {leads.map((lead, i) => (
-              <div key={i} className="flex items-center gap-2.5 py-2.5" style={{ borderBottom: i < leads.length - 1 ? `1px solid ${K.g800}` : undefined }}>
+              <div key={i} className="flex flex-wrap items-center gap-2.5 py-2.5" style={{ borderBottom: i < leads.length - 1 ? `1px solid ${K.g800}` : undefined }}>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center font-mono text-[10px] font-bold flex-shrink-0 bg-g800 text-t2">
                   {lead.name.split(" ").map(n => n[0]).join("")}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-1.5 mb-0.5">
+                <div className="flex-1 min-w-[120px]">
+                  <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
                     <span className="font-mono text-[11px] font-semibold text-white">{lead.name}</span>
                     <Badge color={lead.status === "qualified" ? K.mint : lead.status === "contacted" ? K.gold : K.blue}>{lead.status}</Badge>
                   </div>

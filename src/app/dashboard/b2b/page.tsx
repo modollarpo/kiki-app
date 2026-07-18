@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -99,7 +99,7 @@ export default function B2BPage() {
         <Card accent={K.gold}>
           <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Channel Attribution</h3>
           {channelAttribution.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
               {channelAttribution.map((ch, i) => (
                 <div key={i} className="p-3.5 rounded-sm text-center bg-g850">
                   <p className="font-mono text-[10px] text-gray-500 mb-1">{ch.channel}</p>

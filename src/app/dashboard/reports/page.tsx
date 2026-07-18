@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button } from "@/components/ui";
@@ -108,7 +108,7 @@ export default function ReportsPage() {
               ) : scheduledReports.length === 0 ? (
                 <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No scheduled reports. Create one to automate your reporting.</span></div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
                 {scheduledReports.map((r, i) => (
                   <div key={i} className="grid grid-cols-[1fr_160px_140px_80px_100px_80px] gap-3 px-5 py-3.5 items-center hover:bg-[var(--card-hover)] min-w-[600px]"
                     style={{ borderBottom: i < scheduledReports.length - 1 ? `1px solid ${K.g900}` : undefined }}>
@@ -137,13 +137,13 @@ export default function ReportsPage() {
                 <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No exports yet. Generate a report to see it here.</span></div>
               ) : (
                 recentExports.map((e, i) => (
-                  <div key={i} className="flex items-center justify-between px-5 py-2.5 hover:bg-[var(--card-hover)]"
+                  <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3 hover:bg-[var(--card-hover)]"
                     style={{ borderBottom: i < recentExports.length - 1 ? `1px solid ${K.g900}` : undefined }}>
                     <div className="flex items-center gap-3">
                       <Badge color={e.format === "PDF" ? K.danger : e.format === "Excel" ? K.mint : e.format === "CSV" ? K.blue : K.teal}>{e.format}</Badge>
                       <span className="font-mono text-[11px] font-semibold text-white">{e.name}</span>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                       <span className="font-mono text-[10px] text-gray-600">{e.date}</span>
                       <span className="font-mono text-[10px] text-gray-500">{e.size}</span>
                       <Badge color={K.mint}>DONE</Badge>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, Button, StatusBadge, ProgressBar } from "@/components/ui";
@@ -43,7 +43,7 @@ export default function CampaignsPage() {
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
-        <div className="mb-[22px] flex items-start justify-between">
+        <div className="mb-[22px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Campaigns</h1>
             <p className="font-mono text-[11px] text-t3">
@@ -69,7 +69,7 @@ export default function CampaignsPage() {
               <span className="font-mono text-[13px] font-bold text-koaas">⬡ New Campaign</span>
               <Button size="xs" variant="ghost" onClick={() => setCreating(false)}>✕</Button>
             </div>
-            <div className="grid grid-cols-[1fr_120px_120px] gap-[10px] mb-[10px]">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_120px_120px] gap-[10px] mb-[10px]">
               <input placeholder="Campaign name" value={newName} onChange={e => setNewName(e.target.value)}
                 className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-sans text-[13px] text-t1 outline-none focus:border-kblue" />
               <select value={newPlatform} onChange={e => setNewPlatform(e.target.value)}

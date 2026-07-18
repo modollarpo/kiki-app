@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -74,7 +74,7 @@ export default function InfluencerPage() {
         {showForm && (
           <Card accent={K.blue} className="mb-4">
             <h3 className="font-mono font-bold text-[13px] text-white mb-3">Register Creator</h3>
-            <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
               <div>
                 <label className="font-mono text-[11px] text-gray-500 block mb-1">Name</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
@@ -106,29 +106,33 @@ export default function InfluencerPage() {
           {creators.length === 0 ? (
             <div className="p-10 text-center"><p className="font-mono text-xs text-gray-500">No creators registered yet.</p></div>
           ) : (
-            creators.map((c, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 px-3.5 mb-1.5 rounded-sm bg-g850">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-mono text-xs font-semibold text-white">{c.name}</span>
-                    <Badge color={K.t3}>{c.platform}</Badge>
+            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <div className="min-w-[600px]">
+                {creators.map((c, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 px-3.5 mb-1.5 rounded-sm bg-g850">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="font-mono text-xs font-semibold text-white">{c.name}</span>
+                        <Badge color={K.t3}>{c.platform}</Badge>
+                      </div>
+                      <span className="font-mono text-[11px] text-gray-500">{c.handle} · Code: {c.promoCode}</span>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-mono text-xs font-bold text-kmint">${c.totalRevenue?.toLocaleString() || 0}</p>
+                      <p className="font-mono text-[11px] text-gray-500">revenue</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-mono text-xs font-bold text-kblue">{c.totalConversions || 0}</p>
+                      <p className="font-mono text-[11px] text-gray-500">conv.</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-mono text-xs font-bold" style={{ color: c.roi >= 2 ? K.mint : K.danger }}>{c.roi?.toFixed(1) || "0.0"}×</p>
+                      <p className="font-mono text-[11px] text-gray-500">ROI</p>
+                    </div>
                   </div>
-                  <span className="font-mono text-[11px] text-gray-500">{c.handle} · Code: {c.promoCode}</span>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="font-mono text-xs font-bold text-kmint">${c.totalRevenue?.toLocaleString() || 0}</p>
-                  <p className="font-mono text-[11px] text-gray-500">revenue</p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="font-mono text-xs font-bold text-kblue">{c.totalConversions || 0}</p>
-                  <p className="font-mono text-[11px] text-gray-500">conv.</p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="font-mono text-xs font-bold" style={{ color: c.roi >= 2 ? K.mint : K.danger }}>{c.roi?.toFixed(1) || "0.0"}×</p>
-                  <p className="font-mono text-[11px] text-gray-500">ROI</p>
-                </div>
+                ))}
               </div>
-            ))
+            </div>
           )}
         </Card>
       </div>

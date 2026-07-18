@@ -177,7 +177,7 @@ export default function HomePage() {
           {/* CTAs */}
           <div className="flex flex-wrap justify-center gap-3 mb-[14px]">
             <Button size="xl" onClick={()=>router.push("/auth/login")}>START FREE TRIAL →</Button>
-            <Button variant="secondary" size="xl" onClick={()=>router.push("/features")}>WATCH 3-MIN DEMO ▸</Button>
+            <Button variant="secondary" size="xl" onClick={()=>router.push("/demo")}>WATCH 3-MIN DEMO ▸</Button>
           </div>
           <p className="font-mono text-[9px] tracking-[0.12em] text-t4">
             NO CREDIT CARD &nbsp;·&nbsp; 14-DAY TRIAL &nbsp;·&nbsp; SOC2 TYPE II &nbsp;·&nbsp; GDPR &amp; CCPA
@@ -267,8 +267,8 @@ export default function HomePage() {
               From conversion to enriched signal in 341ms.
             </h2>
           </div>
-          <div className="flex relative">
-            <div className="absolute top-6 left-[8%] right-[8%] h-px" style={{background:`linear-gradient(90deg,transparent,${K.g700},${K.g700},${K.g700},transparent)`}}/>
+          <div className="flex flex-col md:flex-row relative gap-8 md:gap-0">
+            <div className="hidden md:block absolute top-6 left-[8%] right-[8%] h-px" style={{background:`linear-gradient(90deg,transparent,${K.g700},${K.g700},${K.g700},transparent)`}}/>
             {HOW.map((step)=>(
               <div key={step.s} className="flex-1 text-center px-[10px]">
                 <div className="w-12 h-12 rounded-kdls flex items-center justify-center mx-auto mb-4 relative z-[1] font-mono font-bold text-[13px]" style={{background:`${step.c}10`,border:`1px solid ${step.c}25`,color:step.c}}>{step.s}</div>
@@ -287,7 +287,7 @@ export default function HomePage() {
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">THE PLATFORM</p>
             <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em]">Every tool your media team needs.</h2>
           </div>
-          <div className="grid grid-cols-2 gap-px bg-g800" style={{border:`1px solid ${K.g800}`}}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-g800" style={{border:`1px solid ${K.g800}`}}>
             {FEATURES.map((f,i)=>(
               <div key={i} className="p-10 relative overflow-hidden cursor-default transition-colors duration-200" style={{background:K.g900}}
                 onMouseEnter={e=>(e.currentTarget.style.background=K.g850)} onMouseLeave={e=>(e.currentTarget.style.background=K.g900)}>
@@ -320,7 +320,7 @@ export default function HomePage() {
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">RESULTS</p>
             <h2 className="font-mono font-bold text-[clamp(24px,4vw,40px)] text-t1 tracking-[-0.03em]">Measured in revenue. Not vanity metrics.</h2>
           </div>
-          <div className="grid grid-cols-4 gap-px bg-g800 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-g800 mb-6">
             {PROOF.map((p,i)=>(
               <div key={i} className="p-8 text-center cursor-default transition-all duration-[250ms] relative overflow-hidden" style={{background:K.g900}}
                 onMouseEnter={e=>{(e.currentTarget.style.background=K.g850);(e.currentTarget.style.transform="translateY(-3px)");}}
@@ -367,7 +367,9 @@ export default function HomePage() {
             <h2 className="font-mono font-bold text-[clamp(22px,3.5vw,38px)] text-t1 tracking-[-0.03em]">What you get vs. the alternatives.</h2>
           </div>
           <div className="rounded-kdls overflow-hidden" style={{border:`1px solid ${K.g800}`}}>
-            <div className="grid grid-cols-[1fr_90px_110px_90px] bg-g950">
+            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <div className="min-w-[600px]">
+                <div className="grid grid-cols-[1fr_90px_110px_90px] bg-g950">
               <div className="py-[13px] px-5"><span className="font-mono text-[9px] tracking-widest text-t4">CAPABILITY</span></div>
               {[{l:"KIKI",c:K.blue},{l:"MANUAL",c:K.t4},{l:"BASIC TOOLS",c:K.t4}].map(h=>(
                 <div key={h.l} className="py-[13px] px-3 text-center" style={{borderLeft:`1px solid ${K.g800}`}}>
@@ -388,6 +390,8 @@ export default function HomePage() {
                 ))}
               </div>
             ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -404,7 +408,7 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-6">
             {PLANS.map(p=>(
               <div key={p.name}
                 style={{padding:28,background:p.hot?K.blueD:K.g900,border:`${p.hot?2:1}px solid ${p.hot?K.blue:K.g800}`,borderRadius:2,position:"relative",transition:"all 0.2s"}}

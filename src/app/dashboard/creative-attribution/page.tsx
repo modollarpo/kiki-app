@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -71,7 +71,7 @@ export default function CreativeAttributionPage() {
               <div className="p-10 text-center"><p className="font-mono text-xs text-t3">No attribution data yet. Signals will be matched to creative variants.</p></div>
             ) : (
               attributions.map((a, i) => (
-                <div key={i} className="flex items-center gap-3 px-[14px] py-3 bg-g850 rounded-kdls mb-[6px]">
+                <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-3 px-[14px] py-3 bg-g850 rounded-kdls mb-[6px]">
                   <div className="flex-1 min-w-0">
                     <div className="font-mono text-xs font-semibold text-t1 overflow-hidden text-ellipsis whitespace-nowrap">{a.creative_id}</div>
                     <Badge color={a.platform === "meta" ? "#1877F2" : a.platform === "google" ? "#4285F4" : K.t3}>{a.platform}</Badge>

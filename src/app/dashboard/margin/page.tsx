@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -55,7 +55,8 @@ export default function ProfitMarginPage() {
 
         <Card accent={K.mint} className="mb-4">
           <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Channel Margins</h3>
-          <div className="flex flex-col gap-2">
+          <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <div className="flex flex-col gap-2 min-w-[500px]">
             {channels.map((ch, i) => (
               <div key={i} className="flex items-center gap-3 p-3 px-3.5 rounded-sm bg-g900">
                 <div className="min-w-[100px]">
@@ -82,6 +83,7 @@ export default function ProfitMarginPage() {
                 </div>
               </div>
             ))}
+            </div>
           </div>
         </Card>
 
