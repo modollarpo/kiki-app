@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
+import { Card, Badge, ProgressBar, StatCard, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface ChannelMargin { name: string; spend: number; revenue: number; margin: number; cac: number; ltv: number; }
@@ -55,7 +55,7 @@ export default function ProfitMarginPage() {
 
         <Card accent={K.mint} className="mb-4">
           <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Channel Margins</h3>
-          <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+          <ScrollableTable>
             <div className="flex flex-col gap-2 min-w-[500px]">
             {channels.map((ch, i) => (
               <div key={i} className="flex items-center gap-3 p-3 px-3.5 rounded-sm bg-g900">
@@ -84,7 +84,7 @@ export default function ProfitMarginPage() {
               </div>
             ))}
             </div>
-          </div>
+          </ScrollableTable>
         </Card>
 
         <Card accent={K.teal}>

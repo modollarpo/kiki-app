@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button } from "@/components/ui";
+import { Card, Badge, Button, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 import { useInsights } from "@/hooks/useInsights";
@@ -78,7 +78,7 @@ export default function ReportsPage() {
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
-        <div className="flex justify-between items-start mb-5">
+        <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Reports</h1>
             <p className="font-mono text-[11px] text-gray-500">Scheduled reports · Recent exports · Report builder</p>
@@ -108,7 +108,7 @@ export default function ReportsPage() {
               ) : scheduledReports.length === 0 ? (
                 <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No scheduled reports. Create one to automate your reporting.</span></div>
               ) : (
-                <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+                <ScrollableTable>
                 {scheduledReports.map((r, i) => (
                   <div key={i} className="grid grid-cols-[1fr_160px_140px_80px_100px_80px] gap-3 px-5 py-3.5 items-center hover:bg-[var(--card-hover)] min-w-[600px]"
                     style={{ borderBottom: i < scheduledReports.length - 1 ? `1px solid ${K.g900}` : undefined }}>
@@ -123,7 +123,7 @@ export default function ReportsPage() {
                     <Badge color={K.mint} dot pulse>ACTIVE</Badge>
                   </div>
                 ))}
-                </div>
+                </ScrollableTable>
               )}
             </Card>
 

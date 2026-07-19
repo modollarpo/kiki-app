@@ -131,7 +131,7 @@ export default function DashboardPage() {
         {/* Main Grid: Campaigns + Agents */}
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] gap-3 mb-3">
           <Card padding={0}>
-            <div className="px-5 py-[14px] border-b border-kcardborder flex items-center justify-between">
+            <div className="px-5 py-[14px] border-b border-kcardborder flex items-center justify-between gap-2 flex-wrap">
               <h2 className="font-mono font-bold text-[13px] text-t1">Active Campaigns</h2>
               <Button size="sm" onClick={() => router.push("/dashboard/campaigns")}>View All →</Button>
             </div>

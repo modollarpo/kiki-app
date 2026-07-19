@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button, StatCard, AIThinking } from "@/components/ui";
+import { Card, Badge, Button, StatCard, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K, fmt } from "@/lib/kdls";
 
@@ -146,7 +146,7 @@ export default function AgencyPage() {
                     <p className="font-mono text-[11px] text-gray-600">No campaigns on this platform yet.</p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+                  <ScrollableTable>
                   {selected.campaigns.map((c, i) => (
                     <div key={c.id} className="grid grid-cols-[1fr_100px_100px_80px_80px] gap-3 px-5 py-3 items-center min-w-[500px]"
                       style={{ borderBottom: i < selected.campaigns.length - 1 ? `1px solid ${K.g900}` : undefined }}>
@@ -160,7 +160,7 @@ export default function AgencyPage() {
                       <Button variant="ghost" size="xs">View →</Button>
                     </div>
                   ))}
-                  </div>
+                  </ScrollableTable>
                 )}
               </Card>
             )}

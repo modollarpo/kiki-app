@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
-import { Card, Badge, Button } from "@/components/ui";
+import { Card, Badge, Button, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
 
@@ -64,7 +64,7 @@ export default function AuditPage() {
         </div>
 
         <Card padding={0}>
-          <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+          <ScrollableTable>
             <div className="min-w-[800px]">
               <div className="grid grid-cols-[80px_140px_100px_200px_1fr_80px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
                 {["TIME", "ACTOR", "ACTION", "RESOURCE", "DETAIL", "LEVEL"].map(h => (
@@ -87,7 +87,7 @@ export default function AuditPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </ScrollableTable>
         </Card>
       </div>
     </DashboardLayout>
