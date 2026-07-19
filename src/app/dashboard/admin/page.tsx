@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
-import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
+import { Card, Badge, ProgressBar, StatCard, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 import { useInsights } from "@/hooks/useInsights";
@@ -94,7 +94,7 @@ export default function AdminPage() {
               <p className="font-mono text-[11px] text-gray-500">No services monitored. Connect platforms to start monitoring.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <ScrollableTable>
               <div className="min-w-[700px]">
                 <div className="grid grid-cols-[180px_120px_80px_100px_120px_100px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
                   {["SERVICE", "CATEGORY", "STATUS", "UPTIME", "p99 LATENCY", "REGION"].map(h => (
@@ -125,7 +125,7 @@ export default function AdminPage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </ScrollableTable>
           )}
         </Card>
 

@@ -1,6 +1,6 @@
 "use client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar, Button, StatusBadge, AIThinking } from "@/components/ui";
+import { StatCard, Card, Badge, ProgressBar, Button, StatusBadge, AIThinking, ScrollableTable } from "@/components/ui";
 import { K, fmt } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,7 +43,7 @@ export default function WarehousePage() {
             ) : (
               <Card accent={K.teal}>
                 <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Feature Store ({features.length})</h3>
-                <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+                <ScrollableTable>
                   <table className="w-full border-collapse min-w-[600px]">
                     <thead>
                       <tr>
@@ -65,7 +65,7 @@ export default function WarehousePage() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </ScrollableTable>
               </Card>
             )}
           </>

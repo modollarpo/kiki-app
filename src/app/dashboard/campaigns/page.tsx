@@ -87,7 +87,7 @@ export default function CampaignsPage() {
         )}
 
         <Card padding={0}>
-          <div className="px-5 py-3 border-b border-g800 flex items-center justify-between">
+          <div className="px-5 py-3 border-b border-g800 flex items-center justify-between gap-2 flex-wrap">
             <span className="font-mono text-[13px] font-bold text-t1">All Campaigns</span>
           </div>
           <ScrollableTable>

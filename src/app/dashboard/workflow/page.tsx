@@ -75,7 +75,7 @@ export default function WorkflowPage() {
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
-        <div className="flex justify-between items-start mb-5">
+        <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Automation Builder</h1>
             <p className="font-mono text-[11px] text-gray-500">Workflow rules · Trigger conditions · Automated actions · {workflows.length} active rules</p>

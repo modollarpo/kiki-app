@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar } from "@/components/ui";
+import { StatCard, Card, Badge, ProgressBar, ScrollableTable } from "@/components/ui";
 import { K, fmt } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
 
@@ -23,7 +23,7 @@ export default function FinancePage() {
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
-        <div className="flex justify-between items-start mb-5">
+        <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Finance Operations</h1>
             <p className="font-mono text-[11px] text-gray-500">P&L summary · Revenue streams · Cost breakdown · Profitability</p>
@@ -51,7 +51,7 @@ export default function FinancePage() {
             <div className="px-5 py-3.5 border-b border-g800">
               <h2 className="font-mono font-bold text-[13px] text-white">P&L Trend ($K)</h2>
             </div>
-            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <ScrollableTable>
               <div className="min-w-[600px]">
                 <div className="grid grid-cols-[80px_100px_100px_100px_120px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
                   {["MONTH", "REVENUE", "COSTS", "PROFIT", "MARGIN"].map(h => (
@@ -74,7 +74,7 @@ export default function FinancePage() {
                   );
                 })}
               </div>
-            </div>
+            </ScrollableTable>
           </Card>
 
           <Card>

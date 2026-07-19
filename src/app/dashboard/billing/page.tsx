@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, ProgressBar, Button, AIThinking } from "@/components/ui";
+import { Card, Badge, ProgressBar, Button, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K, fmt } from "@/lib/kdls";
 import { generatePDF } from "@/lib/pdf";
@@ -78,7 +78,7 @@ export default function BillingPage() {
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
-        <div className="flex justify-between items-start mb-5">
+        <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Billing & Plans</h1>
             <p className="font-mono text-[11px] text-gray-500">Current plan · Usage meters · Invoice history</p>
@@ -163,7 +163,7 @@ export default function BillingPage() {
                 <p className="font-mono text-xs text-gray-600">No invoices yet. Invoices are generated monthly based on your usage.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <ScrollableTable>
                 {invoices.map((inv, i) => (
                   <div key={inv.id} className="grid grid-cols-[1fr_120px_120px_100px_90px] gap-3 px-5 py-3.5 items-center hover:bg-[var(--card-hover)] min-w-[600px]"
                     style={{ borderBottom: i < invoices.length - 1 ? `1px solid ${K.g900}` : undefined }}>
@@ -179,7 +179,7 @@ export default function BillingPage() {
                     <Button variant="ghost" size="xs" onClick={() => downloadInvoice(inv.id)}>Download ↓</Button>
                   </div>
                 ))}
-              </div>
+              </ScrollableTable>
             )}
           </Card>
         )}

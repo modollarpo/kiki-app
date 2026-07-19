@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, StatCard } from "@/components/ui";
+import { Card, Badge, StatCard, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Creator { id: string; name: string; handle: string; platform: string; promoCode: string; totalConversions: number; totalRevenue: number; totalLtv: number; roi: number; }
@@ -106,7 +106,7 @@ export default function InfluencerPage() {
           {creators.length === 0 ? (
             <div className="p-10 text-center"><p className="font-mono text-xs text-gray-500">No creators registered yet.</p></div>
           ) : (
-            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <ScrollableTable>
               <div className="min-w-[600px]">
                 {creators.map((c, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 px-3.5 mb-1.5 rounded-sm bg-g850">
@@ -132,7 +132,7 @@ export default function InfluencerPage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </ScrollableTable>
           )}
         </Card>
       </div>

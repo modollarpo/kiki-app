@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button, StatCard, Input } from "@/components/ui";
+import { Card, Badge, Button, StatCard, Input, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -279,7 +279,7 @@ export default function CommercePage() {
           ) : segments.length === 0 ? (
             <p className="font-mono text-[11px] text-gray-500 py-4 text-center">No feedback yet. Connect a store and let realized revenue accumulate to populate LTV accuracy.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <ScrollableTable>
               <table className="w-full" style={{ borderCollapse: "collapse" }}>
                 <thead>
                   <tr>
@@ -300,7 +300,7 @@ export default function CommercePage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollableTable>
           )}
         </Card>
       </div>

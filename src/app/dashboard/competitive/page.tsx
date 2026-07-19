@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, StatCard } from "@/components/ui";
+import { Card, Badge, StatCard, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Competitor {
@@ -69,7 +69,7 @@ export default function CompetitiveIntelligencePage() {
         <div className="mb-4">
           <Card accent={K.mint}>
             <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Competitor Spend Tracker</h3>
-            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <ScrollableTable>
               <div className="flex flex-col gap-2 min-w-[600px]">
                 {competitors.map((comp, i) => {
                   const isYou = comp.name === "Your Account";
@@ -103,7 +103,7 @@ export default function CompetitiveIntelligencePage() {
                   );
                 })}
               </div>
-            </div>
+            </ScrollableTable>
           </Card>
         </div>
 

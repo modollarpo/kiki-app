@@ -83,7 +83,7 @@ export default function SignalsPage() {
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
-        <div className="flex justify-between items-start mb-[22px]">
+        <div className="flex justify-between items-start mb-[22px] gap-3 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Signal Processing</h1>
             <p className="font-mono text-[11px] text-t3">Real-time conversion signals · LTV enrichment · {recentSignals.length > 0 ? `${recentSignals.length} recent signals` : "No signals yet"}</p>
