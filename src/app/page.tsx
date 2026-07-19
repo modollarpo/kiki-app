@@ -131,9 +131,9 @@ export default function HomePage() {
         </div>
         <div className="ticker-track flex h-full items-center">
           {[...TICKER,...TICKER].map((item,i)=>(
-            <div key={i} className="flex items-center gap-2.5 px-[28px] border-r border-g800 h-full shrink-0">
-              <span className="font-mono text-[9px] tracking-widest text-t4">{item.label}</span>
-              <span style={{fontFamily:K.mono,fontSize:11,fontWeight:700,color:item.color}}>{item.value}</span>
+            <div key={i} className="flex items-center gap-1 sm:gap-2.5 px-3 sm:px-[28px] border-r border-g800 h-full shrink-0">
+              <span className="font-mono text-[8px] sm:text-[9px] tracking-widest text-t4">{item.label}</span>
+              <span style={{fontFamily:K.mono,fontSize:"clamp(9px,1.2vw,11px)",fontWeight:700,color:item.color}}>{item.value}</span>
             </div>
           ))}
         </div>
@@ -144,38 +144,38 @@ export default function HomePage() {
       </div>
 
       {/* ── HERO ─────────────────────────────────────── */}
-      <section className="relative flex flex-col items-center overflow-hidden py-[clamp(48px,8vw,80px)] px-6 md:px-12" style={{background:K.void}}>
+      <section className="relative flex flex-col items-center overflow-hidden py-[clamp(40px,6vw,80px)] px-6 md:px-12 max-w-full" style={{background:K.void}}>
         {/* Grid */}
-        <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)`,backgroundSize:"56px 56px",WebkitMaskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",maskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)`,backgroundSize:"56px 56px",WebkitMaskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",maskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",pointerEvents:"none",maxWidth:"100vw",overflow:"hidden"}}/>
         {/* Glows */}
-        <div style={{position:"absolute",width:900,height:600,top:-100,left:"50%",transform:"translateX(-50%)",background:"radial-gradient(ellipse,rgba(0,92,255,0.11) 0%,transparent 65%)",filter:"blur(80px)",pointerEvents:"none"}}/>
-        <div style={{position:"absolute",width:400,height:400,top:200,right:-100,background:"radial-gradient(circle,rgba(49,243,195,0.05) 0%,transparent 70%)",filter:"blur(60px)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",width:"clamp(400px,80vw,900px)",height:"clamp(300px,50vw,600px)",top:"clamp(-60px,-8vw,-100px)",left:"50%",transform:"translateX(-50%)",background:"radial-gradient(ellipse,rgba(0,92,255,0.11) 0%,transparent 65%)",filter:"blur(80px)",pointerEvents:"none"}}/>
+        <div className="hidden md:block" style={{position:"absolute",width:400,height:400,top:200,right:-100,background:"radial-gradient(circle,rgba(49,243,195,0.05) 0%,transparent 70%)",filter:"blur(60px)",pointerEvents:"none"}}/>
 
         {/* Content */}
         <div className="relative z-[1] text-center max-w-[1000px]" style={{opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(22px)",transition:"all 0.85s cubic-bezier(0.16,1,0.3,1)"}}>
           {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 rounded-kdls px-4 py-[7px] mb-10 max-w-full overflow-x-auto" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
+          <div className="inline-flex items-center gap-1 sm:gap-2 rounded-kdls px-3 sm:px-4 py-[7px] mb-[clamp(16px,4vw,40px)] max-w-full overflow-x-auto" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
             <span className="animate-kdls-pulse shrink-0" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
             <span className="whitespace-nowrap" style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.15em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · SOC2 TYPE II</span>
           </div>
 
           {/* Headline */}
-          <h1 className="font-mono font-bold text-[clamp(40px,7vw,82px)] leading-none tracking-[-0.045em] mb-[30px]">
-            <span className="block text-[#7070a0] mb-[3px]">Your ad platforms are</span>
-            <span className="block text-[#ccccdd] mb-[3px]">learning from</span>
+          <h1 className="font-mono font-bold text-[clamp(28px,6vw,82px)] leading-none tracking-[-0.045em] mb-[clamp(18px,3vw,30px)]">
+            <span className="block text-[#7070a0] mb-[2px] sm:mb-[3px]">Your ad platforms are</span>
+            <span className="block text-[#ccccdd] mb-[2px] sm:mb-[3px]">learning from</span>
             <span className="block" style={{background:`linear-gradient(110deg,${K.blue} 0%,#5599FF 40%,${K.mint} 100%)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
               the wrong signal.
             </span>
           </h1>
 
           {/* Sub */}
-          <p className="max-w-[580px] mx-auto mb-[46px] font-[300] leading-[1.8] tracking-[-0.01em] text-[#666688]" style={{fontFamily:"Inter,system-ui,sans-serif",fontSize:18}}>
+          <p className="max-w-[580px] mx-auto mb-[clamp(28px,4vw,46px)] font-[300] leading-[1.7] sm:leading-[1.8] tracking-[-0.01em] text-[#666688]" style={{fontFamily:"Inter,system-ui,sans-serif",fontSize:"clamp(14px,2vw,18px)"}}>
             KIKI intercepts every conversion, predicts 90-day customer LTV with ML, and feeds enriched signals to Meta, Google, TikTok, and 11 other platforms —{" "}
             <span style={{color:"#8888aa"}}>before they see the raw order value.</span>
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-wrap justify-center gap-3 mb-[14px]">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-[14px]">
             <Button size="xl" onClick={()=>router.push("/auth/login")}>START FREE TRIAL →</Button>
             <Button variant="secondary" size="xl" onClick={()=>router.push("/demo")}>WATCH 3-MIN DEMO ▸</Button>
           </div>
@@ -185,7 +185,7 @@ export default function HomePage() {
         </div>
 
         {/* ── TERMINAL ─────────────────────────────────── */}
-        <div className="relative z-[1] mt-[72px] w-full max-w-[900px] rounded-kdls overflow-hidden bg-[#04040D]" style={{border:`1px solid ${K.g700}`,boxShadow:"0 40px 100px rgba(0,0,0,0.75),0 0 0 1px rgba(255,255,255,0.04)"}}>
+        <div className="relative z-[1] mt-[clamp(32px,6vw,72px)] w-full max-w-[900px] rounded-kdls overflow-hidden bg-[#04040D]" style={{border:`1px solid ${K.g700}`,boxShadow:"0 40px 100px rgba(0,0,0,0.75),0 0 0 1px rgba(255,255,255,0.04)"}}>
           {/* Chrome bar */}
           <div className="flex items-center gap-2 px-[18px] py-3 bg-[#070710] border-b border-g800">
             <div className="flex gap-1.5">
@@ -240,7 +240,7 @@ export default function HomePage() {
         </div>
 
         {/* Platform logos */}
-        <div className="relative z-[1] mt-11 w-full max-w-[900px] text-center">
+        <div className="relative z-[1] mt-[clamp(20px,4vw,44px)] w-full max-w-[900px] text-center">
           <p className="font-mono text-[8px] tracking-[0.18em] text-t4 mb-4.5">ENRICHES SIGNALS ACROSS 14 AD PLATFORMS</p>
           <div className="flex gap-2 flex-wrap justify-center">
             {PLATFORMS.map(p=>{
@@ -441,9 +441,9 @@ export default function HomePage() {
       </section>
 
       {/* ── FINAL CTA ──────────────────────────────────── */}
-      <section className="py-[120px] px-6 md:px-12 text-center relative overflow-hidden" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] blur-[80px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(0,92,255,0.10) 0%,transparent 65%)"}}/>
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] blur-[60px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(49,243,195,0.06) 0%,transparent 70%)"}}/>
+      <section className="py-[clamp(60px,10vw,120px)] px-6 md:px-12 text-center relative overflow-hidden" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[clamp(300px,70vw,700px)] h-[clamp(200px,40vw,400px)] blur-[60px] sm:blur-[80px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(0,92,255,0.10) 0%,transparent 65%)"}}/>
+        <div className="hidden sm:block absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] blur-[60px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(49,243,195,0.06) 0%,transparent 70%)"}}/>
         <div className="relative z-[1] max-w-[640px] mx-auto">
           <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-5">GET STARTED IN UNDER 10 MINUTES</p>
           <h2 className="font-mono font-bold text-[clamp(28px,5.5vw,58px)] text-t1 mb-5 tracking-[-0.045em] leading-[1.02]">
