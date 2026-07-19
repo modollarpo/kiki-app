@@ -20,14 +20,14 @@ export default function FeaturesPage() {
   const feat = FEATURES.find(f => f.id === active) || FEATURES[0]!;
   return (
     <MarketingLayout>
-      <div className="py-20 px-12 max-w-[1100px] mx-auto" style={{ background:K.void }}>
+      <div className="py-[clamp(40px,6vw,80px)_clamp(16px,4vw,48px)] max-w-[1100px] mx-auto" style={{ background:K.void }}>
         <div className="text-center mb-14">
           <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">PLATFORM FEATURES</p>
           <h1 className="font-mono font-bold text-[clamp(28px,5vw,52px)] tracking-[-0.03em] text-t1 mb-3.5">Everything your media team needs.</h1>
           <p className="font-sans text-[16px] text-t3 max-w-[520px] mx-auto">One platform for signal enrichment, autonomous optimization, fraud protection, and financial control.</p>
         </div>
-        <div className="flex gap-8">
-          <div className="w-[260px] shrink-0">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          <div className="w-full lg:w-[260px] lg:shrink-0">
             {FEATURES.map(f => (
               <div key={f.id} onClick={() => setActive(f.id)}
                 className="px-4 py-3.5 mb-1.5 rounded-sm cursor-pointer transition-all duration-150"

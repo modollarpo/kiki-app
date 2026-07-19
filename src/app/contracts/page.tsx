@@ -161,20 +161,24 @@ export default function ContractsPage() {
               </p>
             </div>
             <div className="border border-g800 rounded-kdls overflow-hidden">
-              <div className="grid grid-cols-[160px_1fr_1fr_120px] px-5 py-2 bg-g950" style={{ borderBottom: `1px solid ${K.g800}` }}>
-                {["SUB-PROCESSOR","PURPOSE","DATA REGIONS","CERTIFICATIONS"].map(h => (
-                  <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>
-                ))}
-              </div>
-              {SUB_PROCESSORS.map((sp, i) => (
-                <div key={i} className="grid grid-cols-[160px_1fr_1fr_120px] px-5 py-[13px] items-start gap-3"
-                  style={{ borderBottom: i < SUB_PROCESSORS.length - 1 ? `1px solid ${K.g900}` : "none", background: i % 2 === 0 ? K.g900 : K.g950 }}>
-                  <span className="font-mono text-[12px] font-bold text-t1">{sp.name}</span>
-                  <span className="font-sans text-[12px] text-t3 leading-[1.5]">{sp.purpose}</span>
-                  <span className="font-mono text-[11px] text-t2">{sp.region}</span>
-                  <Badge color={K.mint}>{sp.cert}</Badge>
+              <div className="overflow-x-auto">
+                <div className="min-w-[600px]">
+                  <div className="grid grid-cols-[160px_1fr_1fr_120px] px-5 py-2 bg-g950" style={{ borderBottom: `1px solid ${K.g800}` }}>
+                    {["SUB-PROCESSOR","PURPOSE","DATA REGIONS","CERTIFICATIONS"].map(h => (
+                      <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>
+                    ))}
+                  </div>
+                  {SUB_PROCESSORS.map((sp, i) => (
+                    <div key={i} className="grid grid-cols-[160px_1fr_1fr_120px] px-5 py-[13px] items-start gap-3"
+                      style={{ borderBottom: i < SUB_PROCESSORS.length - 1 ? `1px solid ${K.g900}` : "none", background: i % 2 === 0 ? K.g900 : K.g950 }}>
+                      <span className="font-mono text-[12px] font-bold text-t1">{sp.name}</span>
+                      <span className="font-sans text-[12px] text-t3 leading-[1.5]">{sp.purpose}</span>
+                      <span className="font-mono text-[11px] text-t2">{sp.region}</span>
+                      <Badge color={K.mint}>{sp.cert}</Badge>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
             <div className="mt-5 p-4 bg-g900 rounded-kdls" style={{ border: `1px solid ${K.g800}` }}>
               <p className="font-mono text-[11px] text-t3">To object to a new sub-processor or request the full DPA, email <span className="text-kblue4">privacy@kiki.ai</span></p>

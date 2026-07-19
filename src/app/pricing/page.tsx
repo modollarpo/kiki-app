@@ -26,7 +26,7 @@ export default function PricingPage() {
 
   return (
     <MarketingLayout>
-      <div style={{ background: K.void }} className="p-20 px-12 max-w-[1100px] mx-auto">
+      <div style={{ background: K.void }} className="p-[clamp(40px,6vw,80px)_clamp(16px,4vw,48px)] max-w-[1100px] mx-auto">
         <div className="text-center mb-12">
           <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">PRICING</p>
           <h1 className="font-mono font-bold text-[clamp(28px,5vw,52px)] tracking-[-0.03em] text-t1 mb-3.5">Simple, transparent pricing.</h1>
@@ -39,7 +39,7 @@ export default function PricingPage() {
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-4 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
           {PLANS.map(plan => (
             <div key={plan.id} className="p-8 rounded-sm relative" style={{ background: plan.hot ? K.blueD : K.g900, border: `${plan.hot ? "2px" : "1px"} solid ${plan.hot ? K.blue : K.g800}` }}>
               {plan.hot && <Badge color={K.blue} className="absolute -top-3 left-1/2 -translate-x-1/2">MOST POPULAR</Badge>}

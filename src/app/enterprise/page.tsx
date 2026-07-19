@@ -17,8 +17,8 @@ export default function EnterprisePage() {
   const router = useRouter();
   return (
     <MarketingLayout>
-      <div style={{ background:K.void }} className="p-20 px-12 max-w-[1100px] mx-auto">
-        <div className="grid grid-cols-2 gap-12 mb-[72px] items-center">
+      <div style={{ background:K.void }} className="p-[clamp(40px,6vw,80px)_clamp(16px,4vw,48px)] max-w-[1100px] mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mb-[72px] items-center">
           <div>
             <Badge color={K.gold} className="mb-4">ENTERPRISE</Badge>
             <h1 className="font-mono font-bold text-[clamp(28px,5vw,52px)] tracking-[-0.04em] text-t1 leading-[1.05] mb-5">Built for teams managing millions.</h1>
@@ -39,7 +39,7 @@ export default function EnterprisePage() {
           </Card>
         </div>
         <h2 className="font-mono font-bold text-[28px] tracking-tight text-t1 mb-8">Enterprise-only capabilities</h2>
-        <div className="grid grid-cols-3 gap-4 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
           {CAPABILITIES.map(c=>(
             <div key={c.title} className="p-6 bg-g900 border border-g800 rounded-sm cursor-default transition-all"
               onMouseEnter={e=>{(e.currentTarget.style.background=K.g850);(e.currentTarget.style.transform="translateY(-2px)");}} onMouseLeave={e=>{(e.currentTarget.style.background=K.g900);(e.currentTarget.style.transform="none");}}>

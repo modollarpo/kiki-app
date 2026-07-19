@@ -57,20 +57,24 @@ export default function StatusPage() {
           <div key={group.group} className="mb-7">
             <p className="font-mono font-bold text-[10px] text-t2 mb-2.5 tracking-[0.04em]">{group.group}</p>
             <div className="border border-g800 rounded-sm overflow-hidden">
-              <div className="grid grid-cols-[1fr_100px_80px_90px] gap-3 px-4 py-2 bg-g950 border-b border-g800">
-                {["SERVICE","STATUS","P99","30D UPTIME"].map(h => <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>)}
-              </div>
-              {group.items.map((svc,i) => (
-                <div key={i} className="grid grid-cols-[1fr_100px_80px_90px] gap-3 px-4 py-3 items-center bg-g900" style={{ borderBottom:i<group.items.length-1?`1px solid ${K.g900}`:"none" }}>
-                  <span className="font-mono text-[12px] text-t1">{svc.name}</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="animate-kdls-pulse w-[7px] h-[7px] rounded-full inline-block" style={{ background:STATUS_COLORS[svc.status]||K.t3 }}/>
-                    <span className="font-mono text-[10px] capitalize" style={{ color:STATUS_COLORS[svc.status]||K.t3 }}>{svc.status}</span>
+              <div className="overflow-x-auto">
+                <div className="min-w-[500px]">
+                  <div className="grid grid-cols-[1fr_100px_80px_90px] gap-3 px-4 py-2 bg-g950 border-b border-g800">
+                    {["SERVICE","STATUS","P99","30D UPTIME"].map(h => <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>)}
                   </div>
-                  <span className="font-mono text-[11px] text-t2">{svc.p99}</span>
-                  <span className="font-mono font-bold text-[11px] text-kmint">{svc.uptime}</span>
+                  {group.items.map((svc,i) => (
+                    <div key={i} className="grid grid-cols-[1fr_100px_80px_90px] gap-3 px-4 py-3 items-center bg-g900" style={{ borderBottom:i<group.items.length-1?`1px solid ${K.g900}`:"none" }}>
+                      <span className="font-mono text-[12px] text-t1">{svc.name}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="animate-kdls-pulse w-[7px] h-[7px] rounded-full inline-block" style={{ background:STATUS_COLORS[svc.status]||K.t3 }}/>
+                        <span className="font-mono text-[10px] capitalize" style={{ color:STATUS_COLORS[svc.status]||K.t3 }}>{svc.status}</span>
+                      </div>
+                      <span className="font-mono text-[11px] text-t2">{svc.p99}</span>
+                      <span className="font-mono font-bold text-[11px] text-kmint">{svc.uptime}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         ))}

@@ -304,6 +304,7 @@ npm run test:watch   # Vitest watch mode
    - Use `useQuery()` for data
    - Use `K.*` tokens for colors
    - Use `Card`, `StatCard`, `Badge`, `Button` from UI
+   - **Responsive (§17)**: header `flex-wrap`, tables in `<ScrollableTable>`, grids use `grid-cols-1 sm:grid-cols-2 lg:grid-cols-N`
 
 2. **API Route**: Create `src/app/api/[feature]/route.ts`
    - Validate JWT from `Authorization` header
@@ -431,5 +432,65 @@ LINKEDIN_ACCESS_TOKEN=...
 
 ---
 
-**Last updated**: 2026-07-16  
-**Maintained by**: AI agents + human developers
+## 17. Responsive Design Standards
+
+**Every page and component must work at 320px–1920px width.** Follow these rules in order:
+
+### Container Widths
+- **Marketing pages**: `px-6 md:px-12` (never `px-12` alone)
+- **Auth pages**: `p-6 relative overflow-hidden` (never fixed pixels on wrapper)
+- **Dashboard pages**: handled by `<DashboardLayout>` automatically
+
+### Page Headers (every dashboard page)
+```
+<div className="flex flex-wrap items-center justify-between gap-4 mb-6 lg:mb-8">
+  <div>
+    <h1 className="...">Title</h1>
+    <p className="...">Description</p>
+  </div>
+  <div className="flex flex-wrap items-center gap-3">
+    <!-- action buttons -->
+  </div>
+</div>
+```
+
+### Grid Layouts
+```
+<!-- Stat cards -->
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+
+<!-- 2-column content -->
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+```
+
+### Tables
+- **Always** wrap tables in `<ScrollableTable>` from `@/components/ui`
+- Never use `overflow-x-auto` directly — always use the shared component
+- `<ScrollableTable>` handles the fade-right scroll indicator
+
+### Text & Typography
+- Headlines: `text-[clamp(28px,5vw,48px)]` (never fixed pixel sizes for large text)
+- Body text: `13px` (`text-[13px]`) is fine — it doesn't overflow
+- Badge/label text: `9px` or `10px` is fine
+- Use `whitespace-nowrap shrink-0` on inline badges/labels inside flex containers
+
+### Sidebar
+- Desktop: fixed 200px width
+- Mobile (<768px): overlay with `inset-0 w-screen`, toggle via Zustand `sidebarOpen` state
+- Handled by `<DashboardLayout>` — do not override
+
+### Touch Targets
+- All buttons/links must be ≥44px tap area on mobile
+- Use `<Button size="xs">` for compact actions on desktop (still 44px tall)
+
+### Overflow Elements
+- Glow/background decorations: add `max-w-full overflow-hidden`
+- Long badge text: wrap parent in `max-w-full overflow-x-auto`, child gets `whitespace-nowrap`
+- `min-w-[Npx]` on stat cards to prevent collapse on 320px
+
+### Verification
+Before marking any page responsive:
+1. Open Chrome DevTools responsive mode (320px, 375px, 768px, 1024px, 1440px)
+2. Check: no horizontal scrollbar, no text overflow, no overlapping elements
+3. Check: all tables scrollable, grids collapse properly, buttons tappable
+4. Run `npm run build` to confirm no broken layout from markup changes

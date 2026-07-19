@@ -154,9 +154,9 @@ export default function HomePage() {
         {/* Content */}
         <div className="relative z-[1] text-center max-w-[1000px]" style={{opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(22px)",transition:"all 0.85s cubic-bezier(0.16,1,0.3,1)"}}>
           {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 rounded-kdls px-4 py-[7px] mb-10" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
-            <span className="animate-kdls-pulse" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-            <span style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.15em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · SOC2 TYPE II</span>
+          <div className="inline-flex items-center gap-2 rounded-kdls px-4 py-[7px] mb-10 max-w-full overflow-x-auto" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
+            <span className="animate-kdls-pulse shrink-0" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
+            <span className="whitespace-nowrap" style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.15em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · SOC2 TYPE II</span>
           </div>
 
           {/* Headline */}
