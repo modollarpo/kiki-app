@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button, StatCard, AIThinking } from "@/components/ui";
+import { Card, Badge, Button, StatCard, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K } from "@/lib/kdls";
 
@@ -139,7 +139,7 @@ export default function SignalsPage() {
                   </div>
                 )}
               </div>
-              <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <ScrollableTable>
                 <div className="min-w-[700px]">
                   {recentSignals.length === 0 ? (
                     <div className="py-10 text-center">
@@ -165,7 +165,7 @@ export default function SignalsPage() {
                     ))
                   )}
                 </div>
-              </div>
+              </ScrollableTable>
             </Card>
           </>
         )}

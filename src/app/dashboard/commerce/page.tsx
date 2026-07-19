@@ -177,7 +177,7 @@ export default function CommercePage() {
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px] text-white">
-        <div className="flex items-start justify-between gap-4 mb-5">
+        <div className="flex items-start justify-between gap-4 mb-5 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-2xl text-white tracking-tight mb-1">Commerce &amp; CRM</h1>
             <p className="font-mono text-[11px] text-gray-500">Closed-loop commerce revenue &amp; realized LTV feedback</p>

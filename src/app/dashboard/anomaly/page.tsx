@@ -67,23 +67,26 @@ export default function AnomalyDetectionPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <Card accent={K.blue}>
             <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Detection Rules</h3>
-            {[
-              { name: "CTR Deviation (>3σ)", status: "active", detections: 47 },
-              { name: "Spend Velocity", status: "active", detections: 23 },
-              { name: "Conversion Rate Drop", status: "active", detections: 15 },
-              { name: "CPM Spike Detection", status: "active", detections: 8 },
-            ].map((rule, i) => (
-              <div key={i} className="flex items-center justify-between py-2.5 border-b border-g800">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-kmint" />
-                  <span className="font-mono text-[11px] text-white">{rule.name}</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <span className="font-mono text-[10px] text-gray-500">{rule.detections} detections</span>
-                  <Badge color={K.mint}>Active</Badge>
-                </div>
-              </div>
-            ))}
+            {anomalies.length === 0 ? (
+              <p className="font-mono text-[10px] text-gray-500 py-4 text-center">No detection rules triggered yet.</p>
+            ) : (
+              (() => {
+                const typeCounts = new Map<string, number>();
+                anomalies.forEach(a => { typeCounts.set(a.type, (typeCounts.get(a.type) || 0) + 1); });
+                return Array.from(typeCounts.entries()).map(([type, count], i) => (
+                  <div key={i} className="flex items-center justify-between py-2.5 border-b border-g800">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-kmint" />
+                      <span className="font-mono text-[11px] text-white">{type}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <span className="font-mono text-[10px] text-gray-500">{count} detections</span>
+                      <Badge color={K.mint}>Active</Badge>
+                    </div>
+                  </div>
+                ));
+              })()
+            )}
           </Card>
 
           <Card accent={K.teal}>

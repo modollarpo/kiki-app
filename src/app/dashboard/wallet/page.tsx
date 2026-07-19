@@ -70,7 +70,7 @@ export default function WalletPage() {
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
-        <div className="mb-[22px] flex items-start justify-between">
+        <div className="mb-[22px] flex items-start justify-between flex-wrap gap-3">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 mb-1">Wallet & Cards</h1>
             <p className="font-mono text-[11px] text-t3">Multi-currency · Virtual cards · Double-entry ledger</p>

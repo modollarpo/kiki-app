@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, Button, StatusBadge, ProgressBar } from "@/components/ui";
+import { StatCard, Card, Badge, Button, StatusBadge, ProgressBar, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { campaigns as campaignsApi, type Campaign } from "@/lib/api";
 import { K } from "@/lib/kdls";
@@ -90,7 +90,7 @@ export default function CampaignsPage() {
           <div className="px-5 py-3 border-b border-g800 flex items-center justify-between">
             <span className="font-mono text-[13px] font-bold text-t1">All Campaigns</span>
           </div>
-          <div className="overflow-x-auto">
+          <ScrollableTable>
           <div className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-2 border-b border-g800 bg-g950 min-w-[700px]">
             {["NAME","STATUS","ROAS","SPEND","BUDGET","PLATFORM","CREATED"].map(h => (
               <span key={h} className="font-mono text-[10px] tracking-widest text-t4">{h}</span>
@@ -123,7 +123,7 @@ export default function CampaignsPage() {
               <div className="h-[3px] w-[70%] bg-g850 rounded-kdls" />
             </div>
           ))}
-          </div>
+          </ScrollableTable>
         </Card>
       </div>
     </DashboardLayout>

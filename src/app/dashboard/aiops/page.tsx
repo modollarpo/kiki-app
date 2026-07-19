@@ -55,12 +55,7 @@ export default function AIOpsPage() {
         latency: a.status === "running" ? `${Math.round(Math.random() * 15 + 5)}ms` : "—",
         lastTrained: a.lastAction ?? "Unknown",
       }))
-    : [
-        { name: "LTV Predictor v5", type: "Prediction", status: "deployed", accuracy: "R² 0.94", latency: "8ms", lastTrained: "2h ago" },
-        { name: "Fraud Detector v3", type: "Classification", status: "deployed", accuracy: "F1 0.97", latency: "3ms", lastTrained: "6h ago" },
-        { name: "Creative Scorer v2", type: "Ranking", status: "training", accuracy: "—", latency: "—", lastTrained: "In progress" },
-        { name: "Bid Optimizer v4", type: "Reinforcement", status: "deployed", accuracy: "Reward 0.89", latency: "12ms", lastTrained: "1d ago" },
-      ];
+    : [];
 
   const experiments = recentActions.length > 0
     ? recentActions.slice(0, 3).map(a => ({
@@ -69,11 +64,7 @@ export default function AIOpsPage() {
         metric: a.status === "success" ? `OK (${a.durationMs}ms)` : "—",
         progress: a.status === "success" ? 100 : a.status === "error" ? 0 : 30,
       }))
-    : [
-        { name: "Multi-touch attribution v2", status: "running", metric: "Lift +12%", progress: 68 },
-        { name: "Dark social detection", status: "running", metric: "Precision 0.84", progress: 42 },
-        { name: "Cross-device identity", status: "queued", metric: "—", progress: 0 },
-      ];
+    : [];
 
   const isLoading = loading || insightsLoading;
 

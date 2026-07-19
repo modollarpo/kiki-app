@@ -291,7 +291,7 @@ export const status = {
 
 // ── Insights ────────────────────────────────────────────
 export const insights = {
-  get: (token: string) => request<any>("/api/insights", { token }),
+  get: (token: string) => request<Record<string, unknown>>("/api/insights", { token }),
 };
 
 // ── AI Chat (Azure OpenAI) ──────────────────────────────
@@ -319,4 +319,245 @@ export const ai = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+};
+
+// ── Signals ──────────────────────────────────────────────
+export interface Signal {
+  id: string;
+  platform: string;
+  eventType: string;
+  ltvPredicted: number;
+  ltvConfidence: number;
+  segment: string;
+  bidMultiplier: number;
+  enriched: boolean;
+}
+
+export const signals = {
+  list: (token: string, params?: { platform?: string; limit?: number }) => {
+    const qs = new URLSearchParams(params as Record<string, string>).toString();
+    return request<{ signals: Signal[]; summary: { total: number; platforms: number; segments: Record<string, number> } }>(`/api/signals${qs ? `?${qs}` : ""}`, { token });
+  },
+};
+
+// ── Analytics ────────────────────────────────────────────
+export const analytics = {
+  get: (token: string) => request<Record<string, unknown>>("/api/analytics", { token }),
+};
+
+// ── Campaigns (individual) ───────────────────────────────
+export const campaign = {
+  get: (token: string, id: string) => request<Campaign>(`/api/campaigns/${id}`, { token }),
+  update: (token: string, id: string, data: Partial<Campaign>) =>
+    request<Campaign>(`/api/campaigns/${id}`, { method: "PUT", token, body: JSON.stringify(data) }),
+  delete: (token: string, id: string) =>
+    request<{ ok: boolean }>(`/api/campaigns/${id}`, { method: "DELETE", token }),
+};
+
+// ── Bidding ──────────────────────────────────────────────
+export const bidding = {
+  get: (token: string) => request<Record<string, unknown>>("/api/bidding", { token }),
+  override: (token: string, campaignId: string, multiplier: number) =>
+    request<{ ok: boolean }>("/api/bidding", { method: "POST", token, body: JSON.stringify({ campaignId, multiplier }) }),
+};
+
+// ── LTV ──────────────────────────────────────────────────
+export const ltv = {
+  get: (token: string) => request<Record<string, unknown>>("/api/ltv", { token }),
+  train: (token: string) => request<{ ok: boolean; jobId: string }>("/api/ltv/train", { method: "POST", token }),
+  training: (token: string) => request<{ status: string; progress: number }>("/api/ltv/training", { token }),
+};
+
+// ── Billing ──────────────────────────────────────────────
+export const billing = {
+  get: (token: string) => request<Record<string, unknown>>("/api/billing", { token }),
+};
+
+// ── Fraud ────────────────────────────────────────────────
+export const fraud = {
+  get: (token: string) => request<Record<string, unknown>>("/api/fraud", { token }),
+};
+
+// ── Anomaly ──────────────────────────────────────────────
+export const anomaly = {
+  get: (token: string) => request<Record<string, unknown>>("/api/anomaly", { token }),
+};
+
+// ── CRM ──────────────────────────────────────────────────
+export const crm = {
+  list: (token: string) => request<Record<string, unknown>>("/api/crm", { token }),
+  sync: (token: string) => request<{ ok: boolean }>("/api/crm/sync", { method: "POST", token }),
+};
+
+// ── Creative Library ─────────────────────────────────────
+export const creativeLibrary = {
+  list: (token: string) => request<Record<string, unknown>>("/api/creative-library", { token }),
+};
+
+// ── SyncBrain ────────────────────────────────────────────
+export const syncbrain = {
+  get: (token: string) => request<Record<string, unknown>>("/api/syncbrain", { token }),
+};
+
+// ── Reports ──────────────────────────────────────────────
+export const reports = {
+  list: (token: string) => request<Record<string, unknown>>("/api/reports", { token }),
+};
+
+// ── AIOps ────────────────────────────────────────────────
+export const aiops = {
+  get: (token: string) => request<Record<string, unknown>>("/api/aiops", { token }),
+};
+
+// ── Admin ────────────────────────────────────────────────
+export const admin = {
+  get: (token: string) => request<Record<string, unknown>>("/api/admin", { token }),
+};
+
+// ── Settings ─────────────────────────────────────────────
+export const settings = {
+  get: (token: string) => request<Record<string, unknown>>("/api/settings", { token }),
+  update: (token: string, data: Record<string, unknown>) =>
+    request<{ ok: boolean }>("/api/settings", { method: "PUT", token, body: JSON.stringify(data) }),
+};
+
+// ── Audit ────────────────────────────────────────────────
+export const audit = {
+  list: (token: string) => request<Record<string, unknown>>("/api/audit", { token }),
+};
+
+// ── Consent ──────────────────────────────────────────────
+export const consent = {
+  get: (token: string) => request<Record<string, unknown>>("/api/consent", { token }),
+};
+
+// ── Agency ───────────────────────────────────────────────
+export const agency = {
+  get: (token: string) => request<Record<string, unknown>>("/api/agency", { token }),
+};
+
+// ── Workflow ─────────────────────────────────────────────
+export const workflow = {
+  list: (token: string) => request<Record<string, unknown>>("/api/workflow", { token }),
+};
+
+// ── Scenarios ────────────────────────────────────────────
+export const scenarios = {
+  get: (token: string) => request<Record<string, unknown>>("/api/scenarios", { token }),
+};
+
+// ── MMM (Media Mix Modelling) ────────────────────────────
+export const mmm = {
+  get: (token: string) => request<Record<string, unknown>>("/api/mmm", { token }),
+};
+
+// ── B2B Attribution ──────────────────────────────────────
+export const b2b = {
+  get: (token: string) => request<Record<string, unknown>>("/api/b2b", { token }),
+};
+
+// ── Margin ───────────────────────────────────────────────
+export const margin = {
+  get: (token: string) => request<Record<string, unknown>>("/api/margin", { token }),
+};
+
+// ── Profit Margin ────────────────────────────────────────
+export const profitMargin = {
+  get: (token: string) => request<Record<string, unknown>>("/api/profit-margin", { token }),
+};
+
+// ── Competitive ──────────────────────────────────────────
+export const competitive = {
+  get: (token: string) => request<Record<string, unknown>>("/api/competitive", { token }),
+};
+
+// ── Intelligence ─────────────────────────────────────────
+export const intelligence = {
+  get: (token: string) => request<Record<string, unknown>>("/api/intelligence", { token }),
+};
+
+// ── Warehouse ────────────────────────────────────────────
+export const warehouse = {
+  get: (token: string) => request<Record<string, unknown>>("/api/warehouse", { token }),
+};
+
+// ── OaaS ─────────────────────────────────────────────────
+export const oaas = {
+  list: (token: string) => request<Record<string, unknown>>("/api/oaas", { token }),
+};
+
+// ── Developer ────────────────────────────────────────────
+export const developer = {
+  get: (token: string) => request<Record<string, unknown>>("/api/developer", { token }),
+};
+
+// ── KYC ──────────────────────────────────────────────────
+export const kyc = {
+  get: (token: string) => request<Record<string, unknown>>("/api/kyc", { token }),
+};
+
+// ── Integrations ─────────────────────────────────────────
+export const integrations = {
+  list: (token: string) => request<Record<string, unknown>>("/api/integrations", { token }),
+};
+
+// ── NL Query ─────────────────────────────────────────────
+export const nlQuery = {
+  query: (data: { query: string; context?: Record<string, unknown> }) =>
+    request<{ answer: string }>("/api/nl-query", { method: "POST", body: JSON.stringify(data) }),
+};
+
+// ── Attribution ──────────────────────────────────────────
+export const attribution = {
+  get: (token: string) => request<Record<string, unknown>>("/api/attribution", { token }),
+};
+
+// ── CAPI Enrich ──────────────────────────────────────────
+export const capi = {
+  enrich: (token: string, data: Record<string, unknown>) =>
+    request<{ ok: boolean; enriched: Record<string, unknown> }>("/api/capi/enrich", { method: "POST", token, body: JSON.stringify(data) }),
+};
+
+// ── Catalog ──────────────────────────────────────────────
+export const catalog = {
+  stats: (token: string) => request<Record<string, unknown>>("/api/catalog/stats", { token }),
+  evaluate: (token: string, data: Record<string, unknown>) =>
+    request<{ ok: boolean }>("/api/catalog/evaluate", { method: "POST", token, body: JSON.stringify(data) }),
+};
+
+// ── Metacognition ────────────────────────────────────────
+export const metacognition = {
+  reflect: (data: Record<string, unknown>) =>
+    request<Record<string, unknown>>("/api/metacognition", { method: "POST", body: JSON.stringify(data) }),
+};
+
+// ── Arbitrage ────────────────────────────────────────────
+export const arbitrage = {
+  run: (token: string) => request<Record<string, unknown>>("/api/arbitrage/run", { method: "POST", token }),
+  history: (token: string) => request<Record<string, unknown>>("/api/arbitrage/history", { token }),
+};
+
+// ── Influencer ───────────────────────────────────────────
+export const influencer = {
+  list: (token: string) => request<Record<string, unknown>>("/api/influencer", { token }),
+};
+
+// ── Incrementality ───────────────────────────────────────
+export const incrementality = {
+  experiment: (token: string, data: Record<string, unknown>) =>
+    request<Record<string, unknown>>("/api/incrementality/experiment", { method: "POST", token, body: JSON.stringify(data) }),
+  results: (token: string, campaignId: string) =>
+    request<Record<string, unknown>>(`/api/incrementality/results?campaignId=${campaignId}`, { token }),
+};
+
+// ── GDPR ─────────────────────────────────────────────────
+export const gdpr = {
+  request: (token: string, data: { action: "delete" | "export"; userId: string }) =>
+    request<{ ok: boolean }>("/api/gdpr", { method: "POST", token, body: JSON.stringify(data) }),
+};
+
+// ── Sync ─────────────────────────────────────────────────
+export const sync = {
+  run: (token: string, data: { platform: string }) =>
+    request<{ ok: boolean }>("/api/sync", { method: "POST", token, body: JSON.stringify(data) }),
 };

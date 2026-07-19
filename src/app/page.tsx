@@ -144,7 +144,7 @@ export default function HomePage() {
       </div>
 
       {/* ── HERO ─────────────────────────────────────── */}
-      <section className="relative flex flex-col items-center min-h-screen overflow-hidden py-[90px] px-12" style={{background:K.void}}>
+      <section className="relative flex flex-col items-center min-h-screen overflow-hidden py-[90px] px-6 md:px-12" style={{background:K.void}}>
         {/* Grid */}
         <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)`,backgroundSize:"56px 56px",WebkitMaskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",maskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",pointerEvents:"none"}}/>
         {/* Glows */}
@@ -198,17 +198,17 @@ export default function HomePage() {
             </div>
           </div>
           {/* Column headers */}
-          <div className="grid grid-cols-[100px_130px_66px_1fr] px-5 pt-[5px] pb-1 bg-[#060610]" style={{borderBottom:"1px solid rgba(255,255,255,0.03)"}}>
+          <div className="grid grid-cols-[60px_90px_50px_1fr] md:grid-cols-[100px_130px_66px_1fr] px-3 md:px-5 pt-[5px] pb-1 bg-[#060610]" style={{borderBottom:"1px solid rgba(255,255,255,0.03)"}}>
             {["TIMESTAMP","SERVICE","LEVEL","OUTPUT"].map(h=>(
-              <span key={h} className="font-mono text-[8px] tracking-[0.14em] text-t4">{h}</span>
+              <span key={h} className="font-mono text-[7px] md:text-[8px] tracking-[0.14em] text-t4">{h}</span>
             ))}
           </div>
           {/* Log lines */}
-          <div className="px-5 pt-[14px] pb-5 min-h-[190px]">
+          <div className="px-3 md:px-5 pt-[14px] pb-5 min-h-[190px] overflow-x-auto">
             {TERMINAL.slice(0,termIdx).map((line,i)=>(
-              <div key={i} className="grid grid-cols-[100px_130px_66px_1fr] items-baseline" style={{lineHeight:1.95}}>
-                <span className="font-mono text-[10px] text-[#2a2a44]">{line.ts}</span>
-                <span className="font-mono text-[10px] text-t3">{line.svc}</span>
+              <div key={i} className="grid grid-cols-[60px_90px_50px_1fr] md:grid-cols-[100px_130px_66px_1fr] items-baseline" style={{lineHeight:1.95}}>
+                <span className="font-mono text-[8px] md:text-[10px] text-[#2a2a44]">{line.ts}</span>
+                <span className="font-mono text-[8px] md:text-[10px] text-t3 truncate">{line.svc}</span>
                 <span style={{fontFamily:K.mono,fontSize:10,fontWeight:700,color:line.color}}>{line.lvl}</span>
                 {line.special?(
                   <span className="font-mono text-[11px]">
@@ -230,9 +230,9 @@ export default function HomePage() {
         </div>
 
         {/* Stats bar */}
-        <div className="relative z-[1] w-full max-w-[900px] flex overflow-hidden" style={{background:"#050510",border:`1px solid ${K.g800}`,borderTop:`1px solid ${K.g700}`}}>
+        <div className="relative z-[1] w-full max-w-[900px] flex flex-wrap overflow-hidden" style={{background:"#050510",border:`1px solid ${K.g800}`,borderTop:`1px solid ${K.g700}`}}>
           {[["8","PLATFORMS"],["28","SIGNAL FEATURES"],["5","AI AGENTS"],["4","LTV TIERS"],["<100ms","ENRICHMENT P99"]].map(([v,l],i,arr)=>(
-            <div key={l} className="flex-1 py-4 px-[18px] text-center" style={{borderRight:i<arr.length-1?`1px solid ${K.g800}`:"none"}}>
+            <div key={l} className="flex-1 min-w-[140px] py-4 px-[18px] text-center" style={{borderRight:i<arr.length-1?`1px solid ${K.g800}`:"none",borderBottom:`1px solid ${K.g800}`}}>
               <div className="font-mono font-bold text-[20px] text-t1 tracking-[-0.02em]">{v}</div>
               <div className="font-mono text-[8px] tracking-[0.14em] text-t4 mt-[5px]">{l}</div>
             </div>
@@ -259,7 +259,7 @@ export default function HomePage() {
       </section>
 
       {/* ── HOW IT WORKS ───────────────────────────────── */}
-      <section className="py-[100px] px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
+      <section className="py-[100px] px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
         <div className="max-w-[1000px] mx-auto">
           <div className="text-center mb-14">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">HOW IT WORKS</p>
@@ -281,7 +281,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FEATURES GRID ──────────────────────────────── */}
-      <section className="py-[100px] px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+      <section className="py-[100px] px-6 md:px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
         <div className="max-w-[1060px] mx-auto">
           <div className="text-center mb-14">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">THE PLATFORM</p>
@@ -314,7 +314,7 @@ export default function HomePage() {
       </section>
 
       {/* ── SOCIAL PROOF ───────────────────────────────── */}
-      <section className="py-[100px] px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
+      <section className="py-[100px] px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
         <div className="max-w-[960px] mx-auto">
           <div className="text-center mb-14">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">RESULTS</p>
@@ -360,7 +360,7 @@ export default function HomePage() {
       </section>
 
       {/* ── VS COMPARISON ──────────────────────────────── */}
-      <section className="py-20 px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+      <section className="py-20 px-6 md:px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
         <div className="max-w-[860px] mx-auto">
           <div className="text-center mb-10">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">WHY KIKI</p>
@@ -397,7 +397,7 @@ export default function HomePage() {
       </section>
 
       {/* ── PRICING PREVIEW ────────────────────────────── */}
-      <section className="py-20 px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
+      <section className="py-20 px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
         <div className="max-w-[900px] mx-auto">
           <div className="text-center mb-10">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">PRICING</p>
@@ -441,7 +441,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FINAL CTA ──────────────────────────────────── */}
-      <section className="py-[120px] px-12 text-center relative overflow-hidden" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+      <section className="py-[120px] px-6 md:px-12 text-center relative overflow-hidden" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] blur-[80px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(0,92,255,0.10) 0%,transparent 65%)"}}/>
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] blur-[60px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(49,243,195,0.06) 0%,transparent 70%)"}}/>
         <div className="relative z-[1] max-w-[640px] mx-auto">

@@ -26,22 +26,24 @@ export default function FraudIVTPage() {
       .catch(() => setLoading(false));
   }, [token]);
 
+  const knownCount = (stats?.bySeverity?.high || 0) + (stats?.bySeverity?.medium || 0) + (stats?.bySeverity?.low || 0);
+  const botCount = stats ? Math.max(0, stats.totalDetected - knownCount) : 0;
   const ivtTypes = [
     { type: "Click Fraud", count: stats?.bySeverity?.high || 0, severity: "high", desc: "Automated click generation" },
     { type: "Impression Fraud", count: stats?.bySeverity?.medium || 0, severity: "medium", desc: "Hidden/stacked ad impressions" },
     { type: "Domain Spoofing", count: stats?.bySeverity?.low || 0, severity: "high", desc: "Fake publisher domains" },
-    { type: "Bot Traffic", count: stats ? Math.round(stats.totalDetected * 0.08) : 0, severity: "medium", desc: "Non-human traffic patterns" },
+    { type: "Bot Traffic", count: botCount, severity: "medium", desc: "Non-human traffic patterns" },
   ];
 
-  const totalBlocked = stats?.totalBlocked || 0;
-  const protectionRules = [
-    { name: "Click Fraud Filter", status: "active", color: K.mint, blocked: Math.round(totalBlocked * 0.34) },
-    { name: "Bot Detection Engine", status: "active", color: K.mint, blocked: Math.round(totalBlocked * 0.16) },
-    { name: "Domain Verification", status: "active", color: K.mint, blocked: Math.round(totalBlocked * 0.12) },
-    { name: "Session Validation", status: "active", color: K.mint, blocked: Math.round(totalBlocked * 0.22) },
-    { name: "Duplicate Detection", status: "active", color: K.mint, blocked: Math.round(totalBlocked * 0.08) },
-    { name: "Velocity Check", status: "active", color: K.mint, blocked: Math.round(totalBlocked * 0.08) },
-  ];
+  const knownBlocked = stats?.bySeverity ? Object.values(stats.bySeverity).reduce((a, b) => a + b, 0) : 0;
+  const ruleNames = ["Click Fraud Filter", "Bot Detection Engine", "Domain Verification", "Session Validation", "Duplicate Detection", "Velocity Check"];
+  const ruleCount = ruleNames.length;
+  const protectionRules = ruleNames.map(name => ({
+    name,
+    status: "active" as const,
+    color: K.mint,
+    blocked: stats && (stats.totalBlocked || 0) > 0 ? Math.round((stats.totalBlocked || 0) / ruleCount) : 0,
+  }));
 
   return (
     <DashboardLayout>

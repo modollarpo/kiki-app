@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, Button, AIThinking, ProgressBar, StatusBadge } from "@/components/ui";
+import { StatCard, Card, Badge, Button, AIThinking, ProgressBar, StatusBadge, ScrollableTable } from "@/components/ui";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { useKikiStore } from "@/store";
 import { useAuth } from "@/hooks/useAuth";
@@ -105,7 +105,7 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
         {/* Header */}
-        <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="mb-5 flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <h1 className="font-mono font-bold text-[clamp(16px,2.5vw,18px)] text-t1 tracking-tight mb-1">Command Center</h1>
             <p className="font-mono text-[11px] text-t3 overflow-hidden text-ellipsis whitespace-nowrap">
@@ -136,7 +136,7 @@ export default function DashboardPage() {
               <Button size="sm" onClick={() => router.push("/dashboard/campaigns")}>View All →</Button>
             </div>
             {/* Table header */}
-            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <ScrollableTable>
               <div className="min-w-[500px]">
                 <div className="grid grid-cols-[1fr_65px_65px_65px_65px] gap-2 px-5 py-2 border-b border-kcardborder bg-g950">
               {["NAME", "STATUS", "ROAS", "BUDGET", "AGENT"].map(h => (
@@ -164,7 +164,7 @@ export default function DashboardPage() {
               </div>
             ))}
               </div>
-            </div>
+            </ScrollableTable>
           </Card>
 
           <Card accent={K.blue}>
