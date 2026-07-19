@@ -50,7 +50,7 @@ export default function CampaignsPage() {
               {loading ? "Loading..." : `${campaignList.length} campaigns · ${active.length} active · Bidding Agent active`}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="page-header-actions">
             <Button variant="secondary" size="sm">⬡ Zero-Shot Create</Button>
             <Button size="sm" onClick={() => setCreating(true)}>+ New Campaign</Button>
           </div>
@@ -65,7 +65,7 @@ export default function CampaignsPage() {
 
         {creating && (
           <div className="mb-4 p-5 bg-koaas/10 border border-koaas/40 rounded-kdls">
-            <div className="flex items-center justify-between mb-[14px]">
+            <div className="page-header-row">
               <span className="font-mono text-[13px] font-bold text-koaas">⬡ New Campaign</span>
               <Button size="xs" variant="ghost" onClick={() => setCreating(false)}>✕</Button>
             </div>
@@ -79,7 +79,7 @@ export default function CampaignsPage() {
               <input type="number" placeholder="Budget" value={newBudget} onChange={e => setNewBudget(Number(e.target.value))}
                 className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-[11px] text-t1 outline-none" />
             </div>
-            <div className="flex gap-2">
+            <div className="page-header-actions">
               <Button variant="violet" size="md" onClick={handleCreate}>Create Campaign →</Button>
               <Button variant="ghost" size="md" onClick={() => setCreating(false)}>Cancel</Button>
             </div>

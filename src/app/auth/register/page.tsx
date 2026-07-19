@@ -58,7 +58,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 relative overflow-hidden min-h-dvh" style={{ background: K.void }}>
+    <div className="min-h-dvh flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-x-hidden" style={{ background: K.void }}>
       <div
         className="absolute inset-0 opacity-40 pointer-events-none"
         style={{

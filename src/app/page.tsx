@@ -137,14 +137,14 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-[5px] px-[18px] border-l border-g800 h-full shrink-0 ml-auto">
+        <div className="hidden sm:flex items-center gap-[5px] px-[18px] border-l border-g800 h-full shrink-0 ml-auto">
           <span style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
           <span className="font-mono text-[8px] tracking-[0.1em] text-t4">ALL SYSTEMS NOMINAL</span>
         </div>
       </div>
 
       {/* ── HERO ─────────────────────────────────────── */}
-      <section className="relative flex flex-col items-center overflow-hidden py-[60px] px-6 md:px-12" style={{background:K.void}}>
+      <section className="relative flex flex-col items-center overflow-hidden px-4 sm:px-6 md:px-12" style={{background:K.void, paddingTop:"clamp(48px,10vw,100px)", paddingBottom:"clamp(48px,8vw,100px)"}}>
         {/* Grid */}
         <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)`,backgroundSize:"56px 56px",WebkitMaskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",maskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",pointerEvents:"none"}}/>
         {/* Glows */}
@@ -154,13 +154,13 @@ export default function HomePage() {
         {/* Content */}
         <div className="relative z-[1] text-center max-w-[1000px]" style={{opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(22px)",transition:"all 0.85s cubic-bezier(0.16,1,0.3,1)"}}>
           {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 rounded-kdls px-4 py-[7px] mb-10 max-w-full overflow-x-auto" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-kdls px-3 sm:px-4 py-[7px] mb-8 md:mb-10 max-w-full" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
             <span className="animate-kdls-pulse shrink-0" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-            <span className="whitespace-nowrap" style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.15em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · SOC2 TYPE II</span>
+            <span className="text-center" style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.12em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · SOC2 TYPE II</span>
           </div>
 
           {/* Headline */}
-          <h1 className="font-mono font-bold text-[clamp(40px,7vw,82px)] leading-none tracking-[-0.045em] mb-[30px]">
+          <h1 className="font-mono font-bold text-[clamp(28px,7vw,82px)] leading-none tracking-[-0.045em] mb-[30px] break-words">
             <span className="block text-[#7070a0] mb-[3px]">Your ad platforms are</span>
             <span className="block text-[#ccccdd] mb-[3px]">learning from</span>
             <span className="block" style={{background:`linear-gradient(110deg,${K.blue} 0%,#5599FF 40%,${K.mint} 100%)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
@@ -169,7 +169,7 @@ export default function HomePage() {
           </h1>
 
           {/* Sub */}
-          <p className="max-w-[580px] mx-auto mb-[46px] font-[300] leading-[1.8] tracking-[-0.01em] text-[#666688]" style={{fontFamily:"Inter,system-ui,sans-serif",fontSize:18}}>
+          <p className="max-w-[580px] mx-auto mb-[36px] md:mb-[46px] font-[300] leading-[1.8] tracking-[-0.01em] text-[#666688]" style={{fontFamily:"Inter,system-ui,sans-serif",fontSize:"clamp(14px,2.5vw,18px)"}}>
             KIKI intercepts every conversion, predicts 90-day customer LTV with ML, and feeds enriched signals to Meta, Google, TikTok, and 11 other platforms —{" "}
             <span style={{color:"#8888aa"}}>before they see the raw order value.</span>
           </p>
@@ -185,13 +185,13 @@ export default function HomePage() {
         </div>
 
         {/* ── TERMINAL ─────────────────────────────────── */}
-        <div className="relative z-[1] mt-[72px] w-full max-w-[900px] rounded-kdls overflow-hidden bg-[#04040D]" style={{border:`1px solid ${K.g700}`,boxShadow:"0 40px 100px rgba(0,0,0,0.75),0 0 0 1px rgba(255,255,255,0.04)"}}>
+        <div className="relative z-[1] mt-[40px] md:mt-[72px] w-full max-w-[900px] rounded-kdls overflow-hidden bg-[#04040D]" style={{border:`1px solid ${K.g700}`,boxShadow:"0 40px 100px rgba(0,0,0,0.75),0 0 0 1px rgba(255,255,255,0.04)"}}>
           {/* Chrome bar */}
           <div className="flex items-center gap-2 px-[18px] py-3 bg-[#070710] border-b border-g800">
             <div className="flex gap-1.5">
               {[K.danger,K.warn,K.pos].map((c,i)=><div key={i} style={{width:11,height:11,borderRadius:"50%",background:c,opacity:0.75}}/>)}
             </div>
-            <span className="flex-1 text-center font-mono text-[10px] text-t4">kiki-capi-gateway &nbsp;·&nbsp; production &nbsp;·&nbsp; tenant: acme-corp</span>
+            <span className="flex-1 text-center font-mono text-[10px] text-t4 truncate">kiki-capi-gateway<span className="hidden sm:inline"> &nbsp;·&nbsp; production &nbsp;·&nbsp; tenant: acme-corp</span></span>
             <div className="flex items-center gap-[5px]">
               <span className="animate-kdls-pulse" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
               <span className="font-mono text-[9px] text-kmint">1.2M events/day</span>
@@ -232,16 +232,16 @@ export default function HomePage() {
         {/* Stats bar */}
         <div className="relative z-[1] w-full max-w-[900px] flex flex-wrap overflow-hidden" style={{background:"#050510",border:`1px solid ${K.g800}`,borderTop:`1px solid ${K.g700}`}}>
           {[["8","PLATFORMS"],["28","SIGNAL FEATURES"],["5","AI AGENTS"],["4","LTV TIERS"],["<100ms","ENRICHMENT P99"]].map(([v,l],i,arr)=>(
-            <div key={l} className="flex-1 min-w-[140px] py-4 px-[18px] text-center" style={{borderRight:i<arr.length-1?`1px solid ${K.g800}`:"none",borderBottom:`1px solid ${K.g800}`}}>
-              <div className="font-mono font-bold text-[20px] text-t1 tracking-[-0.02em]">{v}</div>
+            <div key={l} className="stats-bar-item flex-1 min-w-[calc(33%-1px)] sm:min-w-[140px] py-4 px-[18px] text-center" style={{borderRight:i<arr.length-1?`1px solid ${K.g800}`:"none",borderBottom:`1px solid ${K.g800}`}}>
+              <div className="font-mono font-bold text-[clamp(16px,3vw,20px)] text-t1 tracking-[-0.02em]">{v}</div>
               <div className="font-mono text-[8px] tracking-[0.14em] text-t4 mt-[5px]">{l}</div>
             </div>
           ))}
         </div>
 
         {/* Platform logos */}
-        <div className="relative z-[1] mt-[clamp(20px,4vw,44px)] w-full max-w-[900px] text-center">
-          <p className="font-mono text-[8px] tracking-[0.18em] text-t4 mb-4.5">ENRICHES SIGNALS ACROSS 14 AD PLATFORMS</p>
+        <div className="relative z-[1] mt-[clamp(20px,4vw,44px)] w-full max-w-[900px] text-center px-2">
+          <p className="font-mono text-[8px] tracking-[0.18em] text-t4 mb-4.5 break-words">ENRICHES SIGNALS ACROSS 14 AD PLATFORMS</p>
           <div className="flex gap-2 flex-wrap justify-center">
             {PLATFORMS.map(p=>{
               const c=PLATFORM_COLORS[p]||K.t3;
@@ -259,11 +259,11 @@ export default function HomePage() {
       </section>
 
       {/* ── HOW IT WORKS ───────────────────────────────── */}
-      <section className="py-[100px] px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
+      <section className="marketing-section px-4 sm:px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`, paddingTop:"clamp(60px,8vw,100px)", paddingBottom:"clamp(60px,8vw,100px)"}}>
         <div className="max-w-[1000px] mx-auto">
           <div className="text-center mb-14">
-            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">HOW IT WORKS</p>
-            <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em]">
+            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5 break-words">HOW IT WORKS</p>
+            <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em] break-words">
               From conversion to enriched signal in 341ms.
             </h2>
           </div>
@@ -281,7 +281,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FEATURES GRID ──────────────────────────────── */}
-      <section className="py-[100px] px-6 md:px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+      <section className="marketing-section px-4 sm:px-6 md:px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void, paddingTop:"clamp(60px,8vw,100px)", paddingBottom:"clamp(60px,8vw,100px)"}}>
         <div className="max-w-[1060px] mx-auto">
           <div className="text-center mb-14">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">THE PLATFORM</p>
@@ -314,13 +314,13 @@ export default function HomePage() {
       </section>
 
       {/* ── SOCIAL PROOF ───────────────────────────────── */}
-      <section className="py-[100px] px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
+      <section className="marketing-section px-4 sm:px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`, paddingTop:"clamp(60px,8vw,100px)", paddingBottom:"clamp(60px,8vw,100px)"}}>
         <div className="max-w-[960px] mx-auto">
           <div className="text-center mb-14">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">RESULTS</p>
             <h2 className="font-mono font-bold text-[clamp(24px,4vw,40px)] text-t1 tracking-[-0.03em]">Measured in revenue. Not vanity metrics.</h2>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-g800 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-g800 mb-6">
             {PROOF.map((p,i)=>(
               <div key={i} className="p-8 text-center cursor-default transition-all duration-[250ms] relative overflow-hidden" style={{background:K.g900}}
                 onMouseEnter={e=>{(e.currentTarget.style.background=K.g850);(e.currentTarget.style.transform="translateY(-3px)");}}
@@ -360,7 +360,7 @@ export default function HomePage() {
       </section>
 
       {/* ── VS COMPARISON ──────────────────────────────── */}
-      <section className="py-20 px-6 md:px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+      <section className="marketing-section px-4 sm:px-6 md:px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void, paddingTop:"clamp(48px,6vw,80px)", paddingBottom:"clamp(48px,6vw,80px)"}}>
         <div className="max-w-[860px] mx-auto">
           <div className="text-center mb-10">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">WHY KIKI</p>
@@ -397,7 +397,7 @@ export default function HomePage() {
       </section>
 
       {/* ── PRICING PREVIEW ────────────────────────────── */}
-      <section className="py-20 px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`}}>
+      <section className="marketing-section px-4 sm:px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`, paddingTop:"clamp(48px,6vw,80px)", paddingBottom:"clamp(48px,6vw,80px)"}}>
         <div className="max-w-[900px] mx-auto">
           <div className="text-center mb-10">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">PRICING</p>
@@ -408,7 +408,7 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
             {PLANS.map(p=>(
               <div key={p.name}
                 style={{padding:28,background:p.hot?K.blueD:K.g900,border:`${p.hot?2:1}px solid ${p.hot?K.blue:K.g800}`,borderRadius:2,position:"relative",transition:"all 0.2s"}}
@@ -441,15 +441,15 @@ export default function HomePage() {
       </section>
 
       {/* ── FINAL CTA ──────────────────────────────────── */}
-      <section className="py-[120px] px-6 md:px-12 text-center relative overflow-hidden" style={{borderTop:`1px solid ${K.g800}`,background:K.void}}>
+      <section className="marketing-hero px-4 sm:px-6 md:px-12 text-center relative overflow-hidden" style={{borderTop:`1px solid ${K.g800}`,background:K.void, paddingTop:"clamp(64px,10vw,120px)", paddingBottom:"clamp(64px,10vw,120px)"}}>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] blur-[80px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(0,92,255,0.10) 0%,transparent 65%)"}}/>
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] blur-[60px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(49,243,195,0.06) 0%,transparent 70%)"}}/>
         <div className="relative z-[1] max-w-[640px] mx-auto">
-          <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-5">GET STARTED IN UNDER 10 MINUTES</p>
-          <h2 className="font-mono font-bold text-[clamp(28px,5.5vw,58px)] text-t1 mb-5 tracking-[-0.045em] leading-[1.02]">
-            Your campaigns are teaching<br/>platforms the <span className="text-kblue">wrong lesson.</span>
+          <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-5 break-words">GET STARTED IN UNDER 10 MINUTES</p>
+          <h2 className="font-mono font-bold text-[clamp(24px,5.5vw,58px)] text-t1 mb-5 tracking-[-0.045em] leading-[1.02] break-words">
+            Your campaigns are teaching<br className="hidden sm:block"/>platforms the <span className="text-kblue">wrong lesson.</span>
           </h2>
-          <p className="font-sans text-base text-t3 leading-[1.75] max-w-[500px] mx-auto mb-10">
+          <p className="font-sans text-base text-t3 leading-[1.75] max-w-[500px] mx-auto mb-10 px-4">
             Connect your first ad account in 15 minutes. KIKI starts enriching every conversion immediately.
           </p>
           <div className="flex gap-3 justify-center flex-wrap mb-6">
