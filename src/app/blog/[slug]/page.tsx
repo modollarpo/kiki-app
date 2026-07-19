@@ -41,7 +41,7 @@ export default function BlogPostPage() {
         </div>
         <div className="mt-14 pt-8 border-t border-g800">
           <p className="font-mono text-[10px] tracking-[0.18em] text-t4 mb-5">RELATED READS</p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {related.map((r) => (
               <Link key={r.slug} href={`/blog/${r.slug}`} className="p-5 bg-g900 border border-g800 rounded-sm transition-all relative overflow-hidden"
                 onMouseEnter={(e: React.MouseEvent<HTMLElement>) => {(e.currentTarget.style.background = K.g850);(e.currentTarget.style.transform = "translateY(-2px)");}} onMouseLeave={(e: React.MouseEvent<HTMLElement>) => {(e.currentTarget.style.background = K.g900);(e.currentTarget.style.transform = "none");}}>

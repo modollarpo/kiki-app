@@ -16,13 +16,13 @@ const CONTROLS = [
 export default function SecurityPage() {
   return (
     <MarketingLayout>
-      <div className="py-20 px-12 max-w-[960px] mx-auto" style={{ background:K.void }}>
+      <div className="py-[clamp(40px,6vw,80px)_clamp(16px,4vw,48px)] max-w-[960px] mx-auto" style={{ background:K.void }}>
         <div className="text-center mb-15">
           <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center mx-auto mb-4 text-[28px]" style={{ background:K.mintD }}>🛡</div>
           <h1 className="font-mono font-bold text-[clamp(28px,5vw,48px)] tracking-[-0.03em] text-t1 mb-4">Security at KIKI</h1>
           <p className="font-sans text-[16px] text-t3 max-w-[500px] mx-auto">Enterprise-grade security built into every layer of the platform.</p>
         </div>
-        <div className="grid grid-cols-3 gap-4 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
           {CONTROLS.map(c=>(
             <div key={c.title} className="p-6 bg-g900 border border-g800 rounded-sm">
               <div className="absolute top-0 left-0 right-0 h-px" style={{ background:`linear-gradient(90deg,transparent,${c.color}60,transparent)` }} />

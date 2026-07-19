@@ -154,12 +154,16 @@ export default function ConsentPage() {
         <div className="mb-10">
           <h2 className="font-mono font-bold text-[16px] text-t1 mb-4">Data Retention Policy</h2>
           <div className="border border-g800 rounded-sm overflow-hidden">
-            {DATA_RETENTION.map((item, i) => (
-              <div key={i} className="grid grid-cols-[200px_1fr] py-3 px-4 bg-g900" style={{ borderBottom: i < DATA_RETENTION.length - 1 ? `1px solid ${K.g900}` : "none" }}>
-                <span className="font-mono font-semibold text-[12px] text-t1">{item.category}</span>
-                <span className="font-sans text-[12px] text-t3">{item.retention}</span>
+            <div className="overflow-x-auto">
+              <div className="min-w-[400px]">
+                {DATA_RETENTION.map((item, i) => (
+                  <div key={i} className="grid grid-cols-[200px_1fr] py-3 px-4 bg-g900" style={{ borderBottom: i < DATA_RETENTION.length - 1 ? `1px solid ${K.g900}` : "none" }}>
+                    <span className="font-mono font-semibold text-[12px] text-t1">{item.category}</span>
+                    <span className="font-sans text-[12px] text-t3">{item.retention}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
 

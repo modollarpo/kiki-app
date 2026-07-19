@@ -41,9 +41,9 @@ export default function ContactPage() {
 
   return (
     <MarketingLayout>
-      <div className="min-h-[80vh] flex items-center justify-center px-12 py-20" style={{ background:K.void }}>
+      <div className="min-h-[80vh] flex items-center justify-center px-6 md:px-12 py-[clamp(40px,6vw,80px)]" style={{ background:K.void }}>
         <div className="w-full max-w-[960px]">
-          <div className="grid grid-cols-2 gap-12 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-start">
             <div>
               <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">GET IN TOUCH</p>
               <h1 className="font-mono font-bold text-[clamp(28px,4vw,44px)] tracking-[-0.03em] text-t1 mb-4">Let&apos;s talk.</h1>

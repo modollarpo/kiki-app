@@ -15,12 +15,12 @@ const TEAM = [
 export default function AboutPage() {
   return (
     <MarketingLayout>
-      <div className="py-20 px-12 max-w-[960px] mx-auto" style={{ background:K.void }}>
+      <div className="py-[clamp(40px,6vw,80px)_clamp(16px,4vw,48px)] max-w-[960px] mx-auto" style={{ background:K.void }}>
         <div className="mb-14">
           <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">ABOUT</p>
           <h1 className="font-mono font-bold text-[clamp(28px,5vw,52px)] tracking-[-0.04em] text-t1 mb-5 leading-[1.05]">We built the platform<br/>we needed.</h1>
           <p className="font-sans text-[17px] text-t3 leading-[1.7] max-w-[600px] mb-10">After 10 years running performance campaigns across Meta, Google, and TikTok, we got tired of optimizing for first-order value instead of real customer LTV. So we built KIKI.</p>
-          <div className="grid grid-cols-3 gap-4 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
             {[["2024","Founded"],["8","Platform integrations"],["5","Autonomous AI agents"]].map(([v,l])=>(
               <div key={l} className="p-6 bg-g900 border border-g800 rounded-sm text-center">
                 <p className="font-mono text-[36px] font-bold text-kblue">{v}</p>
@@ -32,7 +32,7 @@ export default function AboutPage() {
         <div className="h-px mb-12" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
         <div>
           <h2 className="font-mono font-bold text-[28px] tracking-tight text-t1 mb-8">The team</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {TEAM.map(p=>(
               <div key={p.name} className="p-5 bg-g900 border border-g800 rounded-sm cursor-default transition-all duration-200"
                 onMouseEnter={e=>{(e.currentTarget.style.background=K.g850);}} onMouseLeave={e=>{(e.currentTarget.style.background=K.g900);}}>

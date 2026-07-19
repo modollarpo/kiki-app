@@ -67,7 +67,7 @@ export default function RegisterPage() {
         }}
       />
       <div
-        className="absolute pointer-events-none"
+        className="absolute pointer-events-none max-w-full overflow-hidden"
         style={{
           top: "30%",
           left: "50%",

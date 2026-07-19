@@ -70,15 +70,19 @@ export default function OaaSAgreementPage() {
           <div>
             <h2 className="font-mono font-bold text-[16px] text-t1 mb-5">Scope of Services — {selected}</h2>
             <div className="border border-g800 rounded-sm overflow-hidden mb-6">
-              <div className="grid grid-cols-[200px_1fr] py-2 px-4 bg-g950 border-b border-g800">
-                {["SERVICE AREA","DELIVERABLE"].map(h => <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>)}
-              </div>
-              {SCOPE.map((r,i) => (
-                <div key={i} className="grid grid-cols-[200px_1fr] py-[13px] px-4 bg-g900 items-start gap-4" style={{ borderBottom:i<SCOPE.length-1?`1px solid ${K.g900}`:"none" }}>
-                  <span className="font-mono font-bold text-[11px]" style={{ color:tier.color }}>{r.area}</span>
-                  <span className="font-sans text-[13px] text-t2 leading-[1.6]">{r.deliverable}</span>
+              <div className="overflow-x-auto">
+                <div className="min-w-[400px]">
+                  <div className="grid grid-cols-[200px_1fr] py-2 px-4 bg-g950 border-b border-g800">
+                    {["SERVICE AREA","DELIVERABLE"].map(h => <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>)}
+                  </div>
+                  {SCOPE.map((r,i) => (
+                    <div key={i} className="grid grid-cols-[200px_1fr] py-[13px] px-4 bg-g900 items-start gap-4" style={{ borderBottom:i<SCOPE.length-1?`1px solid ${K.g900}`:"none" }}>
+                      <span className="font-mono font-bold text-[11px]" style={{ color:tier.color }}>{r.area}</span>
+                      <span className="font-sans text-[13px] text-t2 leading-[1.6]">{r.deliverable}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
             <div className="p-4 rounded-sm mb-5" style={{ background:K.oaasT, border:`1px solid ${K.oaas}25` }}>
               <p className="font-mono font-bold text-[12px] mb-1.5" style={{ color:K.oaas }}>⬡ Performance Guarantee</p>

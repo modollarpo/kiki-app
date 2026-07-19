@@ -8,7 +8,7 @@ import { POSTS } from "@/lib/blog";
 export default function BlogPage() {
   return (
     <MarketingLayout>
-      <div style={{ background:K.void }} className="p-20 px-12 max-w-[960px] mx-auto">
+      <div style={{ background:K.void }} className="p-[clamp(40px,6vw,80px)_clamp(16px,4vw,48px)] max-w-[960px] mx-auto">
         <div className="mb-12">
           <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">BLOG</p>
           <h1 className="font-mono font-bold text-[clamp(28px,5vw,48px)] tracking-[-0.03em] text-t1">Ideas from the KIKI team.</h1>
@@ -29,7 +29,7 @@ export default function BlogPage() {
             </div>
           </Link>
         ))}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {POSTS.filter(p=>!p.featured).map(p=>(
             <Link key={p.slug} href={`/blog/${p.slug}`} className="block p-6 bg-g900 border border-g800 rounded-sm transition-all relative overflow-hidden"
               onMouseEnter={(e: React.MouseEvent<HTMLElement>) => {(e.currentTarget.style.background = K.g850);(e.currentTarget.style.transform = "translateY(-2px)");}} onMouseLeave={(e: React.MouseEvent<HTMLElement>) => {(e.currentTarget.style.background = K.g900);(e.currentTarget.style.transform = "none");}}>
