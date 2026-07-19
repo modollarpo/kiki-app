@@ -144,7 +144,7 @@ export default function HomePage() {
       </div>
 
       {/* ── HERO ─────────────────────────────────────── */}
-      <section className="relative flex flex-col items-center min-h-screen overflow-hidden py-[90px] px-6 md:px-12" style={{background:K.void}}>
+      <section className="relative flex flex-col items-center overflow-hidden py-[clamp(48px,8vw,80px)] px-6 md:px-12" style={{background:K.void}}>
         {/* Grid */}
         <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)`,backgroundSize:"56px 56px",WebkitMaskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",maskImage:"radial-gradient(ellipse 90% 70% at 50% 0%,black 0%,transparent 80%)",pointerEvents:"none"}}/>
         {/* Glows */}
