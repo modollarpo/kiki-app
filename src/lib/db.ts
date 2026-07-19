@@ -43,7 +43,7 @@ class PgStatement {
   constructor(private db: PgDb, private sql: string) {}
 
   // SQLite-only functions that we emulate via a tracked session value.
-  private interceptSynthetic(): any | null {
+  private interceptSynthetic(): Record<string, unknown> | null {
     const norm = this.sql.toLowerCase().replace(/\s+/g, " ");
     if (norm.includes("select changes()") || norm.includes("select changes ()")) {
       const m = this.sql.match(/changes\(\)\s+as\s+([a-z0-9_]+)/i);
@@ -77,18 +77,18 @@ class PgStatement {
     return { lastInsertRowid, changes };
   }
 
-  async get(...params: any[]): Promise<any> {
+  async get<T = Record<string, unknown>>(...params: any[]): Promise<T | undefined> {
     const synthetic = this.interceptSynthetic();
-    if (synthetic !== null) return synthetic;
+    if (synthetic !== null) return synthetic as T;
     const res = await pool.query(translate(this.sql), params);
-    return res.rows[0] ?? undefined;
+    return (res.rows[0] ?? undefined) as T | undefined;
   }
 
-  async all(...params: any[]): Promise<any[]> {
+  async all<T = Record<string, unknown>>(...params: any[]): Promise<T[]> {
     const synthetic = this.interceptSynthetic();
-    if (synthetic !== null) return [synthetic];
+    if (synthetic !== null) return [synthetic as T];
     const res = await pool.query(translate(this.sql), params);
-    return res.rows;
+    return res.rows as T[];
   }
 }
 

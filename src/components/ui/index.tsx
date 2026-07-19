@@ -39,7 +39,7 @@ export function Button({
     danger: K.danger, mint: K.mint, violet: K.oaas, gold: undefined, teal: undefined,
   };
   const padMap: Record<BtnSize, string> = {
-    xs: "4px 10px", sm: "7px 14px", md: "10px 18px", lg: "12px 24px", xl: "14px 32px",
+    xs: "8px 12px", sm: "7px 14px", md: "10px 18px", lg: "12px 24px", xl: "14px 32px",
   };
   const fsMap: Record<BtnSize, number> = { xs: 10, sm: 11, md: 12, lg: 13, xl: 14 };
   const glow = glowMap[variant];
@@ -290,7 +290,7 @@ export function StatCard({ label, value, delta, period, accent = K.blue, sparkli
         <><Skeleton width="45%" height={28} /><div style={{ marginTop: 8 }}><Skeleton width="35%" height={10} /></div></>
       ) : (
         <>
-          <span className="mono-value" style={{ fontSize: 26, fontWeight: 700, color: K.t1, display: "block" }}>{value}</span>
+          <span className="mono-value" style={{ fontSize: 26, fontWeight: 700, color: K.t1, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span>
           {sub && <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, marginTop: 4 }}>{sub}</p>}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
             {delta !== undefined && (
@@ -358,6 +358,33 @@ export function EmptyState({ icon, title, body, cta, onCta, accent = K.t3 }: {
         <div style={{ marginTop: 16 }}>
           <Button variant="secondary" size="sm" onClick={onCta}>{cta}</Button>
         </div>
+      )}
+    </div>
+  );
+}
+
+// ─── ScrollableTable — horizontal scroll with fade indicator ─
+export function ScrollableTable({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [canScrollRight, setCanScrollRight] = React.useState(false);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => setCanScrollRight(el.scrollWidth > el.clientWidth && el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => { el.removeEventListener("scroll", check); window.removeEventListener("resize", check); };
+  }, []);
+
+  return (
+    <div className={`relative ${className}`}>
+      <div ref={ref} className="overflow-x-auto" style={{ scrollbarWidth: "thin", scrollbarColor: `${K.g700} transparent` }}>
+        {children}
+      </div>
+      {canScrollRight && (
+        <div className="absolute top-0 right-0 bottom-0 w-10 pointer-events-none" style={{ background: `linear-gradient(to right, transparent, ${K.g900})` }} />
       )}
     </div>
   );

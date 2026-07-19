@@ -90,7 +90,7 @@ export default function AgentsPage() {
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
-        <div className="mb-[22px] flex items-start justify-between">
+        <div className="mb-[22px] flex items-start justify-between flex-wrap gap-3">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">AI Agents</h1>
             <p className="font-mono text-[11px] text-t3">

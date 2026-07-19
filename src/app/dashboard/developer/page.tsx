@@ -48,11 +48,7 @@ export default function DeveloperPage() {
     lastUsed: "Recent",
     status: "active",
     calls: u.count > 1000 ? `${(u.count / 1000).toFixed(1)}K` : String(u.count),
-  })) ?? [
-    { name: "Production Key", key: "kiki_prod_sk_8f2a...x9k2", created: "Jun 12, 2026", lastUsed: "2 min ago", status: "active", calls: "142K" },
-    { name: "Staging Key", key: "kiki_stg_sk_3b1c...m7p4", created: "May 28, 2026", lastUsed: "1 hour ago", status: "active", calls: "8.2K" },
-    { name: "Legacy Key", key: "kiki_old_sk_9d4e...w2q1", created: "Jan 3, 2026", lastUsed: "45 days ago", status: "expired", calls: "312K" },
-  ];
+  })) ?? [];
 
   const webhooks = recentActions.length > 0
     ? recentActions.slice(0, 3).map(a => ({
@@ -60,23 +56,14 @@ export default function DeveloperPage() {
         events: [a.actionType],
         status: a.status === "success" ? "active" : "paused",
       }))
-    : [
-        { url: "https://app.kiki.ai/api/webhooks/incoming/slack", events: ["campaign.updated", "alert.fired"], status: "active" },
-        { url: "https://app.kiki.ai/api/webhooks/incoming/custom", events: ["*"], status: "active" },
-        { url: "https://app.kiki.ai/api/webhooks/incoming/zapier", events: ["report.completed"], status: "paused" },
-      ];
+    : [];
 
   const rateLimits = usage?.byType.map(u => ({
     endpoint: `GET /v1/${u.type}`,
     limit: `${Math.max(u.count * 3, 100)}/min`,
     used: `${u.count}/min`,
     pct: Math.min(99, Math.round((u.count / Math.max(u.count * 3, 100)) * 100)),
-  })) ?? [
-    { endpoint: "GET /v1/campaigns", limit: "1,000/min", used: "342/min", pct: 34.2 },
-    { endpoint: "POST /v1/agents/run", limit: "200/min", used: "187/min", pct: 93.5 },
-    { endpoint: "GET /v1/analytics", limit: "500/min", used: "89/min", pct: 17.8 },
-    { endpoint: "POST /v1/creatives", limit: "100/min", used: "12/min", pct: 12 },
-  ];
+  })) ?? [];
 
   return (
     <RoleGuard allowedRoles={["admin", "superadmin"]}>
@@ -108,6 +95,8 @@ export default function DeveloperPage() {
             </div>
             {loading ? (
               <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading…</span></div>
+            ) : apiKeys.length === 0 ? (
+              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No API keys generated yet. Click "+ Generate Key" to create one.</span></div>
             ) : (
               apiKeys.map((k, i) => (
                 <div key={i} className="px-5 py-3" style={{ borderBottom: i < apiKeys.length - 1 ? `1px solid ${K.g900}` : undefined }}>
@@ -142,6 +131,8 @@ export default function DeveloperPage() {
             </div>
             {loading ? (
               <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading…</span></div>
+            ) : webhooks.length === 0 ? (
+              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No webhook endpoints configured. Click "+ Add Endpoint" to create one.</span></div>
             ) : (
               webhooks.map((w, i) => (
                 <div key={i} className="px-5 py-3" style={{ borderBottom: i < webhooks.length - 1 ? `1px solid ${K.g900}` : undefined }}>

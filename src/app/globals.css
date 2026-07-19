@@ -195,6 +195,19 @@ input,select,textarea{font-family:inherit;outline:none}
 .theme-toggle:hover .icon{transform:rotate(15deg)}
 
 /* ═══════════════════════════════════════════════════════════
+   SCROLL INDICATOR — fade right edge on horizontal scroll
+   ═══════════════════════════════════════════════════════════ */
+.scroll-indicator{
+  position:relative;
+}
+.scroll-indicator::after{
+  content:'';position:absolute;top:0;right:0;bottom:0;width:40px;
+  background:linear-gradient(to right,transparent,var(--g900));
+  pointer-events:none;opacity:0;transition:opacity 0.2s;
+}
+.scroll-indicator.scroll-right::after{opacity:1}
+
+/* ═══════════════════════════════════════════════════════════
    PRINT
    ═══════════════════════════════════════════════════════════ */
 @media print{

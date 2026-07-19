@@ -252,6 +252,7 @@ function CommandPalette({
                       onClose();
                     }}
                     role="option"
+                    aria-selected={false}
                     style={{
                       width: "100%",
                       display: "flex",
@@ -655,7 +656,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", handler);
   }, [setCmdPaletteOpen]);
 
-  const sidebarWidth = isMobile ? 200 : sidebarCollapsed ? 60 : 230;
+  const sidebarWidth = isMobile ? 160 : sidebarCollapsed ? 60 : 230;
   const statusColor =
     systemStatus === "nominal"
       ? K.mint

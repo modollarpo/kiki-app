@@ -6,17 +6,17 @@ const nextConfig: NextConfig = {
   output: "standalone",
 
   // ── TypeScript ──────────────────────────────────────────
-  // Type-checking runs during build. The source of truth is `npm run
-  // type-check` (tsc), which uses local Next.js type shims in
-  // types/next-shims.d.ts because the installed `next` package in this
-  // environment ships without its bundled .d.ts declarations.
+  // Type-checking runs during build. `npm run type-check` (tsc) is the
+  // source of truth. Local Next.js type shims in types/next-shims.d.ts
+  // are used because the installed `next` package ships without bundled
+  // .d.ts declarations in this environment.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   // ── ESLint ──────────────────────────────────────────────
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
 
   // ── Images ──────────────────────────────────────────────
