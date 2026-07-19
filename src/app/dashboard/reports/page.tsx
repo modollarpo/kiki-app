@@ -139,7 +139,7 @@ export default function ReportsPage() {
                 recentExports.map((e, i) => (
                   <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3 hover:bg-[var(--card-hover)]"
                     style={{ borderBottom: i < recentExports.length - 1 ? `1px solid ${K.g900}` : undefined }}>
-                    <div className="flex items-center gap-3">
+                    <div className="page-header-actions">
                       <Badge color={e.format === "PDF" ? K.danger : e.format === "Excel" ? K.mint : e.format === "CSV" ? K.blue : K.teal}>{e.format}</Badge>
                       <span className="font-mono text-[11px] font-semibold text-white">{e.name}</span>
                     </div>

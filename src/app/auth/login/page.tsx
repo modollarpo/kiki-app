@@ -78,7 +78,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 relative overflow-hidden min-h-dvh" style={{ background: K.void }}>
+    <div className="min-h-dvh flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-x-hidden" style={{ background: K.void }}>
       <div className="absolute inset-0 opacity-40 pointer-events-none" style={{ backgroundImage:`radial-gradient(circle,${K.g800} 1px,transparent 1px)`, backgroundSize:"32px 32px" }} />
       <div className="absolute pointer-events-none max-w-full overflow-hidden" style={{ top:"30%", left:"50%", transform:"translateX(-50%)", width:600, height:400, borderRadius:"50%", background:`radial-gradient(circle,${K.blueT} 0%,transparent 70%)`, filter:"blur(60px)" }} />
 

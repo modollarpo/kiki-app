@@ -105,14 +105,14 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
         {/* Header */}
-        <div className="mb-5 flex items-start justify-between gap-3 flex-wrap">
+        <div className="page-header-row">
           <div className="min-w-0">
-            <h1 className="font-mono font-bold text-[clamp(16px,2.5vw,18px)] text-t1 tracking-tight mb-1">Command Center</h1>
+            <h1 className="font-mono font-bold text-[clamp(16px,2.5vw,20px)] text-t1 tracking-tight mb-1">Command Center</h1>
             <p className="font-mono text-[11px] text-t3 overflow-hidden text-ellipsis whitespace-nowrap">
               {loading ? "Loading..." : `Live · ${data?.system?.status || "nominal"} · ${data?.system?.agentsRunning || 0} agents · ${lastUpdate.toLocaleTimeString()}`}
             </p>
           </div>
-          <div className="flex gap-2 items-center shrink-0">
+          <div className="page-header-actions">
             {connected && <Badge color={K.mint} dot>SSE</Badge>}
             <Button size="sm" variant="ghost" onClick={() => dashboard.get(token!).then(d => { setData(d); setLastUpdate(new Date()); })}>↻ Refresh</Button>
           </div>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
           </Card>
 
           <Card accent={K.blue}>
-            <div className="flex items-center justify-between mb-[14px]">
+            <div className="page-header-row">
               <h2 className="font-mono font-bold text-[13px] text-t1">AI Agents</h2>
               <Badge color={K.mint} dot pulse>{agents.filter((a: Record<string, unknown>) => a.status === "running").length} RUNNING</Badge>
             </div>
@@ -214,7 +214,7 @@ export default function DashboardPage() {
           </Card>
 
           <Card accent={K.teal}>
-            <div className="flex items-center justify-between mb-[14px]">
+            <div className="page-header-row">
               <h3 className="font-mono font-bold text-[13px] text-t1">Signal Quality</h3>
               <Badge color={K.teal}>LIVE</Badge>
             </div>
