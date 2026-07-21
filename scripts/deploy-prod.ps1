@@ -33,8 +33,12 @@ Write-Host "Building image kiki-app:$Tag in ACR (remote build)..."
 az acr build -r $ACR -t "kiki-app:latest" -t "kiki-app:$Tag" -f Dockerfile .
 if ($LASTEXITCODE -ne 0) { throw "ACR build failed (exit $LASTEXITCODE)" }
 
+Write-Host "Building ml-service:$Tag in ACR (remote build)..."
+az acr build -r $ACR -t "ml-service:latest" -t "ml-service:$Tag" -f python-ml-service/Dockerfile python-ml-service/
+if ($LASTEXITCODE -ne 0) { throw "ML service build failed (exit $LASTEXITCODE)" }
+
 Write-Host "Deploying kiki-app:$Tag to production Container App..."
 az containerapp update -g $RG -n $APP --image "$ACR.azurecr.io/kiki-app:$Tag"
 if ($LASTEXITCODE -ne 0) { throw "Container App update failed (exit $LASTEXITCODE)" }
 
-Write-Host "Done. Production revision updated to kiki-app:$Tag"
+Write-Host "Done. Production revision updated to kiki-app:$Tag (ml-service:$Tag available in ACR)"

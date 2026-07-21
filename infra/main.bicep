@@ -177,6 +177,17 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
           ]
         }
         {
+          name: 'ml-service'
+          image: '${acr.loginServer}/ml-service:latest'
+          resources: {
+            cpu: json('0.5')
+            memory: '1Gi'
+          }
+          env: [
+            { name: 'PYTHONUNBUFFERED', value: '1' }
+          ]
+        }
+        {
           name: 'opencode-backend'
           image: '${acr.loginServer}/${containerAppName}:latest'
           command: [
