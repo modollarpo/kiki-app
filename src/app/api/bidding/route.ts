@@ -7,9 +7,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { runBiddingCycle, getBiddingStats, getDayPartingWeights } from "@/lib/bidding";
+import { runBiddingCycle, getBiddingStats, getDayPartingWeights, initBiddingEventWiring } from "@/lib/bidding";
 import { getUserFromRequest } from "@/lib/auth";
 import { logger, handleApiError } from "@/lib/logger";
+import { checkEnforcement } from "@/lib/tenant";
+
+// Register event wiring once per server process
+initBiddingEventWiring();
 
 export async function GET(req: NextRequest) {
   try {
@@ -48,6 +52,13 @@ export async function POST(req: NextRequest) {
     const { action } = body;
 
     if (action === "run_cycle") {
+      const enforcement = await checkEnforcement(user.tenantId, "all_agents");
+      if (!enforcement.allowed) {
+        return NextResponse.json(
+          { success: false, error: enforcement.reason, upgradeRequired: true, requiredPlan: "growth" },
+          { status: 403 }
+        );
+      }
       const decisions = await runBiddingCycle(user.tenantId);
       return NextResponse.json({
         success: true,

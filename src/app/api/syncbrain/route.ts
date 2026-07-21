@@ -1,10 +1,14 @@
 import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { checkEnforcement } from "@/lib/tenant";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
+
+  const enforcement = await checkEnforcement(user.tenantId, "syncbrain");
+  if (!enforcement.allowed) return jsonError(enforcement.reason!, 403);
 
   try {
     const db = await getDb();

@@ -13,7 +13,11 @@ export type PlatformId =
   | "snap"
   | "pinterest"
   | "amazon"
-  | "ctv";
+  | "ctv"
+  | "shopify"
+  | "woocommerce"
+  | "hubspot"
+  | "salesforce";
 
 export type PlatformStatus = "active" | "expired" | "revoked" | "error" | "rate_limited";
 

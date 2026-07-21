@@ -172,5 +172,23 @@ services:
       kafka:
         condition: service_healthy
 
+  # ── Python ML Microservice (XGBoost LTV + Bayesian MMM) ──
+  ml-service:
+    build:
+      context: ./python-ml-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ml_models:/app/models
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   pgdata:
+  ml_models:

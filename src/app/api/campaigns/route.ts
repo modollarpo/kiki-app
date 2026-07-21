@@ -3,6 +3,7 @@ import { getUserFromRequest, json, jsonError, sanitizeString } from "@/lib/auth"
 import { logger, handleApiError } from "@/lib/logger";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { validateSearchParams, validateBody, campaignCreateSchema, campaignQuerySchema } from "@/lib/validation";
+import { checkEnforcement, checkPlanLimit } from "@/lib/tenant";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
@@ -78,8 +79,19 @@ export async function POST(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
+  const enforcement = await checkEnforcement(user.tenantId);
+  if (!enforcement.allowed) return jsonError(enforcement.reason!, 403);
+
   const rl = checkRateLimit(`campaigns:POST:${getClientIp(req)}`, { maxRequests: 20 });
   if (!rl.allowed) return rateLimitResponse(rl);
+
+  // Count existing campaigns and enforce limit
+  const db = await getDb();
+  const existingCampaigns =   await db.prepare("SELECT COUNT(*) as count FROM campaigns WHERE tenant_id = ?").get(user.tenantId) as any;
+  const limitCheck = await checkPlanLimit(user.tenantId, "campaigns", existingCampaigns.count);
+  if (!limitCheck.allowed) {
+    return jsonError(`Campaign limit reached (${limitCheck.limit}). Upgrade your plan to create more campaigns.`, 403);
+  }
 
   const parsed = await validateBody(req, campaignCreateSchema);
   if (!parsed.ok) return parsed.response;
@@ -87,7 +99,6 @@ export async function POST(req: Request) {
   try {
     const { name, platform, budget } = parsed.data;
     const id = genId("cmp");
-    const db = await getDb();
     await (await db.prepare(`
       INSERT INTO campaigns (id, tenant_id, name, platform, status, budget)
       VALUES (?, ?, ?, ?, 'draft', ?)

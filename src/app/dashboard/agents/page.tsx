@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, Button, StatusBadge, AIThinking } from "@/components/ui";
+import { StatCard, Card, Badge, Button, StatusBadge, AIThinking, UpgradePrompt } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useKikiStore } from "@/store";
 import { agents as agentsApi, type Agent } from "@/lib/api";
@@ -24,8 +24,11 @@ interface Guardrail {
 }
 
 export default function AgentsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { toggleAgent } = useKikiStore();
+  const plan = user?.plan || "starter";
+  const isStarter = plan === "starter";
+  const advancedAgentTypes = ["syncbrain", "oaas", "creative"];
   const [agentList, setAgentList] = useState<AgentWithActions[]>([]);
   const [guardrails, setGuardrails] = useState<Guardrail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,8 +48,9 @@ export default function AgentsPage() {
     return () => clearInterval(iv);
   }, [token]);
 
-  const running = agentList.filter(a => a.status === "running");
-  const totalActions = agentList.reduce((s, a) => s + a.actionCount, 0);
+  const visibleAgents = isStarter ? agentList.filter(a => !advancedAgentTypes.includes(a.type)) : agentList;
+  const running = visibleAgents.filter(a => a.status === "running");
+  const totalActions = visibleAgents.reduce((s, a) => s + a.actionCount, 0);
 
   const handleToggle = async (id: string, currentStatus: string) => {
     if (!token) return;
@@ -94,10 +98,18 @@ export default function AgentsPage() {
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">AI Agents</h1>
             <p className="font-mono text-[11px] text-t3">
-              {loading ? "Loading..." : `${agentList.length} agents · ${running.length} running · ${totalActions.toLocaleString()} total actions`}
+              {loading ? "Loading..." : `${visibleAgents.length} agents · ${running.length} running · ${totalActions.toLocaleString()} total actions`}
             </p>
           </div>
           <Badge color={K.mint} dot pulse>LIVE</Badge>
+          {isStarter && (
+            <a
+              href="/dashboard/billing"
+              className="font-mono text-[11px] text-white bg-[#3b82f6] hover:bg-[#2563eb] rounded-lg px-4 py-2 transition-colors no-underline inline-block whitespace-nowrap"
+            >
+              Upgrade to Growth for all 6 agents
+            </a>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
@@ -109,7 +121,7 @@ export default function AgentsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div className="flex flex-col gap-[10px]">
-            {agentList.map(agent => (
+            {(isStarter ? agentList.filter(a => !advancedAgentTypes.includes(a.type)) : agentList).map(agent => (
               <Card key={agent.id} accent={agent.status === "running" ? agent.color : undefined}>
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-kdls bg-g850 flex items-center justify-center text-xl shrink-0">

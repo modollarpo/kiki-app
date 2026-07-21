@@ -1,6 +1,6 @@
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
-import { createVirtualCard } from "@/lib/wallet";
+import { createVirtualCard, topUpWallet } from "@/lib/wallet";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { validateBody, walletTopUpSchema } from "@/lib/validation";
 import { logger } from "@/lib/logger";
@@ -73,22 +73,21 @@ export async function POST(req: Request) {
       return jsonError("Amount must be a positive number");
     }
     if (amount > 1_000_000) return jsonError("Maximum top-up is $1,000,000");
+    const result = await topUpWallet(user.tenantId, amount, "card", "Wallet top-up via API");
+    
+    if (!result.success) {
+      return jsonError(result.error || "Top-up failed", 400);
+    }
 
-    const db = await getDb();
-    const wallet = await (await db.prepare("SELECT * FROM wallets WHERE tenant_id = ?")).get(user.tenantId) as { id: string; balance: number } | undefined;
-    if (!wallet) return jsonError("Wallet not found", 404);
-
-    const newBalance = wallet.balance + amount;
-    await (await db.prepare("UPDATE wallets SET balance = ? WHERE id = ?")).run(newBalance, wallet.id);
-
-    const txnId = genId("txn");
-    await (await db.prepare(`
-      INSERT INTO wallet_transactions (id, wallet_id, type, amount, description, status)
-      VALUES (?, ?, 'credit', ?, 'Wallet top-up', 'settled')
-    `)).run(txnId, wallet.id, amount);
-
-    return json({ balance: newBalance, transaction: { id: txnId, type: "credit", amount, status: "settled" } });
-  } catch {
+    return json({ 
+      balance: result.balance, 
+      paymentIntentId: result.paymentIntentId, 
+      clientSecret: result.clientSecret, 
+      requiresConfirmation: result.requiresConfirmation,
+      // If it's mock mode, return a dummy transaction so the frontend logic doesn't break
+      transaction: result.requiresConfirmation ? undefined : { id: `tx_mock`, type: "credit", amount, status: "settled" }
+    });
+  } catch (error) {
     return jsonError("Invalid request body", 400);
   }
 }

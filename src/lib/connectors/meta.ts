@@ -358,6 +358,17 @@ export class MetaConnector extends BaseConnector {
         }],
       };
 
+      if (accessToken === "mock_meta_token") {
+        console.log(`[MOCK CAPI] Delivered event to Meta: ${event.eventName} for value ${event.customData.value}`);
+        return {
+          platform: "meta",
+          success: true,
+          eventId: event.customData.orderId,
+          latencyMs: Date.now() - start,
+          httpStatus: 200,
+        };
+      }
+
       const result = await this.post<{ events_received: number }>(
         `${pixelId}/events`,
         accessToken,
@@ -418,6 +429,11 @@ export class MetaConnector extends BaseConnector {
     if (updates.dailyBudget !== undefined) fields.daily_budget = Math.round(updates.dailyBudget * 100);
     if (updates.status !== undefined) fields.status = updates.status;
     if (updates.name !== undefined) fields.name = updates.name;
+
+    if (accessToken === "mock_meta_token") {
+      console.log(`[MOCK API] Meta updateCampaign ${campaignId}`, updates);
+      return { success: true, data: { id: campaignId }, latencyMs: 15 };
+    }
 
     return this.post<{ id: string }>(campaignId, accessToken, fields);
   }

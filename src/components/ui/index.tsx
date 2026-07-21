@@ -389,3 +389,33 @@ export function ScrollableTable({ children, className = "" }: { children: React.
     </div>
   );
 }
+
+export function UpgradePrompt({
+  title = "Upgrade Required",
+  description = "This feature is available on Growth plan and above.",
+  plan = "growth",
+  accent = K.gold,
+  className = "",
+}: {
+  title?: string;
+  description?: string;
+  plan?: string;
+  accent?: string;
+  className?: string;
+}) {
+  return (
+    <Card accent={accent} className={className}>
+      <div className="flex flex-col items-center text-center py-8 px-4">
+        <div className="text-[32px] mb-3">⬡</div>
+        <h3 className="font-mono font-bold text-base text-t1 mb-2">{title}</h3>
+        <p className="font-mono text-[13px] text-t3 mb-6 max-w-md">{description}</p>
+        <a
+          href={plan === "enterprise" ? "/contact" : "/dashboard/billing"}
+          className="font-mono text-[13px] font-semibold text-white bg-[#3b82f6] hover:bg-[#2563eb] rounded-lg px-6 py-3 transition-colors no-underline inline-block"
+        >
+          {plan === "enterprise" ? "Contact Sales" : `Upgrade to ${plan.charAt(0).toUpperCase() + plan.slice(1)}`}
+        </a>
+      </div>
+    </Card>
+  );
+}

@@ -133,6 +133,70 @@ export interface InfluencerCreatorRegisteredPayload {
   platform: PlatformId;
 }
 
+// ── Topic: approvals ───────────────────────────────────────
+// Emitted by the bidding circuit breaker when a high-impact
+// decision requires human sign-off before being pushed to the
+// ad platform connectors.
+export interface BiddingApprovalRequestedPayload {
+  approvalId: string;       // Unique ID for this pending action
+  tenantId: string;
+  campaignId: string;
+  campaignName: string;
+  platform: string;         // e.g. "meta", "google", "tiktok"
+  currentBid: number;
+  newBid: number;
+  changePercent: number;
+  reason: string;           // AI's human-readable reasoning
+  confidence: number;       // 0.0 – 1.0
+  ltvRatio: number;
+  stopLossTriggered: boolean;
+  expiresAt: number;        // unix ms — auto-reject after this
+}
+
+export interface BiddingApprovalResolvedPayload {
+  approvalId: string;
+  tenantId: string;
+  campaignId: string;
+  resolution: "approved" | "rejected" | "expired";
+  resolvedBy: string;       // "slack" | "api" | "system"
+  resolvedAt: number;
+}
+
+// ── Topic: creative ────────────────────────────────────────
+// Emitted when the creative generation engine produces new
+// ad assets or detects creative fatigue on a campaign.
+export interface CreativeFatigueDetectedPayload {
+  tenantId: string;
+  campaignId: string;
+  campaignName: string;
+  platform: string;
+  consecutiveLowRoasDays: number;
+  currentRoas: number;
+  targetRoas: number;
+}
+
+export interface CreativeGeneratedPayload {
+  tenantId: string;
+  campaignId: string;
+  creativeId: string;
+  platform: string;
+  type: "image" | "video" | "copy";
+  assetUrl?: string;
+  copyText?: string;
+}
+
+// ── Topic: competitor ──────────────────────────────────────
+export interface CompetitorPriceDropPayload {
+  tenantId: string;
+  competitorDomain: string;
+  productCategory: string;
+  oldPrice: number;
+  newPrice: number;
+  changePercent: number;
+  detectedAt: number;
+  affectedPlatforms: string[];
+}
+
 // ── All Topics ─────────────────────────────────────────────
 export const KAFKA_TOPICS = {
   ATTRIBUTION: "kiki.attribution",
@@ -142,6 +206,8 @@ export const KAFKA_TOPICS = {
   MARGIN: "kiki.margin",
   COMPETITOR: "kiki.competitor",
   INFLUENCER: "kiki.influencer",
+  APPROVALS: "kiki.approvals",
+  CREATIVE: "kiki.creative",
   // Existing topics
   SIGNAL: "kiki.signal",
   CAMPAIGN: "kiki.campaign",
