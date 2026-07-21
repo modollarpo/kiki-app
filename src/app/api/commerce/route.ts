@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // KIKI Agent Platform — Commerce Connections API
 // GET    /api/commerce      — List tenant commerce connections

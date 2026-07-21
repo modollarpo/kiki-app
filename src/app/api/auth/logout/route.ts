@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { json } from "@/lib/auth";
 
 export function POST() {

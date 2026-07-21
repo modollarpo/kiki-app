@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // KIKI Agent Platform — WooCommerce Webhook Receiver
 // POST /api/webhooks/woocommerce

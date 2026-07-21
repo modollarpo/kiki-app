@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { getDb } from "@/lib/db";
 import { verifyPassword, createSession, json, jsonError, validateEmail, validateRequired } from "@/lib/auth";
 import { rateLimit, clientKey } from "@/lib/rate-limit";

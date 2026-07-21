@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // Arbitrage History — Get past arbitrage decisions
 // GET /api/arbitrage/history?limit=20 — Get history

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // ASC Override — Evaluate catalog for Advantage+ suppression
 // POST /api/catalog/evaluate — Run suppression rules on product catalog

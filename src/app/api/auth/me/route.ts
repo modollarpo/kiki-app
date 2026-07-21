@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 
 export function GET(req: Request) {

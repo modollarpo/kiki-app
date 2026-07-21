@@ -58,8 +58,8 @@ export async function startScheduler(): Promise<void> {
   if (schedulerRunning) return;
   schedulerRunning = true;
 
-  // Validate environment first
-  validateEnvironment();
+  // Validate environment first (skip during next build)
+  if (!process.env.NEXT_PHASE) validateEnvironment();
 
   logger.info("[Scheduler] Starting background agent scheduler");
   logger.info(`[Scheduler] Bidding interval: ${BIDDING_INTERVAL_SEC}s (${isGroqConfigured() ? "Groq fast-path" : "heuristic fallback"})`);

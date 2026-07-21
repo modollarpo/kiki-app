@@ -51,7 +51,7 @@ export function Button({
       onMouseLeave={() => setHov(false)}
       className={className}
       style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
+        display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44,
         padding: padMap[size], background: bgMap[variant], color: colorMap[variant],
         border: `1px solid ${borderMap[variant]}`, borderRadius: 2,
         fontFamily: K.mono, fontSize: fsMap[size], fontWeight: 600,

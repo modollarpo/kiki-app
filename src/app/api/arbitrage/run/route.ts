@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // Arbitrage Run — Trigger cross-platform budget reallocation
 // POST /api/arbitrage/run — Run arbitrage cycle now

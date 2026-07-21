@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // KIKI Agent Platform — LTV Accuracy Panel API
 // GET /api/commerce/ltv-accuracy

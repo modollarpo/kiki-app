@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // Catalog Stats — Get ASC Override catalog statistics
 // GET /api/catalog/stats — Returns suppression stats and LTV metrics
