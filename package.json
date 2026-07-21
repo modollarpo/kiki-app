@@ -2,6 +2,7 @@
   "name": "kiki-agent-platform",
   "version": "2.0.0",
   "private": true,
+  "author": "KIKI Agent Team <ops@kiki.ai>",
   "description": "KIKI Agent™ — Autonomous LTV Campaign Execution Platform",
   "engines": {
     "node": ">=20.0.0"
