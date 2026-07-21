@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 
 // Public paths that don't require authentication. These MUST be exact,
 // real routes — NEVER use a broad substring like `pathname.includes(".")`,
@@ -24,18 +23,40 @@ function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p));
 }
 
-function verifyJwt(token: string): boolean {
+async function verifyJwt(token: string): Promise<boolean> {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return false;
     const [header, body, sig] = parts;
     const secret = process.env.JWT_SECRET;
     if (!secret) return false;
-    const expected = Buffer.from(
-      crypto.createHmac("sha256", secret).update(`${header}.${body}`).digest()
-    ).toString("base64url");
-    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return false;
-    const payload = JSON.parse(Buffer.from(body, "base64url").toString());
+
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+
+    const sigBytes = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      new TextEncoder().encode(`${header}.${body}`)
+    );
+
+    const sigArray = new Uint8Array(sigBytes);
+    let raw = "";
+    for (let i = 0; i < sigArray.length; i++) raw += String.fromCharCode(sigArray[i]);
+    const expected = btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+    if (sig.length !== expected.length) return false;
+    let mismatch = 0;
+    for (let i = 0; i < sig.length; i++) mismatch |= sig.charCodeAt(i) ^ expected.charCodeAt(i);
+    if (mismatch !== 0) return false;
+
+    const bodyStr = atob(body.replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(bodyStr);
     if (!payload.exp || payload.exp * 1000 < Date.now()) return false;
     return true;
   } catch {
@@ -43,7 +64,7 @@ function verifyJwt(token: string): boolean {
   }
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public paths
@@ -76,7 +97,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Validate JWT signature and expiry
-  if (!verifyJwt(token)) {
+  if (!(await verifyJwt(token))) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
