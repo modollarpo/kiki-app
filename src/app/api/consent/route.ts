@@ -17,13 +17,16 @@ export async function GET(req: Request) {
     const db = await getDb();
     const tid = user.tenantId;
 
-    const [planCounts, totalUsers] = await Promise.all([
+    const [planCounts, totalUsers, consentLog] = await Promise.all([
       db.prepare(`
         SELECT plan, COUNT(*) as count FROM users
         WHERE tenant_id = ? GROUP BY plan ORDER BY count DESC
       `).all(tid),
       db.prepare("SELECT COUNT(*) as count FROM users WHERE tenant_id = ?").get(tid),
+      db.prepare("SELECT action_type, created_at FROM agent_actions WHERE tenant_id = ? AND agent_type = 'consent' ORDER BY created_at DESC LIMIT 1").get(tid),
     ]);
+
+    const lastConsentAction = consentLog as { action_type: string; created_at: string } | undefined;
 
     return json({
       success: true,
@@ -38,7 +41,7 @@ export async function GET(req: Request) {
           ccpaEnabled: true,
           dataRetentionDays: 365,
           consentVersion: "1.0",
-          lastAuditDate: new Date().toISOString(),
+          lastAuditDate: lastConsentAction?.created_at || new Date().toISOString(),
         },
       },
     });

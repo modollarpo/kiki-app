@@ -85,8 +85,7 @@ export async function POST(req: Request) {
       paymentIntentId: result.paymentIntentId, 
       clientSecret: result.clientSecret, 
       requiresConfirmation: result.requiresConfirmation,
-      // If it's mock mode, return a dummy transaction so the frontend logic doesn't break
-      transaction: result.requiresConfirmation ? undefined : { id: `tx_mock`, type: "credit", amount, status: "settled" }
+      transaction: result.requiresConfirmation ? undefined : { id: genId("txn"), type: "credit", amount, status: "settled" }
     });
   } catch (error) {
     return jsonError("Invalid request body", 400);

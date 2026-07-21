@@ -37,19 +37,19 @@ export async function GET(req: NextRequest) {
     }
 
     const shareCount = hasTable
-      ? events.reduce((sum: number, e: any) => sum + (e.share_count || 1), 0)
-      : Math.floor(Math.random() * 500) + 120;
+      ? events.reduce((sum: number, e: any) => sum + (e.share_count || 0), 0)
+      : 0;
 
     const darkSocialConversions = hasTable
       ? events.filter((e: any) => e.converted).length
-      : Math.floor(shareCount * 0.08);
+      : 0;
 
     const avgOrderValue = 68.5;
     const estimatedRevenue = hasTable
       ? events
           .filter((e: any) => e.converted)
           .reduce((sum: number, e: any) => sum + (e.revenue || avgOrderValue), 0)
-      : darkSocialConversions * avgOrderValue;
+      : 0;
 
     const topReferrers = hasTable
       ? Object.entries(
@@ -62,13 +62,7 @@ export async function GET(req: NextRequest) {
           .sort((a, b) => b[1] - a[1])
           .slice(0, 10)
           .map(([source, count]) => ({ source, count: count as number }))
-      : [
-          { source: "whatsapp", count: Math.floor(shareCount * 0.35) },
-          { source: "instagram_dms", count: Math.floor(shareCount * 0.25) },
-          { source: "sms", count: Math.floor(shareCount * 0.18) },
-          { source: "telegram", count: Math.floor(shareCount * 0.12) },
-          { source: "discord", count: Math.floor(shareCount * 0.1) },
-        ];
+      : [];
 
     const dailyBreakdown = hasTable
       ? Object.entries(
@@ -80,14 +74,7 @@ export async function GET(req: NextRequest) {
         )
           .sort((a, b) => a[0].localeCompare(b[0]))
           .map(([date, count]) => ({ date, shares: count as number }))
-      : Array.from({ length: Math.min(days, 14) }, (_, i) => {
-          const d = new Date();
-          d.setDate(d.getDate() - (13 - i));
-          return {
-            date: d.toISOString().slice(0, 10),
-            shares: Math.floor(Math.random() * 40) + 10,
-          };
-        });
+      : [];
 
     return NextResponse.json({
       success: true,

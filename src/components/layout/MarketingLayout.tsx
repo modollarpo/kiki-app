@@ -34,7 +34,7 @@ const FOOTER_COLS = [
     { label:"About Us",        href:"/about"             },
     { label:"Careers",         href:"/contact"           },
     { label:"Contact",         href:"/contact"           },
-    { label:"Partners",        href:"/dashboard/partners"},
+    { label:"Partners",        href:"/contact"},
     { label:"Digital Handshake", href:"/digital-handshake"},
     { label:"Contracts & Downloads", href:"/contracts"  },
   ]},

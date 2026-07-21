@@ -171,6 +171,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             { name: 'BIDDING_INTERVAL_MS', value: '300000' }
             { name: 'OPENCODE_ENDPOINT', value: 'http://localhost:8080' }
             { name: 'OPENCODE_SECRET', secretRef: 'opencode-secret' }
+            { name: 'ML_SERVICE_URL', value: 'http://localhost:8000' }
           ]
           volumeMounts: [
             { name: 'data', mountPath: '/app/data' }
