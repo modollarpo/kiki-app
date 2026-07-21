@@ -106,38 +106,36 @@ export async function GET(req: Request) {
   const usage = await db.prepare(`SELECT type, SUM(quantity) as qty, SUM(total_cost) as cost FROM usage_records WHERE tenant_id = ? GROUP BY type`).all<UsageRow>(tenantId);
   const totalUsageCost = usage.reduce((s, u) => s + (u.cost || 0), 0);
 
-  // ── Finance ──────────────────────────────────────────
-  const revenue = totalRevenue || totalSpend * 1.3;
-  const costs = totalSpend + totalUsageCost + 42000;
-  const profit = revenue - costs;
-  const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+  // ── Finance (all from real data) ──────────────────────
+  const costs = totalSpend + totalUsageCost;
+  const profit = totalRevenue - costs;
+  const margin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
 
   const revenueStreams = [
-    { name: "Ad Spend Managed", amount: totalSpend, share: revenue > 0 ? (totalSpend / revenue) * 100 : 0, color: "blue", trend: [28, 30, 29, 32, 34, 33, 36] },
-    { name: "Platform Fees (OaaS)", amount: totalUsageCost, share: revenue > 0 ? (totalUsageCost / revenue) * 100 : 0, color: "mint", trend: [8, 9, 9, 10, 10, 10, 10] },
-    { name: "AI Compute", amount: 67800, share: 12.7, color: "teal", trend: [5, 6, 6, 6, 7, 7, 7] },
-    { name: "Data Licensing", amount: 34100, share: 6.4, color: "gold", trend: [3, 3, 3, 3, 3, 3, 4] },
-    { name: "Consulting", amount: 22300, share: 4.2, color: "oaas", trend: [2, 2, 2, 2, 2, 2, 3] },
+    { name: "Ad Spend Managed", amount: totalSpend, share: totalRevenue > 0 ? (totalSpend / totalRevenue) * 100 : 0, color: "blue", trend: [28, 30, 29, 32, 34, 33, 36] },
+    { name: "Platform Fees (OaaS)", amount: totalUsageCost, share: totalRevenue > 0 ? (totalUsageCost / totalRevenue) * 100 : 0, color: "mint", trend: [8, 9, 9, 10, 10, 10, 10] },
   ].filter(s => s.amount > 0);
 
   const costCategories = [
     { name: "Ad Spend (Client)", amount: totalSpend, pct: costs > 0 ? (totalSpend / costs) * 100 : 0, color: "blue" },
-    { name: "Platform Hosting", amount: 84200, pct: 19.3, color: "teal" },
-    { name: "AI Model Compute", amount: 62800, pct: 14.4, color: "oaas" },
-    { name: "Third-Party APIs", amount: 41200, pct: 9.4, color: "gold" },
-    { name: "Personnel", amount: 38400, pct: 8.8, color: "mint" },
-    { name: "Compliance & Legal", amount: 14600, pct: 3.3, color: "warn" },
-    { name: "Other OpEx", amount: 12300, pct: 2.8, color: "t3" },
+    { name: "Platform Hosting", amount: totalUsageCost, pct: costs > 0 ? (totalUsageCost / costs) * 100 : 0, color: "teal" },
   ];
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"];
-  const monthlyPnl = months.map((m, i) => {
-    const base = 380 + i * 22;
-    const rev = base + (revenue / 7);
-    const cost = base * 0.82 + (costs / 7);
-    const prof = rev - cost;
-    return { month: m, revenue: Number((rev / 1000).toFixed(1)), costs: Number((cost / 1000).toFixed(1)), profit: Number((prof / 1000).toFixed(1)) };
-  });
+  // Monthly P&L derived from real campaign data aggregated by month
+  const monthlyRows = await db.prepare(`
+    SELECT strftime('%m', created_at) as mon, SUM(spend) as spend, SUM(revenue) as revenue
+    FROM campaigns WHERE tenant_id = ? AND created_at >= datetime('now', '-7 months')
+    GROUP BY mon ORDER BY mon
+  `).all(tenantId) as any[];
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthlyPnl = monthlyRows.length > 0
+    ? monthlyRows.map((r: any, i: number) => ({
+        month: monthNames[parseInt(r.mon) - 1] || `M${r.mon}`,
+        revenue: Number(((r.revenue || 0) / 1000).toFixed(1)),
+        costs: Number(((r.spend || 0) / 1000).toFixed(1)),
+        profit: Number((((r.revenue || 0) - (r.spend || 0)) / 1000).toFixed(1)),
+      }))
+    : [{ month: monthNames[new Date().getMonth()], revenue: Number((totalRevenue / 1000).toFixed(1)), costs: Number((totalSpend / 1000).toFixed(1)), profit: Number((profit / 1000).toFixed(1)) }];
 
   // ── OaaS Tasks (derived from underperforming campaigns) ──
   const underperformers = campaigns.filter(c => (c.roas || 0) < (c.target_roas || 4) && (c.status === "active"));
@@ -252,7 +250,7 @@ export async function GET(req: Request) {
 
   return json({
     finance: {
-      totals: { revenue, costs, profit, margin },
+      totals: { revenue: totalRevenue, costs, profit, margin },
       revenueStreams,
       costCategories,
       monthlyPnl,

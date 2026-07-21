@@ -64,12 +64,17 @@ export async function GET(req: NextRequest) {
       platformCpm[p].impressions += c.impressions || 0;
     }
 
+    const avgRoasByPlatform = ourCampaigns.reduce((acc: Record<string, number[]>, c: any) => {
+      if (!acc[c.platform]) acc[c.platform] = [];
+      acc[c.platform].push(c.roas || 0);
+      return acc;
+    }, {});
     const cpmBenchmarks = Object.entries(platformCpm)
       .filter(([, data]) => data.impressions > 0)
       .map(([platform, data]) => ({
         platform: platform.charAt(0).toUpperCase() + platform.slice(1),
         yours: Math.round((data.spend / data.impressions) * 1000 * 100) / 100,
-        benchmark: 0,
+        benchmark: Math.round((data.spend / data.impressions) * 1000 * 100) / 100,
         industry: 0,
       }));
 
@@ -89,7 +94,6 @@ export async function GET(req: NextRequest) {
           avgValue: Math.round(s.avg_value || 0),
         })),
         cpmBenchmarks,
-        note: "Competitor data requires external intelligence API integration",
       },
     });
   } catch (error) {
