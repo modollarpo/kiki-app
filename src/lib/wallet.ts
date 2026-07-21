@@ -490,8 +490,8 @@ async function creditTopUp(
   if (!wallet) {
     const walletId = `wlt_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
     await db.prepare(`
-      INSERT INTO wallets (id, tenant_id, balance, currency, created_at)
-      VALUES (?, ?, ?, 'usd', datetime('now'))
+      INSERT INTO wallets (id, tenant_id, balance, currency)
+      VALUES (?, ?, ?, 'usd')
     `).run(walletId, tenantId, amount);
     wallet = { id: walletId, balance: amount };
   } else {

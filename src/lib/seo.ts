@@ -84,7 +84,7 @@ export const featuresMetadata = meta(
 
 export const pricingMetadata = meta(
   "Pricing — Starter, Growth & Enterprise Plans",
-  "Simple transparent pricing for every stage. Starter from $490/mo, Growth $1,800/mo, Enterprise custom. All plans include signal enrichment engine, fraud protection, and 14-day free trial. No credit card required.",
+  "Simple transparent pricing for every stage. Starter from $690/mo, Growth $2,000/mo, Enterprise custom. All plans include signal enrichment engine, fraud protection, and 14-day free trial. No credit card required.",
   [
     "KIKI Agent pricing", "LTV enrichment cost", "AI ad optimization pricing",
     "performance marketing SaaS pricing", "growth plan advertising AI",

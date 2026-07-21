@@ -253,6 +253,122 @@ export async function checkPlanLimit(
   };
 }
 
+// ── Enforcement Utilities ──────────────────────────────────
+
+export interface EnforcementResult {
+  allowed: boolean;
+  reason?: string;
+  upgradeRequired?: boolean;
+  requiredPlan?: string;
+}
+
+/**
+ * Check if a tenant is suspended.
+ */
+export async function checkTenantSuspended(tenantId: string): Promise<EnforcementResult> {
+  const db = await getDb();
+  const row =   await db.prepare("SELECT plan, status FROM users WHERE tenant_id = ? LIMIT 1").get(tenantId) as any;
+  if (!row) return { allowed: false, reason: "Tenant not found" };
+  if (row.status === "suspended") {
+    return { allowed: false, reason: "Account is suspended. Please contact support." };
+  }
+  return { allowed: true };
+}
+
+/**
+ * Check if a tenant's plan has access to a specific feature.
+ */
+export async function checkFeatureAccess(
+  tenantId: string,
+  feature: string
+): Promise<EnforcementResult> {
+  const db = await getDb();
+  const row =   await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get(tenantId) as any;
+  const plan = row?.plan || "starter";
+  const limits = getPlanLimits(plan);
+  if (limits.features.includes("all")) return { allowed: true };
+  if (limits.features.includes(feature)) return { allowed: true };
+  return {
+    allowed: false,
+    reason: `Feature "${feature}" requires an upgraded plan`,
+    upgradeRequired: true,
+    requiredPlan: plan === "starter" ? "growth" : plan === "growth" ? "enterprise" : undefined,
+  };
+}
+
+/**
+ * Check if the tenant's trial has expired and auto-downgrade if so.
+ * Starter plan users with an expired trial are left on starter — they just
+ * lose access to growth features.
+ */
+export async function checkTrialExpired(tenantId: string): Promise<EnforcementResult> {
+  const db = await getDb();
+  const row =   await db.prepare(
+    "SELECT plan, trial_ends_at FROM users WHERE tenant_id = ? LIMIT 1"
+  ).get(tenantId) as any;
+  if (!row) return { allowed: true };
+  if (row.plan !== "starter") return { allowed: true };
+  if (!row.trial_ends_at) return { allowed: true };
+
+  const trialEnd = new Date(row.trial_ends_at).getTime();
+  if (Date.now() > trialEnd) {
+    // Trial expired — keep on starter but mark it
+    await db.prepare(
+      "UPDATE users SET updated_at = datetime('now') WHERE tenant_id = ?"
+    ).run(tenantId);
+    return {
+      allowed: true,
+      reason: "Your trial has ended. Some features may be limited.",
+    };
+  }
+
+  const daysLeft = Math.ceil((trialEnd - Date.now()) / 86400000);
+  if (daysLeft <= 3) {
+    return {
+      allowed: true,
+      reason: `Your trial ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"}. Upgrade to keep full access.`,
+    };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Combined enforcement check: suspension + trial + feature access.
+ * Returns the first failure reason. Allowed=true means all pass.
+ */
+export async function checkEnforcement(
+  tenantId: string,
+  feature?: string
+): Promise<EnforcementResult> {
+  const suspended = await checkTenantSuspended(tenantId);
+  if (!suspended.allowed) return suspended;
+  const trial = await checkTrialExpired(tenantId);
+  if (!trial.allowed) return trial;
+  if (feature) return checkFeatureAccess(tenantId, feature);
+  return { allowed: true };
+}
+
+/**
+ * Check and flag all expired trials across the system (for cron/scheduler).
+ */
+export async function expireTrials(): Promise<number> {
+  const db = await getDb();
+  const expired =   await db.prepare(`
+    SELECT tenant_id FROM users
+    WHERE plan = 'starter'
+    AND trial_ends_at IS NOT NULL
+    AND trial_ends_at < datetime('now')
+  `).all() as any[];
+  for (const row of expired) {
+    await db.prepare(
+      "UPDATE users SET updated_at = datetime('now') WHERE tenant_id = ?"
+    ).run(row.tenant_id);
+    eventBus.emit("billing.trial_expired", { tenantId: row.tenant_id });
+  }
+  return expired.length;
+}
+
 // ── Tenant Isolation Verification ──────────────────────────
 
 /**

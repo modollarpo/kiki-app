@@ -25,6 +25,31 @@ connectors.set("linkedin", linkedinConnector);
 connectors.set("snap", snapConnector);
 connectors.set("pinterest", pinterestConnector);
 
+// CMS & CRM Mocks (UI Stubs)
+const createStubConnector = (id: PlatformId, name: string): IPlatformConnector => ({
+  platformId: id,
+  config: {
+    id, name, apiVersion: "1.0", apiBaseUrl: "",
+    oauth: { clientId: "", clientSecret: "", redirectUri: "", scopes: [], authUrl: "/dashboard/settings", tokenUrl: "" },
+    rateLimits: { requestsPerSecond: 10, requestsPerHour: 1000 },
+    supportsCAPI: false, supportsOAuth: true, supportsConversionValue: false, conversionEvents: []
+  },
+  generateOAuthUrl: async () => ({ url: `/dashboard/settings?stub_connect=${id}`, state: "stub", codeVerifier: "stub" }),
+  handleCallback: async () => ({ accessToken: "stub", expiresAt: Date.now() + 86400000, tokenType: "Bearer", scope: [] }),
+  refreshToken: async () => ({ accessToken: "stub", expiresAt: Date.now() + 86400000, tokenType: "Bearer", scope: [] }),
+  validateToken: async () => true,
+  getAccountInfo: async () => ({ success: true, latencyMs: 0, data: { id: "stub", name: `${name} Account`, config: {} } }),
+  listCampaigns: async () => ({ success: true, latencyMs: 0, data: [] }),
+  getCampaign: async () => ({ success: true, latencyMs: 0 } as any),
+  getCampaignMetrics: async () => ({ success: true, latencyMs: 0 } as any),
+  sendConversion: async () => ({ platform: id, success: true, latencyMs: 0 })
+});
+
+connectors.set("shopify", createStubConnector("shopify", "Shopify"));
+connectors.set("woocommerce", createStubConnector("woocommerce", "WooCommerce"));
+connectors.set("hubspot", createStubConnector("hubspot", "HubSpot"));
+connectors.set("salesforce", createStubConnector("salesforce", "Salesforce"));
+
 // Amazon Ads connector (lazy-initialized from env)
 if (process.env.AMAZON_CLIENT_ID) {
   connectors.set("amazon", new AmazonConnector({

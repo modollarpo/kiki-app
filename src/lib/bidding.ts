@@ -12,6 +12,13 @@ import { eventBus, EVENTS } from "./events";
 import { getTenantContext } from "./tenant";
 import { scoreBidsBatch, isGroqConfigured, type GroqBidInput } from "./groq";
 import { decryptToken } from "./connectors/base";
+import { dispatchApprovalRequest, APPROVAL_TTL_MS } from "./slack";
+import { detectCreativeFatigue } from "./creative";
+
+// ── Circuit-breaker threshold ──────────────────────────────
+// Any bid change beyond this % (or any stop-loss) is sent to
+// Slack for human approval before hitting the ad platform.
+const APPROVAL_THRESHOLD_PCT = 20;
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -413,6 +420,45 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
   `).all(tenantId) as Array<{ platform: string; access_token: string; config: string }>;
 
   for (const decision of decisions) {
+    // ── Circuit breaker: hold high-impact decisions for human review ──
+    const needsApproval =
+      Math.abs(decision.changePercent) >= APPROVAL_THRESHOLD_PCT ||
+      decision.stopLossTriggered;
+
+    if (needsApproval) {
+      const approvalId = `appr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      await dispatchApprovalRequest({
+        approvalId,
+        tenantId,
+        campaignId: decision.campaignId,
+        campaignName: decision.campaignName,
+        platform: decision.platform,
+        currentBid: decision.currentBid,
+        newBid: decision.newBid,
+        changePercent: decision.changePercent,
+        reason: decision.reason,
+        confidence: decision.confidence,
+        ltvRatio: decision.ltvRatio,
+        stopLossTriggered: decision.stopLossTriggered,
+        expiresAt: Date.now() + APPROVAL_TTL_MS,
+      });
+
+      // Log the held decision
+      await db.prepare(`
+        INSERT INTO agent_actions
+        (id, tenant_id, agent_type, action_type, details, created_at)
+        VALUES (?, ?, 'bidding', 'approval_requested', ?, datetime('now'))
+      `).run(
+        `bid_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        tenantId,
+        JSON.stringify({ ...decision, status: "awaiting_approval" }),
+      );
+
+      // Skip immediate execution — wait for Slack approval webhook
+      continue;
+    }
+
+    // ── Auto-execute: small / routine bid change ───────────────────
     // Update local database
     await db.prepare(`
       UPDATE campaigns SET bid = ?, updated_at = datetime('now')
@@ -473,7 +519,33 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
     );
   }
 
-  // 6. Emit cycle complete event
+  // 6. Detect creative fatigue and emit events for any fatigued campaigns
+  try {
+    const fatigued = await detectCreativeFatigue(tenantId);
+    for (const ctx of fatigued) {
+      eventBus.emit("creative.fatigue_detected", {
+        tenantId,
+        campaignId: ctx.campaignId,
+        campaignName: ctx.campaignName,
+        platform: ctx.platform,
+        consecutiveLowRoasDays: ctx.consecutiveLowRoasDays,
+        currentRoas: ctx.currentRoas,
+        targetRoas: ctx.targetRoas,
+      });
+      await db.prepare(`
+        INSERT INTO agent_actions (id, tenant_id, agent_type, action_type, details, created_at)
+        VALUES (?,?,'bidding','creative_fatigue_detected',?,datetime('now'))
+      `).run(
+        `fat_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
+        tenantId,
+        JSON.stringify({ campaignId: ctx.campaignId, consecutiveDays: ctx.consecutiveLowRoasDays }),
+      );
+    }
+  } catch {
+    // Non-fatal — don't break the bidding cycle
+  }
+
+  // 7. Emit cycle complete event
   eventBus.emit("bidding.cycle_complete", {
     tenantId,
     campaignCount: campaigns.length,
@@ -528,4 +600,38 @@ export function getDayPartingWeights(): { hour: number; dayOfWeek: number; weigh
     }
   }
   return weights;
+}
+
+// ── Event Wiring (Phase 2 & 3 Loop) ────────────────────────
+
+export function initBiddingEventWiring() {
+  // Listen for Competitor Pricing Arbitrage signals
+  eventBus.on("competitor.price_drop", async (payload: any) => {
+    console.log(`[BiddingEngine] Competitor price drop detected (${payload.dropPercent}%). Triggering aggressive arbitrage cycle...`);
+    try {
+      await runBiddingCycle(payload.tenantId);
+    } catch (e) {
+      console.error("[BiddingEngine] Arbitrage cycle failed", e);
+    }
+  });
+
+  // Listen for Creative Fatigue signals
+  eventBus.on("creative.fatigue_detected", async (payload: any) => {
+    console.log(`[BiddingEngine] Creative fatigue detected on ${payload.platform}. Triggering GenAI creative replacement...`);
+    // Phase 2 implementation: Hook into the GPT-4o + DALL-E pipeline
+    // For now, emit a task to the oaas queue to generate new creatives
+    try {
+      const db = await getDb();
+      await db.prepare(`
+        INSERT INTO agent_actions (id, tenant_id, agent_role, action_type, description, confidence, timestamp)
+        VALUES (?, ?, 'creative', 'generate_replacement', ?, 0.95, datetime('now'))
+      `).run(
+        `act_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        payload.tenantId,
+        `Generate new DALL-E 3 creative for fatigued ad ${payload.creativeId} on ${payload.platform}`
+      );
+    } catch (e) {
+      console.error("[BiddingEngine] Failed to dispatch creative generation task", e);
+    }
+  });
 }

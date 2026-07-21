@@ -4,7 +4,7 @@ import { Card, Badge, Button, Input } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useKikiStore } from "@/store";
 import { K } from "@/lib/kdls";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
   const { user, token } = useAuth();
@@ -14,6 +14,46 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [integrations, setIntegrations] = useState<any[]>([]);
+  const [platforms, setPlatforms] = useState<any[]>([]);
+  const [connecting, setConnecting] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+    
+    // Fetch user's connected platforms
+    fetch("/api/integrations", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) setIntegrations(d.data || []);
+      });
+      
+    // Fetch available supported platforms
+    fetch("/api/integrations?action=list", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) setPlatforms(d.data || []);
+      });
+  }, [token]);
+
+  const handleConnect = async (platformId: string) => {
+    if (!token) return;
+    setConnecting(platformId);
+    try {
+      const res = await fetch(`/api/integrations?action=oauth_url&platform=${platformId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.data?.url) {
+        window.location.href = data.data.url;
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setConnecting(null);
+    }
+  };
 
   const handleSave = async () => {
     if (!token || !name.trim()) return;
@@ -76,6 +116,46 @@ export default function SettingsPage() {
             </div>
           )}
           <Button size="sm" loading={saving} onClick={handleSave}>{saved ? "✓ Saved" : "Save Changes"}</Button>
+        </Card>
+
+        <Card className="mb-3">
+          <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Integrations</h3>
+          <p className="font-mono text-[11px] text-gray-500 mb-4">Connect your ad accounts, CMS, and CRM to enable autonomous execution.</p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {(platforms.length > 0 ? platforms : [
+              { platformId: "meta", name: "Meta Ads" },
+              { platformId: "google", name: "Google Ads" },
+              { platformId: "tiktok", name: "TikTok Ads" },
+              { platformId: "shopify", name: "Shopify" },
+              { platformId: "woocommerce", name: "WooCommerce" },
+              { platformId: "hubspot", name: "HubSpot" }
+            ]).map(p => {
+              const connected = integrations.find(i => i.platform === p.platformId);
+              return (
+                <div key={p.platformId} className="flex items-center justify-between p-3 rounded-sm bg-g850 border border-g800">
+                  <div>
+                    <p className="font-mono text-[12px] font-bold text-white capitalize">{p.name || p.platformId}</p>
+                    <p className="font-mono text-[10px] text-gray-500 mt-1">
+                      {connected ? connected.accountName : "Not connected"}
+                    </p>
+                  </div>
+                  {connected ? (
+                    <Badge color={K.mint}>Connected</Badge>
+                  ) : (
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={() => handleConnect(p.platformId)}
+                      loading={connecting === p.platformId}
+                    >
+                      Connect
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </Card>
 
         <Card className="mb-3">

@@ -76,9 +76,9 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
         justifyContent:"space-between", transition:"all 0.3s",
       }}>
         {/* Logo */}
-        <div style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", flexShrink:0 }} onClick={() => router.push("/")}>
-          <Image src="/images/kiki.png" alt="KIKI" width={22} height={22} style={{ borderRadius:2, margin:2 }} />
-          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, fontSize:13, color:K.t1 }}>KIKI<span style={{ color:K.blue }}>.</span>Agent</span>
+        <div style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", flexShrink:0 }} onClick={() => router.push("/")}>
+          <Image src="/images/kiki.png" alt="KIKI" width={28} height={28} style={{ borderRadius:3 }} />
+          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, fontSize:15, color:K.t1 }}>KIKI<span style={{ color:K.blue }}>.</span>Agent</span>
         </div>
 
         {/* Desktop links */}
@@ -147,9 +147,9 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))", gap:"clamp(24px,4vw,40px)", marginBottom:"clamp(28px,4vw,44px)" }}>
             {/* Brand */}
             <div style={{ minWidth:180 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14, cursor:"pointer" }} onClick={() => router.push("/")}>
-                <Image src="/images/kiki.png" alt="KIKI" width={24} height={24} style={{ borderRadius:2 }} />
-                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, fontSize:13, color:K.t1 }}>KIKI<span style={{color:K.blue}}>.</span>Agent</span>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, cursor:"pointer" }} onClick={() => router.push("/")}>
+                <Image src="/images/kiki.png" alt="KIKI" width={28} height={28} style={{ borderRadius:3 }} />
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, fontSize:15, color:K.t1 }}>KIKI<span style={{color:K.blue}}>.</span>Agent</span>
               </div>
               <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3, lineHeight:1.7, marginBottom:14 }}>Autonomous LTV campaign execution. Your ad platforms learn from real customer value.</p>
               <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
@@ -195,7 +195,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
 
           {/* Bottom bar */}
           <div style={{ borderTop:`1px solid ${K.g800}`, paddingTop:20, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
-            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:"0.1em", color:K.t3, lineHeight:1.8 }}>KIKI AGENT™ is a product of STOREGRILL INC LTD<br/>Company No. 14581073 · Coventry, CV3 2FP, England<br/>Registered in England & Wales · © 2026 All Rights Reserved</span>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:"0.1em", color:K.t3, lineHeight:1.8 }}>KIKI AGENT™ a STOREGRILL INC LTD Company<br/>Registered in England & Wales · © 2026 All Rights Reserved</span>
             <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:K.t3 }}>Built with precision · v2.4.0</span>
           </div>
         </div>

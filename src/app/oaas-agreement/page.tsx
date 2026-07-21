@@ -7,7 +7,7 @@ import { Button, Badge } from "@/components/ui";
 import { generatePDF } from "@/lib/pdf";
 
 const TIERS = [
-  { name:"Growth OaaS",     price:1800,  upliftTarget:"+15-25%", budgetRange:"$10K–$100K/mo",  agents:["Bidding","Pacing","Signals"],              color:K.blue  },
+  { name:"Growth OaaS",     price:2000,  upliftTarget:"+15-25%", budgetRange:"$10K–$100K/mo",  agents:["Bidding","Pacing","Signals"],              color:K.blue  },
   { name:"Enterprise OaaS", price:4900,  upliftTarget:"+25-45%", budgetRange:"$100K–$1M/mo",   agents:["Bidding","Pacing","Signals","Creative","OaaS Optimizer"], color:K.oaas  },
   { name:"Scale OaaS",      price:null,  upliftTarget:"+40%+",   budgetRange:"$1M+/mo",        agents:["All 6 agents + custom models"],            color:K.gold  },
 ];

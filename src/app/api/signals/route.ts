@@ -2,6 +2,7 @@ import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { ingestSignal, getSignalStats } from "@/lib/signals";
 import { logger, handleApiError } from "@/lib/logger";
+import { checkEnforcement, checkPlanLimit } from "@/lib/tenant";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
@@ -19,6 +20,20 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
+
+  const enforcement = await checkEnforcement(user.tenantId);
+  if (!enforcement.allowed) return jsonError(enforcement.reason!, 403);
+
+  // Check daily signal limit
+  const db = await getDb();
+  const todaySignals =   await db.prepare(`
+    SELECT COUNT(*) as count FROM signals
+    WHERE tenant_id = ? AND date(created_at) = date('now')
+  `).get(user.tenantId) as any;
+  const limitCheck = await checkPlanLimit(user.tenantId, "signals", todaySignals.count);
+  if (!limitCheck.allowed) {
+    return jsonError(`Daily signal limit reached (${limitCheck.limit}). Upgrade your plan for higher limits.`, 403);
+  }
 
   try {
     const body = await req.json();

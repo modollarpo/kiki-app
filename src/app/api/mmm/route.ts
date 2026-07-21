@@ -3,6 +3,8 @@ import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
 import { logger, handleApiError } from "@/lib/logger";
 
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
+
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
@@ -43,12 +45,45 @@ export async function GET(req: NextRequest) {
       costPerConversion: data.conversions > 0 ? Math.round(data.spend / data.conversions * 100) / 100 : 0,
     }));
 
-    // Simple model fit estimation (in production, this would use real MMM algorithms)
+    // ── Try Python Bayesian MMM service ──────────────────────
+    try {
+      const campaignRows = campaigns.map(c => ({
+        platform: c.platform || "unknown",
+        spend:    c.spend || 0,
+        revenue:  c.revenue || 0,
+        impressions: c.impressions || 0,
+      }));
+
+      const mlRes = await fetch(`${ML_SERVICE_URL}/mmm/simulate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenant_id: tenantId, campaigns: campaignRows }),
+        signal: AbortSignal.timeout(30000),
+      });
+
+      if (mlRes.ok) {
+        const mlData = await mlRes.json();
+        if (mlData.success) {
+          return NextResponse.json({
+            success: true,
+            engine: "bayesian",
+            data: {
+              modelFit: { ...mlData.results.model_fit, algorithm: "Bayesian MAP (PyMC)" },
+              channels: mlData.results.channels,
+              summary: { totalSpend, totalRevenue, overallRoas: totalSpend > 0 ? Math.round((totalRevenue / totalSpend) * 100) / 100 : 0 },
+            },
+          });
+        }
+      }
+    } catch (mlErr) {
+      logger.warn("mmm/bayesian", { message: `ML service unavailable, using heuristic: ${mlErr}` });
+    }
+
+    // ── Fallback: heuristic linear regression ─────────────────
     const modelFit = {
-      rSquared: totalRevenue > 0 ? Math.min(0.95, 0.7 + (campaigns.length * 0.02)) : 0,
+      rSquared:    totalRevenue > 0 ? Math.min(0.95, 0.7 + (campaigns.length * 0.02)) : 0,
       adjRSquared: totalRevenue > 0 ? Math.min(0.92, 0.65 + (campaigns.length * 0.02)) : 0,
-      algorithm: "Linear regression with platform weights",
-      note: "Full MMM requires external statistical library integration",
+      algorithm: "Linear regression with platform weights (heuristic fallback)",
     };
 
     // Calculate diminishing returns curve (simplified)

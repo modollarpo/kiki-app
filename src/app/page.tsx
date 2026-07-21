@@ -43,19 +43,19 @@ const FEATURES = [
   { n:"01",tag:"ENRICHMENT ENGINE",icon:"◎",accent:K.mint,
     title:"Your $149 order\nbecomes a $640 signal.",
     body:"Every conversion intercepted server-side. ML predicts 90-day LTV in 38ms. All 14 platforms receive the enriched value — not the raw order.",
-    proof:[{v:"4.29×",l:"avg LTV uplift"},{v:"38ms",l:"median latency"},{v:"R²=0.91",l:"model accuracy"}] },
+    proof:[{v:"4.29×",l:"avg LTV uplift"},{v:"38ms",l:"median latency"},{v:"R²=0.91",l:"model accuracy"}], href:"/features/ltv-enrichment" },
   { n:"02",tag:"SYNCBRAIN™",icon:"⬡",accent:K.green,
     title:"Seven AI models.\nOne routing brain.",
     body:"GPT-4o for decisions. Claude for reasoning. Gemini Flash for speed. LLaMA for cost. SyncBrain selects in 12ms, budget-aware, quality-first.",
-    proof:[{v:"7",l:"AI models"},{v:"12ms",l:"routing latency"},{v:"45%",l:"cost reduction"}] },
+    proof:[{v:"7",l:"AI models"},{v:"12ms",l:"routing latency"},{v:"45%",l:"cost reduction"}], href:"/features/syncbrain" },
   { n:"03",tag:"AUTONOMOUS AGENTS",icon:"⚡",accent:K.blue,
     title:"Bidding decisions.\nAll day. Every day.",
     body:"Six specialized agents — Bidding, Creative, Smart Pacing, Signals, OaaS, SyncBrain — execute within your guardrails and log every action.",
-    proof:[{v:"6",l:"AI agents"},{v:"847",l:"decisions/day"},{v:"0h",l:"manual bidding"}] },
+    proof:[{v:"6",l:"AI agents"},{v:"847",l:"decisions/day"},{v:"0h",l:"manual bidding"}], href:"/features/ai-agents" },
   { n:"04",tag:"FRAUD & IVT",icon:"⬗",accent:K.danger,
     title:"Bot traffic poisons\nyour LTV model.",
     body:"IVT contaminates your training data — your model learns to find bots. KIKI blocks fraud before enrichment using IP, fingerprint, and velocity.",
-    proof:[{v:"99.2%",l:"detection rate"},{v:"0.03%",l:"false positives"},{v:"18ms",l:"score latency"}] },
+    proof:[{v:"99.2%",l:"detection rate"},{v:"0.03%",l:"false positives"},{v:"18ms",l:"score latency"}], href:"/features/fraud-ivt" },
 ];
 
 const HOW = [
@@ -90,8 +90,8 @@ const COMPARE = [
 ];
 
 const PLANS = [
-  {name:"Starter",  price:490,  color:K.t3,   desc:"Individuals & lean teams",  cta:"Start Free",    hot:false},
-  {name:"Growth",   price:1800, color:K.blue,  desc:"Scaling media teams",        cta:"Start Free",    hot:true },
+  {name:"Starter",  price:690,  color:K.t3,   desc:"Individuals & lean teams",  cta:"Start Free",    hot:false},
+  {name:"Growth",   price:2000, color:K.blue,  desc:"Scaling media teams",        cta:"Start Free",    hot:true },
   {name:"Enterprise",price:null,color:K.gold,  desc:"Custom infrastructure",      cta:"Talk to Sales", hot:false},
 ];
 
@@ -286,6 +286,9 @@ export default function HomePage() {
           <div className="text-center mb-14">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">THE PLATFORM</p>
             <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em]">Every tool your media team needs.</h2>
+            <p className="font-sans text-[13px] text-t3 mt-3">
+              <a href="/features" className="no-underline" style={{ color: K.blue4 }}>View all 25 features →</a>
+            </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-g800" style={{border:`1px solid ${K.g800}`}}>
             {FEATURES.map((f,i)=>(
@@ -299,7 +302,7 @@ export default function HomePage() {
                 </div>
                 <h3 className="font-mono font-bold text-[clamp(14px,2vw,19px)] text-t1 mb-3.5 leading-[1.2] tracking-[-0.02em] whitespace-pre-line">{f.title}</h3>
                 <p className="font-sans text-[13px] text-t3 leading-[1.75] mb-6">{f.body}</p>
-                <div className="flex gap-px bg-g800 rounded-kdls overflow-hidden">
+                <div className="flex gap-px bg-g800 rounded-kdls overflow-hidden mb-4">
                   {f.proof.map(p=>(
                     <div key={p.l} className="flex-1 py-[10px] px-3 bg-g850 text-center">
                       <p className="font-mono text-sm font-bold" style={{color:f.accent}}>{p.v}</p>
@@ -307,6 +310,15 @@ export default function HomePage() {
                     </div>
                   ))}
                 </div>
+                <button
+                  onClick={() => router.push(f.href)}
+                  className="font-mono text-[11px] font-semibold tracking-[0.02em] px-4 py-2.5 rounded-sm transition-colors duration-150 cursor-pointer no-underline inline-block"
+                  style={{ background:`${f.accent}15`, color:f.accent, border:`1px solid ${f.accent}30` }}
+                  onMouseEnter={e => { e.currentTarget.style.background = `${f.accent}25` }}
+                  onMouseLeave={e => { e.currentTarget.style.background = `${f.accent}15` }}
+                >
+                  Learn more &rarr;
+                </button>
               </div>
             ))}
           </div>

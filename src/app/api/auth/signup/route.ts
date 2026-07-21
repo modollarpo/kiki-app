@@ -52,12 +52,13 @@ export async function POST(req: Request) {
       .toUpperCase()
       .slice(0, 2);
 
+    const trialEndsAt = new Date(Date.now() + 14 * 86400000).toISOString();
     await (
       await db.prepare(`
-        INSERT INTO users (id, email, name, password, role, tenant_id, tenant_name, plan, avatar_initials)
-        VALUES (?, ?, ?, ?, 'advertiser', ?, ?, 'starter', ?)
+        INSERT INTO users (id, email, name, password, role, tenant_id, tenant_name, plan, avatar_initials, trial_ends_at)
+        VALUES (?, ?, ?, ?, 'advertiser', ?, ?, 'starter', ?, ?)
       `)
-    ).run(userId, email.toLowerCase().trim(), sanitizeString(name, 100), hashedPassword, tenantId, tenantName, initials);
+    ).run(userId, email.toLowerCase().trim(), sanitizeString(name, 100), hashedPassword, tenantId, tenantName, initials, trialEndsAt);
 
     await (
       await db.prepare(`

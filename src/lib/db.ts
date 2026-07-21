@@ -345,6 +345,7 @@ const SCHEMA = `
     plan TEXT NOT NULL DEFAULT 'starter',
     status TEXT NOT NULL DEFAULT 'active',
     avatar_initials TEXT NOT NULL DEFAULT 'U',
+    trial_ends_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_at TEXT,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -540,7 +541,63 @@ const SCHEMA = `
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
+  CREATE TABLE IF NOT EXISTS bid_approvals (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    campaign_id TEXT NOT NULL,
+    campaign_name TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    current_bid REAL NOT NULL DEFAULT 0,
+    new_bid REAL NOT NULL DEFAULT 0,
+    change_percent REAL NOT NULL DEFAULT 0,
+    reason TEXT NOT NULL DEFAULT '',
+    confidence REAL NOT NULL DEFAULT 0,
+    ltv_ratio REAL NOT NULL DEFAULT 0,
+    stop_loss_triggered INTEGER NOT NULL DEFAULT 0,
+    expires_at INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    resolved_at INTEGER,
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS creative_generations (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    campaign_id TEXT NOT NULL,
+    platform TEXT NOT NULL DEFAULT 'all',
+    type TEXT NOT NULL DEFAULT 'bundle',
+    copies_json TEXT NOT NULL DEFAULT '[]',
+    image_url TEXT,
+    image_prompt TEXT,
+    platform_formats_json TEXT NOT NULL DEFAULT '[]',
+    status TEXT NOT NULL DEFAULT 'draft',
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS competitor_configs (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    domain TEXT NOT NULL,
+    product_category TEXT NOT NULL DEFAULT 'general',
+    monitored_urls_json TEXT NOT NULL DEFAULT '[]',
+    price_drop_threshold REAL NOT NULL DEFAULT 15,
+    last_checked_at INTEGER,
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS competitor_snapshots (
+    id TEXT PRIMARY KEY,
+    competitor_id TEXT NOT NULL,
+    domain TEXT NOT NULL,
+    product_category TEXT NOT NULL,
+    avg_price REAL NOT NULL DEFAULT 0,
+    sample_urls_json TEXT NOT NULL DEFAULT '[]',
+    captured_at INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS fraud_events (
+
     id TEXT PRIMARY KEY,
     tenant_id TEXT NOT NULL,
     signal_id TEXT,
@@ -989,12 +1046,13 @@ async function seedIfEmpty(db: PgDb) {
   const userCount = (await db.prepare("SELECT COUNT(*) as c FROM users").get()) as { c: number };
   if (userCount.c > 0) return;
 
+  const trialEnd = new Date(Date.now() + 14 * 86400000).toISOString();
   const insertUser = db.prepare(`
-    INSERT INTO users (id, email, name, password, role, tenant_id, tenant_name, plan, avatar_initials)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO users (id, email, name, password, role, tenant_id, tenant_name, plan, avatar_initials, trial_ends_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  await insertUser.run("u1", "alex@acmecorp.com", "Alex Chen", hashPassword("password123"), "advertiser", "t1", "Acme Corp", "growth", "AC");
-  await insertUser.run("u2", "admin@kiki.ai", "Admin User", hashPassword("admin123"), "superadmin", "t2", "KIKI Inc.", "enterprise", "AU");
+  await insertUser.run("u1", "alex@acmecorp.com", "Alex Chen", hashPassword("password123"), "advertiser", "t1", "Acme Corp", "growth", "AC", trialEnd);
+  await insertUser.run("u2", "admin@kiki.ai", "Admin User", hashPassword("admin123"), "superadmin", "t2", "KIKI Inc.", "enterprise", "AU", trialEnd);
 
   const insertCampaign = db.prepare(`
     INSERT INTO campaigns (id, tenant_id, name, platform, status, roas, spend, budget, impressions, clicks, conversions, cpa, ltv_predicted)
@@ -1097,10 +1155,10 @@ async function seedBillingIfEmpty(db: PgDb) {
     (id, tenant_id, stripe_invoice_id, amount, currency, status, period_start, period_end, line_items, created_at)
     VALUES (?, ?, ?, ?, 'usd', 'paid', ?, ?, ?, CURRENT_TIMESTAMP)
   `).run(
-    "inv_seed_1", "t1", "in_seed_1", 1800,
+    "inv_seed_1", "t1", "in_seed_1", 2000,
     lastStart.toISOString(), lastEnd.toISOString(),
     JSON.stringify([
-      { description: "Growth Plan - Monthly Subscription", amount: 1800, quantity: 1, unitPrice: 1800 },
+      { description: "Growth Plan - Monthly Subscription", amount: 2000, quantity: 1, unitPrice: 2000 },
     ])
   );
 

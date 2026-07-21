@@ -54,21 +54,22 @@ const NAV_GROUPS: { group: string; allowedRoles?: string[]; items: NavItem[] }[]
     items: [
       { href: "/dashboard/wallet", icon: "◎", label: "Wallet & Cards" },
       { href: "/dashboard/billing", icon: "▣", label: "Billing" },
-      { href: "/dashboard/margin", icon: "◈", label: "Profit Margin" },
-      { href: "/dashboard/profit-margin", icon: "◈", label: "Profit & Margin" },
-      { href: "/dashboard/finance", icon: "◉", label: "Finance Ops" },
+      { href: "/dashboard/finance", icon: "◉", label: "P&L Summary" },
+      { href: "/dashboard/margin", icon: "◈", label: "Channel Margins" },
+      { href: "/dashboard/profit-margin", icon: "◈", label: "Catalog Margins" },
       { href: "/dashboard/influencer", icon: "◉", label: "Influencers" },
     ],
   },
   {
     group: "OPERATIONS",
     items: [
-      { href: "/dashboard/oaas", icon: "⬡", label: "OaaS Tasks" },
+      { href: "/dashboard/oaas", icon: "⧡", label: "OaaS Tasks" },
       { href: "/dashboard/workflow", icon: "◎", label: "Automation" },
       { href: "/dashboard/reports", icon: "▤", label: "Reports" },
       { href: "/dashboard/warehouse", icon: "▦", label: "Data Export" },
-      { href: "/dashboard/fraud", icon: "⬗", label: "Fraud & IVT" },
+      { href: "/dashboard/fraud", icon: "⧗", label: "Fraud & IVT" },
       { href: "/dashboard/anomaly", icon: "⚠", label: "Anomaly Alerts", badgeSelector: () => "2", bc: K.warn },
+      { href: "/dashboard/competitor", icon: "⧟", label: "Competitor Intel" },
       { href: "/dashboard/commerce", icon: "🛒", label: "Commerce" },
     ],
   },
@@ -76,7 +77,8 @@ const NAV_GROUPS: { group: string; allowedRoles?: string[]; items: NavItem[] }[]
     group: "CRM & CONTENT",
     items: [
       { href: "/dashboard/crm", icon: "◉", label: "CRM" },
-      { href: "/dashboard/creative-library", icon: "✦", label: "Creatives" },
+      { href: "/dashboard/creative-ai", icon: "✦", label: "Creative AI" },
+      { href: "/dashboard/creative-library", icon: "✦", label: "Creative Library" },
       { href: "/dashboard/creative-attribution", icon: "✦", label: "Creative Attribution" },
     ],
   },
@@ -371,12 +373,11 @@ const SidebarContent = memo(function SidebarContent({
         <Image
           src="/images/kiki.png"
           alt="KIKI"
-          width={24}
-          height={24}
+          width={28}
+          height={28}
           style={{
-            borderRadius: 2,
+            borderRadius: 3,
             flexShrink: 0,
-            margin: 2,
           }}
         />
         {(!sidebarCollapsed || isMobile) && (
@@ -385,7 +386,7 @@ const SidebarContent = memo(function SidebarContent({
               style={{
                 fontFamily: K.mono,
                 fontWeight: 700,
-                fontSize: 13,
+                fontSize: 15,
                 color: K.t1,
                 lineHeight: 1,
               }}

@@ -115,6 +115,8 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/lib/tenant", () => ({
   tenantScope: (q: string, tid: string) => ({ query: q + " WHERE tenant_id = ?", params: [tid] }),
+  checkEnforcement: vi.fn().mockResolvedValue({ allowed: true }),
+  checkPlanLimit: vi.fn().mockResolvedValue({ allowed: true, limit: 20, usage: 2 }),
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -134,6 +136,7 @@ vi.mock("@/lib/bidding", () => ({
   getDayPartingWeights: vi.fn().mockResolvedValue({
     weights: Array(24).fill(0).map((_, i) => i < 6 ? 0.3 : i < 12 ? 1.0 : i < 18 ? 1.2 : 0.6),
   }),
+  initBiddingEventWiring: vi.fn(),
 }));
 
 vi.mock("@/lib/events", () => ({ eventBus: { emit: vi.fn(), on: vi.fn() } }));

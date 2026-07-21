@@ -22,8 +22,8 @@ export interface PlanPricing {
 
 export const PLAN_PRICING: Record<string, PlanPricing> = {
   starter: {
-    monthlyPrice: 490,
-    annualPrice: 4704, // 20% discount
+    monthlyPrice: 690,
+    annualPrice: 6624, // 20% discount ($552/mo)
     includedSignals: 50000,
     signalOverageRate: 0.0008, // $0.80 per 1K
     includedTokens: 500000,
@@ -32,8 +32,8 @@ export const PLAN_PRICING: Record<string, PlanPricing> = {
     performanceBonusPercent: 0,
   },
   growth: {
-    monthlyPrice: 1800,
-    annualPrice: 17280,
+    monthlyPrice: 2000,
+    annualPrice: 19200, // 20% discount ($1,600/mo)
     includedSignals: 500000,
     signalOverageRate: 0.0006,
     includedTokens: 5000000,

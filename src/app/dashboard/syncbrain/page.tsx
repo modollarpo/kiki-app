@@ -5,6 +5,7 @@ import { Card, Badge, Button, StatCard, ProgressBar, AIThinking } from "@/compon
 import { useAuth } from "@/hooks/useAuth";
 import { ai, type ChatMessage } from "@/lib/api";
 import { K } from "@/lib/kdls";
+import { UpgradePrompt } from "@/components/ui";
 
 interface ChatMsg {
   role: "user" | "assistant";
@@ -25,7 +26,9 @@ interface SyncBrainStats {
 }
 
 export default function SyncBrainPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const plan = user?.plan || "starter";
+
   const [messages, setMessages] = useState<ChatMsg[]>([
     {
       role: "assistant",
@@ -110,6 +113,20 @@ export default function SyncBrainPage() {
     "Predict next week's spend",
     "Flag any anomalies in my data",
   ];
+
+  if (plan === "starter") {
+    return (
+      <DashboardLayout>
+        <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
+          <UpgradePrompt
+            title="SyncBrain™ — Growth Plan Feature"
+            description="SyncBrain provides AI-powered campaign intelligence, real-time analysis, and model routing. Upgrade to Growth to unlock this feature."
+            plan="growth"
+          />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>

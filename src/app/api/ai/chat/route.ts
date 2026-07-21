@@ -7,10 +7,12 @@ import {
   SYSTEM_PROMPTS,
   type ModelTier,
 } from "@/lib/azure-openai";
+import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { isOpenCodeConfigured, chat as opencodeChat, type OpenCodeMessage } from "@/lib/opencode";
+import { checkEnforcement, checkPlanLimit } from "@/lib/tenant";
 
 const NL_SERVICE_URL = process.env.NL_ANALYTICS_URL || "http://localhost:3025";
 
@@ -45,6 +47,25 @@ export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!user) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  const enforcement = await checkEnforcement(user.tenantId);
+  if (!enforcement.allowed) {
+    return NextResponse.json({ error: enforcement.reason }, { status: 403 });
+  }
+
+  // Check monthly token allowance
+  const db = await getDb();
+  const monthlyTokens =   await db.prepare(`
+    SELECT COALESCE(SUM(quantity), 0) as total FROM usage_records
+    WHERE tenant_id = ? AND type = 'ai_tokens'
+    AND timestamp >= datetime('now', 'start of month')
+  `).get(user.tenantId) as any;
+  const tokenCheck = await checkPlanLimit(user.tenantId, "tokens", monthlyTokens.total);
+  if (!tokenCheck.allowed) {
+    return NextResponse.json({
+      error: `Monthly AI token limit reached (${tokenCheck.limit.toLocaleString()} tokens). Upgrade your plan for higher limits.`,
+    }, { status: 403 });
   }
 
   // Abuse protection: 30 chat requests per IP per minute.
