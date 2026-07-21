@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // Incrementality Experiment — Create ghost bidding holdout experiment
 // POST /api/incrementality/experiment — Create new experiment

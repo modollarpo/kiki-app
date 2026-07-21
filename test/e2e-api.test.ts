@@ -159,11 +159,14 @@ describe("E2E: Status", () => {
     expect(data.services).toHaveLength(12);
     expect(data.stats.agentsRunning).toBe(2);
   });
-  it("401 without auth", async () => {
+  it("returns public health data without auth", async () => {
     const { getUserFromRequest } = await import("@/lib/auth");
     vi.mocked(getUserFromRequest).mockReturnValueOnce(null as any);
     const res = await (await import("@/app/api/status/route")).GET(req("/api/status") as any);
-    expect(res.status).toBe(401);
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.services).toHaveLength(12);
+    expect(data.stats).toBeNull();
   });
 });
 
@@ -283,7 +286,6 @@ describe("E2E: Auth guard", () => {
     const { getUserFromRequest } = await import("@/lib/auth");
     vi.mocked(getUserFromRequest).mockReturnValue(null as any);
     const imports = [
-      () => import("@/app/api/status/route").then(m => m.GET(req("/api/status") as any)),
       () => import("@/app/api/campaigns/route").then(m => m.GET(req("/api/campaigns"))),
       () => import("@/app/api/bidding/route").then(m => m.GET(req("/api/bidding"))),
       () => import("@/app/api/mmm/route").then(m => m.GET(req("/api/mmm"))),

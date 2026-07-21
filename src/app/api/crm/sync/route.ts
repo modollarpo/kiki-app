@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // CRM Sync API — Trigger customer ingestion from Shopify/Stripe/HubSpot
 // POST /api/crm/sync — Sync customers from a platform

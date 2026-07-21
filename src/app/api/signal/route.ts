@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // Signal Intelligence Layer — Enrich and route conversion signals
 // POST /api/signal — Send a conversion signal for LTV enrichment + CAPI routing

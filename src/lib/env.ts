@@ -133,8 +133,8 @@ export function getEncryptionKey(): Buffer {
   return crypto.randomBytes(32);
 }
 
-// ── Auto-validate on import ───────────────────────────────
+// ── Auto-validate on import (skip during `next build`) ────
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "production" && !process.env.NEXT_PHASE) {
   validateEnvironment();
 }

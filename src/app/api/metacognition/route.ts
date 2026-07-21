@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { getMetacognitionDashboard, analyzeConfidenceCalibration, analyzeFactorAttribution, runSelfReflection, adaptStrategy } from "@/lib/metacognition";

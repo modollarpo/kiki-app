@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { json, jsonError, getUserFromRequest } from "@/lib/auth";
 import { predictLTV, predictLTVBatch, type SignalData } from "@/lib/ltv-engine";
 import { handleApiError } from "@/lib/logger";

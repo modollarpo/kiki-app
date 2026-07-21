@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { exportUserData, deleteUserData, recordConsent, getConsentStatus } from "@/lib/gdpr";

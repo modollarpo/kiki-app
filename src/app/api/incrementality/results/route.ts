@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // Incrementality Results — Get experiment results and incremental ROAS
 // GET /api/incrementality/results?campaignId=xxx — Get results

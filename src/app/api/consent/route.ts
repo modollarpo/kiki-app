@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError, sanitizeString } from "@/lib/auth";
 import { logger, handleApiError } from "@/lib/logger";

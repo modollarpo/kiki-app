@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // KIKI Agent Platform — Bidding Orchestrator API Route
 // GET /api/bidding — Bidding stats

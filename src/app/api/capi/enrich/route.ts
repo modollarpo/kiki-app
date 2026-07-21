@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // KIKI Agent Platform — CAPI Enrichment API Route
 // POST /api/capi/enrich — Enrich and deliver conversion events

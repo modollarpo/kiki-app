@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // ============================================================
 // KIKI Agent Platform — Platform Integrations API Route
 // GET    /api/integrations          — List connected platforms
