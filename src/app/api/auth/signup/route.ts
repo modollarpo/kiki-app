@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
     const db = await getDb();
 
-    const existing = await (await db.prepare("SELECT id FROM users WHERE email = ?")).get(
+    const existing = await (await db.prepare("SELECT id FROM users WHERE LOWER(email) = ?")).get(
       email.toLowerCase().trim()
     );
     if (existing) {
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     await (
       await db.prepare(`
         INSERT INTO users (id, email, name, password, role, tenant_id, tenant_name, plan, avatar_initials, trial_ends_at)
-        VALUES (?, ?, ?, ?, 'advertiser', ?, ?, 'starter', ?, ?)
+        VALUES (?, ?, ?, ?, 'advertiser', ?, ?, 'growth', ?, ?)
       `)
     ).run(userId, email.toLowerCase().trim(), sanitizeString(name, 100), hashedPassword, tenantId, tenantName, initials, trialEndsAt);
 
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
         role: "advertiser",
         tenantId,
         tenantName,
-        plan: "starter",
+      plan: "growth",
         avatarInitials: initials,
       },
     }, 201);

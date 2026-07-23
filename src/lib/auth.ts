@@ -134,7 +134,7 @@ export function requireAuth(req: Request): AuthUser {
 
 // ── Response Helpers ───────────────────────────────────────
 export function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
+  return new Response(JSON.stringify(data && typeof data === "object" && !Array.isArray(data) && !("ok" in (data as Record<string, unknown>)) ? { ok: true, ...data as Record<string, unknown> } : data), {
     status,
     headers: {
       "Content-Type": "application/json",

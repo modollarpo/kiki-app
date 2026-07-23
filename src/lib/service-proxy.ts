@@ -27,6 +27,8 @@ export interface ServiceProxyOptions {
   envVar: string;
   /** Timeout in ms (default 10000). */
   timeoutMs?: number;
+  /** Fallback data to return when service is not configured (instead of 503). */
+  fallback?: unknown;
 }
 
 /**
@@ -38,6 +40,9 @@ export async function proxyToService(req: NextRequest, opts: ServiceProxyOptions
   const serviceUrl = process.env[opts.envVar] || defaultUrlFor(opts.envVar);
 
   if (LOCALHOST_DEFAULT.test(serviceUrl)) {
+    if (opts.fallback !== undefined) {
+      return NextResponse.json({ ok: true, ...opts.fallback as Record<string, unknown> });
+    }
     return NextResponse.json(
       {
         success: false,

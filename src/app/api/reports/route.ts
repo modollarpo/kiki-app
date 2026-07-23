@@ -31,7 +31,7 @@ export async function GET(req: Request) {
       db.prepare(`
         SELECT
           COUNT(*) as total,
-          COUNT(*) FILTER (WHERE status = 'active') as active,
+          SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
           COALESCE(SUM(spend), 0) as total_spend,
           COALESCE(SUM(revenue), 0) as total_revenue,
           COALESCE(AVG(roas), 0) as avg_roas

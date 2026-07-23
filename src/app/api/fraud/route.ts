@@ -2,14 +2,19 @@ export const dynamic = "force-dynamic";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { getFraudStats, checkFraud } from "@/lib/fraud";
-import { handleApiError } from "@/lib/logger";
+import { handleApiError, logger } from "@/lib/logger";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const stats = await getFraudStats(user.tenantId);
-  return json(stats);
+  try {
+    const stats = await getFraudStats(user.tenantId);
+    return json(stats);
+  } catch (error) {
+    logger.error("fraud/GET failed", { message: error instanceof Error ? error.message : String(error) });
+    return jsonError("Failed to load fraud stats", 500);
+  }
 }
 
 export async function POST(req: Request) {
