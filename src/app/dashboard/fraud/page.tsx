@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, ProgressBar, StatCard, Button } from "@/components/ui";
+import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K } from "@/lib/kdls";
 
@@ -35,7 +35,6 @@ export default function FraudIVTPage() {
     { type: "Bot Traffic", count: botCount, severity: "medium", desc: "Non-human traffic patterns" },
   ];
 
-  const knownBlocked = stats?.bySeverity ? Object.values(stats.bySeverity).reduce((a, b) => a + b, 0) : 0;
   const ruleNames = ["Click Fraud Filter", "Bot Detection Engine", "Domain Verification", "Session Validation", "Duplicate Detection", "Velocity Check"];
   const ruleCount = ruleNames.length;
   const protectionRules = ruleNames.map(name => ({

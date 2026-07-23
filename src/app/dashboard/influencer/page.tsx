@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, StatCard, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
+import { influencer as influencerApi } from "@/lib/api";
 
 interface Creator { id: string; name: string; handle: string; platform: string; promoCode: string; totalConversions: number; totalRevenue: number; totalLtv: number; roi: number; }
 
@@ -25,8 +26,8 @@ export default function InfluencerPage() {
     if (!token) return;
     try {
       const [creatorsRes, darkRes] = await Promise.all([
-        fetch("/api/influencer", { headers: { "Authorization": `Bearer ${token}` } }).then(r => r.json()),
-        fetch("/api/influencer/dark-social", { headers: { "Authorization": `Bearer ${token}` } }).then(r => r.json()).catch(() => null),
+        influencerApi.list(token),
+        influencerApi.darkSocial(token).catch(() => null),
       ]);
       if (creatorsRes.success) setCreators(creatorsRes.data);
       if (darkRes?.success) setDarkSocial(darkRes.data);
@@ -41,7 +42,7 @@ export default function InfluencerPage() {
 
   const registerCreator = async () => {
     if (!token) return;
-    await fetch("/api/influencer", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify(form) });
+    await influencerApi.create(token, form);
     setForm({ name: "", handle: "", platform: "meta" });
     setShowForm(false);
     fetchData();

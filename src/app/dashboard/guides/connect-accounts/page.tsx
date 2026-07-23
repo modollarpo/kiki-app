@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Button } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";

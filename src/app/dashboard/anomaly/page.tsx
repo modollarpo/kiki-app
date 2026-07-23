@@ -7,13 +7,13 @@ import { useInsights } from "@/hooks/useInsights";
 
 export default function AnomalyDetectionPage() {
   const { data, loading } = useInsights();
-  const anomalies = (data?.anomaly ?? []).map((a: any) => ({
-    id: a.id,
+  const anomalies = (data?.anomaly ?? []).map((a: { type: string; severity: string; description: string; time: string; status: string }) => ({
+    id: a.type?.slice(0, 4) ?? "N/A",
     type: a.description ?? a.type,
-    campaign: a.campaign_name ?? "Platform",
+    campaign: "Platform",
     severity: a.severity ?? "medium",
-    change: a.deviation != null ? `${a.deviation >= 0 ? "+" : ""}${Math.round((a.deviation ?? 0) * 100)}%` : "—",
-    timestamp: a.timestamp ? new Date(a.timestamp).toLocaleString() : "—",
+    change: "—",
+    timestamp: a.time ? new Date(a.time).toLocaleString() : "—",
     status: a.status ?? "investigating",
   }));
 

@@ -15,8 +15,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const [integrations, setIntegrations] = useState<any[]>([]);
-  const [platforms, setPlatforms] = useState<any[]>([]);
+  const [integrations, setIntegrations] = useState<{ id: string; platform: string; status: string; connectedAt: string; accountName?: string }[]>([]);
+  const [platforms, setPlatforms] = useState<{ id?: string; platformId?: string; name: string; description?: string; icon?: string; connected?: boolean }[]>([]);
   const [connecting, setConnecting] = useState<string | null>(null);
 
   useEffect(() => {
@@ -131,13 +131,13 @@ export default function SettingsPage() {
               { platformId: "woocommerce", name: "WooCommerce" },
               { platformId: "hubspot", name: "HubSpot" }
             ]).map(p => {
-              const connected = integrations.find(i => i.platform === p.platformId);
-              return (
-                <div key={p.platformId} className="flex items-center justify-between p-3 rounded-sm bg-g850 border border-g800">
-                  <div>
-                    <p className="font-mono text-[12px] font-bold text-white capitalize">{p.name || p.platformId}</p>
-                    <p className="font-mono text-[10px] text-gray-500 mt-1">
-                      {connected ? connected.accountName : "Not connected"}
+              const connected = integrations.find(i => i.platform === (p.platformId ?? p.id));
+                return (
+                  <div key={p.platformId ?? p.id ?? p.name} className="flex items-center justify-between p-3 rounded-sm bg-g850 border border-g800">
+                    <div>
+                      <p className="font-mono text-[12px] font-bold text-white capitalize">{p.name || p.platformId}</p>
+                      <p className="font-mono text-[10px] text-gray-500 mt-1">
+                        {connected ? (connected.accountName ?? "Connected") : "Not connected"}
                     </p>
                   </div>
                   {connected ? (
@@ -146,8 +146,8 @@ export default function SettingsPage() {
                     <Button 
                       size="sm" 
                       variant="ghost" 
-                      onClick={() => handleConnect(p.platformId)}
-                      loading={connecting === p.platformId}
+                      onClick={() => handleConnect(p.platformId ?? p.id ?? "")}
+                      loading={connecting === (p.platformId ?? p.id ?? "")}
                     >
                       Connect
                     </Button>

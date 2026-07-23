@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, Button, StatusBadge, ProgressBar, ScrollableTable } from "@/components/ui";
+import { StatCard, Card, Button, StatusBadge, ProgressBar, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { campaigns as campaignsApi, type Campaign } from "@/lib/api";
 import { K } from "@/lib/kdls";
@@ -110,7 +110,7 @@ export default function CampaignsPage() {
                 <span className="font-mono text-[11px] text-t2">{c.spend > 0 ? `$${fmt(c.spend)}` : "—"}</span>
                 <span className="font-mono text-[11px] text-t2">${fmt(c.budget)}</span>
                 <span className="w-4 h-4 rounded-kdls inline-flex items-center justify-center font-mono text-[10px] font-bold"
-                  style={{ background: `${PLATFORM_COLORS[c.platform] || "#555"}18`, color: PLATFORM_COLORS[c.platform] || "#888" }}>
+                  style={{ background: `${PLATFORM_COLORS[c.platform] || K.g800}18`, color: PLATFORM_COLORS[c.platform] || K.t2 }}>
                   {c.platform[0]?.toUpperCase()}
                 </span>
                 <span className="font-mono text-[10px] text-t4">{new Date(c.createdAt).toLocaleDateString()}</span>

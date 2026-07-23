@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { insights } from "@/lib/api";
 
 interface RevenueStream {
   name: string;
@@ -145,13 +146,8 @@ export function useInsights() {
   const fetchInsights = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await fetch("/api/insights", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const result = (await res.json()) as InsightsResponse;
-        setData(result);
-      }
+      const result = await insights.get(token) as unknown as InsightsResponse;
+      setData(result);
     } catch {
       // keep existing
     } finally {

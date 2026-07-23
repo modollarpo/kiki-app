@@ -1,7 +1,7 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 interface FetchOptions extends RequestInit {
-  token?: string;
+  token?: string | null;
 }
 
 async function request<T>(path: string, options: FetchOptions = {}): Promise<T> {
@@ -12,14 +12,30 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...fetchOpts,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...fetchOpts,
+      headers,
+      signal: controller.signal,
+    });
 
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || `Request failed: ${res.status}`);
-  return data as T;
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Request failed: ${res.status}`);
+    }
+
+    const text = await res.text();
+    return text ? (JSON.parse(text) as T) : ({} as T);
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("Request timed out");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 // ── Auth ────────────────────────────────────────────────
@@ -308,7 +324,7 @@ export interface ChatResponse {
 }
 
 export const ai = {
-  chat: (data: {
+  chat: (token: string | null | undefined, data: {
     messages: ChatMessage[];
     model?: "mini" | "standard";
     taskType?: "routing" | "classification" | "summarization" | "creative" | "analysis" | "general";
@@ -317,6 +333,7 @@ export const ai = {
   }) =>
     request<ChatResponse>("/api/ai/chat", {
       method: "POST",
+      token,
       body: JSON.stringify(data),
     }),
 };
@@ -371,6 +388,12 @@ export const ltv = {
 // ── Billing ──────────────────────────────────────────────
 export const billing = {
   get: (token: string) => request<Record<string, unknown>>("/api/billing", { token }),
+  changePlan: (token: string, plan: string) =>
+    request<{ success: boolean; subscription?: Record<string, unknown>; error?: string }>("/api/billing/change-plan", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ plan }),
+    }),
 };
 
 // ── Fraud ────────────────────────────────────────────────
@@ -446,7 +469,13 @@ export const scenarios = {
   get: (token: string) => request<Record<string, unknown>>("/api/scenarios", { token }),
 };
 
-// ── MMM (Media Mix Modelling) ────────────────────────────
+// ── Approvals ────────────────────────────────────────────
+export const approvals = {
+  list: (token: string) =>
+    request<{ ok: boolean; approvals: Array<{ id: string; campaignId: string; type: string; status: string; requestedBy: string; reason: string; createdAt: string }>; count: number }>("/api/approvals", { token }),
+  resolve: (token: string, id: string, action: "approve" | "reject") =>
+    request<{ ok: boolean; approved: boolean }>("/api/approvals", { method: "POST", token, body: JSON.stringify({ id, action }) }),
+};
 export const mmm = {
   get: (token: string) => request<Record<string, unknown>>("/api/mmm", { token }),
 };
@@ -466,7 +495,31 @@ export const profitMargin = {
   get: (token: string) => request<Record<string, unknown>>("/api/profit-margin", { token }),
 };
 
-// ── Competitive ──────────────────────────────────────────
+// ── Competitor ───────────────────────────────────────────
+export const competitor = {
+  list: (token: string) =>
+    request<{ ok: boolean; configs: Array<{ id: string; domain: string; productCategory: string; priceDropThreshold: number; lastCheckedAt?: number; status: string }> }>("/api/competitor", { token }),
+  runMonitor: (token: string) =>
+    request<{ ok: boolean; configsChecked: number; dropsDetected: number; results: Array<{ competitorDomain: string; priceDropPct: number; defensiveActions: Array<{ platform: string; action: string; campaignName: string; reason: string; executed: boolean }>; creativeQueued: boolean; summary: string }> }>("/api/competitor", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ action: "run_monitor" }),
+    }),
+  addCompetitor: (token: string, domain: string, productCategory: string) =>
+    request<{ ok: boolean }>("/api/competitor", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ action: "add_competitor", domain, productCategory }),
+    }),
+};
+
+// ── Creative Generate ─────────────────────────────────────
+export const creativeGenerate = {
+  list: (token: string) =>
+    request<{ ok: boolean; fatigued: Array<{ campaignId: string; campaignName: string; platform: string; currentRoas: number; targetRoas: number; consecutiveLowRoasDays: number }>; creatives: Array<{ id: string; campaignId: string; platform: string; type: string; copies: Array<{ id: string; headline: string; primaryText: string; callToAction: string; platform: string; characterCount: number }>; imagePrompt?: string; status: string; createdAt: number }>; counts: { fatigued: number; creatives: number } }>("/api/creative/generate", { token }),
+  generate: (token: string) =>
+    request<{ ok: boolean; generated: number; fatigued: number }>("/api/creative/generate", { method: "POST", token }),
+};
 export const competitive = {
   get: (token: string) => request<Record<string, unknown>>("/api/competitive", { token }),
 };
@@ -510,6 +563,8 @@ export const nlQuery = {
 // ── Attribution ──────────────────────────────────────────
 export const attribution = {
   get: (token: string) => request<Record<string, unknown>>("/api/attribution", { token }),
+  breakdown: (token: string) =>
+    request<{ success: boolean; data: unknown[] }>("/api/attribution?path=/api/attributions/breakdown", { token }),
 };
 
 // ── CAPI Enrich ──────────────────────────────────────────
@@ -539,7 +594,11 @@ export const arbitrage = {
 
 // ── Influencer ───────────────────────────────────────────
 export const influencer = {
-  list: (token: string) => request<Record<string, unknown>>("/api/influencer", { token }),
+  list: (token: string) => request<{ success: boolean; data: Array<{ id: string; name: string; handle: string; platform: string; promoCode: string; totalConversions: number; totalRevenue: number; totalLtv: number; roi: number }> }>("/api/influencer", { token }),
+  create: (token: string, data: { name: string; handle: string; platform: string }) =>
+    request<{ success: boolean; data?: unknown }>("/api/influencer", { method: "POST", token, body: JSON.stringify(data) }),
+  darkSocial: (token: string) =>
+    request<{ success: boolean; data: { totalUnattributedConversions: number; totalUnattributedRevenue: number } }>("/api/influencer/dark-social", { token }),
 };
 
 // ── Incrementality ───────────────────────────────────────

@@ -24,7 +24,7 @@ const sevOf = (action: string) => {
 export default function AuditPage() {
   const { data, loading } = useInsights();
   const raw = data?.audit ?? [];
-  const EVENTS = raw.map((e: any) => {
+  const EVENTS = raw.map((e: { time: string; source: string; action: string; details: string }) => {
     const severity = sevOf(e.action);
     return {
       time: e.time ? new Date(e.time).toLocaleTimeString() : "—",

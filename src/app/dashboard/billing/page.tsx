@@ -4,6 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, Button, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K, fmt } from "@/lib/kdls";
+import { billing as billingApi } from "@/lib/api";
 import { generatePDF } from "@/lib/pdf";
 
 interface BillingData {
@@ -27,13 +28,8 @@ export default function BillingPage() {
   const fetchBilling = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await fetch("/api/billing", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setBilling(data.data || data);
-      }
+      const data = await billingApi.get(token);
+      setBilling(data?.data ? (data.data as BillingData) : (data as unknown as BillingData));
     } catch {
       // keep existing
     } finally {

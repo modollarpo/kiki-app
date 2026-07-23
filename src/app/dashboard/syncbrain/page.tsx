@@ -79,7 +79,7 @@ export default function SyncBrainPage() {
       const chatMessages: ChatMessage[] = messages.map(m => ({ role: m.role, content: m.content }));
       chatMessages.push({ role: "user", content: q });
 
-      const res = await ai.chat({
+      const res = await ai.chat(token, {
         messages: chatMessages,
         model: "mini",
         taskType: q.toLowerCase().includes("creative") ? "creative" : q.toLowerCase().includes("analy") ? "analysis" : "general",
@@ -103,7 +103,7 @@ export default function SyncBrainPage() {
       }]);
     }
     setThinking(false);
-  }, [input, thinking, messages, stats]);
+  }, [input, thinking, messages, stats, token]);
 
   const quickPrompts = [
     "Analyze my campaign ROAS trends",

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, StatCard } from "@/components/ui";
+import { Card, StatCard } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Portfolio { summary: { total_skus: number; avg_margin: number; total_cogs: number; total_revenue: number; low_margin_count: number; mid_margin_count: number; high_margin_count: number; }; distribution: Array<{ bucket: string; count: number; avg_margin: number; }>; }
