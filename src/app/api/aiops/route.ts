@@ -52,7 +52,6 @@ export async function GET(req: Request) {
     }, {});
 
     return json({
-      success: true,
       data: {
         agents: agents.map((a) => ({
           id: a.id,

@@ -29,7 +29,6 @@ export async function GET(req: Request) {
     const lastConsentAction = consentLog as { action_type: string; created_at: string } | undefined;
 
     return json({
-      success: true,
       data: {
         totalUsers: (totalUsers as CountRow).count,
         byPlan: (planCounts as PlanCount[]).map((r) => ({
@@ -74,7 +73,6 @@ export async function POST(req: Request) {
     `)).run(id, user.tenantId, action, JSON.stringify({ userId: user.id, details }), details);
 
     return json({
-      success: true,
       data: { id, action, recordedAt: new Date().toISOString() },
     });
   } catch (error) {

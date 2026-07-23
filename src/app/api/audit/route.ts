@@ -63,7 +63,6 @@ export async function GET(req: Request) {
     const total = (totalRow as CountRow).count;
 
     return json({
-      success: true,
       data: {
         entries: entries.map((r) => ({
           id: r.id,

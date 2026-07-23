@@ -53,7 +53,6 @@ export async function GET(req: Request) {
     const totalCost = usage.reduce((s, r) => s + r.total_cost, 0);
 
     return json({
-      success: true,
       data: {
         usage: {
           byType: usage.map((r) => ({

@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const db = await getDb();
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       data: { connections, available: catalog },
     });
   } catch (error) {
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const body = (await req.json()) as Record<string, unknown>;
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
         return await handleSync(user.tenantId, body);
       default:
         return NextResponse.json(
-          { success: false, error: `Unknown action: ${action}` },
+          { ok: false, error: `Unknown action: ${action}` },
           { status: 400 }
         );
     }
@@ -116,13 +116,13 @@ async function handleConnect(
 
   if (!isCommercePlatformSupported(platform)) {
     return NextResponse.json(
-      { success: false, error: `Unsupported commerce platform: ${platform}` },
+      { ok: false, error: `Unsupported commerce platform: ${platform}` },
       { status: 400 }
     );
   }
   if (!apiKey) {
     return NextResponse.json(
-      { success: false, error: "apiKey required" },
+      { ok: false, error: "apiKey required" },
       { status: 400 }
     );
   }
@@ -168,7 +168,7 @@ async function handleConnect(
 
   logger.info("Commerce connection established", { tenantId, platform, id });
   return NextResponse.json({
-    success: true,
+    ok: true,
     data: { connectionId: id, platform, authType: connector.authType },
   });
 }
@@ -180,7 +180,7 @@ async function handleDisconnect(
   const connectionId = typeof body.connectionId === "string" ? body.connectionId : "";
   if (!connectionId) {
     return NextResponse.json(
-      { success: false, error: "connectionId required" },
+      { ok: false, error: "connectionId required" },
       { status: 400 }
     );
   }
@@ -194,12 +194,12 @@ async function handleDisconnect(
 
   if (res.changes === 0) {
     return NextResponse.json(
-      { success: false, error: "Connection not found" },
+      { ok: false, error: "Connection not found" },
       { status: 404 }
     );
   }
 
-  return NextResponse.json({ success: true, message: "disconnected" });
+  return NextResponse.json({ ok: true, message: "disconnected" });
 }
 
 async function handleSync(
@@ -209,7 +209,7 @@ async function handleSync(
   const connectionId = typeof body.connectionId === "string" ? body.connectionId : "";
   if (!connectionId) {
     return NextResponse.json(
-      { success: false, error: "connectionId required" },
+      { ok: false, error: "connectionId required" },
       { status: 400 }
     );
   }
@@ -222,7 +222,7 @@ async function handleSync(
 
   if (!row) {
     return NextResponse.json(
-      { success: false, error: "Active connection not found" },
+      { ok: false, error: "Active connection not found" },
       { status: 404 }
     );
   }
@@ -268,7 +268,7 @@ async function handleSync(
   });
 
   return NextResponse.json({
-    success: true,
+    ok: true,
     data: {
       syncedOrders,
       syncedCustomers: customers.length,

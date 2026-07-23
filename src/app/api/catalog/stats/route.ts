@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const stats = await getCatalogStats(user.tenantId);
-    return NextResponse.json({ success: true, data: stats });
+    return NextResponse.json({ ok: true, data: stats });
   } catch (e) {
     return handleApiError(e, "catalog/stats/GET");
   }

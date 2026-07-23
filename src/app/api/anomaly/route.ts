@@ -45,7 +45,6 @@ export async function GET(req: Request) {
     const sevCounts = severityCounts as SeverityCount[];
 
     return json({
-      success: true,
       data: {
         anomalies: anomalies.map((r) => ({
           id: r.id,

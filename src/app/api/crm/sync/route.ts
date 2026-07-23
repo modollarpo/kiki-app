@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const stats = await getCrmStats(user.tenantId);
-    return NextResponse.json({ success: true, data: stats });
+    return NextResponse.json({ ok: true, data: stats });
   } catch (e) {
     return handleApiError(e, "crm/sync/GET");
   }
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     }
 
     logger.info("CRM sync completed", { tenantId: user.tenantId, platform, ...result });
-    return NextResponse.json({ success: true, data: { platform, ...result } });
+    return NextResponse.json({ ok: true, data: { platform, ...result } });
   } catch (e) {
     return handleApiError(e, "crm/sync/POST");
   }

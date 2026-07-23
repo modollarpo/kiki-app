@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
     ];
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       data: {
         insights,
         predictions,
@@ -119,6 +119,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     logger.error("intelligence/handler", { message: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: String(error) }, { status: 500 });
   }
 }

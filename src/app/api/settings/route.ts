@@ -48,7 +48,7 @@ export async function GET(req: Request) {
 
     if (!row) return jsonError("User not found", 404);
 
-    return json({ success: true, data: mapUser(row) });
+    return json({ data: mapUser(row) });
   } catch (error) {
     logger.error("settings/GET failed", { message: error instanceof Error ? error.message : String(error) });
     return jsonError("Failed to load settings", 500);
@@ -92,7 +92,7 @@ export async function PUT(req: Request) {
 
     const updated = await (await db.prepare(SELECT_USER)).get(user.id) as UserRow;
 
-    return json({ success: true, data: mapUser(updated) });
+    return json({ data: mapUser(updated) });
   } catch (error) {
     return handleApiError(error, "settings/PUT failed");
   }

@@ -57,7 +57,6 @@ export async function GET(req: Request) {
     const statuses = agentStatuses as StatusCount[];
 
     return json({
-      success: true,
       data: {
         users: { total: u.count },
         agents: {

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20", 10);
 
     const history = await getArbitrageHistory(user.tenantId, limit);
-    return NextResponse.json({ success: true, data: history });
+    return NextResponse.json({ ok: true, data: history });
   } catch (e) {
     return handleApiError(e, "arbitrage/history/GET");
   }

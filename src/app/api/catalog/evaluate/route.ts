@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       kept: result.keptProducts,
     });
 
-    return NextResponse.json({ success: true, data: result });
+    return NextResponse.json({ ok: true, data: result });
   } catch (e) {
     return handleApiError(e, "catalog/evaluate/POST");
   }

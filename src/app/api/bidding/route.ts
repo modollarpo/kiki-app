@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -28,15 +28,15 @@ export async function GET(req: NextRequest) {
 
     if (action === "daypart") {
       const weights = await getDayPartingWeights();
-      return NextResponse.json({ success: true, data: weights });
+      return NextResponse.json({ ok: true, data: weights });
     }
 
     const stats = await getBiddingStats(user.tenantId);
-    return NextResponse.json({ success: true, data: stats });
+    return NextResponse.json({ ok: true, data: stats });
   } catch (error) {
     logger.error("bidding/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { ok: false, error: String(error) },
       { status: 500 }
     );
   }
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
@@ -56,13 +56,13 @@ export async function POST(req: NextRequest) {
       const enforcement = await checkEnforcement(user.tenantId, "all_agents");
       if (!enforcement.allowed) {
         return NextResponse.json(
-          { success: false, error: enforcement.reason, upgradeRequired: true, requiredPlan: "growth" },
+          { ok: false, error: enforcement.reason, upgradeRequired: true, requiredPlan: "growth" },
           { status: 403 }
         );
       }
       const decisions = await runBiddingCycle(user.tenantId);
       return NextResponse.json({
-        success: true,
+        ok: true,
         data: {
           cycleCompleted: true,
           decisions: decisions.length,
@@ -73,13 +73,13 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: false, error: `Unknown action: ${action}` },
+      { ok: false, error: `Unknown action: ${action}` },
       { status: 400 }
     );
   } catch (error) {
     logger.error("bidding/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { ok: false, error: String(error) },
       { status: 500 }
     );
   }
