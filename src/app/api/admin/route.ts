@@ -38,9 +38,9 @@ export async function GET(req: Request) {
         `).all(tid),
         db.prepare(`
           SELECT
-            COUNT(*) FILTER (WHERE status = 'active') as active,
-            COUNT(*) FILTER (WHERE status = 'paused') as paused,
-            COUNT(*) FILTER (WHERE status = 'draft') as draft,
+            SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+            SUM(CASE WHEN status = 'paused' THEN 1 ELSE 0 END) as paused,
+            SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft,
             COALESCE(SUM(spend), 0) as total_spend,
             COALESCE(SUM(revenue), 0) as total_revenue
           FROM campaigns WHERE tenant_id = ?
