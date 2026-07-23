@@ -52,33 +52,30 @@ export async function GET(req: Request) {
     const totalUsageCost = usage.reduce((s, u) => s + u.total_cost, 0);
 
     return json({
-      success: true,
-      data: {
-        agentActions: {
-          total: totalActions,
-          byType: actions.map((a) => ({
-            actionType: a.action_type,
-            count: a.count,
-            avgDurationMs: Math.round(a.avg_duration),
-          })),
-        },
-        campaigns: {
-          total: cs.total,
-          active: cs.active,
-          totalSpend: cs.total_spend,
-          totalRevenue: cs.total_revenue,
-          avgRoas: Math.round(cs.avg_roas * 100) / 100,
-        },
-        usage: {
-          totalCost: totalUsageCost,
-          byType: usage.map((u) => ({
-            type: u.type,
-            totalQuantity: u.total_quantity,
-            totalCost: u.total_cost,
-          })),
-        },
-        generatedAt: new Date().toISOString(),
+      agentActions: {
+        total: totalActions,
+        byType: actions.map((a) => ({
+          actionType: a.action_type,
+          count: a.count,
+          avgDurationMs: Math.round(a.avg_duration),
+        })),
       },
+      campaigns: {
+        total: cs.total,
+        active: cs.active,
+        totalSpend: cs.total_spend,
+        totalRevenue: cs.total_revenue,
+        avgRoas: Math.round(cs.avg_roas * 100) / 100,
+      },
+      usage: {
+        totalCost: totalUsageCost,
+        byType: usage.map((u) => ({
+          type: u.type,
+          totalQuantity: u.total_quantity,
+          totalCost: u.total_cost,
+        })),
+      },
+      generatedAt: new Date().toISOString(),
     });
   } catch (error) {
     logger.error("reports/GET failed", { message: error instanceof Error ? error.message : String(error) });

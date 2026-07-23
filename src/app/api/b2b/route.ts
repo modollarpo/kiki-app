@@ -1,13 +1,13 @@
 export const dynamic = "force-dynamic";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getDb } from "@/lib/db";
-import { getUserFromRequest } from "@/lib/auth";
-import { logger, handleApiError } from "@/lib/logger";
+import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return jsonError("Unauthorized", 401);
 
     const db = await getDb();
     const tenantId = user.tenantId;
@@ -66,28 +66,25 @@ export async function GET(req: NextRequest) {
         deals: data.conversions || 0,
       }));
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        pipeline: {
-          totalValue,
-          deals: campaigns.length,
-          avgSize: campaigns.length > 0 ? Math.round(totalValue / campaigns.length) : 0,
-          winRate: totalConversions > 0 ? Math.round((totalRevenue / Math.max(totalSpent, 1)) * 100) / 10 : 0,
-        },
-        stages,
-        topAccounts,
-        channelAttribution,
-        metrics: {
-          totalSpent,
-          totalRevenue,
-          totalConversions,
-          avgRoas: totalSpent > 0 ? Math.round((totalRevenue / totalSpent) * 100) / 100 : 0,
-        },
+    return json({
+      pipeline: {
+        totalValue,
+        deals: campaigns.length,
+        avgSize: campaigns.length > 0 ? Math.round(totalValue / campaigns.length) : 0,
+        winRate: totalConversions > 0 ? Math.round((totalRevenue / Math.max(totalSpent, 1)) * 100) / 10 : 0,
+      },
+      stages,
+      topAccounts,
+      channelAttribution,
+      metrics: {
+        totalSpent,
+        totalRevenue,
+        totalConversions,
+        avgRoas: totalSpent > 0 ? Math.round((totalRevenue / totalSpent) * 100) / 100 : 0,
       },
     });
   } catch (error) {
     logger.error("b2b/handler", { message: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    return jsonError(String(error), 500);
   }
 }

@@ -1,13 +1,13 @@
 export const dynamic = "force-dynamic";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getDb } from "@/lib/db";
-import { getUserFromRequest } from "@/lib/auth";
-import { logger, handleApiError } from "@/lib/logger";
+import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return jsonError("Unauthorized", 401);
 
     const db = await getDb();
     const tenantId = user.tenantId;
@@ -78,26 +78,23 @@ export async function GET(req: NextRequest) {
         industry: 0,
       }));
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        platforms,
-        ourPerformance: {
-          totalSpend,
-          totalRevenue,
-          avgRoas: Math.round(avgRoas * 100) / 100,
-          totalCampaigns: ourCampaigns.length,
-        },
-        signalTrends: recentSignals.map(s => ({
-          platform: s.platform,
-          volume: s.count,
-          avgValue: Math.round(s.avg_value || 0),
-        })),
-        cpmBenchmarks,
+    return json({
+      platforms,
+      ourPerformance: {
+        totalSpend,
+        totalRevenue,
+        avgRoas: Math.round(avgRoas * 100) / 100,
+        totalCampaigns: ourCampaigns.length,
       },
+      signalTrends: recentSignals.map(s => ({
+        platform: s.platform,
+        volume: s.count,
+        avgValue: Math.round(s.avg_value || 0),
+      })),
+      cpmBenchmarks,
     });
   } catch (error) {
     logger.error("competitive/handler", { message: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    return jsonError(String(error), 500);
   }
 }
