@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const db = await getDb();
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
     const feedback = await getFeedbackStats(user.tenantId);
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       data: {
         bySegment,
         avgError,

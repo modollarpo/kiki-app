@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     if (event) {
       const result = await enrichConversionEvent(user.tenantId, event as ConversionEvent);
       return NextResponse.json({
-        success: true,
+        ok: true,
         data: result,
         latencyMs: result.latencyMs,
       });
@@ -35,13 +35,13 @@ export async function POST(req: NextRequest) {
     if (events && Array.isArray(events)) {
       if (events.length > 100) {
         return NextResponse.json(
-          { success: false, error: "Batch size limit: 100 events" },
+          { ok: false, error: "Batch size limit: 100 events" },
           { status: 400 }
         );
       }
       const results = await enrichConversionBatch(user.tenantId, events);
       return NextResponse.json({
-        success: true,
+        ok: true,
         data: {
           processed: results.length,
           enriched: results.filter(r => !r.fraudBlocked && r.consentValid).length,
@@ -53,13 +53,13 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: false, error: "Provide either 'event' or 'events' in request body" },
+      { ok: false, error: "Provide either 'event' or 'events' in request body" },
       { status: 400 }
     );
   } catch (error) {
     logger.error("capi/enrich/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { ok: false, error: String(error) },
       { status: 500 }
     );
   }
@@ -69,15 +69,15 @@ export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const stats = await getEnrichmentStats(user.tenantId);
-    return NextResponse.json({ success: true, data: stats });
+    return NextResponse.json({ ok: true, data: stats });
   } catch (error) {
     logger.error("capi/enrich/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { ok: false, error: String(error) },
       { status: 500 }
     );
   }

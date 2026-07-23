@@ -15,11 +15,11 @@ export async function GET(req: NextRequest) {
     switch (action) {
       case "export": {
         const data = await exportUserData(user.tenantId, user.id);
-        return NextResponse.json(data);
+        return NextResponse.json({ ok: true, data });
       }
       case "consent": {
         const consents = await getConsentStatus(user.tenantId, user.id);
-        return NextResponse.json({ consents });
+        return NextResponse.json({ ok: true, data: { consents } });
       }
       default:
         return NextResponse.json({ error: "Unknown action" }, { status: 400 });
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
           ipAddress: ipAddress || undefined,
           userAgent: userAgent || undefined,
         });
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ ok: true });
       }
       case "delete": {
         const { anonymizeOnly, ...options } = body;

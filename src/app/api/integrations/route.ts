@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       // ── List supported platforms ──────────────────────
       case "list": {
         return NextResponse.json({
-          success: true,
+          ok: true,
           data: listConnectors(),
         });
       }
@@ -48,14 +48,14 @@ export async function GET(req: NextRequest) {
       case "campaigns": {
         if (!platform || !isPlatformSupported(platform)) {
           return NextResponse.json(
-            { success: false, error: "Valid platform required (meta, google, tiktok, linkedin, snap, pinterest)" },
+            { ok: false, error: "Valid platform required (meta, google, tiktok, linkedin, snap, pinterest)" },
             { status: 400 }
           );
         }
         const integrationId = searchParams.get("integrationId");
         if (!integrationId) {
           return NextResponse.json(
-            { success: false, error: "integrationId required" },
+            { ok: false, error: "integrationId required" },
             { status: 400 }
           );
         }
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
 
         if (!integration) {
           return NextResponse.json(
-            { success: false, error: "No active integration found" },
+            { ok: false, error: "No active integration found" },
             { status: 404 }
           );
         }
@@ -89,14 +89,14 @@ export async function GET(req: NextRequest) {
       case "oauth_url": {
         if (!platform || !isPlatformSupported(platform)) {
           return NextResponse.json(
-            { success: false, error: "Valid platform required" },
+            { ok: false, error: "Valid platform required" },
             { status: 400 }
           );
         }
 
         const connector = getConnector(platform);
         const { url, state, codeVerifier } = await connector.generateOAuthUrl(user.tenantId);
-        return NextResponse.json({ success: true, data: { url, state, codeVerifier } });
+        return NextResponse.json({ ok: true, data: { url, state, codeVerifier } });
       }
 
       // ── Send CAPI event to all platforms ─────────────
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
         const eventPayload = searchParams.get("event");
         if (!eventPayload) {
           return NextResponse.json(
-            { success: false, error: "event JSON required" },
+            { ok: false, error: "event JSON required" },
             { status: 400 }
           );
         }
@@ -136,9 +136,9 @@ export async function GET(req: NextRequest) {
         }
 
         return NextResponse.json({
-          success: true,
+          ok: true,
           data: {
-            delivered: results.filter(r => r.success).length,
+delivered: results.filter(r => r.success).length,
             failed: results.filter(r => !r.success).length,
             results,
           },
@@ -166,13 +166,13 @@ export async function GET(req: NextRequest) {
           };
         });
 
-        return NextResponse.json({ success: true, data: platforms });
+        return NextResponse.json({ ok: true, data: platforms });
       }
     }
   } catch (error) {
     logger.error("integrations/GET", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { ok: false, error: String(error) },
       { status: 500 }
     );
   }
@@ -182,7 +182,7 @@ export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
 
     if (!platform || !isPlatformSupported(platform)) {
       return NextResponse.json(
-        { success: false, error: "Valid platform required" },
+        { ok: false, error: "Valid platform required" },
         { status: 400 }
       );
     }
@@ -202,7 +202,7 @@ export async function POST(req: NextRequest) {
       case "oauth_callback": {
         if (!code || !state) {
           return NextResponse.json(
-            { success: false, error: "code and state required" },
+            { ok: false, error: "code and state required" },
             { status: 400 }
           );
         }
@@ -216,7 +216,7 @@ export async function POST(req: NextRequest) {
 
         if (!stateRecord) {
           return NextResponse.json(
-            { success: false, error: "Invalid or expired OAuth state" },
+            { ok: false, error: "Invalid or expired OAuth state" },
             { status: 400 }
           );
         }
@@ -264,7 +264,7 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json({
-          success: true,
+          ok: true,
           data: {
             integrationId,
             platform,
@@ -288,7 +288,7 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json({
-          success: true,
+          ok: true,
           message: `${platform} disconnected`,
         });
       }
@@ -297,7 +297,7 @@ export async function POST(req: NextRequest) {
       case "refresh_token": {
         if (!integrationId) {
           return NextResponse.json(
-            { success: false, error: "integrationId required" },
+            { ok: false, error: "integrationId required" },
             { status: 400 }
           );
         }
@@ -309,7 +309,7 @@ export async function POST(req: NextRequest) {
 
         if (!integration) {
           return NextResponse.json(
-            { success: false, error: "Integration not found" },
+            { ok: false, error: "Integration not found" },
             { status: 404 }
           );
         }
@@ -331,21 +331,21 @@ export async function POST(req: NextRequest) {
         );
 
         return NextResponse.json({
-          success: true,
+          ok: true,
           data: { message: "Token refreshed" },
         });
       }
 
       default:
         return NextResponse.json(
-          { success: false, error: `Unknown action: ${action}` },
+          { ok: false, error: `Unknown action: ${action}` },
           { status: 400 }
         );
     }
   } catch (error) {
     logger.error("integrations/POST", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { ok: false, error: String(error) },
       { status: 500 }
     );
   }

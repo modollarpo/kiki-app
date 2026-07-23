@@ -14,12 +14,12 @@ export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = rateLimit(`change-plan:${clientKey(req)}`, 5, 60_000);
     if (!rl.ok) {
-      return NextResponse.json({ success: false, error: "Rate limit exceeded" }, { status: 429 });
+      return NextResponse.json({ ok: false, error: "Rate limit exceeded" }, { status: 429 });
     }
 
     const body = await req.json();
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     if (!plan || !VALID_PLANS.includes(plan)) {
       return NextResponse.json(
-        { success: false, error: `Invalid plan. Valid options: ${VALID_PLANS.join(", ")}` },
+        { ok: false, error: `Invalid plan. Valid options: ${VALID_PLANS.join(", ")}` },
         { status: 400 }
       );
     }
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       data: {
         plan,
         stripeUpdated,
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       message: error instanceof Error ? error.message : String(error),
     });
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { ok: false, error: String(error) },
       { status: 500 }
     );
   }

@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       data: { experimentId, campaignId, name, holdoutPercentage: holdoutPercentage ?? 0.10 },
     }, { status: 201 });
   } catch (e) {

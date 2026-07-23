@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
       : [];
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       data: {
         shareCount,
         darkSocialConversions,
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     logger.error("dark-social/handler", { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { ok: false, error: "Internal server error" },
       { status: 500 }
     );
   }
