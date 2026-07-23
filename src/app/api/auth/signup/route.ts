@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
     const db = await getDb();
 
-    const existing = await (await db.prepare("SELECT id FROM users WHERE LOWER(email) = ?")).get(
+    const existing = await (await db.prepare("SELECT id FROM users WHERE email = ?")).get(
       email.toLowerCase().trim()
     );
     if (existing) {
