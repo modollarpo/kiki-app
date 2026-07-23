@@ -26,7 +26,7 @@ export default function LoginPage() {
 
   const validatePassword = (v: string) => {
     if (!v) return "Password is required";
-    if (v.length < 6) return "Password must be at least 6 characters";
+    if (v.length < 8) return "Password must be at least 8 characters";
     return undefined;
   };
 
@@ -131,7 +131,7 @@ export default function LoginPage() {
             <Button full variant="secondary" size="md" onClick={() => setScreen("sso")} icon={<span>⬡</span>}>Sign in with SSO</Button>
             <p className="font-mono text-[10px] text-t4 text-center mt-4">
               No account?{" "}
-              <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => router.push("/contact")}>Request access →</span>
+              <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => router.push("/auth/signup")}>Create account →</span>
             </p>
             <p className="font-mono text-[11px] text-t3 text-center mt-2.5">
               Demo: alex@acmecorp.com / password123
