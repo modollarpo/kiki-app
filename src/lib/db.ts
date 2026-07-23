@@ -288,9 +288,17 @@ class MemoryDb {
         const cols = mm[2].split(",").map((c) => c.trim().replace(/"/g, ""));
         const vals = this.splitValues(mm[3]);
         const row: Record<string, any> = {};
-        cols.forEach((c, i) => (row[c] = this.coerce(vals[i])));
+        let pIdx = 0;
+        cols.forEach((c, i) => {
+          const raw = vals[i];
+          if (raw === "?") {
+            row[c] = this.coerce(pIdx < params.length ? String(params[pIdx++]) : "NULL");
+          } else {
+            row[c] = this.coerce(raw);
+          }
+        });
         const idIdx = cols.indexOf("id");
-        if (idIdx >= 0) row.id = this.coerce(vals[idIdx]);
+        if (idIdx >= 0) row.id = this.coerce(vals[idIdx] === "?" && idIdx < params.length ? String(params[idIdx]) : vals[idIdx]);
         else row.id = "mem_" + ++this.seq;
         (this.tables[t] ||= []).push(row);
         this.lastInsertRowid = this.seq;

@@ -35,7 +35,16 @@ export async function GET(req: Request) {
 
   try {
     const db = await getDb();
-    const row = await (await db.prepare(SELECT_USER)).get(user.id) as UserRow | undefined;
+    let row = await (await db.prepare(SELECT_USER)).get(user.id) as UserRow | undefined;
+
+    if (!row) {
+      // Auto-create user record if missing (e.g. in-memory DB after restart)
+      const initials = (user.name || "U").split(" ").filter(Boolean).map((w: string) => w[0]).join("").toUpperCase().slice(0, 2) || "U";
+      await (await db.prepare(
+        "INSERT OR IGNORE INTO users (id, email, name, password, role, tenant_id, tenant_name, plan, avatar_initials) VALUES (?, ?, ?, '', ?, ?, ?, ?, ?)"
+      )).run(user.id, user.email, user.name, user.role || "advertiser", user.tenantId, user.tenantName || "Organization", user.plan || "growth", initials);
+      row = await (await db.prepare(SELECT_USER)).get(user.id) as UserRow | undefined;
+    }
 
     if (!row) return jsonError("User not found", 404);
 

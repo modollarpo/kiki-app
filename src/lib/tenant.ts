@@ -268,7 +268,7 @@ export interface EnforcementResult {
 export async function checkTenantSuspended(tenantId: string): Promise<EnforcementResult> {
   const db = await getDb();
   const row =   await db.prepare("SELECT plan, status FROM users WHERE tenant_id = ? LIMIT 1").get(tenantId) as any;
-  if (!row) return { allowed: false, reason: "Tenant not found" };
+  if (!row) return { allowed: true }; // Allow if tenant not yet in DB (new signup, in-memory fallback)
   if (row.status === "suspended") {
     return { allowed: false, reason: "Account is suspended. Please contact support." };
   }

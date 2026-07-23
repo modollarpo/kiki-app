@@ -15,11 +15,15 @@ export async function GET(req: Request) {
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const db = await getDb();
-  const wallet = await (await db.prepare("SELECT * FROM wallets WHERE tenant_id = ?")).get(user.tenantId) as {
+  let wallet = await (await db.prepare("SELECT * FROM wallets WHERE tenant_id = ?")).get(user.tenantId) as {
     id: string; tenant_id: string; balance: number; currency: string;
   } | undefined;
 
-  if (!wallet) return jsonError("Wallet not found", 404);
+  if (!wallet) {
+    const walletId = genId("wlt");
+    await (await db.prepare("INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, 1000, 'USD')")).run(walletId, user.tenantId);
+    wallet = { id: walletId, tenant_id: user.tenantId, balance: 1000, currency: "USD" };
+  }
 
   const cards = await (await db.prepare("SELECT * FROM wallet_cards WHERE wallet_id = ?")).all(wallet.id) as Array<{
     id: string; last4: string; brand: string; limit: number; spent: number; campaign: string; status: string;
