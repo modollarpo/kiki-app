@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, Button, StatusBadge, AIThinking, UpgradePrompt } from "@/components/ui";
+import { StatCard, Card, Badge, Button, StatusBadge, AIThinking } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useKikiStore } from "@/store";
 import { agents as agentsApi, type Agent } from "@/lib/api";
@@ -105,7 +105,7 @@ export default function AgentsPage() {
           {isStarter && (
             <a
               href="/dashboard/billing"
-              className="font-mono text-[11px] text-white bg-[#3b82f6] hover:bg-[#2563eb] rounded-lg px-4 py-2 transition-colors no-underline inline-block whitespace-nowrap"
+              className="font-mono text-[11px] text-white bg-kblue hover:bg-kblue rounded-lg px-4 py-2 transition-colors no-underline inline-block whitespace-nowrap"
             >
               Upgrade to Growth for all 6 agents
             </a>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, StatCard, Badge, Button, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
+import { creativeGenerate } from "@/lib/api";
 
 interface CopyVariation {
   id: string;
@@ -68,8 +69,7 @@ export default function CreativeAIPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/creative/generate", { headers: { Authorization: `Bearer ${token}` } });
-      const json = await res.json() as CreativeData & { ok: boolean };
+      const json = await creativeGenerate.list(token);
       if (json.ok) setData(json);
     } finally {
       setLoading(false);
@@ -82,11 +82,7 @@ export default function CreativeAIPage() {
     if (!token) return;
     setGenerating(true);
     try {
-      const res = await fetch("/api/creative/generate", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const json = await res.json() as { ok: boolean; generated: number; fatigued: number };
+      const json = await creativeGenerate.generate(token);
       if (json.ok) {
         setLastRun(`Generated ${json.generated} creative bundle(s) for ${json.fatigued} fatigued campaign(s)`);
         await fetchData();

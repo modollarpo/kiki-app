@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useKikiStore } from "@/store";
+import { useAuth } from "@/hooks/useAuth";
 import { K } from "@/lib/kdls";
 import { Button, Card, Input } from "@/components/ui";
 import Image from "next/image";
@@ -14,7 +15,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [done, setDone] = useState(false);
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -31,18 +31,13 @@ export default function SignupPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-      const data = await res.json();
-      if (!data.ok) {
-        setErrors({ form: data.error || "Signup failed" });
-        return;
+      const ok = await useAuth.getState().signup(name, email, password);
+      if (ok) {
+        addToast("success", "Account created. Welcome to KIKI!");
+        router.push("/dashboard");
+      } else {
+        setErrors({ form: useAuth.getState().error || "Signup failed" });
       }
-      addToast("success", "Account created. Check your email.");
-      setDone(true);
     } catch {
       setErrors({ form: "Network error. Try again." });
     } finally {
@@ -65,19 +60,10 @@ export default function SignupPage() {
 
       <div className="relative w-full max-w-[380px]">
         <Card accent={K.blue}>
-          {done ? (
-            <div className="text-center py-4">
-              <div className="text-[40px] mb-4">✉</div>
-              <p className="font-sans font-bold text-[18px] text-t1 mb-2">Check your inbox</p>
-              <p className="font-sans text-[13px] text-t3 leading-[1.6]">We sent a confirmation to <span className="text-t1">{email}</span>.</p>
-              <Button variant="ghost" size="md" className="mt-5" onClick={() => router.push("/auth/login")}>← Back to sign in</Button>
-            </div>
-          ) : (
-            <>
-              <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">Create your account</p>
-              <p className="font-sans text-[13px] text-t3 mb-[22px]">Enterprise-grade ad platform. Start free.</p>
+          <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">Create your account</p>
+          <p className="font-sans text-[13px] text-t3 mb-[22px]">Enterprise-grade ad platform. Start free.</p>
 
-              {errors.form && (
+          {errors.form && (
                 <div className="px-3.5 py-2.5 rounded-sm mb-4" style={{ background:K.dangerT, border:`1px solid ${K.danger}40` }}>
                   <p className="font-mono text-[11px] text-kdanger">{errors.form}</p>
                 </div>
@@ -91,9 +77,7 @@ export default function SignupPage() {
                 Already have an account?{" "}
                 <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => router.push("/auth/login")}>Sign in →</span>
               </p>
-            </>
-          )}
-        </Card>
+            </Card>
       </div>
 
       <p className="relative mt-8 font-mono text-[11px] tracking-widest text-t3">

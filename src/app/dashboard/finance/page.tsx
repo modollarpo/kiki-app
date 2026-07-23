@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar, ScrollableTable } from "@/components/ui";
+import { StatCard, Card, ProgressBar, ScrollableTable } from "@/components/ui";
 import { K, fmt } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
 
@@ -79,7 +79,7 @@ export default function FinancePage() {
 
           <Card>
             <h2 className="font-mono font-bold text-[13px] text-white mb-3.5">Revenue Streams</h2>
-            {REVENUE_STREAMS.map((s: any, i: number) => (
+            {REVENUE_STREAMS.map((s: { name: string; amount: number; share: number; color: string }, i: number) => (
               <div key={i} className="mb-3.5">
                 <div className="flex justify-between mb-1">
                   <span className="font-mono text-[10px] text-gray-400">{s.name}</span>
@@ -98,7 +98,7 @@ export default function FinancePage() {
             <h2 className="font-mono font-bold text-[13px] text-white">Cost Breakdown by Category</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 px-5 py-3.5">
-            {COST_CATEGORIES.map((c: any, i: number) => (
+            {COST_CATEGORIES.map((c: { name: string; amount: number; pct: number; color: string }, i: number) => (
               <div key={i} className="p-3 px-3.5 rounded-sm" style={{ background: K.g850, border: `1px solid ${K.g800}`, borderLeft: `3px solid ${COLOR_MAP[c.color] ?? K.t3}` }}>
                 <p className="font-mono text-[10px] text-gray-600 mb-1">{c.name}</p>
                 <p className="font-mono text-base font-bold" style={{ color: COLOR_MAP[c.color] ?? K.t1 }}>${(c.amount / 1000).toFixed(1)}K</p>

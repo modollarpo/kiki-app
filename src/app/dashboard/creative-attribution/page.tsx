@@ -3,8 +3,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, StatCard, AIThinking } from "@/components/ui";
+import { Card, StatCard, Badge, ScrollableTable, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
+import { attribution } from "@/lib/api";
 
 interface Attribution { creative_id: string; platform: string; attributions: number; total_revenue: number; total_ltv: number; }
 
@@ -23,9 +24,8 @@ export default function CreativeAttributionPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/attribution?path=/api/attributions/breakdown", { headers: { "Authorization": `Bearer ${token}` } });
-      const data = await res.json();
-      if (data.success) setAttributions(data.data || []);
+      const data = await attribution.breakdown(token);
+      if (data.success) setAttributions(data.data as Attribution[]);
     } catch {}
     setLoading(false);
   }, [token]);

@@ -6,14 +6,17 @@ interface SSEEvent {
   data: unknown;
 }
 
-export function useSSE(url: string = "/api/events") {
+export function useSSE(url: string = "/api/events", token?: string) {
   const [connected, setConnected] = useState(false);
   const [events, setEvents] = useState<SSEEvent[]>([]);
   const eventSourceRef = useRef<EventSource | null>(null);
   const listenersRef = useRef<Map<string, Set<(data: unknown) => void>>>(new Map());
+  const cleanupRef = useRef<Map<string, () => void>>(new Map());
 
   useEffect(() => {
-    const es = new EventSource(url);
+    const wsUrl = token ? `${url}${url.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}` : url;
+    const es = new EventSource(wsUrl);
+    const cleanupMap = cleanupRef.current;
     eventSourceRef.current = es;
 
     es.onopen = () => setConnected(true);
@@ -21,7 +24,6 @@ export function useSSE(url: string = "/api/events") {
 
     es.addEventListener("connected", () => setConnected(true));
 
-    // Generic message handler
     es.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
@@ -32,8 +34,10 @@ export function useSSE(url: string = "/api/events") {
     return () => {
       es.close();
       eventSourceRef.current = null;
+      cleanupMap.forEach(fn => fn());
+      cleanupMap.clear();
     };
-  }, [url]);
+  }, [url, token]);
 
   const subscribe = useCallback((eventName: string, handler: (data: unknown) => void) => {
     if (!listenersRef.current.has(eventName)) {
@@ -41,16 +45,23 @@ export function useSSE(url: string = "/api/events") {
     }
     listenersRef.current.get(eventName)!.add(handler);
 
-    // Also listen on the EventSource
     const es = eventSourceRef.current;
     if (es) {
-      es.addEventListener(eventName, (e: MessageEvent) => {
+      const listener = (e: MessageEvent) => {
         try {
           const data = JSON.parse(e.data);
           handler(data);
           setEvents(prev => [...prev.slice(-50), { event: eventName, data }]);
         } catch { /* ignore */ }
-      });
+      };
+      es.addEventListener(eventName, listener);
+
+      const unsubscribe = () => {
+        listenersRef.current.get(eventName)?.delete(handler);
+        es.removeEventListener(eventName, listener);
+      };
+      cleanupRef.current.set(eventName + String(Math.random()), unsubscribe);
+      return unsubscribe;
     }
 
     return () => {

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar, Button, AIThinking, ScrollableTable } from "@/components/ui";
+import { StatCard, Card, Badge, ProgressBar, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K, fmt, PLATFORM_COLORS } from "@/lib/kdls";
 

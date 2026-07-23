@@ -40,8 +40,6 @@ export default function ReportsPage() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const workflowActions = insights?.workflow ?? [];
-
   const scheduledReports: { name: string; schedule: string; recipients: string; format: string; lastSent: string; nextSend: string; status: string }[] = [];
 
   const recentExports = warehouseFeatures.length > 0

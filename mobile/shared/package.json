@@ -1,0 +1,57 @@
+{
+  "name": "@mobile/shared",
+  "version": "1.0.0",
+  "description": "Shared types and utilities for KIKI mobile app",
+  "main": "lib/index.js",
+  "module": "lib/index.es.js",
+  "types": "lib/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run clean && npm run lint && npm run typecheck && npm run build"
+  },
+  "keywords": [
+    "mobile",
+    "shared",
+    "types",
+    "typescript",
+    "kiki"
+  ],
+  "author": "KIKI Agent Platform",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiki-agent-platform/kiki-mobile.git",
+    "directory": "mobile/shared"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
+  "dependencies": {
+    "crypto-js": "^4.1.1",
+    "date-fns": "^2.29.0",
+    "immer": "^9.0.20",
+    "lodash": "^4.17.21",
+    "react-native-haptic-feedback": "^1.13.0"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.0.0",
+    "@types/lodash": "^4.17.21",
+    "tslib": "^2.5.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-native": "^0.72.6"
+  },
+  "engines": {
+    "node": ">= 18.0.0"
+  },
+  "files": [
+    "lib/**/*",
+    "README.md"
+  ]
+}

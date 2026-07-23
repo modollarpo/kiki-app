@@ -1,6 +1,6 @@
 "use client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar, Button, StatusBadge, AIThinking, ScrollableTable } from "@/components/ui";
+import { StatCard, Card, Button, AIThinking, ScrollableTable } from "@/components/ui";
 import { K, fmt } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +10,7 @@ export default function WarehousePage() {
   const { data, loading } = useInsights();
   const features = data?.warehouse || [];
 
-  const totalRows = features.reduce((s: number, f: any) => s + (f.samples || 0), 0);
+  const totalRows = features.reduce((s: number, f: { samples: number }) => s + (f.samples || 0), 0);
 
   return (
     <DashboardLayout>
@@ -53,10 +53,10 @@ export default function WarehousePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {features.map((f: any, i: number) => (
+                      {features.map((f: { name: string; value: string; samples: number; mean: number | null; stddev: number | null; updated: string }, i: number) => (
                         <tr key={i}>
                           <td className="font-mono text-[11px] font-semibold text-white py-2.5 px-3 border-b border-g800">{f.name}</td>
-                          <td className="font-mono text-[11px] text-gray-400 py-2.5 px-3 border-b border-g800">{f.value?.toFixed?.(2) ?? f.value}</td>
+                          <td className="font-mono text-[11px] text-gray-400 py-2.5 px-3 border-b border-g800">{f.value ?? "—"}</td>
                           <td className="font-mono text-[11px] text-gray-400 py-2.5 px-3 border-b border-g800">{fmt.compact(f.samples)}</td>
                           <td className="font-mono text-[11px] text-gray-400 py-2.5 px-3 border-b border-g800">{f.mean?.toFixed?.(2) ?? "—"}</td>
                           <td className="font-mono text-[11px] text-gray-400 py-2.5 px-3 border-b border-g800">{f.stddev?.toFixed?.(2) ?? "—"}</td>

@@ -47,6 +47,7 @@ export const useAuth = create<AuthState>()(
       },
 
       logout: () => {
+        auth.logout().catch(() => {});
         set({ token: null, user: null, error: null });
       },
 

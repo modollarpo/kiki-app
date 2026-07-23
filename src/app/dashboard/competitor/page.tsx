@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, StatCard, Badge, Button, ScrollableTable } from "@/components/ui";
 import { K } from "@/lib/kdls";
+import { competitor as competitorApi } from "@/lib/api";
 
 interface CompetitorConfig {
   id: string;
@@ -63,8 +64,7 @@ export default function CompetitorPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/competitor", { headers: { Authorization: `Bearer ${token}` } });
-      const json = await res.json() as { ok: boolean; configs: CompetitorConfig[] };
+      const json = await competitorApi.list(token);
       if (json.ok) setConfigs(json.configs);
     } finally {
       setLoading(false);
@@ -78,12 +78,7 @@ export default function CompetitorPage() {
     setRunning(true);
     setResults([]);
     try {
-      const res = await fetch("/api/competitor", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "run_monitor" }),
-      });
-      const json = await res.json() as { ok: boolean; configsChecked: number; dropsDetected: number; results: ArbitrageResult[] };
+      const json = await competitorApi.runMonitor(token);
       if (json.ok) {
         setResults(json.results);
         setLastSummary(`Checked ${json.configsChecked} competitor(s) — ${json.dropsDetected} price drop(s) detected`);
@@ -98,12 +93,7 @@ export default function CompetitorPage() {
     if (!token || !newDomain.trim()) return;
     setAdding(true);
     try {
-      const res = await fetch("/api/competitor", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "add_competitor", domain: newDomain.trim(), productCategory: newCategory }),
-      });
-      const json = await res.json() as { ok: boolean };
+      const json = await competitorApi.addCompetitor(token, newDomain.trim(), newCategory);
       if (json.ok) {
         setNewDomain("");
         await fetchData();
@@ -197,7 +187,7 @@ export default function CompetitorPage() {
                   onClick={handleAddCompetitor}
                   disabled={adding || !newDomain.trim()}
                   size="sm"
-                  style={{ background: K.blue, color: "#fff", border: "none", opacity: adding ? 0.6 : 1 }}
+                  style={{ background: K.blue, color: K.t1, border: "none", opacity: adding ? 0.6 : 1 }}
                 >
                   {adding ? "…" : "+ Add"}
                 </Button>
