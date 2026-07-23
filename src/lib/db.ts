@@ -271,7 +271,13 @@ class MemoryDb {
     if (lower.startsWith("select")) {
       const tm = trimmed.match(/from\s+([a-z0-9_"]+)/i);
       const t = tm ? tm[1].replace(/"/g, "") : "";
-      const rows = (this.tables[t] || []).slice();
+      let rows = (this.tables[t] || []).slice();
+      // Basic WHERE column = ? filtering (ignores functions like LOWER)
+      const whereMatch = trimmed.match(/where\s+([a-z0-9_"]+)\s*=\s*\?/i);
+      if (whereMatch && params.length > 0) {
+        const col = whereMatch[1].replace(/"/g, "");
+        rows = rows.filter((r: any) => String(r[col]) === String(params[0]));
+      }
       if (mode === "get") return rows[0] ?? undefined;
       return rows;
     }
@@ -293,8 +299,56 @@ class MemoryDb {
       }
       return { lastInsertRowid: 0, changes: 0 };
     }
-    if (lower.startsWith("update") || lower.startsWith("delete")) {
-      return { lastInsertRowid: 0, changes: 0 };
+    if (lower.startsWith("update")) {
+      const um = trimmed.match(/update\s+([a-z0-9_"]+)\s+set\s+(.+?)(?:\s+where\s+|\s*$)/i);
+      const t = um ? um[1].replace(/"/g, "") : "";
+      const setClause = um ? um[2] : "";
+      const setMatches = [...setClause.matchAll(/([a-z0-9_"]+)\s*=\s*\?/gi)];
+      const whereCol = trimmed.match(/where\s+([a-z0-9_"]+)\s*=\s*\?/i);
+      let affected = (this.tables[t] || []).length;
+      if (whereCol) {
+        const wc = whereCol[1].replace(/"/g, "");
+        const wv = String(params[params.length - 1]);
+        let pIdx = 0;
+        for (const row of (this.tables[t] || [])) {
+          if (String(row[wc]) === wv) {
+            for (const sm of setMatches) {
+              const col = sm[1].replace(/"/g, "");
+              row[col] = this.coerce(String(params[pIdx++]));
+            }
+          }
+        }
+        affected = (this.tables[t] || []).filter((r: any) => String(r[wc]) === wv).length;
+      } else {
+        let pIdx = 0;
+        for (const row of (this.tables[t] || [])) {
+          for (const sm of setMatches) {
+            const col = sm[1].replace(/"/g, "");
+            row[col] = this.coerce(String(params[pIdx++]));
+          }
+        }
+      }
+      this.lastRowCount = affected;
+      return { lastInsertRowid: 0, changes: affected };
+    }
+    if (lower.startsWith("delete")) {
+      const dm = trimmed.match(/delete\s+from\s+([a-z0-9_"]+)(?:\s+where\s+(.+?))?$/i);
+      const t = dm ? dm[1].replace(/"/g, "") : "";
+      if (dm && dm[2]) {
+        const whereCol = dm[2].match(/([a-z0-9_"]+)\s*=\s*\?/i);
+        if (whereCol) {
+          const wc = whereCol[1].replace(/"/g, "");
+          const wv = String(params[0]);
+          const before = (this.tables[t] || []).length;
+          this.tables[t] = (this.tables[t] || []).filter((r: any) => String(r[wc]) !== wv);
+          this.lastRowCount = before - (this.tables[t] || []).length;
+          return { lastInsertRowid: 0, changes: this.lastRowCount };
+        }
+      }
+      const before = (this.tables[t] || []).length;
+      delete this.tables[t];
+      this.lastRowCount = before;
+      return { lastInsertRowid: 0, changes: before };
     }
     return mode === "all" ? [] : mode === "get" ? undefined : { lastInsertRowid: 0, changes: 0 };
   }
