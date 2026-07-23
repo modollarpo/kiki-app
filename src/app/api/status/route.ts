@@ -49,6 +49,12 @@ export async function GET(request: Request) {
       stats,
     });
     }
+    return json({
+      status: "operational",
+      lastUpdated: new Date().toISOString(),
+      services,
+      stats: null,
+    });
   } catch (error) {
     logger.error("status GET failed", { message: error instanceof Error ? error.message : String(error) });
 
