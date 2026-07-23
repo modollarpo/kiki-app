@@ -620,3 +620,29 @@ export const sync = {
   run: (token: string, data: { platform: string }) =>
     request<{ ok: boolean }>("/api/sync", { method: "POST", token, body: JSON.stringify(data) }),
 };
+
+// ── Transcription ─────────────────────────────────────────
+export const transcribe = {
+  audio: async (token: string, audio: Blob, filename: string = "audio.wav") => {
+    const form = new FormData();
+    form.append("audio", audio, filename);
+    const res = await fetch(`${API_BASE}/api/transcribe`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Transcription failed: ${res.status}`);
+    }
+    return res.json() as Promise<{ text: string; confidence: number; durationMs: number; source: string }>;
+  },
+};
+
+// ── Translation ───────────────────────────────────────────
+export const translate = {
+  text: (token: string, data: { text: string; target: string; source?: string }) =>
+    request<{ translatedText: string; detectedLanguage?: string; source: string }>("/api/translate", {
+      method: "POST", token, body: JSON.stringify(data),
+    }),
+};

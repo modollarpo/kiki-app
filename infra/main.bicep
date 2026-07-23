@@ -15,6 +15,14 @@ param groqApiKey string = ''
 @secure()
 param databaseUrl string = ''
 
+@description('Azure Speech Services API key (leave empty to use Groq-only STT)')
+@secure()
+param azureSpeechKey string = ''
+
+@description('Azure AI Translator API key (leave empty to use LibreTranslate-only)')
+@secure()
+param azureTranslatorKey string = ''
+
 var resourceGroupName = 'kiki-agent-rg'
 var acrName = 'kikiagentacr'
 var envName = '${baseName}-env'
@@ -136,6 +144,8 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
         { name: 'groq-api-key', value: groqApiKey }
         { name: 'db-url', value: databaseUrl }
         { name: 'opencode-secret', value: opencodeSecret }
+        { name: 'azure-speech-key', value: azureSpeechKey }
+        { name: 'azure-translator-key', value: azureTranslatorKey }
       ]
       registries: [
         {
@@ -172,6 +182,11 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             { name: 'OPENCODE_ENDPOINT', value: 'http://localhost:8080' }
             { name: 'OPENCODE_SECRET', secretRef: 'opencode-secret' }
             { name: 'ML_SERVICE_URL', value: 'http://localhost:8000' }
+            { name: 'LIBRE_TRANSLATE_URL', value: 'http://libretranslate:5000' }
+            { name: 'AZURE_SPEECH_REGION', value: location }
+            { name: 'AZURE_TRANSLATOR_REGION', value: location }
+            { name: 'AZURE_SPEECH_KEY', secretRef: 'azure-speech-key' }
+            { name: 'AZURE_TRANSLATOR_KEY', secretRef: 'azure-translator-key' }
           ]
           volumeMounts: [
             { name: 'data', mountPath: '/app/data' }
@@ -205,6 +220,17 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
           }
           env: [
             { name: 'OPENCODE_SECRET', secretRef: 'jwt-secret' }
+          ]
+        }
+        {
+          name: 'libretranslate'
+          image: 'libretranslate/libretranslate:latest'
+          resources: {
+            cpu: json('0.5')
+            memory: '1Gi'
+          }
+          env: [
+            { name: 'LT_LOAD_ONLY', value: 'en,es,fr,de,it,pt,zh,ja,ko,ar,ru,sv,da,nl,pl,tr,th,vi' }
           ]
         }
       ]
