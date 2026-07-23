@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { getDb } from "@/lib/db";
 import { json } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import { tenantScope } from "@/lib/tenant";
 
 export async function GET(request: Request) {
@@ -47,9 +48,8 @@ export async function GET(request: Request) {
       services: servicesLive,
       stats,
     });
-  }
-
-  catch (error) {
+    }
+  } catch (error) {
     logger.error("status GET failed", { message: error instanceof Error ? error.message : String(error) });
 
     return json({

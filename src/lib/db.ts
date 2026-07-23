@@ -260,24 +260,112 @@ class MemoryDb {
   }
 
   execStatement(sql: string, params: any[], mode: "run" | "get" | "all"): any {
-    const trimmed = sql.trim();
+    const trimmed = sql.trim().replace(/\s+/g, " ");
     const lower = trimmed.toLowerCase();
-    if (lower.startsWith("select count")) {
-      const tm = trimmed.match(/from\s+([a-z0-9_"]+)/i);
-      const t = tm ? tm[1].replace(/"/g, "") : "";
-      const n = (this.tables[t] || []).length;
-      return mode === "all" ? [{ c: n }] : { c: n };
+
+    // Strip COALESCE(expr, default) -> expr for MemoryDb simplicity
+    const noCoalesce = trimmed.replace(/coalesce\s*\(([^,]+),[^)]*\)/gi, "$1");
+
+    // Handle ORDER BY, LIMIT — ignore for in-memory (multi-pass to handle both orders)
+    let noTail = noCoalesce;
+    for (let i = 0; i < 3; i++) {
+      noTail = noTail.replace(/\border\s+by\s+[a-z0-9_"`.,\s]+(\s+(asc|desc))?\s*$/i, "");
+      noTail = noTail.replace(/\blimit\s+\d+(\s*(offset\s+\d+)?)?\s*$/i, "");
     }
+
     if (lower.startsWith("select")) {
-      const tm = trimmed.match(/from\s+([a-z0-9_"]+)/i);
+      const tm = noTail.match(/from\s+([a-z0-9_"]+)/i);
       const t = tm ? tm[1].replace(/"/g, "") : "";
       let rows = (this.tables[t] || []).slice();
-      // Basic WHERE column = ? filtering (ignores functions like LOWER)
-      const whereMatch = trimmed.match(/where\s+([a-z0-9_"]+)\s*=\s*\?/i);
-      if (whereMatch && params.length > 0) {
-        const col = whereMatch[1].replace(/"/g, "");
-        rows = rows.filter((r: any) => String(r[col]) === String(params[0]));
+
+      // Parse WHERE clause with comparison operators
+      const whereClause = noTail.match(/where\s+(.+?)$/i);
+      if (whereClause) {
+        const conditions = whereClause[1].split(/\s+and\s+/i);
+        for (const cond of conditions) {
+          // Match: column op ?  (op: =, >=, >, <=, <, !=, <>)
+          const opMatch = cond.match(/^([a-z0-9_"]+)\s*(>=|<=|!=|<>|=|>|<)\s*\?$/i);
+          if (opMatch) {
+            const col = opMatch[1].replace(/"/g, "");
+            const op = opMatch[2];
+            const pv = String(params.shift() ?? "");
+            rows = rows.filter((r: any) => {
+              const rv = String(r[col] ?? "");
+              switch (op) {
+                case "=": return rv === pv;
+                case ">=": return rv >= pv;
+                case "<=": return rv <= pv;
+                case ">": return rv > pv;
+                case "<": return rv < pv;
+                case "!=": case "<>": return rv !== pv;
+                default: return true;
+              }
+            });
+          }
+        }
       }
+
+      // Extract aggregate expressions (AVG, SUM, COUNT, MIN, MAX)
+      interface AggExpr { alias: string; fn: string; field: string; caseWhen?: { col: string; op: string; val: string; thenVal: number; elseVal: number } }
+      const aggExprs: AggExpr[] = [];
+      const selectList = noTail.match(/select\s+(.+?)\s+from/i);
+      if (selectList) {
+        const parts = selectList[1].split(",");
+        for (const part of parts) {
+          const caseMatch = part.match(/(avg|sum|count|min|max)\s*\(\s*case\s+when\s+([a-z0-9_"]+)\s*(=)\s*(?:'([^']+)'|(\d+(?:\.\d+)?))\s+then\s+(\d+(?:\.\d+)?)\s+else\s+(\d+(?:\.\d+)?)\s+end\s*\)(?:\s+(?:as\s+)?([a-z0-9_]+))?/i);
+          if (caseMatch) {
+            const fn = caseMatch[1].toLowerCase();
+            const alias = caseMatch[8] || fn;
+            const caseVal = caseMatch[4] !== undefined ? caseMatch[4] : String(caseMatch[5]);
+            aggExprs.push({
+              alias, fn, field: caseMatch[2],
+              caseWhen: { col: caseMatch[2], op: caseMatch[3], val: caseVal, thenVal: Number(caseMatch[6]), elseVal: Number(caseMatch[7]) },
+            });
+            continue;
+          }
+          const aggMatch = part.match(/(avg|sum|count|min|max)\s*\(\s*(\*|([a-z0-9_".]+))\s*\)(?:\s+(?:as\s+)?([a-z0-9_]+))?/i);
+          if (aggMatch) {
+            const fn = aggMatch[1].toLowerCase();
+            const field = aggMatch[2] === "*" ? "*" : (aggMatch[3] || "*");
+            const alias = aggMatch[4] || fn;
+            aggExprs.push({ alias, fn, field });
+          }
+        }
+      }
+
+      // If there are aggregate functions, compute them
+      if (aggExprs.length > 0) {
+        const result: Record<string, any> = {};
+        for (const agg of aggExprs) {
+          let values: number[];
+          if (agg.caseWhen) {
+            values = rows.map((r: any) => {
+              const rv = String(r[agg.caseWhen!.col] ?? "");
+              return rv === agg.caseWhen!.val ? agg.caseWhen!.thenVal : agg.caseWhen!.elseVal;
+            });
+          } else if (agg.field === "*") {
+            values = rows.map(() => 1);
+          } else {
+            values = rows.map((r: any) => Number(r[agg.field]) || 0);
+          }
+          if (agg.fn === "count") {
+            result[agg.alias] = values.length;
+          } else if (agg.fn === "sum") {
+            result[agg.alias] = values.reduce((s: number, v: number) => s + v, 0);
+          } else if (agg.fn === "avg") {
+            result[agg.alias] = values.length > 0 ? values.reduce((s: number, v: number) => s + v, 0) / values.length : 0;
+          } else if (agg.fn === "min") {
+            result[agg.alias] = values.length > 0 ? Math.min(...values) : 0;
+          } else if (agg.fn === "max") {
+            result[agg.alias] = values.length > 0 ? Math.max(...values) : 0;
+          }
+        }
+        if (mode === "get") return result;
+        if (mode === "all") return [result];
+        return result;
+      }
+
+      // Plain SELECT without aggregates — return matching rows
       if (mode === "get") return rows[0] ?? undefined;
       return rows;
     }
@@ -564,19 +652,6 @@ const SCHEMA = `
     settled_at TEXT
   );
 
-
-  CREATE TABLE IF NOT EXISTS wallet_topups (
-    id TEXT PRIMARY KEY,
-    tenant_id TEXT NOT NULL,
-    amount REAL NOT NULL,
-    method TEXT NOT NULL,
-    description TEXT NOT NULL,
-    payment_intent_id TEXT UNIQUE,
-    status TEXT NOT NULL DEFAULT 'pending',
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    settled_at TEXT
-  );
-
   CREATE TABLE IF NOT EXISTS notifications (
     id TEXT PRIMARY KEY,
     tenant_id TEXT NOT NULL,
@@ -659,7 +734,6 @@ const SCHEMA = `
   );
 
   CREATE TABLE IF NOT EXISTS fraud_events (
-
     id TEXT PRIMARY KEY,
     tenant_id TEXT NOT NULL,
     signal_id TEXT,
