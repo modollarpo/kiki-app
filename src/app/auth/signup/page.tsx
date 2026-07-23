@@ -9,7 +9,7 @@ import Image from "next/image";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { addToast } = useKikiStore();
+  const { setUser, addToast } = useKikiStore();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +22,7 @@ export default function SignupPage() {
     if (!email) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Enter a valid email";
     if (!password) errs.password = "Password is required";
-    else if (password.length < 6) errs.password = "At least 6 characters";
+    else if (password.length < 8) errs.password = "At least 8 characters";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -33,6 +33,22 @@ export default function SignupPage() {
     try {
       const ok = await useAuth.getState().signup(name, email, password);
       if (ok) {
+        const auth = useAuth.getState();
+        if (auth.user) {
+          setUser({
+            id: auth.user.id,
+            name: auth.user.name,
+            email: auth.user.email,
+            password: "",
+            role: auth.user.role as "advertiser",
+            tenantId: auth.user.tenantId,
+            tenantName: auth.user.tenantName,
+            plan: auth.user.plan as "growth",
+            avatarInitials: auth.user.avatarInitials,
+            createdAt: new Date().toISOString(),
+            lastLoginAt: new Date().toISOString(),
+          });
+        }
         addToast("success", "Account created. Welcome to KIKI!");
         router.push("/dashboard");
       } else {

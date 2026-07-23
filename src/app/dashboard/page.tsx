@@ -234,6 +234,28 @@ export default function DashboardPage() {
             ))}
           </Card>
 
+          <Card>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[16px]">📖</span>
+              <p className="font-mono text-[11px] tracking-widest text-t3">QUICK START GUIDES</p>
+            </div>
+            {[
+              { label: "Connect your first ad account", href: "/dashboard/guides/connect-accounts", icon: "🔗" },
+              { label: "Run your first bid cycle", href: "/dashboard/guides/first-bid-cycle", icon: "⚡" },
+              { label: "Set up LTV enrichment", href: "/dashboard/guides/ltv-enrichment", icon: "📈" },
+            ].map(g => (
+              <button key={g.href} onClick={() => router.push(g.href)}
+                className="w-full flex items-center gap-2 py-2 px-2 rounded-sm mb-1 cursor-pointer transition-all duration-150"
+                style={{ background: "transparent", border: `1px solid ${K.g700}` }}
+                onMouseEnter={e => { e.currentTarget.style.background = K.g800; e.currentTarget.style.borderColor = K.g600; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = K.g700; }}>
+                <span className="text-[12px]">{g.icon}</span>
+                <span className="font-mono text-[10px] text-t3 flex-1 text-left">{g.label}</span>
+                <span className="font-mono text-[9px]" style={{ color: K.blue4 }}>→</span>
+              </button>
+            ))}
+          </Card>
+
           <Card accent={K.gold} glow={K.gold}>
             <div className="mb-[14px]">
               <p className="font-mono text-[11px] tracking-widest text-t3 mb-[6px]">WALLET BALANCE</p>

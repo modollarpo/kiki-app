@@ -307,7 +307,6 @@ export async function checkTrialExpired(tenantId: string): Promise<EnforcementRe
     "SELECT plan, trial_ends_at FROM users WHERE tenant_id = ? LIMIT 1"
   ).get(tenantId) as any;
   if (!row) return { allowed: true };
-  if (row.plan !== "starter") return { allowed: true };
   if (!row.trial_ends_at) return { allowed: true };
 
   const trialEnd = new Date(row.trial_ends_at).getTime();
@@ -356,8 +355,7 @@ export async function expireTrials(): Promise<number> {
   const db = await getDb();
   const expired =   await db.prepare(`
     SELECT tenant_id FROM users
-    WHERE plan = 'starter'
-    AND trial_ends_at IS NOT NULL
+    WHERE trial_ends_at IS NOT NULL
     AND trial_ends_at < datetime('now')
   `).all() as any[];
   for (const row of expired) {
