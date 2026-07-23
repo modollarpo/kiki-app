@@ -19,10 +19,11 @@ export async function GET(request: Request) {
     { name: "Azure OpenAI", status: "operational", p99: 350, uptime: 99.9 },
   ];
 
-  const user = await (await import("@/lib/auth")).getUserFromRequest(request);
+  try {
+    const user = await (await import("@/lib/auth")).getUserFromRequest(request);
 
-  let stats = null;
-  if (user) {
+    let stats = null;
+    if (user) {
     const db = await getDb();
     const { query: agentQuery, params: agentParams } = tenantScope("SELECT status, action_count FROM agents", user.tenantId);
     const agents = await (await db.prepare(agentQuery)).all(...agentParams) as Array<{ status: string; action_count: number }>;
@@ -48,10 +49,14 @@ export async function GET(request: Request) {
     });
   }
 
-  return json({
-    status: "operational",
-    lastUpdated: new Date().toISOString(),
-    services,
-    stats: null,
-  });
+  catch (error) {
+    logger.error("status GET failed", { message: error instanceof Error ? error.message : String(error) });
+
+    return json({
+      status: "operational",
+      lastUpdated: new Date().toISOString(),
+      services,
+      stats: null,
+    });
+  }
 }
