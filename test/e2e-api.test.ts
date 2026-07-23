@@ -108,7 +108,7 @@ vi.mock("@/lib/auth", () => ({
     if (!a || !a.includes("Bearer")) return null;
     return { tenantId: "t_test", email: "test@acmecorp.com", id: "u1", name: "Test", role: "advertiser" };
   }),
-  json: (d: any, s = 200) => new Response(JSON.stringify(d), { status: s, headers: { "Content-Type": "application/json" } }),
+  json: (d: any, s = 200) => new Response(JSON.stringify(d && typeof d === "object" && !Array.isArray(d) && !("ok" in d) ? { ok: true, ...d } : d), { status: s, headers: { "Content-Type": "application/json" } }),
   jsonError: (e: string, s = 400) => new Response(JSON.stringify({ error: e }), { status: s, headers: { "Content-Type": "application/json" } }),
   sanitizeString: (s: string) => s,
 }));
@@ -197,7 +197,7 @@ describe("E2E: Bidding", () => {
   beforeEach(() => vi.clearAllMocks());
   it("GET returns stats", async () => {
     const data = await (await (await import("@/app/api/bidding/route")).GET(req("/api/bidding"))).json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
     expect(data.data.totalCampaigns).toBe(3);
   });
   it("GET daypart returns 24h weights", async () => {
@@ -223,7 +223,7 @@ describe("E2E: MMM (lite)", () => {
   beforeEach(() => vi.clearAllMocks());
   it("returns channels + model fit", async () => {
     const data = await (await (await import("@/app/api/mmm/route")).GET(req("/api/mmm"))).json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
     expect(data.data.channels).toHaveLength(3);
     expect(data.data.modelFit).toBeDefined();
     expect(data.data.summary.totalSpend).toBe(25000);
@@ -241,7 +241,7 @@ describe("E2E: Margin (lite)", () => {
   beforeEach(() => vi.clearAllMocks());
   it("returns margins by channel", async () => {
     const data = await (await (await import("@/app/api/margin/route")).GET(req("/api/margin"))).json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
     expect(data.data.overview.totalSpend).toBe(25000);
     expect(data.data.overview.totalRevenue).toBeGreaterThan(0);
     expect(data.data.overview.netProfit).toBeGreaterThan(0);
@@ -259,13 +259,13 @@ describe("E2E: Competitive (lite)", () => {
   beforeEach(() => vi.clearAllMocks());
   it("returns platform comparison", async () => {
     const data = await (await (await import("@/app/api/competitive/route")).GET(req("/api/competitive"))).json();
-    expect(data.success).toBe(true);
-    expect(data.data.platforms).toHaveLength(3);
-    expect(data.data.ourPerformance.totalSpend).toBe(25000);
+    expect(data.ok).toBe(true);
+    expect(data.platforms).toHaveLength(3);
+    expect(data.ourPerformance.totalSpend).toBe(25000);
   });
   it("positive trend when revenue > spend", async () => {
     const data = await (await (await import("@/app/api/competitive/route")).GET(req("/api/competitive"))).json();
-    const google = data.data.platforms.find((p: any) => p.name === "Google");
+    const google = data.platforms.find((p: any) => p.name === "Google");
     expect(google?.trend).toBe("positive");
   });
 });
@@ -274,7 +274,7 @@ describe("E2E: Integrations OAuth PKCE", () => {
   beforeEach(() => vi.clearAllMocks());
   it("generates URL + code_verifier", async () => {
     const data = await (await (await import("@/app/api/integrations/route")).GET(req("/api/integrations?action=oauth_url&platform=meta"))).json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
     expect(data.data.url).toContain("facebook.com");
     expect(data.data.codeVerifier.length).toBe(43);
   });

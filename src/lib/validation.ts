@@ -1,8 +1,24 @@
-// ============================================================
-// API Validation — Zod schemas + validation helpers for routes
-// ============================================================
-
 import { z } from "zod";
+
+// ── Auth Schemas ────────────────────────────────────────────
+
+export const emailSchema = z.string().email().max(255).transform(v => v.toLowerCase().trim());
+
+export const passwordSchema = z.string().min(8).max(128);
+
+export const nameSchema = z.string().min(2).max(100).transform(v => v.trim());
+
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, "Password is required"),
+});
+
+export const signupSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  name: nameSchema,
+  companyName: z.string().max(200).optional().transform(v => v?.trim()),
+});
 
 // ── Common Schemas ──────────────────────────────────────────
 

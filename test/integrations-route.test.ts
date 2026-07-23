@@ -88,7 +88,7 @@ describe("GET /api/integrations", () => {
     const { GET } = await import("@/app/api/integrations/route");
     const res = await GET(req);
     const data = await res.json();
-    expect(data.success).toBe(false);
+    expect(data.ok).toBe(false);
     expect(data.error).toBe("Unauthorized");
   });
 
@@ -101,7 +101,7 @@ describe("GET /api/integrations", () => {
     const { GET } = await import("@/app/api/integrations/route");
     const res = await GET(req);
     const data = await res.json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
     expect(data.data).toHaveLength(1);
     expect(data.data[0].platform).toBe("meta");
   });
@@ -111,7 +111,7 @@ describe("GET /api/integrations", () => {
     const { GET } = await import("@/app/api/integrations/route");
     const res = await GET(req);
     const data = await res.json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
     expect(data.data.url).toBe("https://oauth.example.com");
     expect(data.data.codeVerifier).toBe("verifier123");
   });
@@ -121,7 +121,7 @@ describe("GET /api/integrations", () => {
     const { GET } = await import("@/app/api/integrations/route");
     const res = await GET(req);
     const data = await res.json();
-    expect(data.success).toBe(false);
+    expect(data.ok).toBe(false);
   });
 });
 
@@ -157,7 +157,7 @@ describe("POST /api/integrations", () => {
     const { POST } = await import("@/app/api/integrations/route");
     const res = await POST(req);
     const data = await res.json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
     expect(data.data.integrationId).toMatch(/^int_/);
     // Verify handleCallback was called with the code_verifier
     expect(mockConnector.handleCallback).toHaveBeenCalledWith("auth_code_123", "valid_state", "stored_verifier");
@@ -179,7 +179,7 @@ describe("POST /api/integrations", () => {
     const { POST } = await import("@/app/api/integrations/route");
     const res = await POST(req);
     const data = await res.json();
-    expect(data.success).toBe(false);
+    expect(data.ok).toBe(false);
     expect(data.error).toMatch(/expired|Invalid/i);
   });
 
@@ -194,7 +194,7 @@ describe("POST /api/integrations", () => {
     const { POST } = await import("@/app/api/integrations/route");
     const res = await POST(req);
     const data = await res.json();
-    expect(data.success).toBe(true);
+    expect(data.ok).toBe(true);
   });
 
   it("rejects OAuth callback without code/state", async () => {
@@ -205,6 +205,6 @@ describe("POST /api/integrations", () => {
     const { POST } = await import("@/app/api/integrations/route");
     const res = await POST(req);
     const data = await res.json();
-    expect(data.success).toBe(false);
+    expect(data.ok).toBe(false);
   });
 });
