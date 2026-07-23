@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button, StatCard, ProgressBar, AIThinking } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
-import { ai, type ChatMessage } from "@/lib/api";
+import { ai, transcribe, translate, type ChatMessage } from "@/lib/api";
 import { K } from "@/lib/kdls";
 import { UpgradePrompt } from "@/components/ui";
 
@@ -40,11 +40,38 @@ export default function SyncBrainPage() {
   const [thinking, setThinking] = useState(false);
   const [stats, setStats] = useState<SyncBrainStats | null>(null);
   const [totalTokens, setTotalTokens] = useState(0);
+  const [recording, setRecording] = useState(false);
+  const [translatingIndex, setTranslatingIndex] = useState<number | null>(null);
+  const [translations, setTranslations] = useState<Record<number, string>>({});
+  const [targetLang, setTargetLang] = useState("es");
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  const LANGUAGES: { code: string; label: string }[] = [
+    { code: "es", label: "Spanish" },
+    { code: "fr", label: "French" },
+    { code: "de", label: "German" },
+    { code: "it", label: "Italian" },
+    { code: "pt", label: "Portuguese" },
+    { code: "zh", label: "Chinese" },
+    { code: "ja", label: "Japanese" },
+    { code: "ar", label: "Arabic" },
+  ];
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const fetchStats = useCallback(async () => {
     if (!token) return;
@@ -66,6 +93,44 @@ export default function SyncBrainPage() {
     const iv = setInterval(fetchStats, 10000);
     return () => clearInterval(iv);
   }, [fetchStats]);
+
+  const startRecording = useCallback(async () => {
+    if (!token) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        if (blob.size < 100) return;
+        try {
+          const result = await transcribe.audio(token, blob, "recording.webm");
+          setInput(prev => (prev ? prev + " " : "") + result.text);
+        } catch {
+          // silently fail
+        }
+      };
+      mediaRecorder.start();
+      setRecording(true);
+    } catch {
+      // mic permission denied or unavailable
+    }
+  }, [token]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
+    setRecording(false);
+  }, []);
+
+  const toggleRecording = useCallback(() => {
+    if (recording) stopRecording();
+    else startRecording();
+  }, [recording, startRecording, stopRecording]);
 
   const send = useCallback(async () => {
     if (!input.trim() || thinking) return;
@@ -105,6 +170,20 @@ export default function SyncBrainPage() {
     setThinking(false);
   }, [input, thinking, messages, stats, token]);
 
+  const handleTranslate = useCallback(async (index: number, lang: string) => {
+    if (!token) return;
+    setTranslatingIndex(index);
+    try {
+      const msg = messages[index];
+      if (!msg) return;
+      const result = await translate.text(token, { text: msg.content, target: lang });
+      setTranslations(prev => ({ ...prev, [index]: result.translatedText }));
+    } catch {
+      setTranslations(prev => ({ ...prev, [index]: "(Translation unavailable)" }));
+    }
+    setTranslatingIndex(null);
+  }, [token, messages]);
+
   const quickPrompts = [
     "Analyze my campaign ROAS trends",
     "How should I allocate budget across platforms?",
@@ -135,7 +214,7 @@ export default function SyncBrainPage() {
         <div className="flex flex-col overflow-hidden">
           <div className="mb-4">
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">SyncBrain™</h1>
-            <p className="font-mono text-[11px] text-gray-500">AI-powered campaign intelligence · Powered by Azure OpenAI GPT-4o-mini / GPT-4o</p>
+            <p className="font-mono text-[11px] text-gray-500">AI-powered campaign intelligence · Voice input via Groq Whisper · Translation via LibreTranslate + Azure AI Translator</p>
           </div>
 
           <Card accent={K.green} className="flex flex-col overflow-hidden flex-1">
@@ -151,10 +230,48 @@ export default function SyncBrainPage() {
                     }}
                   >
                     <p className="font-sans text-[13px] leading-relaxed whitespace-pre-wrap" style={{ color: m.role === "user" ? K.blue4 : K.t2 }}>{m.content}</p>
-                    {m.model && (
-                      <div className="mt-2 flex gap-2 items-center">
-                        <Badge color={m.model.includes("4o") && !m.model.includes("mini") ? K.gold : K.mint} dot>{m.model}</Badge>
-                        {m.tokens && <span className="font-mono text-[10px] text-gray-600">{m.tokens} tokens</span>}
+                    <div className="mt-2 flex gap-2 items-center flex-wrap">
+                      {m.model && (
+                        <>
+                          <Badge color={m.model.includes("4o") && !m.model.includes("mini") ? K.gold : K.mint} dot>{m.model}</Badge>
+                          {m.tokens && <span className="font-mono text-[10px] text-gray-600">{m.tokens} tokens</span>}
+                        </>
+                      )}
+                      {m.role === "assistant" && (
+                        <div ref={langRef} className="relative inline-flex">
+                          <button
+                            onClick={() => { setTargetLang("es"); setLangOpen(prev => !prev); }}
+                            className="font-mono text-[9px] px-2 py-0.5 rounded-sm cursor-pointer whitespace-nowrap"
+                            style={{ background: K.g800, border: `1px solid ${K.g700}`, color: K.t3 }}
+                            title="Translate"
+                          >
+                            {translatingIndex === i ? "..." : "🌐"}
+                          </button>
+                          {langOpen && (
+                            <div
+                              className="absolute bottom-full left-0 mb-1 z-50 rounded-sm overflow-hidden"
+                              style={{ background: K.g850, border: `1px solid ${K.g700}` }}
+                            >
+                              {LANGUAGES.map(l => (
+                                <button
+                                  key={l.code}
+                                  onClick={() => { handleTranslate(i, l.code); setLangOpen(false); }}
+                                  className="block w-full text-left font-mono text-[10px] px-3 py-1.5 cursor-pointer whitespace-nowrap"
+                                  style={{ color: l.code === targetLang ? K.mint : K.t3 }}
+                                  onMouseEnter={e => (e.currentTarget.style.background = K.g800)}
+                                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                                >
+                                  {l.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {translations[i] && (
+                      <div className="mt-1.5 pt-1.5" style={{ borderTop: `1px solid ${K.g700}40` }}>
+                        <p className="font-sans text-[12px] italic" style={{ color: K.t3 }}>{translations[i]}</p>
                       </div>
                     )}
                   </div>
@@ -190,6 +307,19 @@ export default function SyncBrainPage() {
                 className="flex-1 font-sans text-[13px] px-4 py-[11px] rounded-sm outline-none"
                 style={{ background: K.g800, border: `1px solid ${K.g700}`, color: K.t1 }}
               />
+              <button
+                onClick={toggleRecording}
+                title={recording ? "Stop recording" : "Start voice input"}
+                className="font-mono text-[11px] px-3 py-[11px] rounded-sm cursor-pointer whitespace-nowrap"
+                style={{
+                  background: recording ? K.danger : K.g850,
+                  border: recording ? `1px solid ${K.danger}80` : `1px solid ${K.g700}`,
+                  color: recording ? "white" : K.t3,
+                  minWidth: 44,
+                }}
+              >
+                {recording ? "◉" : "🎤"}
+              </button>
               <Button onClick={send} loading={thinking}>Send →</Button>
             </div>
           </Card>

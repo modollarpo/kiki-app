@@ -1,57 +1,37 @@
 export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
-import {
-  hashPassword,
-  createSession,
-  json,
-  jsonError,
-  validateEmail,
-  validateRequired,
-  sanitizeString,
-} from "@/lib/auth";
-import { rateLimit, clientKey } from "@/lib/rate-limit";
-import { logger } from "@/lib/logger";
+import { hashPassword, createSession, json, jsonError } from "@/lib/auth";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { signupSchema } from "@/lib/validation";
+import { logger, setRequestId, generateRequestId } from "@/lib/logger";
+import { ZodError } from "zod";
 
 export async function POST(req: Request) {
+  setRequestId(generateRequestId());
   try {
-    const rl = rateLimit(`signup:${clientKey(req)}`, 5, 60_000);
-    if (!rl.ok) {
-      return jsonError("Too many signup attempts. Please try again later.", 429);
-    }
+    const rl = checkRateLimit(`signup:${getClientIp(req)}`, { maxRequests: 5, windowMs: 60_000 });
+    if (!rl.allowed) return rateLimitResponse(rl);
 
     const body = await req.json();
-    const { email, password, name, companyName } = body;
-
-    const missing = validateRequired({ email, password, name });
-    if (missing) return jsonError(missing);
-
-    if (typeof email !== "string" || typeof password !== "string" || typeof name !== "string") {
-      return jsonError("Invalid request body");
-    }
-
-    if (!validateEmail(email)) return jsonError("Invalid email address");
-    if (password.length < 8 || password.length > 128) return jsonError("Password must be 8-128 characters");
-    if (name.length < 2 || name.length > 100) return jsonError("Name must be 2-100 characters");
+    const parsed = signupSchema.parse(body);
 
     const db = await getDb();
 
-    const existing = await (await db.prepare("SELECT id FROM users WHERE email = ?")).get(
-      email.toLowerCase().trim()
-    );
+    const existing = await (await db.prepare("SELECT id FROM users WHERE email = ?")).get(parsed.email);
     if (existing) {
       return jsonError("An account with this email already exists", 409);
     }
 
     const userId = genId("usr");
     const tenantId = genId("tnt");
-    const tenantName = sanitizeString(companyName || `${name}'s Organization`, 200);
-    const hashedPassword = hashPassword(password);
-    const initials = name
+    const tenantName = parsed.companyName || `${parsed.name.split(" ")[0]}'s Organization`;
+    const hashedPassword = hashPassword(parsed.password);
+    const initials = parsed.name
       .split(" ")
       .map((w: string) => w[0])
       .join("")
       .toUpperCase()
-      .slice(0, 2);
+      .slice(0, 2) || "U";
 
     const trialEndsAt = new Date(Date.now() + 14 * 86400000).toISOString();
     await (
@@ -59,7 +39,7 @@ export async function POST(req: Request) {
         INSERT INTO users (id, email, name, password, role, tenant_id, tenant_name, plan, avatar_initials, trial_ends_at)
         VALUES (?, ?, ?, ?, 'advertiser', ?, ?, 'growth', ?, ?)
       `)
-    ).run(userId, email.toLowerCase().trim(), sanitizeString(name, 100), hashedPassword, tenantId, tenantName, initials, trialEndsAt);
+    ).run(userId, parsed.email, parsed.name, hashedPassword, tenantId, tenantName, initials, trialEndsAt);
 
     await (
       await db.prepare(`
@@ -70,12 +50,12 @@ export async function POST(req: Request) {
 
     const token = createSession({
       id: userId,
-      email: email.toLowerCase().trim(),
-      name: sanitizeString(name, 100),
+      email: parsed.email,
+      name: parsed.name,
       role: "advertiser",
       tenantId,
       tenantName,
-      plan: "starter",
+      plan: "growth",
       avatarInitials: initials,
     });
 
@@ -83,8 +63,8 @@ export async function POST(req: Request) {
       token,
       user: {
         id: userId,
-        email: email.toLowerCase().trim(),
-        name: sanitizeString(name, 100),
+        email: parsed.email,
+        name: parsed.name,
         role: "advertiser",
         tenantId,
         tenantName,
@@ -93,8 +73,11 @@ export async function POST(req: Request) {
       },
     }, 201);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return jsonError(error.errors[0]?.message || "Invalid input", 400);
+    }
     logger.error("auth/signup request failed", {
-      message: error instanceof Error ? error.message : String(error),
+      message: error instanceof Error ? error.message : "Unknown error",
     });
     return jsonError("Signup failed. Please try again.", 500);
   }
