@@ -40,12 +40,12 @@ export async function GET(req: NextRequest) {
     `)).get(tenantId) as any;
 
     // Get contact status distribution
-    const statusDistribution = await (await db.prepare(`
+      const statusDistribution = await (await db.prepare(`
       SELECT status, COUNT(*) as count FROM contacts WHERE tenant_id = ? GROUP BY status
     `)).all(tenantId) as any[];
 
-    return NextResponse.json({
-      success: true,
+    return Response.json({
+      ok: true,
       data: {
         stats: {
           totalContacts,
@@ -67,6 +67,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     logger.error("crm/handler", { message: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    return Response.json({ ok: false, error: String(error) }, { status: 500 });
   }
 }

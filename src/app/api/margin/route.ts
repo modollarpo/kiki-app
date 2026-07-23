@@ -7,7 +7,7 @@ import { logger, handleApiError } from "@/lib/logger";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const db = await getDb();
     const tenantId = user.tenantId;
@@ -46,8 +46,8 @@ export async function GET(req: NextRequest) {
     // Get billing/fee data
     const wallet = await db.prepare(`SELECT balance FROM wallets WHERE tenant_id = ?`).get(tenantId) as any;
 
-    return NextResponse.json({
-      success: true,
+    return Response.json({
+      ok: true,
       data: {
         overview: {
           totalSpend,
@@ -63,6 +63,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     logger.error("margin/handler", { message: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    return Response.json({ ok: false, error: String(error) }, { status: 500 });
   }
 }

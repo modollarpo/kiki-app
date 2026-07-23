@@ -7,7 +7,7 @@ import { logger, handleApiError } from "@/lib/logger";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const db = await getDb();
     const tenantId = user.tenantId;
@@ -73,8 +73,8 @@ export async function GET(req: NextRequest) {
     if (totalSpent > totalRevenue * 0.8) riskFactors.push("Spend approaching revenue — thin margins");
     if (campaigns.length < 3) riskFactors.push("Limited campaign diversity — high concentration risk");
 
-    return NextResponse.json({
-      success: true,
+    return Response.json({
+      ok: true,
       data: {
         currentMetrics: {
           totalSpent,
@@ -89,6 +89,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     logger.error("scenarios/handler", { message: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    return Response.json({ ok: false, error: String(error) }, { status: 500 });
   }
 }

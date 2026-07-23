@@ -65,8 +65,8 @@ export async function GET(req: NextRequest) {
       if (mlRes.ok) {
         const mlData = await mlRes.json();
         if (mlData.success) {
-          return NextResponse.json({
-            success: true,
+          return Response.json({
+            ok: true,
             engine: "bayesian",
             data: {
               modelFit: { ...mlData.results.model_fit, algorithm: "Bayesian MAP (PyMC)" },
@@ -95,8 +95,8 @@ export async function GET(req: NextRequest) {
       recommendedChange: ch.efficiency > 3 ? "increase" : ch.efficiency < 1.5 ? "decrease" : "maintain",
     }));
 
-    return NextResponse.json({
-      success: true,
+    return Response.json({
+      ok: true,
       data: {
         modelFit,
         channels,
