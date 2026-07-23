@@ -22,8 +22,8 @@ export async function GET(req: Request) {
 
   // Get total tokens used today (from system_metrics)
   const tokensToday = await db.prepare(`
-    SELECT COALESCE(SUM(value), 0) as total FROM system_metrics
-    WHERE tenant_id = ? AND metric_name LIKE '%token%' AND recorded_at >= datetime('now', 'start of day')
+    SELECT COALESCE(SUM(metric_value), 0) as total FROM system_metrics
+    WHERE tenant_id = ? AND metric_name LIKE '%token%' AND created_at >= datetime('now', 'start of day')
   `).get(user.tenantId) as any;
 
   // Get total managed spend
