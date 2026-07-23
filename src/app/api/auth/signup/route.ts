@@ -88,7 +88,7 @@ export async function POST(req: Request) {
         role: "advertiser",
         tenantId,
         tenantName,
-      plan: "growth",
+        plan: "growth",
         avatarInitials: initials,
       },
     }, 201);
