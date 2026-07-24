@@ -31,6 +31,26 @@ param googleOAuthClientId string = ''
 @secure()
 param googleOAuthClientSecret string = ''
 
+@description('SMTP host for transactional email (leave empty to disable email)')
+param smtpHost string = ''
+
+@description('SMTP port (default 587)')
+param smtpPort string = '587'
+
+@description('SMTP username')
+@secure()
+param smtpUser string = ''
+
+@description('SMTP password')
+@secure()
+param smtpPass string = ''
+
+@description('SMTP from address')
+param smtpFrom string = ''
+
+@description('SMTP from name')
+param smtpFromName string = 'KIKI Agent'
+
 var resourceGroupName = 'kiki-agent-rg'
 var acrName = 'kikiagentacr'
 var envName = '${baseName}-env'
@@ -156,6 +176,8 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
         { name: 'azure-translator-key', value: azureTranslatorKey }
         { name: 'google-oauth-client-id', value: googleOAuthClientId }
         { name: 'google-oauth-client-secret', value: googleOAuthClientSecret }
+        { name: 'smtp-user', value: smtpUser }
+        { name: 'smtp-pass', value: smtpPass }
       ]
       registries: [
         {
@@ -201,6 +223,12 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             { name: 'SEED_DEMO_DATA', value: 'true' }
             { name: 'GOOGLE_OAUTH_CLIENT_ID', secretRef: 'google-oauth-client-id' }
             { name: 'GOOGLE_OAUTH_CLIENT_SECRET', secretRef: 'google-oauth-client-secret' }
+            { name: 'SMTP_HOST', value: smtpHost }
+            { name: 'SMTP_PORT', value: smtpPort }
+            { name: 'SMTP_USER', secretRef: 'smtp-user' }
+            { name: 'SMTP_PASS', secretRef: 'smtp-pass' }
+            { name: 'SMTP_FROM', value: smtpFrom }
+            { name: 'SMTP_FROM_NAME', value: smtpFromName }
           ]
           volumeMounts: [
             { name: 'data', mountPath: '/app/data' }
