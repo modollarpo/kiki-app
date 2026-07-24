@@ -1096,6 +1096,24 @@ const SCHEMA = `
   );
   CREATE INDEX IF NOT EXISTS idx_creatives_tenant ON creatives(tenant_id);
   CREATE INDEX IF NOT EXISTS idx_creatives_campaign ON creatives(tenant_id, campaign_id);
+
+  CREATE TABLE IF NOT EXISTS reset_tokens (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    token TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    used INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS onboarding_progress (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    step_id TEXT NOT NULL,
+    completed INTEGER NOT NULL DEFAULT 1,
+    completed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(tenant_id, step_id)
+  );
 `;
 
 // SQLite-compatible variant of SCHEMA for the local `node:sqlite` fallback.

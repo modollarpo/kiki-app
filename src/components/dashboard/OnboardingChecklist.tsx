@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import { K } from "@/lib/kdls";
 
 interface Step {
@@ -26,16 +27,33 @@ const STORAGE_KEY = "kiki_onboarding_checklist";
 
 export function OnboardingChecklist() {
   const router = useRouter();
+  const { token } = useAuth();
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(true);
+
+  // Load from server on mount
+  useEffect(() => {
+    if (!token) return;
+    fetch("/api/onboarding", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.progress) {
+          const serverCompleted = new Set<string>();
+          for (const [stepId, val] of Object.entries(d.progress)) {
+            if (val) serverCompleted.add(stepId);
+          }
+          if (serverCompleted.size > 0) setCompleted(serverCompleted);
+        }
+      })
+      .catch(() => {});
+  }, [token]);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const data = JSON.parse(raw);
-        setCompleted(new Set(data.completed || []));
         setDismissed(data.dismissed || false);
       }
     } catch {}
@@ -51,14 +69,25 @@ export function OnboardingChecklist() {
     } catch {}
   }, []);
 
+  const syncProgress = useCallback((stepId: string, completed: boolean) => {
+    if (!token) return;
+    fetch("/api/onboarding", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ step_id: stepId, completed }),
+    }).catch(() => {});
+  }, [token]);
+
   const toggle = useCallback((id: string) => {
     setCompleted(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      const newState = !next.has(id);
+      if (newState) next.add(id); else next.delete(id);
       persist(next, dismissed);
+      syncProgress(id, newState);
       return next;
     });
-  }, [dismissed, persist]);
+  }, [dismissed, persist, syncProgress]);
 
   const dismiss = useCallback(() => {
     setDismissed(true);
