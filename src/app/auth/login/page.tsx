@@ -9,7 +9,7 @@ import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser, addToast } = useKikiStore();
+  const { addToast } = useKikiStore();
   const { login, loading: authLoading, error: authError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,22 +38,6 @@ export default function LoginPage() {
 
     const success = await login(email, password);
     if (success) {
-      const auth = useAuth.getState();
-      if (auth.user) {
-        setUser({
-          id: auth.user.id,
-          name: auth.user.name,
-          email: auth.user.email,
-          password: "",
-          role: auth.user.role as "advertiser",
-          tenantId: auth.user.tenantId,
-          tenantName: auth.user.tenantName,
-          plan: auth.user.plan as "growth",
-          avatarInitials: auth.user.avatarInitials,
-          createdAt: new Date().toISOString(),
-          lastLoginAt: new Date().toISOString(),
-        });
-      }
       addToast("success", "Signed in successfully. Welcome back.");
       router.push("/dashboard");
     }

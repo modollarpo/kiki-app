@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, Button, AIThinking, ProgressBar, StatusBadge, ScrollableTable } from "@/components/ui";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
+import { WelcomeOverlay } from "@/components/dashboard/WelcomeOverlay";
 import { useKikiStore } from "@/store";
 import { useAuth } from "@/hooks/useAuth";
 import { useSSE } from "@/hooks/useSSE";
@@ -103,6 +104,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
+      <WelcomeOverlay />
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
         {/* Header */}
         <div className="page-header-row">

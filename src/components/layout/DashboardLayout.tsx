@@ -12,6 +12,7 @@ import { K } from "@/lib/kdls";
 import { Badge } from "@/components/ui";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useAuthSync } from "@/hooks/useAuthSync";
 import Image from "next/image";
 
 // ── Navigation Configuration ────────────────────────────────
@@ -619,6 +620,7 @@ const SidebarContent = memo(function SidebarContent({
 
 // ── Main Layout ─────────────────────────────────────────────
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
+  useAuthSync();
   const {
     user,
     sidebarCollapsed,
