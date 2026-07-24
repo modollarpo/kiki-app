@@ -125,14 +125,13 @@ export default function LoginPage() {
               <span className="font-sans text-[12px] text-t3">Keep me signed in for 30 days</span>
             </div>
             <Button full size="lg" loading={authLoading} onClick={handleLogin}>Sign In →</Button>
-            <div className="my-4 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
+            <div className="my-3 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
+            <Button full variant="ghost" size="sm" onClick={() => { setEmail("alex@acmecorp.com"); setPassword("password123"); setTimeout(() => handleLogin(), 100); }} style={{ marginBottom: 6 }}>🚀 Demo Login (alex@acmecorp.com)</Button>
+            <div className="my-3 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
             <Button full variant="secondary" size="md" onClick={() => setScreen("sso")} icon={<span>⬡</span>}>Sign in with SSO</Button>
             <p className="font-mono text-[10px] text-t4 text-center mt-4">
               No account?{" "}
               <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => router.push("/auth/signup")}>Create account →</span>
-            </p>
-            <p className="font-mono text-[11px] text-t3 text-center mt-2.5">
-              Demo: alex@acmecorp.com / password123
             </p>
           </Card>
         </div>

@@ -31,7 +31,7 @@ function fmt(n: number) {
 }
 
 export default function DashboardPage() {
-  const { agents: storeAgents, walletBalance, toggleAgent } = useKikiStore();
+  const { agents: storeAgents, walletBalance, toggleAgent, addToast } = useKikiStore();
   const { token } = useAuth();
   const router = useRouter();
   const { connected } = useSSE();
@@ -41,6 +41,23 @@ export default function DashboardPage() {
   const [syncbrainStats, setSyncbrainStats] = useState<SyncBrainStats | null>(null);
   const [signalStats, setSignalStats] = useState<SignalStats | null>(null);
   const [runwayDays, setRunwayDays] = useState<number | null>(null);
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeedDemo = async () => {
+    if (!token) return;
+    setSeeding(true);
+    try {
+      const res = await fetch("/api/seed", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      const d = await res.json();
+      if (d.ok) {
+        addToast("success", "Demo data loaded! Refreshing...");
+        dashboard.get(token).then(data => { setData(data); setSeeding(false); }).catch(() => setSeeding(false));
+      } else {
+        addToast("error", d.error || "Failed to seed demo data");
+        setSeeding(false);
+      }
+    } catch { addToast("error", "Failed to seed demo data"); setSeeding(false); }
+  };
 
   useEffect(() => {
     if (!token) { router.push("/auth/login"); return; }
@@ -241,6 +258,15 @@ export default function DashboardPage() {
               <span className="text-[16px]">📖</span>
               <p className="font-mono text-[11px] tracking-widest text-t3">QUICK START GUIDES</p>
             </div>
+            <button key="seed" onClick={handleSeedDemo} disabled={seeding}
+              className="w-full flex items-center gap-2 py-2 px-2 rounded-sm mb-1 cursor-pointer transition-all duration-150"
+              style={{ background: "transparent", border: `1px solid ${K.gold}40`, opacity: seeding ? 0.6 : 1 }}
+              onMouseEnter={e => { e.currentTarget.style.background = K.g800; e.currentTarget.style.borderColor = K.g600; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = `${K.gold}40`; }}>
+              <span className="text-[12px]">{seeding ? "⏳" : "🚀"}</span>
+              <span className="font-mono text-[10px] text-t3 flex-1 text-left">{seeding ? "Loading demo data..." : "Load demo data"}</span>
+              <span className="font-mono text-[9px]" style={{ color: K.gold }}>↻</span>
+            </button>
             {[
               { label: "Connect your first ad account", href: "/dashboard/guides/connect-accounts", icon: "🔗" },
               { label: "Run your first bid cycle", href: "/dashboard/guides/first-bid-cycle", icon: "⚡" },
