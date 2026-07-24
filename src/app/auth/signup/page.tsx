@@ -9,9 +9,10 @@ import Image from "next/image";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { setUser, addToast } = useKikiStore();
+  const { addToast } = useKikiStore();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -31,24 +32,8 @@ export default function SignupPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const ok = await useAuth.getState().signup(name, email, password);
+      const ok = await useAuth.getState().signup(name, email, password, company || undefined);
       if (ok) {
-        const auth = useAuth.getState();
-        if (auth.user) {
-          setUser({
-            id: auth.user.id,
-            name: auth.user.name,
-            email: auth.user.email,
-            password: "",
-            role: auth.user.role as "advertiser",
-            tenantId: auth.user.tenantId,
-            tenantName: auth.user.tenantName,
-            plan: auth.user.plan as "growth",
-            avatarInitials: auth.user.avatarInitials,
-            createdAt: new Date().toISOString(),
-            lastLoginAt: new Date().toISOString(),
-          });
-        }
         addToast("success", "Account created. Welcome to KIKI!");
         router.push("/dashboard");
       } else {
@@ -87,6 +72,7 @@ export default function SignupPage() {
 
               <Input label="Full Name" type="text" placeholder="Jane Doe" value={name} onChange={v => { setName(v); setErrors(e => ({...e, name: ""})); }} error={errors.name} style={{ marginBottom:12 }} />
               <Input label="Work Email" type="email" placeholder="you@company.com" value={email} onChange={v => { setEmail(v); setErrors(e => ({...e, email: ""})); }} error={errors.email} style={{ marginBottom:12 }} />
+              <Input label="Company Name" type="text" placeholder="Acme Inc." value={company} onChange={v => { setCompany(v); setErrors(e => ({...e, company: ""})); }} style={{ marginBottom:12 }} />
               <Input label="Password" type="password" placeholder="••••••••" value={password} onChange={v => { setPassword(v); setErrors(e => ({...e, password: ""})); }} error={errors.password} style={{ marginBottom:12 }} />
               <Button full size="lg" loading={loading} onClick={handleSignup}>Create Account →</Button>
               <p className="font-mono text-[10px] text-t4 text-center mt-4">
