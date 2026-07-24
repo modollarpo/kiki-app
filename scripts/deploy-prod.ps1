@@ -47,6 +47,13 @@ $envVars = @(
   "SEED_DEMO_DATA=true",
   "NEXT_PUBLIC_BASE_URL=https://$APP.purplesky-3fddb402.swedencentral.azurecontainerapps.io"
 )
+# Pass through SMTP vars if set in local env (for CI/CD pipelines)
+if ($env:SMTP_HOST) { $envVars += "SMTP_HOST=$($env:SMTP_HOST)" }
+if ($env:SMTP_PORT) { $envVars += "SMTP_PORT=$($env:SMTP_PORT)" }
+if ($env:SMTP_USER) { $envVars += "SMTP_USER=$($env:SMTP_USER)" }
+if ($env:SMTP_PASS) { $envVars += "SMTP_PASS=$($env:SMTP_PASS)" }
+if ($env:SMTP_FROM) { $envVars += "SMTP_FROM=$($env:SMTP_FROM)" }
+if ($env:SMTP_FROM_NAME) { $envVars += "SMTP_FROM_NAME=$($env:SMTP_FROM_NAME)" }
 az containerapp update -g $RG -n $APP --set-env-vars $envVars
 if ($LASTEXITCODE -ne 0) { throw "Env var update failed (exit $LASTEXITCODE)" }
 

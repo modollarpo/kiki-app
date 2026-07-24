@@ -7,14 +7,19 @@ export async function POST(req: Request) {
   setRequestId(generateRequestId());
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
-  if (user.role !== "superadmin") return jsonError("Forbidden", 403);
 
   try {
     const db = await getDb();
     const tid = user.tenantId;
 
     const existing = await (await db.prepare("SELECT COUNT(*) as c FROM campaigns WHERE tenant_id = ?")).get(tid) as { c: number };
-    if (existing.c > 0) return json({ message: "Demo data already exists for this tenant" });
+    if (existing.c > 0) {
+      await (await db.prepare("DELETE FROM campaigns WHERE tenant_id = ?")).run(tid);
+      await (await db.prepare("DELETE FROM signals WHERE tenant_id = ?")).run(tid);
+      await (await db.prepare("DELETE FROM agents WHERE tenant_id = ?")).run(tid);
+      await (await db.prepare("DELETE FROM wallets WHERE tenant_id = ?")).run(tid);
+      await (await db.prepare("DELETE FROM notifications WHERE tenant_id = ?")).run(tid);
+    }
 
     const insertCampaign = db.prepare(`
       INSERT INTO campaigns (id, tenant_id, name, platform, status, roas, spend, budget, impressions, clicks, conversions, cpa, ltv_predicted)
@@ -37,13 +42,16 @@ export async function POST(req: Request) {
       );
     }
 
-    await db.prepare("INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, 5000, 'USD')")
-      .run(genId("wlt"), tid);
+    const walletExists = await (await db.prepare("SELECT id FROM wallets WHERE tenant_id = ?")).get(tid);
+    if (!walletExists) {
+      await db.prepare("INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, 5000, 'USD')")
+        .run(genId("wlt"), tid);
+    }
 
     const insertNotif = db.prepare("INSERT INTO notifications (id, tenant_id, user_id, severity, title, body, read, link) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    await insertNotif.run(genId("ntf"), tid, user.id, "success", "Welcome to KIKI Agent!", "Demo campaigns and signals have been created for you.", 0, "/dashboard");
+    await insertNotif.run(genId("ntf"), tid, user.id, "success", "Demo data loaded!", "Campaigns, signals, and wallet have been updated.", 0, "/dashboard");
 
-    logger.info("[Seed] Demo data created for tenant", { tenantId: tid });
+    logger.info("[Seed] Demo data created/refreshed for tenant", { tenantId: tid });
     return json({ message: "Demo data seeded successfully", campaigns: 2, signals: 5 });
   } catch (error) {
     logger.error("seed/POST failed", { message: error instanceof Error ? error.message : String(error) });

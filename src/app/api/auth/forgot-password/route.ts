@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { json, jsonError } from "@/lib/auth";
 import crypto from "crypto";
+import { sendPasswordResetEmail } from "@/lib/email";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
 
 export async function POST(req: Request) {
@@ -13,7 +14,7 @@ export async function POST(req: Request) {
     }
 
     const db = await getDb();
-    const user = await (await db.prepare("SELECT id FROM users WHERE email = ?")).get(email) as { id: string } | undefined;
+    const user = await (await db.prepare("SELECT id, name FROM users WHERE email = ?")).get(email) as { id: string; name: string } | undefined;
     if (!user) return json({ message: "If that email exists, a reset link has been sent" });
 
     const token = crypto.randomBytes(32).toString("hex");
@@ -24,8 +25,11 @@ export async function POST(req: Request) {
       VALUES (?, ?, ?, ?, 0)
     `)).run(genId("rtk"), email, token, expiresAt);
 
-    logger.info("[Auth] Password reset token generated", { email });
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const resetUrl = `${baseUrl}/auth/reset-password/${token}`;
+    await sendPasswordResetEmail(email, resetUrl);
 
+    logger.info("[Auth] Password reset token generated and emailed", { email });
     return json({ message: "If that email exists, a reset link has been sent" });
   } catch (error) {
     logger.error("auth/forgot-password failed", { message: error instanceof Error ? error.message : String(error) });

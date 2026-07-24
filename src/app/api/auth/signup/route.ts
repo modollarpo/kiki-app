@@ -5,6 +5,7 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit
 import { signupSchema } from "@/lib/validation";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
 import { ZodError } from "zod";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   setRequestId(generateRequestId());
@@ -65,6 +66,9 @@ export async function POST(req: Request) {
     for (let i = 0; i < 3; i++) {
       await insertSignal.run(genId("sig"), tenantId, "meta", "page_view", 0, 25 + i * 10, 0.5, 0, 0, "{}", `-${(i + 1) * 10} minutes`);
     }
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    await sendWelcomeEmail(parsed.email, parsed.name, `${baseUrl}/dashboard`);
 
     const token = createSession({
       id: userId,
