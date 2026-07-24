@@ -23,6 +23,14 @@ param azureSpeechKey string = ''
 @secure()
 param azureTranslatorKey string = ''
 
+@description('Google OAuth client ID for SSO (leave empty to disable Google SSO)')
+@secure()
+param googleOAuthClientId string = ''
+
+@description('Google OAuth client secret for SSO (leave empty to disable Google SSO)')
+@secure()
+param googleOAuthClientSecret string = ''
+
 var resourceGroupName = 'kiki-agent-rg'
 var acrName = 'kikiagentacr'
 var envName = '${baseName}-env'
@@ -146,6 +154,8 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
         { name: 'opencode-secret', value: opencodeSecret }
         { name: 'azure-speech-key', value: azureSpeechKey }
         { name: 'azure-translator-key', value: azureTranslatorKey }
+        { name: 'google-oauth-client-id', value: googleOAuthClientId }
+        { name: 'google-oauth-client-secret', value: googleOAuthClientSecret }
       ]
       registries: [
         {
@@ -169,6 +179,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             { name: 'PORT', value: '3000' }
             { name: 'DATABASE_URL', secretRef: 'db-url' }
             { name: 'NEXT_PUBLIC_API_URL', value: 'https://${containerAppName}.${location}.azurecontainerapps.io' }
+            { name: 'NEXT_PUBLIC_BASE_URL', value: 'https://${containerAppName}.${location}.azurecontainerapps.io' }
             { name: 'AZURE_OPENAI_ENDPOINT', value: openAi.properties.endpoint }
             { name: 'AZURE_OPENAI_API_KEY', secretRef: 'openai-key' }
             { name: 'AZURE_OPENAI_API_VERSION', value: openAiApiVersion }
@@ -187,6 +198,9 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             { name: 'AZURE_TRANSLATOR_REGION', value: location }
             { name: 'AZURE_SPEECH_KEY', secretRef: 'azure-speech-key' }
             { name: 'AZURE_TRANSLATOR_KEY', secretRef: 'azure-translator-key' }
+            { name: 'SEED_DEMO_DATA', value: 'true' }
+            { name: 'GOOGLE_OAUTH_CLIENT_ID', secretRef: 'google-oauth-client-id' }
+            { name: 'GOOGLE_OAUTH_CLIENT_SECRET', secretRef: 'google-oauth-client-secret' }
           ]
           volumeMounts: [
             { name: 'data', mountPath: '/app/data' }

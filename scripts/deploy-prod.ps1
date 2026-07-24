@@ -41,4 +41,13 @@ Write-Host "Deploying kiki-app:$Tag to production Container App..."
 az containerapp update -g $RG -n $APP --image "$ACR.azurecr.io/kiki-app:$Tag"
 if ($LASTEXITCODE -ne 0) { throw "Container App update failed (exit $LASTEXITCODE)" }
 
+# Ensure required env vars are set (idempotent)
+Write-Host "Setting environment variables..."
+$envVars = @(
+  "SEED_DEMO_DATA=true",
+  "NEXT_PUBLIC_BASE_URL=https://$APP.purplesky-3fddb402.swedencentral.azurecontainerapps.io"
+)
+az containerapp update -g $RG -n $APP --set-env-vars $envVars
+if ($LASTEXITCODE -ne 0) { throw "Env var update failed (exit $LASTEXITCODE)" }
+
 Write-Host "Done. Production revision updated to kiki-app:$Tag (ml-service:$Tag available in ACR)"

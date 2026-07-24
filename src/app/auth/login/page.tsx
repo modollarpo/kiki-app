@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [screen, setScreen] = useState<"login"|"forgot"|"sso">("login");
   const [emailSent, setEmailSent] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
@@ -43,14 +44,23 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgotPassword = () => {
+  const handleForgotPassword = async () => {
     if (!email) {
       setErrors({ email: "Enter your email to reset password" });
       return;
     }
     const emailErr = validateEmail(email);
     if (emailErr) { setErrors({ email: emailErr }); return; }
-    setEmailSent(true);
+    setSendingReset(true);
+    try {
+      await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      setEmailSent(true);
+    } catch { addToast("error", "Failed to send reset link"); }
+    setSendingReset(false);
   };
 
   const handleSsoLogin = () => {
@@ -58,7 +68,11 @@ export default function LoginPage() {
   };
 
   const handleProviderLogin = (provider: string) => {
-    addToast("info", `${provider} sign-in coming soon.`);
+    if (provider === "Google Workspace") {
+      window.location.href = "/api/auth/sso/google";
+    } else {
+      addToast("info", `${provider} sign-in coming soon.`);
+    }
   };
 
   return (
