@@ -21,7 +21,7 @@ export default function MmmPage() {
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
   }, [token, authLoading, router]);
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   const runMmm = async () => {

@@ -13,7 +13,22 @@
 // (mock mode) so local dev works without credentials.
 // ============================================================
 
-import type { BiddingApprovalRequestedPayload } from "../../packages/shared/src/events";
+interface BiddingApprovalRequestedPayload {
+  approvalId: string;
+  tenantId: string;
+  campaignId: string;
+  campaignName: string;
+  platform: string;
+  currentBid: number;
+  newBid: number;
+  changePercent: number;
+  reason: string;
+  confidence: number;
+  ltvRatio: number;
+  stopLossTriggered: boolean;
+  expiresAt: number;
+}
+
 import { getDb } from "./db";
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;

@@ -34,10 +34,11 @@ export default function AgentsPage() {
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
   const [runningAgent, setRunningAgent] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) return;
-    agentsApi.list(token).then(d => { setAgentList(d.agents as AgentWithActions[]); if (d.guardrails) setGuardrails(d.guardrails); setLoading(false); }).catch(() => setLoading(false));
+    agentsApi.list(token).then(d => { setAgentList(d.agents as AgentWithActions[]); if (d.guardrails) setGuardrails(d.guardrails); setLoading(false); }).catch((err) => { setError(err?.message || "Failed to load agents"); setLoading(false); });
   }, [token]);
 
   useEffect(() => {
@@ -98,7 +99,7 @@ export default function AgentsPage() {
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">AI Agents</h1>
             <p className="font-mono text-[11px] text-t3">
-              {loading ? "Loading..." : `${visibleAgents.length} agents · ${running.length} running · ${totalActions.toLocaleString()} total actions`}
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `${visibleAgents.length} agents · ${running.length} running · ${totalActions.toLocaleString()} total actions`}
             </p>
           </div>
           <Badge color={K.mint} dot pulse>LIVE</Badge>
@@ -111,6 +112,12 @@ export default function AgentsPage() {
             </a>
           )}
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Running Agents" value={String(running.length)} accent={K.mint} loading={loading} />

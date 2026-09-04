@@ -9,13 +9,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { enrichConversionEvent, enrichConversionBatch, getEnrichmentStats, type ConversionEvent } from "@/lib/capi";
 import { getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { logger, handleApiError } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
-    const user = getUserFromRequest(req);
+const user = getUserFromRequest(req);
     if (!user) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const enf = await checkEnforcement(user.tenantId);
+    if (!enf.allowed) {
+      return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
     }
 
     const body = await req.json();

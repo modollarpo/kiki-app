@@ -51,6 +51,13 @@ src/
 │   ├── tenant.ts                   # Multi-tenant context
 │   ├── kdls.ts                     # Design tokens (K.mint, K.blue, etc.)
 │   ├── contracts.ts                # PDF generation contracts
+│   ├── email.ts                    # Nodemailer transactional email (welcome, password reset)
+│   ├── logger.ts                   # Structured JSON logger (production) / console (dev)
+│   ├── slack.ts                    # Slack Block Kit approval dispatcher
+│   ├── events.ts                   # In-memory event bus
+│   ├── creative.ts                 # Creative fatigue detection
+│   ├── ltv-engine.ts              # LTV prediction engine
+│   ├── connectors/                 # Ad platform connector base + implementations
 │   └── ...                         # 30+ lib modules
 ├── store/
 │   └── index.ts                    # Zustand global store (agents, wallet, UI state)
@@ -76,7 +83,7 @@ src/
 
 ---
 
-## 3. Dashboard Pages (42 routes)
+## 3. Dashboard Pages (41 routes)
 
 Every page lives under `src/app/dashboard/[slug]/page.tsx`. All use `"use client"` and wrap content in `<DashboardLayout>`.
 
@@ -89,7 +96,9 @@ Every page lives under `src/app/dashboard/[slug]/page.tsx`. All use `"use client
 | | `/dashboard/guides` | Guides (3 sub-pages) | ✅ Live |
 | **INTELLIGENCE** | `/dashboard/syncbrain` | SyncBrain™ (AI chat) | ✅ Live |
 | | `/dashboard/analytics` | Performance Analytics | ✅ Live |
+| | `/dashboard/intelligence` | Intelligence | ✅ Live |
 | | `/dashboard/competitive` | Competitive Intel | ✅ Live |
+| | `/dashboard/competitor` | Competitor Tracking | ✅ Live |
 | | `/dashboard/scenarios` | Scenario Planner | ✅ Live |
 | | `/dashboard/mmm` | Media Mix Modelling | ✅ Live |
 | | `/dashboard/b2b` | B2B Attribution | ✅ Live |
@@ -105,20 +114,24 @@ Every page lives under `src/app/dashboard/[slug]/page.tsx`. All use `"use client
 | | `/dashboard/warehouse` | Data Export | ✅ Live |
 | | `/dashboard/fraud` | Fraud & IVT | ✅ Live |
 | | `/dashboard/anomaly` | Anomaly Alerts | ✅ Live |
+| | `/dashboard/commerce` | Commerce | ✅ Live |
 | **CRM & CONTENT** | `/dashboard/crm` | CRM | ✅ Live |
 | | `/dashboard/creative-library` | Creatives | ✅ Live |
+| | `/dashboard/creative-ai` | Creative AI Generator | ✅ Live |
 | | `/dashboard/creative-attribution` | Creative Attribution | ✅ Live |
 | **SYSTEM** | `/dashboard/aiops` | AI Ops | ✅ Live |
 | | `/dashboard/admin` | Admin Health | ✅ Live |
 | | `/dashboard/developer` | Developer | ✅ Live |
 | | `/dashboard/audit` | Audit Log | ✅ Live |
+| | `/dashboard/notifications` | Notifications | ✅ Live |
+| | `/dashboard/kyc` | KYC & Verification | ✅ Live |
 | | `/dashboard/consent` | Consent & Privacy | ✅ Live |
 | | `/dashboard/agency` | Agency View | ✅ Live |
 | | `/dashboard/settings` | Settings | ✅ Live |
 
 ---
 
-## 4. API Routes (55+ routes)
+## 4. API Routes (75+ routes)
 
 All routes live under `src/app/api/[slug]/route.ts`. Auth via `Authorization: Bearer <jwt>` header. Response format: `{ ok: boolean, ...data }` or `{ ok: false, error: string }`.
 
@@ -128,6 +141,10 @@ All routes live under `src/app/api/[slug]/route.ts`. Auth via `Authorization: Be
 | `/api/auth/signup` | POST | Create account |
 | `/api/auth/logout` | POST | Invalidate session |
 | `/api/auth/me` | GET | Current user profile |
+| `/api/auth/forgot-password` | POST | Send password reset email |
+| `/api/auth/reset-password` | POST | Reset password with token |
+| `/api/auth/sso/google` | GET | Google SSO redirect |
+| `/api/auth/sso/google/callback` | GET | Google SSO callback |
 | `/api/dashboard` | GET | Dashboard KPIs + campaigns + agents + wallet |
 | `/api/campaigns` | GET/POST | List/create campaigns |
 | `/api/campaigns/[id]` | GET/PUT/DELETE | Single campaign CRUD |
@@ -162,6 +179,8 @@ All routes live under `src/app/api/[slug]/route.ts`. Auth via `Authorization: Be
 | `/api/crm/sync` | POST | CRM sync |
 | `/api/contacts` | GET/POST | Contact management |
 | `/api/creative-library` | GET/POST | Creative assets |
+| `/api/creative/generate` | GET/POST | Creative AI generation |
+| `/api/creative-attribution` | GET | Creative attribution |
 | `/api/aiops` | GET | AI ops status |
 | `/api/admin` | GET | Admin health |
 | `/api/developer` | GET | Developer tools |
@@ -170,6 +189,13 @@ All routes live under `src/app/api/[slug]/route.ts`. Auth via `Authorization: Be
 | `/api/agency` | GET/POST | Agency view |
 | `/api/settings` | GET/PUT | User settings |
 | `/api/notifications` | GET/POST | Notifications |
+| `/api/competitor` | GET/POST | Competitor monitoring |
+| `/api/insights` | GET | Aggregated insights |
+| `/api/onboarding` | GET/PUT | Onboarding progress |
+| `/api/seed` | POST | Seed demo data |
+| `/api/transcribe` | POST | Speech-to-text |
+| `/api/translate` | POST | Text translation |
+| `/api/approvals` | GET/POST | Bid approvals |
 | `/api/events` | GET | SSE event stream |
 | `/api/status` | GET | System health |
 | `/api/nl-query` | POST | Natural language query |
@@ -191,6 +217,10 @@ All routes live under `src/app/api/[slug]/route.ts`. Auth via `Authorization: Be
 | `/api/webhooks/snap` | POST | Snap webhook |
 | `/api/webhooks/pinterest` | POST | Pinterest webhook |
 | `/api/webhooks/linkedin` | POST | LinkedIn webhook |
+| `/api/webhooks/stripe` | POST | Stripe webhook |
+| `/api/webhooks/shopify` | POST | Shopify webhook |
+| `/api/webhooks/slack` | POST | Slack webhook |
+| `/api/webhooks/woocommerce` | POST | WooCommerce webhook |
 
 ---
 

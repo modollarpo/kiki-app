@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  @page {
+    size: A4;
+    margin: 20mm 22mm 25mm 22mm;
+    @bottom-center {
+      content: "KIKI Agent™ — STOREGRILL INC LTD | Confidential";
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    color: #111827;
+    max-width: 170mm;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* --- Cover Page --- */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 250mm;
+    padding: 0;
+  }
+  .cover .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36pt;
+    font-weight: 700;
+    color: #005CFF;
+    letter-spacing: -0.02em;
+    margin-bottom: 8pt;
+  }
+  .cover .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    color: #6B7280;
+    letter-spacing: 0.02em;
+    margin-bottom: 40pt;
+  }
+  .cover .doc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 20pt;
+    max-width: 140mm;
+  }
+  .cover .divider {
+    width: 60mm;
+    height: 1pt;
+    background: #005CFF;
+    margin: 16pt auto;
+  }
+  .cover .meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    color: #6B7280;
+    line-height: 1.8;
+    margin-top: 20pt;
+  }
+  .cover .legal {
+    font-family: 'Inter', sans-serif;
+    font-size: 7.5pt;
+    color: #9CA3AF;
+    margin-top: 50pt;
+    line-height: 1.5;
+  }
+
+  /* --- Headings --- */
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #005CFF;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    padding-bottom: 4pt;
+    border-bottom: 1.5pt solid #005CFF;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+  }
+
+  p { margin: 4pt 0 8pt 0; }
+
+  /* --- Tables --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 8.5pt;
+  }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    background: #005CFF;
+    color: #FFFFFF;
+    text-align: left;
+    padding: 5pt 6pt;
+    font-size: 8pt;
+  }
+  td {
+    padding: 4pt 6pt;
+    border-bottom: 0.5pt solid #E5E7EB;
+  }
+  tr:nth-child(even) td {
+    background: #F9FAFB;
+  }
+
+  /* --- Lists --- */
+  ul, ol { margin: 4pt 0; padding-left: 18pt; }
+  li { margin-bottom: 2pt; }
+
+  /* --- Code / Monospace --- */
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    background: #F3F4F6;
+    padding: 1pt 3pt;
+    border-radius: 2px;
+  }
+  pre {
+    padding: 6pt 8pt;
+    line-height: 1.3;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* --- Blockquote --- */
+  blockquote {
+    border-left: 3pt solid #005CFF;
+    margin: 10pt 0;
+    padding: 6pt 12pt;
+    background: #F0F4FF;
+    font-style: italic;
+    color: #374151;
+  }
+
+  /* --- HR --- */
+  hr {
+    border: none;
+    border-top: 0.5pt solid #D1D5DB;
+    margin: 16pt 0;
+  }
+
+  /* --- Page break --- */
+  .page-break { page-break-before: always; }
+
+  /* --- TOC --- */
+  .toc { margin: 12pt 0; }
+  .toc a {
+    display: block;
+    padding: 2pt 0;
+    color: #005CFF;
+    text-decoration: none;
+    font-size: 9pt;
+    font-family: 'Inter', sans-serif;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  /* --- Accent highlight --- */
+  .accent-box {
+    background: #F0F4FF;
+    border: 0.5pt solid #D1D9E8;
+    border-radius: 3px;
+    padding: 8pt 10pt;
+    margin: 10pt 0;
+    font-size: 9pt;
+  }
+  .accent-box strong { color: #005CFF; }
+
+  strong { color: #111827; }
+  em { color: #6B7280; }
+  a { color: #005CFF; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="brand">KIKI Agent™</div>
+  <div class="tagline">Autonomous LTV Campaign Execution</div>
+  <div class="divider"></div>
+  <div class="doc-title">KIKI Agent™</div>
+  <div class="meta">
+    <strong>Founder:</strong> Ariyo Dolapo<br>
+    <strong>Date:</strong> 26 July 2026<br>
+    <strong>Status:</strong> Confidential — Investor & Partner Document
+  </div>
+  <div class="legal">
+    KIKI Agent™ — A STOREGRILL INC LTD Company<br>
+    Registered in England & Wales
+  </div>
+</div>
+
+<h1>KIKI Agent™</h1>
+<h2>Autonomous LTV Campaign Execution Platform</h2>
+<p><strong>A STOREGRILL INC LTD Company</strong> — Registered in England &amp; Wales</p>
+<h2>The Problem</h2>
+<p>Digital advertising is broken by design.</p>
+<p>Ad platforms optimise for <em>raw conversion events</em> — a £149 order sent as a £149 signal. The platform&#39;s algorithm sees a low-value customer and allocates budget accordingly. But that same customer may be worth £639 over 90 days. The platform never knows.</p>
+<p>Every advertiser using Meta, Google, TikTok, or any major platform is leaving 3–4× of addressable lifetime value on the table because the signal they send is the transaction value, not the predicted customer value.</p>
+<p>The result: <strong>CPA optimisation becomes a race to the bottom.</strong> Advertisers compete for the same high-intent buyers while undervaluing the customers who would generate the most long-term revenue.</p>
+<h2>The Solution</h2>
+<p>KIKI Agent intercepts every conversion server-side, applies a proprietary ML model that predicts 90-day LTV in under 38ms, and enriches the signal before it reaches the ad platform. The platform sees the <em>predicted lifetime value</em> — not the raw order total — and optimises toward actual customer worth.</p>
+<p><strong>Core capability:</strong> A £149 order becomes a £639 signal. The bidding algorithm immediately recognises higher-value lookalike audiences, allocates more budget where LTV is highest, and deprioritises segments with low predicted retention.</p>
+<h2>Technology</h2>
+<p>KIKI Agent is a production-deployed, multi-agent AI system:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technology</th>
+<th>Performance</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LTV Prediction</td>
+<td>Proprietary ensemble ML model</td>
+<td>R²=0.91, 38ms median</td>
+</tr>
+<tr>
+<td>AI Routing (SyncBrain)</td>
+<td>7-model gateway (GPT-4o, Claude, Gemini, LLaMA…)</td>
+<td>12ms routing latency</td>
+</tr>
+<tr>
+<td>Fast Bidding</td>
+<td>Groq Llama 3.1 8B</td>
+<td>&lt;200ms response</td>
+</tr>
+<tr>
+<td>Heavy Processing</td>
+<td>Azure OpenAI GPT-4o / GPT-4o-mini</td>
+<td>30s max, tiered</td>
+</tr>
+<tr>
+<td>Event Bus</td>
+<td>Apache Kafka (14 topics, 82 event types)</td>
+<td>Real-time</td>
+</tr>
+<tr>
+<td>Data Layer</td>
+<td>PostgreSQL (Neon) + better-sqlite3 fallback</td>
+<td>Multi-tenant</td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td>Azure Container Apps, ACR, Bicep</td>
+<td>99.9% SLA-ready</td>
+</tr>
+<tr>
+<td>Fraud Detection</td>
+<td>IP + fingerprint + velocity scoring</td>
+<td>99.2% detection rate, 0.03% false positives</td>
+</tr>
+</tbody></table>
+<p><strong>Six autonomous AI agents</strong> operate continuously within configurable guardrails:</p>
+<ol>
+<li><strong>Bidding Agent</strong> — Cross-platform bid optimisation with LTV-aware day-parting</li>
+<li><strong>Creative Agent</strong> — Fatigue detection and AI-generated replacement creatives</li>
+<li><strong>Smart Pacing Agent</strong> — Budget allocation across campaigns and platforms</li>
+<li><strong>Signals Agent</strong> — CAPI enrichment, deduplication, and delivery</li>
+<li><strong>SyncBrain Agent</strong> — Multi-model routing with cost-quality optimisation</li>
+<li><strong>OaaS Agent</strong> — Automated operational task execution</li>
+</ol>
+<h2>Business Model</h2>
+<p>KIKI Agent operates a dual-revenue SaaS model:</p>
+<p><strong>1. Platform Subscription</strong> (monthly recurring)</p>
+<ul>
+<li><strong>Growth:</strong> £599/mo — 1 platform, 3 campaigns, 25K AI decisions</li>
+<li><strong>Scale:</strong> £1,799/mo — 5 platforms, unlimited campaigns, 100K AI decisions</li>
+<li><strong>Enterprise:</strong> From £4,999/mo — all platforms, custom limits, dedicated infra</li>
+</ul>
+<p><strong>2. Usage-Based Fees</strong> (metered)</p>
+<ul>
+<li>AI decisions overage: £0.008/decision</li>
+<li>Signal enrichment overage: £0.04/enriched conversion</li>
+<li>Creative generation: £15/creative bundle (AI-generated copy + image prompt)</li>
+</ul>
+<p><strong>Target Gross Margin:</strong> 82% (Year 1) → 88% (Year 5) — AI API costs scale sub-linearly</p>
+<h2>Market Opportunity</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Global digital ad spend (2026)</td>
+<td>$745B</td>
+</tr>
+<tr>
+<td>Ad tech / bid management TAM</td>
+<td>$18.2B</td>
+</tr>
+<tr>
+<td>Serviceable market (D2C £10M–£250M + Agencies)</td>
+<td>$3.4B</td>
+</tr>
+<tr>
+<td>Target customer count (Year 5)</td>
+<td>1,200+</td>
+</tr>
+<tr>
+<td>Implied market share (Year 5)</td>
+<td>0.08%</td>
+</tr>
+</tbody></table>
+<p><strong>Key tailwinds:</strong></p>
+<ul>
+<li>Privacy regulation (GDPR, CCPA) is killing third-party signals — server-side CAPI is mandatory</li>
+<li>AI-native ad tech is the fastest-growing segment (CAGR 32%)</li>
+<li>Meta&#39;s CAPI mandate means every advertiser must run server-side events</li>
+<li>LTV modelling is the single highest-leverage optimisation available to performance advertisers</li>
+</ul>
+<h2>Competitive Moat</h2>
+<ol>
+<li><strong>Prediction latency:</strong> 38ms median LTV inference — fast enough to run inside the CAPI response window</li>
+<li><strong>Multi-agent architecture:</strong> Not a single model — six specialised agents that cross-optimise</li>
+<li><strong>Platform breadth:</strong> 14 connectors (Meta, Google, TikTok, LinkedIn, YouTube, Snap, Pinterest, Amazon DSP, Reddit, DV360, X, TradeDesk, Criteo, AppNexus)</li>
+<li><strong>Fraud-before-enrichment:</strong> IVT blocking occurs <em>before</em> LTV enrichment, preventing model poisoning</li>
+<li><strong>Real-time arbitrage:</strong> Cross-platform budget shifts triggered by competitor pricing signals</li>
+<li><strong>Bundle of 42 dashboard surfaces:</strong> Not an API — a full command centre with SyncBrain AI chat</li>
+</ol>
+<h2>Traction &amp; Milestones</h2>
+<table>
+<thead>
+<tr>
+<th>Milestone</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Product v2.0.0</td>
+<td>✅ Live in production</td>
+</tr>
+<tr>
+<td>42 dashboard pages</td>
+<td>✅ Built and deployed</td>
+</tr>
+<tr>
+<td>75+ API routes</td>
+<td>✅ All live</td>
+</tr>
+<tr>
+<td>146 passing tests</td>
+<td>✅ CI/CD ready</td>
+</tr>
+<tr>
+<td>6 AI agents</td>
+<td>✅ Operational</td>
+</tr>
+<tr>
+<td>14 platform connectors</td>
+<td>✅ Built</td>
+</tr>
+<tr>
+<td>Fraud detection engine</td>
+<td>✅ Live</td>
+</tr>
+<tr>
+<td>Creative fatigue detection</td>
+<td>✅ Live</td>
+</tr>
+<tr>
+<td>Google SSO &amp; password reset</td>
+<td>✅ Live</td>
+</tr>
+<tr>
+<td>SMTP email service</td>
+<td>✅ Ready (awaiting credentials)</td>
+</tr>
+</tbody></table>
+<h2>Financial Highlights (5-Year Summary)</h2>
+<table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Customers (EOP)</th>
+<th>ARR</th>
+<th>Revenue</th>
+<th>Gross Margin</th>
+<th>EBITDA</th>
+<th>Cumulative Cash</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>18</td>
+<td>£198K</td>
+<td>£124K</td>
+<td>82%</td>
+<td>-£41K</td>
+<td>-£41K</td>
+</tr>
+<tr>
+<td>2</td>
+<td>65</td>
+<td>£786K</td>
+<td>£492K</td>
+<td>85%</td>
+<td>£102K</td>
+<td>£61K</td>
+</tr>
+<tr>
+<td>3</td>
+<td>220</td>
+<td>£2.64M</td>
+<td>£1.72M</td>
+<td>87%</td>
+<td>£612K</td>
+<td>£673K</td>
+</tr>
+<tr>
+<td>4</td>
+<td>540</td>
+<td>£6.48M</td>
+<td>£4.56M</td>
+<td>88%</td>
+<td>£1.89M</td>
+<td>£2.56M</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1,200</td>
+<td>£14.4M</td>
+<td>£10.4M</td>
+<td>88%</td>
+<td>£4.62M</td>
+<td>£7.18M</td>
+</tr>
+</tbody></table>
+<p>Breakeven achieved in Month 15. Cash-flow positive from Month 18.</p>
+<h2>The Ask</h2>
+<p>KIKI Agent is seeking:</p>
+<p><strong>Pre-Seed (Current — Q3 2026):</strong> £350K</p>
+<ul>
+<li>12-month runway</li>
+<li>Engineering (1 senior full-stack), sales (1 UK BDM), compliance (legal)</li>
+<li>SEIS-eligible — 50% income tax relief for UK angel investors</li>
+</ul>
+<p><strong>Seed (Q3 2027):</strong> £1.5M</p>
+<ul>
+<li>18-month runway</li>
+<li>Scale engineering team, expand sales to EU, launch self-serve onboarding</li>
+<li>Targeting £1M+ ARR at raise</li>
+</ul>
+<h2>Team</h2>
+<p><strong>Ariyo Dolapo</strong> — Founder &amp; CEO<br>10+ years in digital industry. Built KIKI Agent from concept to production single-handedly — 75+ API routes, 6 AI agents, 42 dashboard surfaces, production deployment on Azure. Deep expertise in ad-tech infrastructure, real-time bidding systems, and AI model routing.</p>
+<p><strong>Seeking:</strong> UK-based Co-Founder (Operations &amp; Revenue) to lead commercial strategy, UK entity setup, GDPR compliance, investor relations, and customer acquisition. See Co-Founder Term Sheet for details.</p>
+<hr>
+<p><em>KIKI Agent™ is a trademark of STOREGRILL INC LTD. Confidential — not for distribution without authorisation.</em></p>
+
+
+</body>
+</html>

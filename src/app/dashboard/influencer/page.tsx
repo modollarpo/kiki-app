@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, StatCard, ScrollableTable } from "@/components/ui";
+import { Card, Badge, StatCard, ScrollableTable, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { influencer as influencerApi } from "@/lib/api";
 
@@ -37,7 +37,7 @@ export default function InfluencerPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   const registerCreator = async () => {
@@ -105,7 +105,7 @@ export default function InfluencerPage() {
         <Card accent={K.mint}>
           <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Creators</h3>
           {creators.length === 0 ? (
-            <div className="p-10 text-center"><p className="font-mono text-xs text-gray-500">No creators registered yet.</p></div>
+            <EmptyState icon="🎤" title="No creators registered" body="Add your first creator to start tracking ROI." />
           ) : (
             <ScrollableTable>
               <div className="min-w-[600px]">

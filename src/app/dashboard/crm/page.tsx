@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, StatCard } from "@/components/ui";
+import { Card, Badge, StatCard, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Lead { name: string; company: string; email: string; source: string; score: number; status: string; }
@@ -13,6 +13,7 @@ export default function CRMPage() {
   const [stats, setStats] = useState<{ totalContacts: number; pipelineValue: number; conversionRate: number; avgDealSize: number } | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [segments, setSegments] = useState<Segment[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -32,11 +33,11 @@ export default function CRMPage() {
           setSegments(d.data.segments);
         }
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load CRM data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   return (
@@ -46,6 +47,12 @@ export default function CRMPage() {
           <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">CRM</h1>
           <p className="font-mono text-[11px] text-gray-500">Manage contacts, pipeline, and customer relationships</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Pipeline Value" value={stats ? `$${(stats.pipelineValue / 1000).toFixed(0)}K` : "—"} delta={280} sub="+$280K this month" accent={K.mint} loading={loading} />

@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError, sanitizeString } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { logger, handleApiError } from "@/lib/logger";
 
 interface PlanCount { plan: string; count: number }
@@ -53,6 +54,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
+
+  const enf = await checkEnforcement(user.tenantId);
+  if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
 
   try {
     const body = await req.json() as Record<string, unknown>;

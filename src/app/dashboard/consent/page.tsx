@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
 import { K } from "@/lib/kdls";
@@ -19,9 +20,15 @@ interface ConsentData {
 }
 
 export default function ConsentPrivacyPage() {
-  const { token } = useAuth();
+  const { token, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [consentData, setConsentData] = useState<ConsentData | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !token) router.push("/auth/login");
+  }, [token, authLoading, router]);
 
   useEffect(() => {
     if (!token) return;
@@ -30,7 +37,7 @@ export default function ConsentPrivacyPage() {
       .then(d => {
         if (d?.data) setConsentData(d.data);
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load consent data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -53,6 +60,9 @@ export default function ConsentPrivacyPage() {
     ? (regions.reduce((s, r) => s + r.consentRate, 0) / regions.length).toFixed(1)
     : "—";
 
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
+
   return (
     <DashboardLayout>
       <div className="space-y-6 text-white p-[clamp(14px,3vw,28px)] max-w-[1400px]">
@@ -61,10 +71,16 @@ export default function ConsentPrivacyPage() {
           <p className="mt-1 text-sm text-gray-500">Manage user consent, privacy compliance, and data protection</p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Overall Compliance" value={loading ? "…" : `${overallCompliance}%`} sub={compliance?.gdprEnabled ? "GDPR enabled" : "GDPR pending"} accent={K.mint} />
           <StatCard label="Consent Rate" value={loading ? "…" : `${overallConsentRate}%`} sub={compliance?.ccpaEnabled ? "CCPA enabled" : "CCPA pending"} accent={K.mint} />
-          <StatCard label="Total Users" value={loading ? "…" : totalUsers > 0 ? totalUsers.toLocaleString() : "—"} sub={compliance ? `Retention: ${compliance.dataRetentionDays}d` : "Loading…"} accent={K.mint} />
+          <StatCard label="Total Users" value={loading ? "…" : totalUsers > 0 ? totalUsers.toLocaleString() : "—"} sub={compliance ? `Retention: ${compliance.dataRetentionDays}d` : "—"} accent={K.mint} loading={loading} />
           <StatCard label="Privacy Sandbox" value={compliance?.gdprEnabled ? "Ready" : "Setup"} sub={compliance ? `Consent v${compliance.consentVersion}` : "Pending config"} accent={K.mint} />
         </div>
 

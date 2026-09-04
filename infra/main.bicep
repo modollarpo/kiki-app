@@ -220,7 +220,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             { name: 'AZURE_TRANSLATOR_REGION', value: location }
             { name: 'AZURE_SPEECH_KEY', secretRef: 'azure-speech-key' }
             { name: 'AZURE_TRANSLATOR_KEY', secretRef: 'azure-translator-key' }
-            { name: 'SEED_DEMO_DATA', value: 'true' }
+            { name: 'SEED_DEMO_DATA', value: 'false' }
             { name: 'GOOGLE_OAUTH_CLIENT_ID', secretRef: 'google-oauth-client-id' }
             { name: 'GOOGLE_OAUTH_CLIENT_SECRET', secretRef: 'google-oauth-client-secret' }
             { name: 'SMTP_HOST', value: smtpHost }
@@ -261,7 +261,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             memory: '0.5Gi'
           }
           env: [
-            { name: 'OPENCODE_SECRET', secretRef: 'jwt-secret' }
+            { name: 'OPENCODE_SECRET', secretRef: 'opencode-secret' }
           ]
         }
         {
@@ -291,7 +291,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
   }
 }
 
-output containerAppUrl string = 'https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io'
+output containerAppUrl string = 'https://${containerAppName}.${location}.azurecontainerapps.io'
 output acrLoginServer string = acr.loginServer
 output openAiEndpoint string = openAi.properties.endpoint
 output resourceGroupName string = resourceGroupName

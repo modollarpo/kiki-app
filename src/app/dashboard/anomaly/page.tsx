@@ -1,12 +1,25 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
 import { K } from "@/lib/kdls";
+import { useAuth } from "@/hooks/useAuth";
 import { useInsights } from "@/hooks/useInsights";
 
 export default function AnomalyDetectionPage() {
+  const { token, loading: authLoading } = useAuth();
+  const router = useRouter();
   const { data, loading } = useInsights();
+
+  useEffect(() => {
+    if (!authLoading && !token) router.push("/auth/login");
+  }, [token, authLoading, router]);
+
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
+
   const anomalies = (data?.anomaly ?? []).map((a: { type: string; severity: string; description: string; time: string; status: string }) => ({
     id: a.type?.slice(0, 4) ?? "N/A",
     type: a.description ?? a.type,

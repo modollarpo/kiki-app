@@ -111,12 +111,7 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        style={{
-          background: "#0A0A0B",
-          color: "#F0F0FA",
-          fontFamily: "'Inter',system-ui,sans-serif",
-          margin: 0,
-        }}
+        className="bg-void text-t1 font-sans m-0"
       >
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){

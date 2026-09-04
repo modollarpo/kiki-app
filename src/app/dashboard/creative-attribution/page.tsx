@@ -30,7 +30,7 @@ export default function CreativeAttributionPage() {
     setLoading(false);
   }, [token]);
 
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   const totalRevenue = attributions.reduce((s, a) => s + (a.total_revenue || 0), 0);

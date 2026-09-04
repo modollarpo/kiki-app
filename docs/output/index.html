@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>KIKI Agent — Business Document Suite</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #030712; color: #F9FAFB; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
+  .container { max-width: 900px; width: 100%; }
+  .header { text-align: center; margin-bottom: 48px; }
+  .brand { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #005CFF; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .tagline { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B7280; letter-spacing: 0.04em; margin-bottom: 16px; }
+  .divider { width: 80px; height: 2px; background: #005CFF; margin: 16px auto; }
+  h1 { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #F9FAFB; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #6B7280; }
+  .doc-list { display: flex; flex-direction: column; gap: 6px; }
+  .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #111827; border: 1px solid #1F2937; border-radius: 4px; text-decoration: none; color: #F9FAFB; transition: all 0.2s; }
+  .doc-item:hover { background: #1F2937; border-color: #005CFF; }
+  .doc-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #005CFF; width: 28px; }
+  .doc-title { flex: 1; font-size: 13px; font-weight: 500; margin: 0 12px; }
+  .doc-links { display: flex; gap: 6px; }
+  .doc-links a { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 3px 8px; border-radius: 2px; text-decoration: none; color: #9CA3AF; border: 1px solid #374151; transition: all 0.2s; }
+  .doc-links a:hover { color: #005CFF; border-color: #005CFF; background: rgba(0,92,255,0.1); }
+  .footer { margin-top: 48px; text-align: center; font-size: 10px; color: #4B5563; line-height: 1.6; }
+  .instructions { background: #111827; border: 1px solid #1F2937; border-radius: 4px; padding: 16px 20px; margin-bottom: 32px; font-size: 11px; color: #9CA3AF; line-height: 1.7; }
+  .instructions strong { color: #F9FAFB; font-family: 'JetBrains Mono', monospace; }
+</style>
+</head><body>
+<div class="container">
+  <div class="header">
+    <div class="brand">KIKI Agent™</div>
+    <div class="tagline">A STOREGRILL INC LTD Company &middot; Registered in England & Wales</div>
+    <div class="divider"></div>
+    <h1>Business Document Suite</h1>
+    <p class="subtitle">July 2026 &middot; 11 documents &middot; Confidential</p>
+  </div>
+  <div class="instructions">
+    <strong>Print to PDF:</strong> Open a document and press <strong>Ctrl+P</strong> &gt; <strong>Save as PDF</strong>.<br>
+    Enable <strong>Background graphics</strong> in print settings for full KIKI branding. PDFs are pre-generated.
+  </div>
+  <div class="doc-list">
+    <a class="doc-item" href="01-executive-summary.html" target="_blank">
+      <span class="doc-num">01</span>
+      <span class="doc-title">Executive Summary</span>
+      <span class="doc-links">
+        <a href="01-executive-summary.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="01-executive-summary.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="02-co-founder-term-sheet.html" target="_blank">
+      <span class="doc-num">02</span>
+      <span class="doc-title">Co-Founder Term Sheet</span>
+      <span class="doc-links">
+        <a href="02-co-founder-term-sheet.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="02-co-founder-term-sheet.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="03-founders-agreement.html" target="_blank">
+      <span class="doc-num">03</span>
+      <span class="doc-title">Founders' Agreement</span>
+      <span class="doc-links">
+        <a href="03-founders-agreement.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="03-founders-agreement.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="04-business-plan.html" target="_blank">
+      <span class="doc-num">04</span>
+      <span class="doc-title">Full Business Plan</span>
+      <span class="doc-links">
+        <a href="04-business-plan.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="04-business-plan.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="05-pitch-deck.html" target="_blank">
+      <span class="doc-num">05</span>
+      <span class="doc-title">Pitch Deck Narrative</span>
+      <span class="doc-links">
+        <a href="05-pitch-deck.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="05-pitch-deck.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="06-financial-model.html" target="_blank">
+      <span class="doc-num">06</span>
+      <span class="doc-title">Financial Model &amp; Projections</span>
+      <span class="doc-links">
+        <a href="06-financial-model.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="06-financial-model.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="07-co-founder-role-scope.html" target="_blank">
+      <span class="doc-num">07</span>
+      <span class="doc-title">Co-Founder Role Scope</span>
+      <span class="doc-links">
+        <a href="07-co-founder-role-scope.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="07-co-founder-role-scope.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="08-sla-framework.html" target="_blank">
+      <span class="doc-num">08</span>
+      <span class="doc-title">Service Level Agreement</span>
+      <span class="doc-links">
+        <a href="08-sla-framework.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="08-sla-framework.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="09-brand-guidelines.html" target="_blank">
+      <span class="doc-num">09</span>
+      <span class="doc-title">Brand Guidelines</span>
+      <span class="doc-links">
+        <a href="09-brand-guidelines.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="09-brand-guidelines.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="10-gdpr-compliance.html" target="_blank">
+      <span class="doc-num">10</span>
+      <span class="doc-title">GDPR Compliance Framework</span>
+      <span class="doc-links">
+        <a href="10-gdpr-compliance.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="10-gdpr-compliance.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+    <a class="doc-item" href="11-customer-one-pager.html" target="_blank">
+      <span class="doc-num">11</span>
+      <span class="doc-title">Customer Sales One-Pager</span>
+      <span class="doc-links">
+        <a href="11-customer-one-pager.html" target="_blank" onclick="event.stopPropagation()">HTML</a>
+        <a href="11-customer-one-pager.pdf" target="_blank" onclick="event.stopPropagation()">PDF</a>
+      </span>
+    </a>
+  </div>
+  <div class="footer">
+    KIKI Agent™ — A STOREGRILL INC LTD Company<br>
+    Registered in England & Wales — All documents confidential
+  </div>
+</div>
+</body></html>

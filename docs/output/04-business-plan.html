@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  @page {
+    size: A4;
+    margin: 20mm 22mm 25mm 22mm;
+    @bottom-center {
+      content: "KIKI Agent™ — STOREGRILL INC LTD | Confidential";
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    color: #111827;
+    max-width: 170mm;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* --- Cover Page --- */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 250mm;
+    padding: 0;
+  }
+  .cover .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36pt;
+    font-weight: 700;
+    color: #005CFF;
+    letter-spacing: -0.02em;
+    margin-bottom: 8pt;
+  }
+  .cover .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    color: #6B7280;
+    letter-spacing: 0.02em;
+    margin-bottom: 40pt;
+  }
+  .cover .doc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 20pt;
+    max-width: 140mm;
+  }
+  .cover .divider {
+    width: 60mm;
+    height: 1pt;
+    background: #005CFF;
+    margin: 16pt auto;
+  }
+  .cover .meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    color: #6B7280;
+    line-height: 1.8;
+    margin-top: 20pt;
+  }
+  .cover .legal {
+    font-family: 'Inter', sans-serif;
+    font-size: 7.5pt;
+    color: #9CA3AF;
+    margin-top: 50pt;
+    line-height: 1.5;
+  }
+
+  /* --- Headings --- */
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #005CFF;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    padding-bottom: 4pt;
+    border-bottom: 1.5pt solid #005CFF;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+  }
+
+  p { margin: 4pt 0 8pt 0; }
+
+  /* --- Tables --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 8.5pt;
+  }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    background: #005CFF;
+    color: #FFFFFF;
+    text-align: left;
+    padding: 5pt 6pt;
+    font-size: 8pt;
+  }
+  td {
+    padding: 4pt 6pt;
+    border-bottom: 0.5pt solid #E5E7EB;
+  }
+  tr:nth-child(even) td {
+    background: #F9FAFB;
+  }
+
+  /* --- Lists --- */
+  ul, ol { margin: 4pt 0; padding-left: 18pt; }
+  li { margin-bottom: 2pt; }
+
+  /* --- Code / Monospace --- */
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    background: #F3F4F6;
+    padding: 1pt 3pt;
+    border-radius: 2px;
+  }
+  pre {
+    padding: 6pt 8pt;
+    line-height: 1.3;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* --- Blockquote --- */
+  blockquote {
+    border-left: 3pt solid #005CFF;
+    margin: 10pt 0;
+    padding: 6pt 12pt;
+    background: #F0F4FF;
+    font-style: italic;
+    color: #374151;
+  }
+
+  /* --- HR --- */
+  hr {
+    border: none;
+    border-top: 0.5pt solid #D1D5DB;
+    margin: 16pt 0;
+  }
+
+  /* --- Page break --- */
+  .page-break { page-break-before: always; }
+
+  /* --- TOC --- */
+  .toc { margin: 12pt 0; }
+  .toc a {
+    display: block;
+    padding: 2pt 0;
+    color: #005CFF;
+    text-decoration: none;
+    font-size: 9pt;
+    font-family: 'Inter', sans-serif;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  /* --- Accent highlight --- */
+  .accent-box {
+    background: #F0F4FF;
+    border: 0.5pt solid #D1D9E8;
+    border-radius: 3px;
+    padding: 8pt 10pt;
+    margin: 10pt 0;
+    font-size: 9pt;
+  }
+  .accent-box strong { color: #005CFF; }
+
+  strong { color: #111827; }
+  em { color: #6B7280; }
+  a { color: #005CFF; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="brand">KIKI Agent™</div>
+  <div class="tagline">Autonomous LTV Campaign Execution</div>
+  <div class="divider"></div>
+  <div class="doc-title">KIKI Agent™ — Full Business Plan</div>
+  <div class="meta">
+    <strong>Founder:</strong> Ariyo Dolapo<br>
+    <strong>Date:</strong> 26 July 2026<br>
+    <strong>Status:</strong> Confidential — Strategic Planning Document
+  </div>
+  <div class="legal">
+    KIKI Agent™ — A STOREGRILL INC LTD Company<br>
+    Registered in England & Wales
+  </div>
+</div>
+
+<h1>KIKI Agent™ — Full Business Plan</h1>
+<p><strong>Autonomous LTV Campaign Execution Platform</strong></p>
+<p><strong>A STOREGRILL INC LTD Company</strong> — Registered in England &amp; Wales</p>
+<h2>Table of Contents</h2>
+<ol>
+<li>Executive Summary</li>
+<li>The Problem — Signal Degradation in Digital Advertising</li>
+<li>The Solution — LTV-Enriched Campaign Execution</li>
+<li>Technology Architecture</li>
+<li>Product Overview</li>
+<li>Market Analysis</li>
+<li>Competitive Landscape</li>
+<li>Business Model</li>
+<li>Go-to-Market Strategy</li>
+<li>Financial Projections</li>
+<li>Team &amp; Advisors</li>
+<li>Co-Founder Strategy</li>
+<li>Risk Analysis &amp; Mitigation</li>
+<li>Fundraising Plan</li>
+<li>Exit Strategy</li>
+<li>Appendix</li>
+</ol>
+<hr>
+<h2>1. Executive Summary</h2>
+<p><strong>KIKI Agent™</strong> is an autonomous LTV campaign execution platform that intercepts every conversion server-side, predicts 90-day customer lifetime value in 38 milliseconds, and enriches the signal sent to ad platforms — transforming a £149 order into a £639 optimisation signal.</p>
+<p>The platform delivers six autonomous AI agents, 14 ad platform connectors, real-time fraud detection, and 42 dashboard surfaces for complete campaign command-and-control. It is production-deployed on Azure, processing live traffic across all major platforms.</p>
+<p>Founded by Ariyo Dolapo (10+ years digital industry), KIKI Agent is a STOREGRILL INC LTD company registered in England &amp; Wales. The product is fully built (v2.0.0), deployed, passing 146 tests, and ready for commercial go-to-market.</p>
+<p><strong>Key Metrics (5-Year Target):</strong></p>
+<ul>
+<li>Year 5 ARR: £18.2M</li>
+<li>Year 5 EBITDA: £10.3M (56% margin)</li>
+<li>Year 5 Customer Count: 800+</li>
+<li>Breakeven: Month 18</li>
+<li>Gross Margin: 82% → 88%</li>
+</ul>
+<hr>
+<h2>2. The Problem — Signal Degradation in Digital Advertising</h2>
+<h3>2.1 The Core Failure</h3>
+<p>Digital advertising platforms optimise toward <em>raw conversion events</em> — the transaction value they receive in the pixel or CAPI call. When a customer places a £149 order, the platform receives £149 as the conversion value. The bidding algorithm optimises toward acquiring more £149 customers.</p>
+<p>But that customer&#39;s true value over 90 days may be £639. The platform never knows. Every single advertiser operating without LTV enrichment is consequently <strong>undervaluing their best customers by 3–4×</strong> and systematically <strong>overbidding for low-value, non-retaining segments</strong>.</p>
+<h3>2.2 The Cost of Bad Signals</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Without KIKI</th>
+<th>With KIKI</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Customer value signal</td>
+<td>Raw order (e.g., £149)</td>
+<td>Predicted LTV (e.g., £639)</td>
+</tr>
+<tr>
+<td>Lookalike audience quality</td>
+<td>Based on order value</td>
+<td>Based on predicted lifetime value</td>
+</tr>
+<tr>
+<td>Bid optimisation toward</td>
+<td>High AOV (not high LTV)</td>
+<td>High retention and repeat rate</td>
+</tr>
+<tr>
+<td>CPA optimisation</td>
+<td>Race to bottom</td>
+<td>Race to sustainable unit economics</td>
+</tr>
+<tr>
+<td>Return on Ad Spend</td>
+<td>Baseline</td>
+<td>3–4× improvement on best customers</td>
+</tr>
+</tbody></table>
+<h3>2.3 The Technical Failure Mode</h3>
+<p>Ad platforms operate on a <em>last-event attribution model</em> for value optimisation. The problem is structural:</p>
+<ol>
+<li><strong>Event-level only:</strong> Platforms see individual transactions, not customer journeys</li>
+<li><strong>No retention signal:</strong> There is no mechanism for a platform to know if a customer will repurchase</li>
+<li><strong>CAPI mandates:</strong> Privacy regulation is pushing all events to server-side — creating both a compliance burden and an opportunity for enrichment</li>
+<li><strong>Fraud poisons the model:</strong> Bot traffic generates false conversions. If these are enriched, the model learns to optimise toward bots. Enrichment must happen <em>after</em> fraud detection.</li>
+</ol>
+<h3>2.4 Market Pain Points</h3>
+<ul>
+<li><strong>Advertisers:</strong> 68% of D2C brands report declining ROAS on Meta and Google (2025–2026). CPA has risen 37% across platforms since 2022.</li>
+<li><strong>Agencies:</strong> 73% of performance agencies manually adjust bids across platforms — KIKI automates this.</li>
+<li><strong>Enterprise:</strong> In-house media teams managing £50M+ ad spend need granular LTV data at the bidding level — none of the major platforms provide this natively.</li>
+</ul>
+<hr>
+<h2>3. The Solution — LTV-Enriched Campaign Execution</h2>
+<h3>3.1 How KIKI Agent Works</h3>
+<pre><code>Visitor → Order Checkout → KIKI CAPI Webhook → Fraud Scan ─┐
+                                                             │
+                          ┌──────────────────────────────────┘
+                          ▼
+                    LTV Prediction Engine (38ms)
+                          │
+                          ▼
+                    Signal Enrichment (order £149 → LTV £639)
+                          │
+                          ▼
+                    CAPI Delivery to 14 Platforms
+                          │
+                          ▼
+                    Platform Algorithms Optimise Toward LTV
+</code></pre>
+<h3>3.2 Core Capabilities</h3>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Specification</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LTV Prediction Latency</td>
+<td>38ms median (p99 &lt;95ms)</td>
+</tr>
+<tr>
+<td>Prediction Accuracy</td>
+<td>R² = 0.91 across all segments</td>
+</tr>
+<tr>
+<td>Platforms Supported</td>
+<td>14 (Meta, Google, TikTok, LinkedIn, YouTube, Snap, Pinterest, Amazon DSP, Reddit, DV360, X, TradeDesk, Criteo, AppNexus)</td>
+</tr>
+<tr>
+<td>AI Agents</td>
+<td>6 autonomous agents (Bidding, Creative, Pacing, Signals, SyncBrain, OaaS)</td>
+</tr>
+<tr>
+<td>AI Routing</td>
+<td>7 models via SyncBrain (GPT-4o, Claude, Gemini, LLaMA, etc.) — 12ms routing latency</td>
+</tr>
+<tr>
+<td>Fraud Detection</td>
+<td>99.2% detection rate, 0.03% false positive</td>
+</tr>
+<tr>
+<td>Signal Processing</td>
+<td>28-feature real-time enrichment pipeline</td>
+</tr>
+<tr>
+<td>Dashboard Surfaces</td>
+<td>42 operational dashboards</td>
+</tr>
+<tr>
+<td>API Routes</td>
+<td>75+ REST endpoints</td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td>Azure Container Apps, PostgreSQL, Kafka</td>
+</tr>
+</tbody></table>
+<h3>3.3 Key Differentiator: Fraud-Before-Enrichment</h3>
+<p>KIKI Agent is the only platform that performs IVT/fraud detection <em>before</em> LTV enrichment. This is critical because:</p>
+<ul>
+<li>If a fraudulent conversion is enriched with a high LTV prediction, the platform learns to optimise toward fraud</li>
+<li>Fraudulent traffic generates conversion signals that look identical to legitimate traffic at the event level</li>
+<li>KIKI&#39;s fraud engine scores each conversion on IP reputation, device fingerprint, and velocity analysis before enrichment occurs</li>
+</ul>
+<p>This single architectural decision prevents model poisoning — a flaw present in every competing LTV enrichment solution.</p>
+<hr>
+<h2>4. Technology Architecture</h2>
+<h3>4.1 Stack Overview</h3>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Frontend</strong></td>
+<td>Next.js 15, React 18, Tailwind CSS, Zustand, TanStack Query</td>
+<td>42-dashboard command centre</td>
+</tr>
+<tr>
+<td><strong>AI Fast Tier</strong></td>
+<td>Groq (Llama 3.1 8B)</td>
+<td>Real-time bidding decisions (&lt;200ms)</td>
+</tr>
+<tr>
+<td><strong>AI Mini Tier</strong></td>
+<td>Azure GPT-4o-mini</td>
+<td>Classification, routing, summaries</td>
+</tr>
+<tr>
+<td><strong>AI Standard Tier</strong></td>
+<td>Azure GPT-4o</td>
+<td>Complex reasoning, creative generation</td>
+</tr>
+<tr>
+<td><strong>Event Bus</strong></td>
+<td>Apache Kafka (14 topics, 82 event types)</td>
+<td>Inter-agent communication</td>
+</tr>
+<tr>
+<td><strong>Database</strong></td>
+<td>PostgreSQL (Neon) + better-sqlite3 fallback</td>
+<td>Multi-tenant data layer</td>
+</tr>
+<tr>
+<td><strong>Infrastructure</strong></td>
+<td>Azure Container Apps + ACR + Bicep</td>
+<td>Auto-scaling, CI/CD</td>
+</tr>
+<tr>
+<td><strong>Auth</strong></td>
+<td>Custom JWT (jose library)</td>
+<td>Token-based authentication</td>
+</tr>
+<tr>
+<td><strong>Real-time</strong></td>
+<td>Server-Sent Events (SSE)</td>
+<td>Live dashboard updates</td>
+</tr>
+</tbody></table>
+<h3>4.2 AI Agent Architecture</h3>
+<pre><code>┌──────────────────────────────────────────────────────┐
+│                   SyncBrain™ Router                    │
+│       (12ms routing — cost × quality optimisation)    │
+└──────────┬──────────┬──────────┬──────────┬──────────┘
+           │          │          │          │
+     ┌─────▼──┐ ┌────▼───┐ ┌───▼────┐ ┌──▼─────┐
+     │Bidding │ │Creative│ │ Pacing │ │Signals │
+     │ Agent  │ │ Agent  │ │ Agent  │ │ Agent  │
+     └───┬────┘ └───┬────┘ └───┬────┘ └───┬────┘
+         │          │          │          │
+         └──────────┴──────────┴──────────┘
+                              │
+                       ┌──────▼──────┐
+                       │  OaaS Agent │
+                       │ (Automation)│
+                       └─────────────┘
+</code></pre>
+<h3>4.3 Performance Benchmarks</h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>p50</th>
+<th>p99</th>
+<th>SLA Target</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LTV prediction</td>
+<td>38ms</td>
+<td>95ms</td>
+<td>&lt;100ms</td>
+</tr>
+<tr>
+<td>Fraud scoring</td>
+<td>18ms</td>
+<td>42ms</td>
+<td>&lt;50ms</td>
+</tr>
+<tr>
+<td>CAPI enrichment + delivery</td>
+<td>341ms (Meta)</td>
+<td>412ms (TikTok)</td>
+<td>&lt;500ms</td>
+</tr>
+<tr>
+<td>SyncBrain routing</td>
+<td>12ms</td>
+<td>28ms</td>
+<td>&lt;30ms</td>
+</tr>
+<tr>
+<td>Groq bidding inference</td>
+<td>180ms</td>
+<td>420ms</td>
+<td>&lt;500ms</td>
+</tr>
+<tr>
+<td>Dashboard page load</td>
+<td>1.2s</td>
+<td>3.4s</td>
+<td>&lt;4s</td>
+</tr>
+<tr>
+<td>API response (p50)</td>
+<td>45ms</td>
+<td>180ms</td>
+<td>&lt;200ms</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. Product Overview</h2>
+<h3>5.1 Dashboard Command Centre (42 Surfaces)</h3>
+<p>The product delivers 42 operational dashpages organised into 6 groups:</p>
+<p><strong>OVERVIEW (5)</strong></p>
+<ul>
+<li>Command Centre (Home) — KPIs, active agents, quick actions</li>
+<li>Campaign Manager — CRUD, filtering, bulk operations</li>
+<li>Signal Stream — Real-time enriched event feed</li>
+<li>AI Agents — 6-agent registry, status, toggle, guardrails</li>
+<li>Guides — Interactive onboarding guides</li>
+</ul>
+<p><strong>INTELLIGENCE (7)</strong></p>
+<ul>
+<li>SyncBrain™ — Full AI chat with 7-model routing</li>
+<li>Performance Analytics — Channel breakdown, funnel, period comparison</li>
+<li>Intelligence — AI-generated insights with confidence scores</li>
+<li>Competitive Intel — Benchmarking, CPM trends, market analysis</li>
+<li>Competitor Tracking — Domain monitoring, price drops, defensive actions</li>
+<li>Scenario Planner — What-if budget allocation</li>
+<li>Media Mix Modelling (MMM) — Bayesian adstock, channel contribution</li>
+<li>B2B Attribution — Pipeline-stage attribution for B2B advertisers</li>
+</ul>
+<p><strong>FINANCE (6)</strong></p>
+<ul>
+<li>Wallet &amp; Cards — Virtual card management, top-up, transaction history</li>
+<li>Billing — Subscription management, invoices, usage meters</li>
+<li>P&amp;L Summary — Revenue trends, cost breakdown, profitability</li>
+<li>Channel Margins — CAC, LTV, margin per channel</li>
+<li>Catalog Margins — Product-level margin analysis</li>
+<li>Influencers — Creator ROI tracking, dark social measurement</li>
+</ul>
+<p><strong>OPERATIONS (8)</strong></p>
+<ul>
+<li>OaaS Tasks — Automated task queue, approve/reject workflow</li>
+<li>Automation — Workflow builder, conditional rules</li>
+<li>Reports — Scheduled PDF exports, custom report builder</li>
+<li>Data Warehouse — Feature store, ML training data export</li>
+<li>Fraud &amp; IVT — Threat summary, protection rules, detection logs</li>
+<li>Anomaly Alerts — Anomaly detection, severity distribution</li>
+<li>Commerce — Platform connections, catalog sync, product stats</li>
+</ul>
+<p><strong>CRM &amp; CONTENT (4)</strong></p>
+<ul>
+<li>CRM — Pipeline stages, lead scoring, segment analysis</li>
+<li>Creative Library — Asset management, CTR/conversion per creative</li>
+<li>Creative AI — AI copy generation, platform-specific variations</li>
+<li>Creative Attribution — Per-creative revenue and LTV attribution</li>
+</ul>
+<p><strong>SYSTEM (9)</strong></p>
+<ul>
+<li>AI Ops — Model registry, experiment tracking, training pipeline</li>
+<li>Admin Health — Service status, capacity utilization, uptime</li>
+<li>Developer — API key management, webhook config, rate limits</li>
+<li>Audit Log — Filterable event log with severity tracking</li>
+<li>Notifications — Read/mark-read, severity-coloured alerts</li>
+<li>KYC — Entity verification, document tracking, compliance</li>
+<li>Consent &amp; Privacy — Regional compliance, UID2, Privacy Sandbox</li>
+<li>Agency View — Multi-client campaign overview</li>
+<li>Settings — Account, integrations, security</li>
+</ul>
+<h3>5.2 Key Product Features</h3>
+<ul>
+<li><strong>SyncBrain AI Chat:</strong> Conversational interface routing through 7 AI models. Includes speech-to-text, language translation, and markdown rendering.</li>
+<li><strong>Real-Time SSE:</strong> Every dashboard receives live event push via Server-Sent Events.</li>
+<li><strong>Onboarding Checklist:</strong> Progressive, server-persisted onboarding flow.</li>
+<li><strong>Demo Data Seeding:</strong> One-click demo environment with sample campaigns and signals.</li>
+<li><strong>Password Reset &amp; Google SSO:</strong> Enterprise-grade authentication.</li>
+<li><strong>Email Service:</strong> Nodemailer-based transactional email (welcome, password reset) via SMTP.</li>
+<li><strong>Responsive Design:</strong> Every page works at 320px–1920px width.</li>
+</ul>
+<hr>
+<h2>6. Market Analysis</h2>
+<h3>6.1 Total Addressable Market</h3>
+<table>
+<thead>
+<tr>
+<th>Segment</th>
+<th>2026 Value</th>
+<th>CAGR</th>
+<th>2030 Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Global digital ad spend</td>
+<td>$745B</td>
+<td>11.3%</td>
+<td>$1.14T</td>
+</tr>
+<tr>
+<td>Ad tech &amp; bid management</td>
+<td>$18.2B</td>
+<td>14.1%</td>
+<td>$30.8B</td>
+</tr>
+<tr>
+<td>AI-powered ad optimisation</td>
+<td>$4.7B</td>
+<td>32.4%</td>
+<td>$14.3B</td>
+</tr>
+<tr>
+<td>Server-side CAPI/enrichment</td>
+<td>$1.1B</td>
+<td>41.2%</td>
+<td>$4.4B</td>
+</tr>
+</tbody></table>
+<p><strong>Source:</strong> Statista Digital Advertising Report 2026, Gartner Ad Tech Forecast Q2 2026, IDC AI in Advertising 2026.</p>
+<h3>6.2 Serviceable Addressable Market (SAM)</h3>
+<p>KIKI Agent targets:</p>
+<p><strong>Primary: Mid-market D2C Ecommerce (£10M–£250M GMV)</strong></p>
+<ul>
+<li>UK: 2,400 companies</li>
+<li>EU: 5,800 companies</li>
+<li>US &amp; ROW: 18,000 companies</li>
+<li>Total: ~26,000 potential customers</li>
+</ul>
+<p><strong>Secondary: Performance Marketing Agencies</strong></p>
+<ul>
+<li>UK: 1,200 agencies managing £5M+ annual ad spend</li>
+<li>EU: 3,500 agencies</li>
+<li>US: 8,000 agencies</li>
+<li>Total: ~12,700 potential customers</li>
+</ul>
+<p><strong>SAM (Year 5 addressable):</strong> ~38,700 businesses<br><strong>KIKI Target Share (Year 5):</strong> 800 / 38,700 = 2.1%</p>
+<h3>6.3 Serviceable Obtainable Market (SOM)</h3>
+<p>Year 1: 15 customers (0.04% penetration)<br>Year 2: 50 customers (0.13%)<br>Year 3: 150 customers (0.39%)<br>Year 4: 400 customers (1.03%)<br>Year 5: 800 customers (2.07%)</p>
+<h3>6.4 Market Trends</h3>
+<p><strong>Tailwind 1: CAPI Mandates</strong><br>Meta&#39;s Conversions API (CAPI) is now mandatory for all advertisers processing EU user data. Google Ads is following with enhanced conversions. Server-side event routing is no longer optional — every advertiser must implement it. KIKI provides the enrichment layer on top of this mandatory infrastructure.</p>
+<p><strong>Tailwind 2: Privacy Regulation</strong><br>GDPR, ePrivacy, CCPA, and emerging AI regulation are eliminating third-party signals. Advertisers must extract more value from first-party data. LTV enrichment is the highest-leverage application of first-party data in the bidding loop.</p>
+<p><strong>Tailwind 3: AI in Ad Tech</strong><br>AI-powered ad optimisation is the fastest-growing segment in ad tech (CAGR 32.4%). Platforms are competing on AI capabilities. KIKI&#39;s 6-agent architecture and 7-model SyncBrain router provide a differentiated AI proposition.</p>
+<p><strong>Tailwind 4: ROAS Compression</strong><br>Return on ad spend has declined 22% across platforms since 2022 (Meta, Google, and TikTok investor reports). Advertisers are actively seeking optimisation technology — the market is educated and motivated.</p>
+<h3>6.5 Customer Personas</h3>
+<p><strong>Persona A: Head of Performance (D2C Brand)</strong></p>
+<ul>
+<li>£20M–£200M GMV</li>
+<li>£2M–£20M annual ad spend</li>
+<li>3–5 platforms active</li>
+<li>Pain: CPA rising, attribution unclear, manual bid management</li>
+<li>Budget: £1K–£5K/mo for optimisation tools</li>
+</ul>
+<p><strong>Persona B: Agency CEO / Media Director</strong></p>
+<ul>
+<li>20–200 clients</li>
+<li>£5M–£100M managed ad spend</li>
+<li>5–10 platforms per client</li>
+<li>Pain: Scaling optimisation across clients, differentiating from competitors</li>
+<li>Budget: £2K–£10K/mo (agency-tier pricing)</li>
+</ul>
+<p><strong>Persona C: VP Marketing (Enterprise Brand)</strong></p>
+<ul>
+<li>£250M+ GMV</li>
+<li>£10M+ annual ad spend</li>
+<li>In-house media team</li>
+<li>Pain: Ad platform limitations, data integration complexity</li>
+<li>Budget: £5K–£20K/mo + custom integration fees</li>
+</ul>
+<hr>
+<h2>7. Competitive Landscape</h2>
+<h3>7.1 Competitive Matrix</h3>
+<table>
+<thead>
+<tr>
+<th>Company</th>
+<th>Category</th>
+<th>LTV Enrichment</th>
+<th>Multi-Agent AI</th>
+<th>14 Platforms</th>
+<th>Fraud-First</th>
+<th>Real-Time Arbitrage</th>
+<th>Starting Price</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>KIKI Agent</strong></td>
+<td>AI Campaign Execution</td>
+<td>✅ (38ms, R²=0.91)</td>
+<td>✅ 6 agents</td>
+<td>✅ 14</td>
+<td>✅ Before enrich</td>
+<td>✅ Cross-platform</td>
+<td>£599/mo</td>
+</tr>
+<tr>
+<td>Google Ads Smart Bidding</td>
+<td>Platform-native</td>
+<td>❌ (platform only)</td>
+<td>❌</td>
+<td>❌ Google only</td>
+<td>❌</td>
+<td>❌</td>
+<td>Free (with spend)</td>
+</tr>
+<tr>
+<td>Meta Advantage+</td>
+<td>Platform-native</td>
+<td>❌ (platform only)</td>
+<td>❌</td>
+<td>❌ Meta only</td>
+<td>❌</td>
+<td>❌</td>
+<td>Free (with spend)</td>
+</tr>
+<tr>
+<td>Adobe Experience Cloud</td>
+<td>Enterprise DMP</td>
+<td>Partial</td>
+<td>❌</td>
+<td>Partial</td>
+<td>❌</td>
+<td>❌</td>
+<td>~$5K/mo+</td>
+</tr>
+<tr>
+<td>Smartly.io</td>
+<td>Creative + Bidding</td>
+<td>❌</td>
+<td>Partial</td>
+<td>✅ 8</td>
+<td>❌</td>
+<td>❌</td>
+<td>~$2K/mo</td>
+</tr>
+<tr>
+<td>Albert AI</td>
+<td>AI Bidding</td>
+<td>❌</td>
+<td>Partial</td>
+<td>Partial</td>
+<td>❌</td>
+<td>❌</td>
+<td>~$3K/mo</td>
+</tr>
+<tr>
+<td>Revealbot</td>
+<td>Automation</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅ 5</td>
+<td>❌</td>
+<td>❌</td>
+<td>~$500/mo</td>
+</tr>
+<tr>
+<td>AdRoll</td>
+<td>Full-funnel</td>
+<td>Partial</td>
+<td>❌</td>
+<td>✅ 4</td>
+<td>❌</td>
+<td>❌</td>
+<td>~$1K/mo</td>
+</tr>
+<tr>
+<td>Madgicx</td>
+<td>AI Bidding</td>
+<td>❌</td>
+<td>Partial</td>
+<td>✅ 5</td>
+<td>❌</td>
+<td>❌</td>
+<td>~$400/mo</td>
+</tr>
+</tbody></table>
+<h3>7.2 Competitive Moats</h3>
+<p><strong>Moat 1: Prediction Latency — 38ms</strong></p>
+<p>Competing LTV models (Adobe, Salesforce, custom-built) typically run in batch processes with 12–48 hour latency. KIKI&#39;s 38ms prediction runs inside the CAPI response window, meaning enrichment happens before the platform receives the event.</p>
+<p>[\text{Time advantage} = \frac{\text{Competitor batch latency (24h)}}{\text{KIKI latency (38ms)}} = 2,273,684\times]</p>
+<p>No competitor operates at sub-100ms LTV inference for real-time bidding optimisation.</p>
+<p><strong>Moat 2: Fraud-Before-Enrichment Architecture</strong></p>
+<p>Every competing platform enriches first and detects fraud later (or not at all). KIKI&#39;s architecture detects and blocks IVT <em>before</em> the LTV prediction runs. This prevents model poisoning — a catastrophic failure mode where the bidding model learns to optimise toward fraudulent traffic because it carries high enriched values.</p>
+<p><strong>Moat 3: Multi-Agent Cross-Optimisation</strong></p>
+<p>Competitors offer single-purpose tools (bid adjustment, creative testing, analytics). KIKI&#39;s six agents operate as a unified system — the Bidding Agent can trigger the Creative Agent to generate replacements when fatigue is detected, which triggers the OaaS Agent to schedule deployment.</p>
+<p><strong>Moat 4: Platform Breadth</strong></p>
+<p>14 connectors mean KIKI provides a single control plane. Competing solutions cover 2–8 platforms. Enterprise customers managing 8–12 platforms need a unified system.</p>
+<p><strong>Moat 5: Real-Time Arbitrage</strong></p>
+<p>KIKI monitors competitor pricing and creative fatigue across platforms in real time. When a competitor drops prices on Meta, KIKI can shift budget to Google or TikTok within the same bidding cycle. No competitor offers cross-platform, event-driven budget arbitrage.</p>
+<h3>7.3 Barriers to Entry</h3>
+<ol>
+<li><strong>Model training data:</strong> KIKI&#39;s LTV ensemble model requires 24+ months of conversion data across platforms. A new entrant cannot bootstrap this without significant customer acquisition or synthetic data generation.</li>
+<li><strong>Platform connector maintenance:</strong> Each of the 14 ad platform APIs requires ongoing maintenance (Meta&#39;s CAPI API changed 7 times in 2025). The operational burden is substantial.</li>
+<li><strong>Infrastructure complexity:</strong> Real-time Kafka event bus + multi-model AI routing + sub-second SLAs on Azure Container Apps is non-trivial to replicate.</li>
+<li><strong>Regulatory compliance:</strong> UK GDPR, ICO registration, and platform-specific data processing agreements take 6–12 months to establish.</li>
+</ol>
+<hr>
+<h2>8. Business Model</h2>
+<h3>8.1 Revenue Streams</h3>
+<table>
+<thead>
+<tr>
+<th>Stream</th>
+<th>Type</th>
+<th>Description</th>
+<th>Year 1 Mix</th>
+<th>Year 5 Mix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Platform Subscription</td>
+<td>Recurring (monthly)</td>
+<td>Tiered access to platform features</td>
+<td>82%</td>
+<td>70%</td>
+</tr>
+<tr>
+<td>AI Usage Overage</td>
+<td>Usage-based (metered)</td>
+<td>Per-decision and per-enrichment overage</td>
+<td>10%</td>
+<td>18%</td>
+</tr>
+<tr>
+<td>Creative Generation</td>
+<td>Usage-based (per bundle)</td>
+<td>AI-generated copy + image prompts</td>
+<td>3%</td>
+<td>5%</td>
+</tr>
+<tr>
+<td>Professional Services</td>
+<td>One-time</td>
+<td>Onboarding, custom integration, training</td>
+<td>5%</td>
+<td>2%</td>
+</tr>
+<tr>
+<td>API Access (Future)</td>
+<td>Usage-based</td>
+<td>Third-party API access to LTV engine</td>
+<td>0%</td>
+<td>5%</td>
+</tr>
+</tbody></table>
+<h3>8.2 Pricing Tiers</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Growth</th>
+<th>Scale</th>
+<th>Enterprise</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Price</strong></td>
+<td>£599/mo</td>
+<td>£1,799/mo</td>
+<td>From £4,999/mo</td>
+</tr>
+<tr>
+<td><strong>Platforms</strong></td>
+<td>1</td>
+<td>Up to 5</td>
+<td>All 14</td>
+</tr>
+<tr>
+<td><strong>Campaigns</strong></td>
+<td>3</td>
+<td>Unlimited</td>
+<td>Unlimited</td>
+</tr>
+<tr>
+<td><strong>AI Decisions/mo</strong></td>
+<td>25,000</td>
+<td>100,000</td>
+<td>Custom</td>
+</tr>
+<tr>
+<td><strong>Enriched Signals/mo</strong></td>
+<td>10,000</td>
+<td>50,000</td>
+<td>Custom</td>
+</tr>
+<tr>
+<td><strong>SyncBrain AI Chat</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ + custom model</td>
+</tr>
+<tr>
+<td><strong>Creative Fatigue Detection</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Auto-Generated Creatives</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Fraud Detection</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ + custom rules</td>
+</tr>
+<tr>
+<td><strong>SSO (Google)</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>✅ + SAML/Entra</td>
+</tr>
+<tr>
+<td><strong>API Access</strong></td>
+<td>Read-only</td>
+<td>Full API</td>
+<td>Full API + SLA</td>
+</tr>
+<tr>
+<td><strong>Support</strong></td>
+<td>Email (48h)</td>
+<td>Email + Chat (8h)</td>
+<td>Dedicated (4h)</td>
+</tr>
+<tr>
+<td><strong>SLA</strong></td>
+<td>99.5%</td>
+<td>99.9%</td>
+<td>99.95%</td>
+</tr>
+</tbody></table>
+<h3>8.3 Unit Economics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Year 1</th>
+<th>Year 3</th>
+<th>Year 5</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Average Revenue Per Customer (ARPU)</td>
+<td>£950/mo</td>
+<td>£1,500/mo</td>
+<td>£1,900/mo</td>
+</tr>
+<tr>
+<td>Gross Margin</td>
+<td>82%</td>
+<td>87%</td>
+<td>88%</td>
+</tr>
+<tr>
+<td>Customer Acquisition Cost (CAC)</td>
+<td>£3,200</td>
+<td>£2,400</td>
+<td>£2,000</td>
+</tr>
+<tr>
+<td>LTV (3-year)</td>
+<td>£23,400</td>
+<td>£39,960</td>
+<td>£50,544</td>
+</tr>
+<tr>
+<td>LTV:CAC Ratio</td>
+<td>7.3×</td>
+<td>16.7×</td>
+<td>25.3×</td>
+</tr>
+<tr>
+<td>Monthly Churn</td>
+<td>4.5%</td>
+<td>2.2%</td>
+<td>1.5%</td>
+</tr>
+<tr>
+<td>Annual Net Revenue Retention</td>
+<td>105%</td>
+<td>118%</td>
+<td>125%</td>
+</tr>
+<tr>
+<td>Payback Period (months)</td>
+<td>4.2</td>
+<td>2.8</td>
+<td>2.1</td>
+</tr>
+</tbody></table>
+<h3>8.4 Revenue Model Rationale</h3>
+<ul>
+<li><strong>Low base price (£599):</strong> Reduces friction for mid-market adoption. Advertisers spending £2K–£20K/mo on ads can trial KIKI without significant commit.</li>
+<li><strong>Usage-based overage:</strong> Aligns pricing with value delivered. High-LTV customers generate more signals, pay more, but receive proportionally more value.</li>
+<li><strong>Enterprise tier:</strong> Custom pricing for large advertisers ensures KIKI captures appropriate value share while remaining competitive against Adobe ($5K+) and Smartly.io ($2K+).</li>
+</ul>
+<hr>
+<h2>9. Go-to-Market Strategy</h2>
+<h3>9.1 Phase 1: Founder-Led Sales (Year 1)</h3>
+<p><strong>Channel:</strong> Direct outreach + founder network<br><strong>Target:</strong> 15 UK-based D2C brands<br><strong>Method:</strong></p>
+<ul>
+<li>Personal outreach via LinkedIn and industry events</li>
+<li>Free 30-day pilot with onboarding support</li>
+<li>Performance guarantee: if LTV uplift &lt; 2× in pilot, first 3 months free<br><strong>Budget:</strong> £6K (events, travel, content)</li>
+</ul>
+<h3>9.2 Phase 2: Inside Sales + Partnerships (Year 2)</h3>
+<p><strong>Channel:</strong> 1 BDM (hired Month 6) + agency partnerships<br><strong>Target:</strong> 50 customers (35 direct, 15 agency resale)<br><strong>Method:</strong></p>
+<ul>
+<li>Tier 1: Direct outbound to ecommerce CMOs</li>
+<li>Tier 2: Agency partnerships (white-label / reseller)</li>
+<li>Tier 3: Referral programme (1 month free per referral)<br><strong>Budget:</strong> £24K + BDM salary</li>
+</ul>
+<h3>9.3 Phase 3: Scalable Growth (Year 3+)</h3>
+<p><strong>Channel:</strong> Inbound + content + paid + partnerships<br><strong>Target:</strong> 150+ customers<br><strong>Method:</strong></p>
+<ul>
+<li>Content marketing: Technical blog, case studies, ROI calculators</li>
+<li>Paid: LinkedIn + Google Ads targeting ad tech buyers</li>
+<li>Product-led: Self-serve onboarding, free trial (14 days)</li>
+<li>Channel: Ad platform partner programmes (Meta Business Partners, Google Partners)<br><strong>Budget:</strong> £60K + 2 SDRs + content marketer</li>
+</ul>
+<h3>9.4 Pricing &amp; Packaging Strategy</h3>
+<ul>
+<li><strong>Anchor pricing:</strong> Enterprise tier listed as &quot;From £4,999/mo&quot; — makes Scale tier (£1,799) feel accessible</li>
+<li><strong>Free trial:</strong> 14-day full-feature trial for Growth plan (no credit card)</li>
+<li><strong>Annual discount:</strong> 2 months free when paid annually (16.7% discount)</li>
+<li><strong>Referral:</strong> 1 month credit per referred customer who converts</li>
+</ul>
+<hr>
+<h2>10. Financial Projections</h2>
+<h3>10.1 Key Assumptions</h3>
+<table>
+<thead>
+<tr>
+<th>Assumption</th>
+<th>Year 1</th>
+<th>Year 2</th>
+<th>Year 3</th>
+<th>Year 4</th>
+<th>Year 5</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Customers (Start)</td>
+<td>0</td>
+<td>15</td>
+<td>50</td>
+<td>150</td>
+<td>400</td>
+</tr>
+<tr>
+<td>Customers (End)</td>
+<td>15</td>
+<td>50</td>
+<td>150</td>
+<td>400</td>
+<td>800</td>
+</tr>
+<tr>
+<td>Average Customers (weighted)</td>
+<td>8</td>
+<td>32</td>
+<td>100</td>
+<td>275</td>
+<td>600</td>
+</tr>
+<tr>
+<td>ARPU (monthly, incl. overage)</td>
+<td>£950</td>
+<td>£1,300</td>
+<td>£1,500</td>
+<td>£1,700</td>
+<td>£1,900</td>
+</tr>
+<tr>
+<td>Monthly Churn</td>
+<td>4.5%</td>
+<td>3.0%</td>
+<td>2.2%</td>
+<td>1.8%</td>
+<td>1.5%</td>
+</tr>
+<tr>
+<td>Annual Net Revenue Retention</td>
+<td>105%</td>
+<td>112%</td>
+<td>118%</td>
+<td>122%</td>
+<td>125%</td>
+</tr>
+<tr>
+<td>Gross Margin</td>
+<td>82%</td>
+<td>85%</td>
+<td>87%</td>
+<td>88%</td>
+<td>88%</td>
+</tr>
+</tbody></table>
+<h3>10.2 Revenue Build (Monthly Detail — Year 1)</h3>
+<table>
+<thead>
+<tr>
+<th>Month</th>
+<th>New Customers</th>
+<th>Churned</th>
+<th>Total Paid</th>
+<th>MRR</th>
+<th>Cumulative Revenue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Jan</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>£0 (pilot)</td>
+<td>£0</td>
+</tr>
+<tr>
+<td>Feb</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>£0 (pilot)</td>
+<td>£0</td>
+</tr>
+<tr>
+<td>Mar</td>
+<td>1</td>
+<td>0</td>
+<td>3</td>
+<td>£0 (pilot)</td>
+<td>£0</td>
+</tr>
+<tr>
+<td>Apr</td>
+<td>2</td>
+<td>0</td>
+<td>5</td>
+<td>£2,850</td>
+<td>£2,850</td>
+</tr>
+<tr>
+<td>May</td>
+<td>2</td>
+<td>0</td>
+<td>7</td>
+<td>£6,650</td>
+<td>£9,500</td>
+</tr>
+<tr>
+<td>Jun</td>
+<td>2</td>
+<td>0</td>
+<td>9</td>
+<td>£8,550</td>
+<td>£18,050</td>
+</tr>
+<tr>
+<td>Jul</td>
+<td>2</td>
+<td>0</td>
+<td>11</td>
+<td>£10,450</td>
+<td>£28,500</td>
+</tr>
+<tr>
+<td>Aug</td>
+<td>2</td>
+<td>1</td>
+<td>12</td>
+<td>£10,450</td>
+<td>£38,950</td>
+</tr>
+<tr>
+<td>Sep</td>
+<td>3</td>
+<td>0</td>
+<td>15</td>
+<td>£14,250</td>
+<td>£53,200</td>
+</tr>
+<tr>
+<td>Oct</td>
+<td>2</td>
+<td>1</td>
+<td>16</td>
+<td>£15,200</td>
+<td>£68,400</td>
+</tr>
+<tr>
+<td>Nov</td>
+<td>2</td>
+<td>0</td>
+<td>18</td>
+<td>£17,100</td>
+<td>£85,500</td>
+</tr>
+<tr>
+<td>Dec</td>
+<td>0</td>
+<td>0</td>
+<td>18</td>
+<td>£17,100</td>
+<td>£102,600</td>
+</tr>
+</tbody></table>
+<p><strong>Year 1 Revenue: £102,600</strong><br>Overage &amp; Creative Fees: £10,000<br><strong>Year 1 Gross Revenue: £112,600</strong></p>
+<h3>10.3 Annual Financial Summary</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Year 1</th>
+<th>Year 2</th>
+<th>Year 3</th>
+<th>Year 4</th>
+<th>Year 5</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Revenue</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Subscription</td>
+<td>£91,200</td>
+<td>£448,500</td>
+<td>£1,620,000</td>
+<td>£5,100,000</td>
+<td>£12,540,000</td>
+</tr>
+<tr>
+<td>Overage/Usage</td>
+<td>£10,000</td>
+<td>£42,000</td>
+<td>£150,000</td>
+<td>£420,000</td>
+<td>£960,000</td>
+</tr>
+<tr>
+<td>Creative Generation</td>
+<td>£6,400</td>
+<td>£27,000</td>
+<td>£90,000</td>
+<td>£210,000</td>
+<td>£420,000</td>
+</tr>
+<tr>
+<td>Professional Services</td>
+<td>£5,000</td>
+<td>£7,500</td>
+<td>£15,000</td>
+<td>£30,000</td>
+<td>£60,000</td>
+</tr>
+<tr>
+<td><strong>Total Revenue</strong></td>
+<td><strong>£112,600</strong></td>
+<td><strong>£525,000</strong></td>
+<td><strong>£1,875,000</strong></td>
+<td><strong>£5,760,000</strong></td>
+<td><strong>£13,980,000</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Cost of Revenue</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Azure Hosting &amp; Infra</td>
+<td>£30,000</td>
+<td>£60,000</td>
+<td>£144,000</td>
+<td>£300,000</td>
+<td>£540,000</td>
+</tr>
+<tr>
+<td>AI API (Groq + OpenAI)</td>
+<td>£6,000</td>
+<td>£24,000</td>
+<td>£72,000</td>
+<td>£180,000</td>
+<td>£360,000</td>
+</tr>
+<tr>
+<td>Stripe Payment Fees</td>
+<td>£3,300</td>
+<td>£15,200</td>
+<td>£54,400</td>
+<td>£167,000</td>
+<td>£405,000</td>
+</tr>
+<tr>
+<td>Data Egress &amp; CDN</td>
+<td>£1,200</td>
+<td>£3,600</td>
+<td>£7,200</td>
+<td>£14,400</td>
+<td>£24,000</td>
+</tr>
+<tr>
+<td><strong>Total Cost of Revenue</strong></td>
+<td><strong>£40,500</strong></td>
+<td><strong>£102,800</strong></td>
+<td><strong>£277,600</strong></td>
+<td><strong>£661,400</strong></td>
+<td><strong>£1,329,000</strong></td>
+</tr>
+<tr>
+<td><strong>Gross Profit</strong></td>
+<td><strong>£72,100</strong></td>
+<td><strong>£422,200</strong></td>
+<td><strong>£1,597,400</strong></td>
+<td><strong>£5,098,600</strong></td>
+<td><strong>£12,651,000</strong></td>
+</tr>
+<tr>
+<td><strong>Gross Margin</strong></td>
+<td><strong>64%</strong></td>
+<td><strong>80%</strong></td>
+<td><strong>85%</strong></td>
+<td><strong>88%</strong></td>
+<td><strong>90%</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Operating Expenses</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Engineering (Salaries + Contractor)</td>
+<td>£0</td>
+<td>£35,000</td>
+<td>£210,000</td>
+<td>£420,000</td>
+<td>£720,000</td>
+</tr>
+<tr>
+<td>Sales &amp; Marketing (Salary + Budget)</td>
+<td>£6,000</td>
+<td>£54,000</td>
+<td>£180,000</td>
+<td>£360,000</td>
+<td>£540,000</td>
+</tr>
+<tr>
+<td>G&amp;A (Legal, Accounting, Insurance)</td>
+<td>£15,500</td>
+<td>£22,000</td>
+<td>£33,000</td>
+<td>£55,000</td>
+<td>£82,000</td>
+</tr>
+<tr>
+<td>Founders&#39; Salary</td>
+<td>£0</td>
+<td>£15,000</td>
+<td>£120,000</td>
+<td>£200,000</td>
+<td>£240,000</td>
+</tr>
+<tr>
+<td>Software &amp; Tools</td>
+<td>£24,000</td>
+<td>£36,000</td>
+<td>£60,000</td>
+<td>£96,000</td>
+<td>£180,000</td>
+</tr>
+<tr>
+<td>Travel, Events, Office</td>
+<td>£3,000</td>
+<td>£10,000</td>
+<td>£25,000</td>
+<td>£50,000</td>
+<td>£90,000</td>
+</tr>
+<tr>
+<td><strong>Total OpEx</strong></td>
+<td><strong>£48,500</strong></td>
+<td><strong>£172,000</strong></td>
+<td><strong>£628,000</strong></td>
+<td><strong>£1,181,000</strong></td>
+<td><strong>£1,852,000</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>EBITDA</strong></td>
+<td><strong>£23,600</strong></td>
+<td><strong>£250,200</strong></td>
+<td><strong>£969,400</strong></td>
+<td><strong>£3,917,600</strong></td>
+<td><strong>£10,799,000</strong></td>
+</tr>
+<tr>
+<td><strong>EBITDA Margin</strong></td>
+<td><strong>21%</strong></td>
+<td><strong>48%</strong></td>
+<td><strong>52%</strong></td>
+<td><strong>68%</strong></td>
+<td><strong>77%</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Capital Expenditure</td>
+<td>£3,000</td>
+<td>£8,000</td>
+<td>£15,000</td>
+<td>£25,000</td>
+<td>£40,000</td>
+</tr>
+<tr>
+<td><strong>Free Cash Flow</strong></td>
+<td><strong>£20,600</strong></td>
+<td><strong>£242,200</strong></td>
+<td><strong>£954,400</strong></td>
+<td><strong>£3,892,600</strong></td>
+<td><strong>£10,759,000</strong></td>
+</tr>
+<tr>
+<td><strong>Cumulative Cash</strong></td>
+<td><strong>£20,600</strong></td>
+<td><strong>£262,800</strong></td>
+<td><strong>£1,217,200</strong></td>
+<td><strong>£5,109,800</strong></td>
+<td><strong>£15,868,800</strong></td>
+</tr>
+</tbody></table>
+<h3>10.4 ARR Trajectory</h3>
+<table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Exit ARR</th>
+<th>YoY Growth</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>£205,200</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td>£780,000</td>
+<td>280%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>£2,700,000</td>
+<td>246%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>£8,160,000</td>
+<td>202%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>£18,240,000</td>
+<td>124%</td>
+</tr>
+</tbody></table>
+<h3>10.5 Funding Requirements</h3>
+<table>
+<thead>
+<tr>
+<th>Round</th>
+<th>Amount</th>
+<th>Timing</th>
+<th>Dilution</th>
+<th>Use of Funds</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Pre-Seed</strong></td>
+<td>£350K</td>
+<td>Q3 2026</td>
+<td>15%</td>
+<td>12-month runway: 1 engineer, sales, legal, infra</td>
+</tr>
+<tr>
+<td><strong>Seed</strong></td>
+<td>£1.5M</td>
+<td>Q3 2027</td>
+<td>15–20%</td>
+<td>18-month runway: scale team, EU expansion, self-serve</td>
+</tr>
+<tr>
+<td><strong>Series A</strong></td>
+<td>£5M</td>
+<td>Q3 2029</td>
+<td>15–20%</td>
+<td>US expansion, enterprise sales, platform R&amp;D</td>
+</tr>
+</tbody></table>
+<p><strong>Exit ARR targets at each round:</strong></p>
+<ul>
+<li>Pre-Seed to Seed: £205K → £780K (proving repeatable sales)</li>
+<li>Seed to Series A: £780K → £8.1M (proving scalable growth)</li>
+<li>Series A onward: £8.1M → £18.2M+ (proving market leadership)</li>
+</ul>
+<h3>10.6 Sensitivity Analysis</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Year 5 ARR</th>
+<th>Year 5 EBITDA</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Base Case</strong></td>
+<td>£18.2M</td>
+<td>£10.8M</td>
+<td>Profitable company, strong exit candidate</td>
+</tr>
+<tr>
+<td><strong>Upside (+20% growth)</strong></td>
+<td>£26.3M</td>
+<td>£15.4M</td>
+<td>Accelerated timeline, Series A at Year 3</td>
+</tr>
+<tr>
+<td><strong>Downside (-30% growth)</strong></td>
+<td>£8.7M</td>
+<td>£4.2M</td>
+<td>Still profitable, fund from revenue</td>
+</tr>
+<tr>
+<td><strong>Worst (churn 2×)</strong></td>
+<td>£4.1M</td>
+<td>£1.1M</td>
+<td>Breakeven, requires cost-cutting</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>11. Team &amp; Advisors</h2>
+<h3>11.1 Current Team</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Person</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Founder, Product &amp; Technology</td>
+<td>Ariyo Dolapo</td>
+<td>Full-time</td>
+<td>10+ years digital industry. Built entire platform (v2.0.0) solo</td>
+</tr>
+<tr>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p>Ariyo has single-handedly:</p>
+<ul>
+<li>Architected and built 75+ API routes across 30+ service domains</li>
+<li>Developed 6 AI agents with multi-tier routing (Groq, GPT-4o, GPT-4o-mini)</li>
+<li>Designed and built 42 dashboard surfaces with responsive UI</li>
+<li>Deployed production infrastructure on Azure (Container Apps, ACR, CI/CD)</li>
+<li>Integrated 14 ad platform connectors with real-time CAPI delivery</li>
+<li>Implemented Kafka event bus with 82 event types across 14 topics</li>
+<li>Built custom JWT auth, onboarding persistence, password reset, SSO</li>
+<li>Maintained 146 passing tests with 0 TypeScript errors</li>
+</ul>
+<h3>11.2 Seeking: UK Co-Founder (Operations &amp; Revenue)</h3>
+<p>See Section 12 (Co-Founder Strategy) and Document 07 (Co-Founder Role Scope) for full details.</p>
+<h3>11.3 Hiring Roadmap</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Timeline</th>
+<th>Location</th>
+<th>Salary Range</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UK Co-Founder (Operations &amp; Revenue)</td>
+<td>Q3 2026</td>
+<td>UK (London / Remote)</td>
+<td>Sweat equity until funded</td>
+</tr>
+<tr>
+<td>Senior Full-Stack Engineer</td>
+<td>Q1 2027 (post-pre-seed)</td>
+<td>Remote UK</td>
+<td>£60K–£80K</td>
+</tr>
+<tr>
+<td>Business Development Manager</td>
+<td>Q1 2027</td>
+<td>UK (London)</td>
+<td>£40K–£55K + commission</td>
+</tr>
+<tr>
+<td>Customer Success Manager</td>
+<td>Q3 2027</td>
+<td>UK</td>
+<td>£35K–£50K</td>
+</tr>
+<tr>
+<td>Junior Engineer</td>
+<td>Q4 2027</td>
+<td>Remote UK</td>
+<td>£35K–£50K</td>
+</tr>
+<tr>
+<td>Content Marketing Lead</td>
+<td>Q1 2028</td>
+<td>UK / Remote</td>
+<td>£40K–£55K</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>12. Co-Founder Strategy</h2>
+<h3>12.1 Why a UK Co-Founder</h3>
+<p>KIKI Agent is a UK-domiciled company (STOREGRILL INC LTD). While the product is global (US cloud infrastructure, multi-currency pricing), the founding team needs UK operational presence for:</p>
+<ol>
+<li><strong>UK entity management:</strong> Companies House filing, VAT, PAYE, statutory accounts</li>
+<li><strong>UK GDPR compliance:</strong> ICO registration, Data Protection Officer, breach reporting</li>
+<li><strong>UK investor access:</strong> SEIS/EIS schemes require UK-resident company, UK angel investors prefer UK-based founders</li>
+<li><strong>UK customer acquisition:</strong> First 15 customers will be UK D2C brands — local network matters</li>
+<li><strong>UK banking and payments:</strong> Stripe UK, Wise Business, UK bank accounts for payroll</li>
+</ol>
+<h3>12.2 Ideal Co-Founder Profile</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Experience</strong></td>
+<td>5+ years in ad tech, martech, or SaaS sales/operations</td>
+</tr>
+<tr>
+<td><strong>Network</strong></td>
+<td>Existing relationships with UK D2C or agency decision-makers</td>
+</tr>
+<tr>
+<td><strong>Location</strong></td>
+<td>UK-based (London preferred, remote within UK acceptable)</td>
+</tr>
+<tr>
+<td><strong>Commitment</strong></td>
+<td>Full-time from day one</td>
+</tr>
+<tr>
+<td><strong>Capital</strong></td>
+<td>Sweat equity only (no capital requirement)</td>
+</tr>
+<tr>
+<td><strong>Skills</strong></td>
+<td>Sales pipeline management, fundraising, compliance, operations</td>
+</tr>
+<tr>
+<td><strong>Domains</strong></td>
+<td>Understanding of digital advertising, CAPI, attribution preferred</td>
+</tr>
+</tbody></table>
+<h3>12.3 Co-Founder Equity Proposal</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Equity</td>
+<td>20% fully diluted</td>
+</tr>
+<tr>
+<td>Vesting</td>
+<td>4-year, 1-year cliff</td>
+</tr>
+<tr>
+<td>Salary</td>
+<td>£0 until £300K ARR or Seed round</td>
+</tr>
+<tr>
+<td>Role</td>
+<td>COO / Commercial Director</td>
+</tr>
+</tbody></table>
+<h3>12.4 Co-Founder First 90 Days</h3>
+<table>
+<thead>
+<tr>
+<th>Week</th>
+<th>Deliverable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1–2</td>
+<td>Term sheet agreed, due diligence, solicitor engagement</td>
+</tr>
+<tr>
+<td>3–4</td>
+<td>Incorporate KIKI Agent Ltd, open bank account, register with ICO</td>
+</tr>
+<tr>
+<td>5–6</td>
+<td>Set up accounting (Xero/FreeAgent), insurance (PI, cyber)</td>
+</tr>
+<tr>
+<td>7–8</td>
+<td>First 10 customer outreach sequences written and deployed</td>
+</tr>
+<tr>
+<td>9–10</td>
+<td>SEIS/EIS advance assurance application submitted</td>
+</tr>
+<tr>
+<td>11–12</td>
+<td>First signed customer or pilot agreement</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>13. Risk Analysis &amp; Mitigation</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Platform API changes</strong></td>
+<td>High (100% — Meta changes API 7×/year)</td>
+<td>Medium</td>
+<td>Abstraction layer, automated regression testing, 14-platform breadth reduces single-platform dependency</td>
+</tr>
+<tr>
+<td><strong>AI model cost escalation</strong></td>
+<td>Medium</td>
+<td>High</td>
+<td>Multi-model routing (SyncBrain) always selects cheapest adequate model; caching layer for repeated inferences</td>
+</tr>
+<tr>
+<td><strong>Customer churn &gt; 5%/mo</strong></td>
+<td>Medium</td>
+<td>High</td>
+<td>Annual contracts with 2-month discount; net revenue retention via expansion revenue (more platforms, more signals)</td>
+</tr>
+<tr>
+<td><strong>GDPR enforcement action</strong></td>
+<td>Low</td>
+<td>Critical</td>
+<td>ICO registration, DPO, DPIA, Data Processing Agreements, UK data residency via Azure UK regions</td>
+</tr>
+<tr>
+<td><strong>Co-founder conflict</strong></td>
+<td>Medium</td>
+<td>High</td>
+<td>Founders&#39; Agreement with dispute resolution escalation; defined decision rights and domains</td>
+</tr>
+<tr>
+<td><strong>Unable to raise pre-seed</strong></td>
+<td>Medium</td>
+<td>High</td>
+<td>Lean operations — breakeven possible at 15 customers (£112K revenue vs £89K costs)</td>
+</tr>
+<tr>
+<td><strong>Large competitor builds similar product</strong></td>
+<td>Low</td>
+<td>High</td>
+<td>38ms latency moat; fraud-before-enrichment architecture; 14 connectors; 42 dashboard surfaces — 18+ month replication time</td>
+</tr>
+<tr>
+<td><strong>Cloud infrastructure outage</strong></td>
+<td>Low</td>
+<td>Medium</td>
+<td>Multi-region Azure deployment; PostgreSQL with read replicas; Kafka with 3-broker cluster</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>14. Fundraising Plan</h2>
+<h3>14.1 Pre-Seed Round (£350K — Q3 2026)</h3>
+<p><strong>Investor Target:</strong> UK angels, Seedcamp, Entrepreneur First, ad-tech angels</p>
+<table>
+<thead>
+<tr>
+<th>Use of Funds</th>
+<th>Amount</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Engineering (1 senior full-stack, 12 months)</td>
+<td>£80,000</td>
+</tr>
+<tr>
+<td>Sales &amp; Marketing (BDM hire Month 6 + budget)</td>
+<td>£55,000</td>
+</tr>
+<tr>
+<td>Legal &amp; Compliance (incorporation, GDPR, IP)</td>
+<td>£25,000</td>
+</tr>
+<tr>
+<td>Cloud Infrastructure (Azure, AI APIs, 12 months)</td>
+<td>£60,000</td>
+</tr>
+<tr>
+<td>Founder living expenses (12 months, 2 founders)</td>
+<td>£60,000</td>
+</tr>
+<tr>
+<td>Reserve &amp; Contingency</td>
+<td>£70,000</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>£350,000</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Valuation rationale:</strong> £1.8M–£2.2M pre-money</p>
+<ul>
+<li>Product already built and deployed (v2.0.0) — de-risks technology</li>
+<li>15% dilution for £350K</li>
+<li>SEIS-eligible: UK angels receive 50% income tax relief</li>
+</ul>
+<h3>14.2 Seed Round (£1.5M — Q3 2027)</h3>
+<p><strong>Timing trigger:</strong> £500K+ ARR, 30+ customers, repeatable sales motion proven</p>
+<p><strong>Lead investor:</strong> UK seed fund (LocalGlobe, Episode1, M&amp;G) or US fund expanding to UK</p>
+<h3>14.3 Key Fundraising Metrics by Stage</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Pre-Seed (£350K)</th>
+<th>Seed (£1.5M)</th>
+<th>Series A (£5M)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ARR at raise</td>
+<td>£0–£50K</td>
+<td>£500K–£1M</td>
+<td>£5M–£8M</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td>5–18</td>
+<td>30–65</td>
+<td>200–400</td>
+</tr>
+<tr>
+<td>Monthly Growth</td>
+<td>N/A</td>
+<td>8–12%</td>
+<td>5–8%</td>
+</tr>
+<tr>
+<td>Gross Margin</td>
+<td>64%</td>
+<td>80%</td>
+<td>88%</td>
+</tr>
+<tr>
+<td>Net Revenue Retention</td>
+<td>105%</td>
+<td>112%</td>
+<td>122%</td>
+</tr>
+<tr>
+<td>CAC Payback</td>
+<td>4.2 mo</td>
+<td>2.8 mo</td>
+<td>2.1 mo</td>
+</tr>
+<tr>
+<td>LTV:CAC</td>
+<td>7×</td>
+<td>16×</td>
+<td>25×</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>15. Exit Strategy</h2>
+<h3>15.1 Primary Exit Pathways</h3>
+<table>
+<thead>
+<tr>
+<th>Pathway</th>
+<th>Timeline</th>
+<th>Typical Multiple</th>
+<th>Likely Acquirers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Strategic Acquisition</td>
+<td>Year 4–6</td>
+<td>8–12× ARR</td>
+<td>Salesforce (via Marketing Cloud), Adobe (via Experience Cloud), Meta (ad tech acquisition history), Google, SAS, WPP, Publicis</td>
+</tr>
+<tr>
+<td>PE Growth Buyout</td>
+<td>Year 5–7</td>
+<td>5–8× EBITDA</td>
+<td>Vista Equity, Hg Capital, TA Associates</td>
+</tr>
+<tr>
+<td>IPO</td>
+<td>Year 7–10</td>
+<td>N/A</td>
+<td>Requires £100M+ ARR</td>
+</tr>
+</tbody></table>
+<h3>15.2 Acquisition Rationale</h3>
+<p><strong>For an ad platform (Meta, Google, TikTok):</strong><br>KIKI provides LTV enrichment that makes their platforms more effective. Meta would acquire KIKI to offer native LTV enrichment to all advertisers — increasing overall platform ROI.</p>
+<p><strong>For an enterprise software company (Salesforce, Adobe, SAS):</strong><br>KIKI fills the &quot;bid execution with AI&quot; gap in their marketing clouds. Salesforce Marketing Cloud has no native bidding capability. Adobe has no real-time CAPI enrichment layer.</p>
+<p><strong>For a holding group (WPP, Publicis, Omnicom):</strong><br>Agency holding groups need proprietary technology to differentiate their offerings. KIKI provides a white-label capable platform that agencies can run client campaigns on.</p>
+<h3>15.3 Return Scenarios (to Seed Investors)</h3>
+<table>
+<thead>
+<tr>
+<th>Exit Type</th>
+<th>Exit ARR</th>
+<th>Exit Value</th>
+<th>Investor Return (15% ownership)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Small acquisition</td>
+<td>£5M</td>
+<td>£40M (8× ARR)</td>
+<td>£6M (4× on £1.5M)</td>
+</tr>
+<tr>
+<td>Strategic acquisition</td>
+<td>£10M</td>
+<td>£100M (10× ARR)</td>
+<td>£15M (10×)</td>
+</tr>
+<tr>
+<td>Large acquisition</td>
+<td>£18M</td>
+<td>£216M (12× ARR)</td>
+<td>£32.4M (22×)</td>
+</tr>
+<tr>
+<td>IPO</td>
+<td>£50M+</td>
+<td>£500M+</td>
+<td>£75M+</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>16. Appendix</h2>
+<h3>16.1 Product Screenshots</h3>
+<p>Refer to the live production deployment:<br><a href="https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io">https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io</a></p>
+<h3>16.2 Technology References</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>File</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AI Agent Architecture</td>
+<td><code>src/lib/agents.ts</code></td>
+</tr>
+<tr>
+<td>Bidding Engine</td>
+<td><code>src/lib/bidding.ts</code></td>
+</tr>
+<tr>
+<td>LTV Prediction</td>
+<td><code>src/lib/ltv-engine.ts</code></td>
+</tr>
+<tr>
+<td>Design Tokens</td>
+<td><code>src/lib/kdls.ts</code></td>
+</tr>
+<tr>
+<td>Event Definitions</td>
+<td><code>packages/shared/src/events.ts</code></td>
+</tr>
+<tr>
+<td>API Client</td>
+<td><code>src/lib/api.ts</code></td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td><code>infra/main.bicep</code></td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td><code>.github/workflows/ci.yml</code></td>
+</tr>
+</tbody></table>
+<h3>16.3 Legal Structure</h3>
+<pre><code>STOREGRILL INC LTD
+│
+└── KIKI Agent™ (trading name / product)
+    └── KIKI Agent Ltd (UK subsidiary — to be incorporated)
+</code></pre>
+<h3>16.4 Glossary</h3>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ARR</td>
+<td>Annual Recurring Revenue</td>
+</tr>
+<tr>
+<td>ARPU</td>
+<td>Average Revenue Per User</td>
+</tr>
+<tr>
+<td>CAPI</td>
+<td>Conversions API (Meta&#39;s server-side event tracking)</td>
+</tr>
+<tr>
+<td>CPA</td>
+<td>Cost Per Acquisition</td>
+</tr>
+<tr>
+<td>DPO</td>
+<td>Data Protection Officer</td>
+</tr>
+<tr>
+<td>EBITDA</td>
+<td>Earnings Before Interest, Tax, Depreciation, Amortisation</td>
+</tr>
+<tr>
+<td>EMI</td>
+<td>Enterprise Management Incentive (UK tax-advantaged share options)</td>
+</tr>
+<tr>
+<td>ESOP</td>
+<td>Employee Share Option Plan</td>
+</tr>
+<tr>
+<td>IVT</td>
+<td>Invalid Traffic (ad fraud)</td>
+</tr>
+<tr>
+<td>LTV</td>
+<td>Lifetime Value (customer)</td>
+</tr>
+<tr>
+<td>MRR</td>
+<td>Monthly Recurring Revenue</td>
+</tr>
+<tr>
+<td>ROAS</td>
+<td>Return On Ad Spend</td>
+</tr>
+<tr>
+<td>SEIS</td>
+<td>Seed Enterprise Investment Scheme (UK tax relief for angel investors)</td>
+</tr>
+<tr>
+<td>SyncBrain</td>
+<td>KIKI&#39;s multi-model AI routing engine</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>This document contains confidential information proprietary to STOREGRILL INC LTD and is intended solely for the use of the recipient. Unauthorised distribution, reproduction, or disclosure is prohibited.</em></p>
+<p><em>KIKI Agent™ is a trademark of STOREGRILL INC LTD. Registered in England &amp; Wales.</em></p>
+
+
+</body>
+</html>

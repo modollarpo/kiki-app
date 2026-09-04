@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
+import { Card, Badge, ProgressBar, StatCard, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Pipeline { totalValue: number; deals: number; avgSize: number; winRate: number; }
@@ -16,6 +16,7 @@ export default function B2BPage() {
   const [stages, setStages] = useState<Stage[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [channelAttribution, setChannelAttribution] = useState<ChannelAttribution[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -36,11 +37,11 @@ export default function B2BPage() {
           if (d.data.channelAttribution) setChannelAttribution(d.data.channelAttribution);
         }
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load B2B data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   const totalStageValue = stages.reduce((s, st) => s + st.value, 0);
@@ -52,6 +53,12 @@ export default function B2BPage() {
           <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">B2B Pipeline</h1>
           <p className="font-mono text-[11px] text-gray-500">Account-based metrics and pipeline tracking</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Pipeline Value" value={pipeline ? `$${(pipeline.totalValue / 1000).toFixed(0)}K` : "—"} delta={340} sub="+$340K this quarter" accent={K.mint} loading={loading} />
@@ -109,10 +116,7 @@ export default function B2BPage() {
               ))}
             </div>
           ) : (
-            <div className="py-6 text-center">
-              <p className="font-mono text-[11px] text-gray-500">No channel attribution data available</p>
-              <p className="font-mono text-[10px] text-gray-600 mt-1">Attribution data will appear once campaigns have conversion data</p>
-            </div>
+            <EmptyState icon="📈" title="No channel attribution data" body="Attribution data will appear once campaigns have conversion data." />
           )}
         </Card>
       </div>

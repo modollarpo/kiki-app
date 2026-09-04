@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, StatCard } from "@/components/ui";
+import { Card, StatCard, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Portfolio { summary: { total_skus: number; avg_margin: number; total_cogs: number; total_revenue: number; low_margin_count: number; mid_margin_count: number; high_margin_count: number; }; distribution: Array<{ bucket: string; count: number; avg_margin: number; }>; }
@@ -30,7 +30,7 @@ export default function ProfitMarginPage() {
     setLoading(false);
   }, [token]);
 
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   const uploadMargins = async () => {

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button } from "@/components/ui";
 import { K } from "@/lib/kdls";
@@ -12,14 +13,28 @@ interface WorkflowEvent {
   status: string; durationMs: number; createdAt: string;
 }
 
+interface WorkflowInsight {
+  agent: string;
+  action: string;
+  details: string;
+  status: string;
+  time: string;
+}
+
 export default function WorkflowPage() {
-  const { token } = useAuth();
+  const { token, loading: authLoading } = useAuth();
+  const router = useRouter();
   const { data, loading: insightsLoading } = useInsights();
   const fires = data?.workflow?.length ?? 0;
   const budgetSaved = 0; // Savings page/feature has been deleted
-  const workflowFromInsights = data?.workflow ?? [];
+  const workflowFromInsights = (data?.workflow ?? []) as WorkflowInsight[];
   const [events, setEvents] = useState<WorkflowEvent[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !token) router.push("/auth/login");
+  }, [token, authLoading, router]);
 
   useEffect(() => {
     if (!token) return;
@@ -28,11 +43,11 @@ export default function WorkflowPage() {
       .then(d => {
         if (d?.data) setEvents(d.data.events ?? []);
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
-  const allActions: WorkflowEvent[] = events.length > 0 ? events : workflowFromInsights.map((w: any, i: number): WorkflowEvent => ({
+  const allActions: WorkflowEvent[] = events.length > 0 ? events : workflowFromInsights.map((w: WorkflowInsight, i: number): WorkflowEvent => ({
     id: `wf-${i}`,
     agentId: null,
     agentType: w.agent,
@@ -72,6 +87,9 @@ export default function WorkflowPage() {
   const filtered = filter === "all" ? workflows : filter === "active" ? workflows.filter(w => w.active) : workflows.filter(w => !w.active);
   const isLoading = loading || insightsLoading;
 
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
+
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
@@ -93,6 +111,12 @@ export default function WorkflowPage() {
             <Button variant="primary" size="sm">+ New Rule</Button>
           </div>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {[{ label: "Active Rules", value: `${workflows.length}`, color: K.mint },

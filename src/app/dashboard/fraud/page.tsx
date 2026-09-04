@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
+import { Card, Badge, ProgressBar, StatCard, EmptyState, AIThinking } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K } from "@/lib/kdls";
 
@@ -51,7 +51,7 @@ export default function FraudIVTPage() {
           <div>
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Fraud & IVT Detection</h1>
             <p className="font-mono text-[11px] text-gray-500">
-              {loading ? "Loading..." : `Real-time invalid traffic monitoring · ${stats?.totalDetected || 0} events detected today`}
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `Real-time invalid traffic monitoring · ${stats?.totalDetected || 0} events detected today`}
             </p>
           </div>
           <Badge color={K.mint} dot pulse>PROTECTED</Badge>
@@ -114,7 +114,7 @@ export default function FraudIVTPage() {
                   </div>
                 ))
               ) : (
-                <p className="font-mono text-[10px] text-gray-600">No events detected today.</p>
+                <EmptyState icon="🛡️" title="No events detected" body="Your traffic is clean today." />
               )}
             </div>
             <div>
@@ -134,7 +134,7 @@ export default function FraudIVTPage() {
                   );
                 })
               ) : (
-                <p className="font-mono text-[10px] text-gray-600">No fraud events detected today.</p>
+                <EmptyState icon="🚫" title="No fraud detected" body="No fraud events detected today." />
               )}
             </div>
             <div>

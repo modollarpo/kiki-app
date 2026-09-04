@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button } from "@/components/ui";
+import { Card, Badge, Button, AIThinking } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { notifications as notificationsApi, type Notification } from "@/lib/api";
 import { K } from "@/lib/kdls";
@@ -47,7 +47,7 @@ export default function NotificationsPage() {
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Notifications</h1>
             <p className="font-mono text-[11px] text-t3">
-              {loading ? "Loading..." : `${items.length} total · ${unread} unread`}
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `${items.length} total · ${unread} unread`}
             </p>
           </div>
           <div className="flex gap-2 items-center">

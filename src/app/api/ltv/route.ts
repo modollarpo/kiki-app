@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { json, jsonError, getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { getDb } from "@/lib/db";
 import { predictLTV, predictLTVBatch, type SignalData } from "@/lib/ltv-engine";
 import { handleApiError, logger } from "@/lib/logger";
@@ -53,6 +54,9 @@ export async function POST(req: Request) {
   try {
     const user = getUserFromRequest(req);
     if (!user) return jsonError("Authentication required", 401);
+
+    const enf = await checkEnforcement(user.tenantId);
+    if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
 
     const body = await req.json();
 

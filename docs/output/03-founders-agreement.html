@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  @page {
+    size: A4;
+    margin: 20mm 22mm 25mm 22mm;
+    @bottom-center {
+      content: "KIKI Agent™ — STOREGRILL INC LTD | Confidential";
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    color: #111827;
+    max-width: 170mm;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* --- Cover Page --- */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 250mm;
+    padding: 0;
+  }
+  .cover .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36pt;
+    font-weight: 700;
+    color: #005CFF;
+    letter-spacing: -0.02em;
+    margin-bottom: 8pt;
+  }
+  .cover .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    color: #6B7280;
+    letter-spacing: 0.02em;
+    margin-bottom: 40pt;
+  }
+  .cover .doc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 20pt;
+    max-width: 140mm;
+  }
+  .cover .divider {
+    width: 60mm;
+    height: 1pt;
+    background: #005CFF;
+    margin: 16pt auto;
+  }
+  .cover .meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    color: #6B7280;
+    line-height: 1.8;
+    margin-top: 20pt;
+  }
+  .cover .legal {
+    font-family: 'Inter', sans-serif;
+    font-size: 7.5pt;
+    color: #9CA3AF;
+    margin-top: 50pt;
+    line-height: 1.5;
+  }
+
+  /* --- Headings --- */
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #005CFF;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    padding-bottom: 4pt;
+    border-bottom: 1.5pt solid #005CFF;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+  }
+
+  p { margin: 4pt 0 8pt 0; }
+
+  /* --- Tables --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 8.5pt;
+  }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    background: #005CFF;
+    color: #FFFFFF;
+    text-align: left;
+    padding: 5pt 6pt;
+    font-size: 8pt;
+  }
+  td {
+    padding: 4pt 6pt;
+    border-bottom: 0.5pt solid #E5E7EB;
+  }
+  tr:nth-child(even) td {
+    background: #F9FAFB;
+  }
+
+  /* --- Lists --- */
+  ul, ol { margin: 4pt 0; padding-left: 18pt; }
+  li { margin-bottom: 2pt; }
+
+  /* --- Code / Monospace --- */
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    background: #F3F4F6;
+    padding: 1pt 3pt;
+    border-radius: 2px;
+  }
+  pre {
+    padding: 6pt 8pt;
+    line-height: 1.3;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* --- Blockquote --- */
+  blockquote {
+    border-left: 3pt solid #005CFF;
+    margin: 10pt 0;
+    padding: 6pt 12pt;
+    background: #F0F4FF;
+    font-style: italic;
+    color: #374151;
+  }
+
+  /* --- HR --- */
+  hr {
+    border: none;
+    border-top: 0.5pt solid #D1D5DB;
+    margin: 16pt 0;
+  }
+
+  /* --- Page break --- */
+  .page-break { page-break-before: always; }
+
+  /* --- TOC --- */
+  .toc { margin: 12pt 0; }
+  .toc a {
+    display: block;
+    padding: 2pt 0;
+    color: #005CFF;
+    text-decoration: none;
+    font-size: 9pt;
+    font-family: 'Inter', sans-serif;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  /* --- Accent highlight --- */
+  .accent-box {
+    background: #F0F4FF;
+    border: 0.5pt solid #D1D9E8;
+    border-radius: 3px;
+    padding: 8pt 10pt;
+    margin: 10pt 0;
+    font-size: 9pt;
+  }
+  .accent-box strong { color: #005CFF; }
+
+  strong { color: #111827; }
+  em { color: #6B7280; }
+  a { color: #005CFF; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="brand">KIKI Agent™</div>
+  <div class="tagline">Autonomous LTV Campaign Execution</div>
+  <div class="divider"></div>
+  <div class="doc-title">KIKI Agent™ — Founders' Agreement</div>
+  <div class="meta">
+    <strong>Founder:</strong> Ariyo Dolapo<br>
+    <strong>Date:</strong> 26 July 2026<br>
+    <strong>Status:</strong> Confidential — Draft — Seek Legal Advice
+  </div>
+  <div class="legal">
+    KIKI Agent™ — A STOREGRILL INC LTD Company<br>
+    Registered in England & Wales
+  </div>
+</div>
+
+<h1>KIKI Agent™ — Founders&#39; Agreement</h1>
+<p><strong>A STOREGRILL INC LTD Company</strong> — Registered in England &amp; Wales</p>
+<h2>1. Definitions</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Company</strong></td>
+<td>KIKI Agent Ltd (company number [pending])</td>
+</tr>
+<tr>
+<td><strong>Business</strong></td>
+<td>Development, operation, and commercialisation of the KIKI Agent autonomous LTV campaign execution platform and related services</td>
+</tr>
+<tr>
+<td><strong>Shares</strong></td>
+<td>Ordinary shares of £0.01 each in the capital of the Company</td>
+</tr>
+<tr>
+<td><strong>ESOP</strong></td>
+<td>Employee Share Option Plan / EMI scheme</td>
+</tr>
+<tr>
+<td><strong>IP</strong></td>
+<td>All intellectual property including patents, trademarks, copyright, database rights, trade secrets, source code, AI model weights and architectures, and know-how</td>
+</tr>
+<tr>
+<td><strong>Good Leaver</strong></td>
+<td>Founder who leaves due to death, illness/disability (as certified by a qualified medical practitioner), or redundancy</td>
+</tr>
+<tr>
+<td><strong>Bad Leaver</strong></td>
+<td>Founder who leaves voluntarily (without board consent), is removed for gross misconduct, or breaches fiduciary duties</td>
+</tr>
+<tr>
+<td><strong>ROFR</strong></td>
+<td>Right of First Refusal</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>2. Incorporation &amp; Shareholding</h2>
+<h3>2.1 Share Allotment</h3>
+<p>Upon incorporation of the Company, the Shares shall be allotted and issued as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Founder</th>
+<th>Shares</th>
+<th>Percentage</th>
+<th>Vesting</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ariyo Dolapo</td>
+<td>7,000 Ordinary Shares</td>
+<td>70%</td>
+<td>Fully vested (pre-incorporation contribution)</td>
+</tr>
+<tr>
+<td>[UK Co-Founder]</td>
+<td>2,000 Ordinary Shares</td>
+<td>20%</td>
+<td>Subject to 4-year vesting with 1-year cliff</td>
+</tr>
+<tr>
+<td>ESOP Pool</td>
+<td>1,000 Ordinary Shares</td>
+<td>10%</td>
+<td>Unissued — reserved for future grants</td>
+</tr>
+</tbody></table>
+<h3>2.2 Co-Founder Vesting Schedule</h3>
+<table>
+<thead>
+<tr>
+<th>Vesting Period</th>
+<th>Shares Vested</th>
+<th>Cumulative Vested</th>
+<th>Cumulative Percentage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Effective Date – Month 12</td>
+<td>0</td>
+<td>0</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>Month 12 (Cliff)</td>
+<td>500</td>
+<td>500</td>
+<td>5%</td>
+</tr>
+<tr>
+<td>Month 13</td>
+<td>41.67</td>
+<td>541.67</td>
+<td>5.42%</td>
+</tr>
+<tr>
+<td>Month 14</td>
+<td>41.67</td>
+<td>583.34</td>
+<td>5.83%</td>
+</tr>
+<tr>
+<td>...</td>
+<td>41.67/mo</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr>
+<td>Month 48</td>
+<td>41.67</td>
+<td>2,000</td>
+<td>20%</td>
+</tr>
+</tbody></table>
+<h3>2.3 Leaver Provisions</h3>
+<p>Upon termination of Founder B&#39;s involvement:</p>
+<p><strong>Good Leaver:</strong></p>
+<ul>
+<li>Vested Shares: Retained</li>
+<li>Unvested Shares: Forfeited to Company at par value</li>
+<li>Company has 90-day ROFR over Vested Shares at price determined by:<ul>
+<li>Most recent funding round valuation, or</li>
+<li>Independent valuation by a qualified accountant agreed by both Parties</li>
+</ul>
+</li>
+</ul>
+<p><strong>Bad Leaver:</strong></p>
+<ul>
+<li>Vested Shares: Subject to compulsory transfer at lower of par value or £0.001 per share</li>
+<li>Unvested Shares: Forfeited</li>
+<li>Company has 30 days to exercise repurchase</li>
+</ul>
+<h3>2.4 Founder A Shares</h3>
+<p>Founder A&#39;s 7,000 Shares are fully vested as of the Effective Date, reflecting:</p>
+<ul>
+<li>24+ months of product development and system architecture prior to incorporation</li>
+<li>Development of all 75+ API routes, 6 AI agents, 42 dashboard surfaces</li>
+<li>Production deployment on Azure with CI/CD pipeline</li>
+<li>All IP contributed to the Company</li>
+</ul>
+<hr>
+<h2>3. Roles &amp; Responsibilities</h2>
+<h3>3.1 Founder A — Chief Technology Officer / CEO</h3>
+<ul>
+<li>Product vision and strategic technology direction</li>
+<li>Architecture and engineering leadership</li>
+<li>AI/ML model selection, training pipeline, performance optimisation</li>
+<li>System security, infrastructure, and data integrity</li>
+<li>Technical team hiring and management</li>
+<li>Final decision authority on all technology and product matters</li>
+</ul>
+<h3>3.2 Founder B — Chief Operating Officer / Commercial Director</h3>
+<ul>
+<li>UK entity management and statutory compliance</li>
+<li>Sales and revenue operations — pipeline management, closing, account growth</li>
+<li>Customer success and onboarding (first 20 accounts)</li>
+<li>UK GDPR compliance, ICO registration, data protection</li>
+<li>Fundraising — investor pipeline, due diligence, term negotiation</li>
+<li>Financial operations — accounting, tax, payroll (via external providers)</li>
+<li>Legal and regulatory compliance vendor management</li>
+<li>Partnership development — ad platforms, cloud providers, channel partners</li>
+</ul>
+<h3>3.3 Time Commitment</h3>
+<table>
+<thead>
+<tr>
+<th>Period</th>
+<th>Founder A</th>
+<th>Founder B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Month 1–12</td>
+<td>Full-time (100%)</td>
+<td>Full-time (100%)</td>
+</tr>
+<tr>
+<td>Month 13–24</td>
+<td>Full-time (100%)</td>
+<td>Full-time (100%)</td>
+</tr>
+<tr>
+<td>Month 24+</td>
+<td>Full-time (100%)</td>
+<td>Full-time (100%)</td>
+</tr>
+</tbody></table>
+<p>Neither Founder may engage in any other business activity, consultancy, or employment without the written consent of the other Founder.</p>
+<hr>
+<h2>4. Intellectual Property</h2>
+<h3>4.1 Pre-Existing IP</h3>
+<p>All IP created prior to incorporation by Founder A (including KIKI Agent source code, AI models, agent architectures, designs, brand, and business plans) is assigned to the Company under a separate IP Assignment Deed executed concurrently with this Agreement.</p>
+<h3>4.2 Company IP</h3>
+<p>All IP created by either Founder during the term of this Agreement:</p>
+<ul>
+<li>Is the sole property of the Company</li>
+<li>Both Founders hereby assign all right, title, and interest in such IP to the Company</li>
+<li>Both Founders shall execute all documents reasonably required to perfect such assignment</li>
+</ul>
+<h3>4.3 Non-Compete</h3>
+<table>
+<thead>
+<tr>
+<th>Restriction</th>
+<th>Founder A</th>
+<th>Founder B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>During engagement</td>
+<td>Full prohibition</td>
+<td>Full prohibition</td>
+</tr>
+<tr>
+<td>Post-termination (Good Leaver)</td>
+<td>6 months</td>
+<td>12 months</td>
+</tr>
+<tr>
+<td>Post-termination (Bad Leaver)</td>
+<td>12 months</td>
+<td>18 months</td>
+</tr>
+</tbody></table>
+<p>Restricted activities: Founding, working for, or consulting for any business that develops or operates an AI-powered ad bidding, campaign management, or LTV prediction platform.</p>
+<h3>4.4 Non-Solicitation</h3>
+<p>Neither Founder may solicit or hire any employee of the Company for 12 months following termination.</p>
+<hr>
+<h2>5. Decision-Making &amp; Governance</h2>
+<h3>5.1 Board of Directors</h3>
+<p>The Company shall have a Board of Directors comprising:</p>
+<ul>
+<li>Founder A (Chair)</li>
+<li>Founder B</li>
+<li>One independent director appointed by mutual agreement (from Month 18 or post-Seed)</li>
+</ul>
+<h3>5.2 Reserved Matters (require all Founder Board members&#39; consent)</h3>
+<table>
+<thead>
+<tr>
+<th>Matter</th>
+<th>Consent Required</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Amendment to Articles of Association</td>
+<td>All Founders</td>
+</tr>
+<tr>
+<td>Issuance of new Shares (outside ESOP)</td>
+<td>Supermajority (75%)</td>
+</tr>
+<tr>
+<td>Incurring debt &gt; £50K</td>
+<td>Both Founders</td>
+</tr>
+<tr>
+<td>Acquisition, merger, or change of control</td>
+<td>Supermajority (75% of all shareholders)</td>
+</tr>
+<tr>
+<td>Winding up / dissolution</td>
+<td>Both Founders</td>
+</tr>
+<tr>
+<td>Sale or exclusive licence of material IP</td>
+<td>Both Founders</td>
+</tr>
+<tr>
+<td>Appointment of new directors</td>
+<td>Both Founders</td>
+</tr>
+<tr>
+<td>Annual budget and business plan</td>
+<td>Both Founders</td>
+</tr>
+<tr>
+<td>CEO or CTO removal</td>
+<td>Supermajority (75% of all shareholders excluding the affected Founder)</td>
+</tr>
+</tbody></table>
+<h3>5.3 Day-to-Day Operations</h3>
+<p>Each Founder has authority to make operational decisions within their defined domain and within the approved budget without requiring the other&#39;s consent.</p>
+<hr>
+<h2>6. Funding &amp; Dilution</h2>
+<h3>6.1 Future Rounds</h3>
+<p>Both Founders shall have pro-rata participation rights in future funding rounds to maintain their ownership percentage.</p>
+<h3>6.2 Anti-Dilution</h3>
+<p>Standard weighted-average anti-dilution protection applies to all Share holders in the event of a down round.</p>
+<h3>6.3 Founder A Veto</h3>
+<p>Founder A retains veto power over any financing round or dilution event that would reduce Founder A&#39;s ownership below 50% of the fully diluted share capital.</p>
+<h3>6.4 Pre-Emption on New Shares</h3>
+<p>Before issuing any new Shares (outside the ESOP), the Company must offer them pro-rata to all existing Shareholders on the same terms.</p>
+<hr>
+<h2>7. Remuneration &amp; Benefits</h2>
+<h3>7.1 Base Salary</h3>
+<p>Neither Founder shall draw a salary until the earlier of:</p>
+<ul>
+<li>Company achieving £300K annual recurring revenue (confirmed over 2 consecutive quarters), or</li>
+<li>Closing of a Seed round of at least £750K</li>
+</ul>
+<h3>7.2 Expense Reimbursement</h3>
+<p>Reasonable business expenses reimbursed against receipts, capped at £2,000 per Founder per month until funded.</p>
+<h3>7.3 Dividends</h3>
+<p>Board may declare dividends when:</p>
+<ul>
+<li>Company has been profitable for 4 consecutive quarters, and</li>
+<li>Operating cash reserve exceeds 6 months&#39; burn, and</li>
+<li>Both Founders consent</li>
+</ul>
+<h3>7.4 ESOP</h3>
+<p>Upon incorporation, the Company shall establish an EMI-approved Employee Share Option Plan reserving 10% of the fully diluted share capital for grants to future employees, advisors, and consultants. The Board shall determine grant allocations.</p>
+<hr>
+<h2>8. Restrictive Covenants</h2>
+<h3>8.1 Confidentiality</h3>
+<p>Each Founder shall hold all Confidential Information in strict confidence. This obligation survives termination indefinitely.</p>
+<p>&quot;Confidential Information&quot; includes: source code, AI model weights and architectures, customer data, financial data, business plans, investor communications, system architecture, API designs, and trade secrets.</p>
+<h3>8.2 Company Property</h3>
+<p>Upon termination, each Founder shall immediately return all Company property, including laptops, documents, source code access, and credentials.</p>
+<hr>
+<h2>9. Dispute Resolution</h2>
+<h3>9.1 Escalation</h3>
+<ol>
+<li>Informal discussion between Founders</li>
+<li>Mediation via Centre for Effective Dispute Resolution (CEDR)</li>
+<li>Binding arbitration under the Arbitration Act 1996, London Court of International Arbitration rules</li>
+</ol>
+<h3>9.2 Mediation</h3>
+<p>If a dispute cannot be resolved within 14 days of informal discussion, either Founder may refer the matter to CEDR. The mediator shall be agreed within 14 days.</p>
+<h3>9.3 Arbitration</h3>
+<p>If mediation fails, either Founder may refer to binding arbitration. The arbitration award shall be final and binding.</p>
+<h3>9.4 Governing Law</h3>
+<p>This Agreement shall be governed by and construed in accordance with English law. The parties submit to the exclusive jurisdiction of the English courts for enforcement.</p>
+<hr>
+<h2>10. General Provisions</h2>
+<h3>10.1 Entire Agreement</h3>
+<p>This Agreement (together with the IP Assignment Deed and Company Articles of Association) constitutes the entire agreement between the Parties.</p>
+<h3>10.2 Amendment</h3>
+<p>Any amendment must be in writing and signed by both Founders.</p>
+<h3>10.3 Legal Advice</h3>
+<p>Each Founder acknowledges they have been advised to seek independent legal advice and either have done so or voluntarily waive that right.</p>
+<h3>10.4 Counterparts</h3>
+<p>This Agreement may be executed in two counterparts.</p>
+<hr>
+<h2>Signatures</h2>
+<p><strong>Signed by Founder A:</strong></p>
+<p>Name: Ariyo Dolapo</p>
+<p>Signature: _________________ Date: _________________</p>
+<p><strong>Signed by Founder B:</strong></p>
+<p>Name: [UK Co-Founder Name]</p>
+<p>Signature: _________________ Date: _________________</p>
+<hr>
+<p><em>This document is a template for discussion purposes. Legal advice should be sought before execution. KIKI Agent™ is a trademark of STOREGRILL INC LTD.</em></p>
+
+
+</body>
+</html>

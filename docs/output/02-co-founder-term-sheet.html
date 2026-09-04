@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  @page {
+    size: A4;
+    margin: 20mm 22mm 25mm 22mm;
+    @bottom-center {
+      content: "KIKI Agent™ — STOREGRILL INC LTD | Confidential";
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    color: #111827;
+    max-width: 170mm;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* --- Cover Page --- */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 250mm;
+    padding: 0;
+  }
+  .cover .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36pt;
+    font-weight: 700;
+    color: #005CFF;
+    letter-spacing: -0.02em;
+    margin-bottom: 8pt;
+  }
+  .cover .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    color: #6B7280;
+    letter-spacing: 0.02em;
+    margin-bottom: 40pt;
+  }
+  .cover .doc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 20pt;
+    max-width: 140mm;
+  }
+  .cover .divider {
+    width: 60mm;
+    height: 1pt;
+    background: #005CFF;
+    margin: 16pt auto;
+  }
+  .cover .meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    color: #6B7280;
+    line-height: 1.8;
+    margin-top: 20pt;
+  }
+  .cover .legal {
+    font-family: 'Inter', sans-serif;
+    font-size: 7.5pt;
+    color: #9CA3AF;
+    margin-top: 50pt;
+    line-height: 1.5;
+  }
+
+  /* --- Headings --- */
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #005CFF;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    padding-bottom: 4pt;
+    border-bottom: 1.5pt solid #005CFF;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+  }
+
+  p { margin: 4pt 0 8pt 0; }
+
+  /* --- Tables --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 8.5pt;
+  }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    background: #005CFF;
+    color: #FFFFFF;
+    text-align: left;
+    padding: 5pt 6pt;
+    font-size: 8pt;
+  }
+  td {
+    padding: 4pt 6pt;
+    border-bottom: 0.5pt solid #E5E7EB;
+  }
+  tr:nth-child(even) td {
+    background: #F9FAFB;
+  }
+
+  /* --- Lists --- */
+  ul, ol { margin: 4pt 0; padding-left: 18pt; }
+  li { margin-bottom: 2pt; }
+
+  /* --- Code / Monospace --- */
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    background: #F3F4F6;
+    padding: 1pt 3pt;
+    border-radius: 2px;
+  }
+  pre {
+    padding: 6pt 8pt;
+    line-height: 1.3;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* --- Blockquote --- */
+  blockquote {
+    border-left: 3pt solid #005CFF;
+    margin: 10pt 0;
+    padding: 6pt 12pt;
+    background: #F0F4FF;
+    font-style: italic;
+    color: #374151;
+  }
+
+  /* --- HR --- */
+  hr {
+    border: none;
+    border-top: 0.5pt solid #D1D5DB;
+    margin: 16pt 0;
+  }
+
+  /* --- Page break --- */
+  .page-break { page-break-before: always; }
+
+  /* --- TOC --- */
+  .toc { margin: 12pt 0; }
+  .toc a {
+    display: block;
+    padding: 2pt 0;
+    color: #005CFF;
+    text-decoration: none;
+    font-size: 9pt;
+    font-family: 'Inter', sans-serif;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  /* --- Accent highlight --- */
+  .accent-box {
+    background: #F0F4FF;
+    border: 0.5pt solid #D1D9E8;
+    border-radius: 3px;
+    padding: 8pt 10pt;
+    margin: 10pt 0;
+    font-size: 9pt;
+  }
+  .accent-box strong { color: #005CFF; }
+
+  strong { color: #111827; }
+  em { color: #6B7280; }
+  a { color: #005CFF; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="brand">KIKI Agent™</div>
+  <div class="tagline">Autonomous LTV Campaign Execution</div>
+  <div class="divider"></div>
+  <div class="doc-title">KIKI Agent™ — Co-Founder Term Sheet</div>
+  <div class="meta">
+    <strong>Founder:</strong> Ariyo Dolapo<br>
+    <strong>Date:</strong> 26 July 2026<br>
+    <strong>Status:</strong> Confidential — Proposal — Not Legally Binding
+  </div>
+  <div class="legal">
+    KIKI Agent™ — A STOREGRILL INC LTD Company<br>
+    Registered in England & Wales
+  </div>
+</div>
+
+<h1>KIKI Agent™ — Co-Founder Term Sheet</h1>
+<p><strong>A STOREGRILL INC LTD Company</strong> — Registered in England &amp; Wales</p>
+<p>|---|<br>| Ariyo Dolapo | Founder — Product &amp; Technology (10+ yrs digital industry) |<br>| [UK Co-Founder Name] | Co-Founder — UK Operations &amp; Revenue |</p>
+<p><strong>Date:</strong> July 2026<br><strong>Status:</strong> Proposal — not legally binding until Founders&#39; Agreement executed</p>
+<hr>
+<h2>1. Equity</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Proposed Term</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Ariyo Dolapo</strong></td>
+<td>70% of fully diluted ordinary shares</td>
+</tr>
+<tr>
+<td><strong>UK Co-Founder</strong></td>
+<td>20% of fully diluted ordinary shares</td>
+</tr>
+<tr>
+<td><strong>ESOP Pool</strong></td>
+<td>10% reserved for future key hires (issued from company, not existing holders)</td>
+</tr>
+<tr>
+<td><strong>Vesting</strong></td>
+<td>4-year vesting, 12-month cliff for Co-Founder. Ariyo&#39;s shares are fully vested (IP and product pre-dates incorporation)</td>
+</tr>
+<tr>
+<td><strong>Cliff</strong></td>
+<td>If Co-Founder leaves within 12 months, 0% equity vests</td>
+</tr>
+<tr>
+<td><strong>Acceleration</strong></td>
+<td>Single-trigger acceleration of 50% unvested shares on change of control</td>
+</tr>
+<tr>
+<td><strong>Good Leaver</strong></td>
+<td>Vested shares retained at cost. Company has 90-day ROFR at market value (determined by independent valuation or most recent round)</td>
+</tr>
+<tr>
+<td><strong>Bad Leaver</strong></td>
+<td>Vested shares repurchased by company at lower of par value or cost. Unvested shares forfeited</td>
+</tr>
+<tr>
+<td><strong>Pre-emption</strong></td>
+<td>Pro-rata participation rights in future funding rounds (standard)</td>
+</tr>
+</tbody></table>
+<h3>Vesting Schedule (Co-Founder)</h3>
+<table>
+<thead>
+<tr>
+<th>Period</th>
+<th>Vested</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Month 0–12 (Cliff)</td>
+<td>0% — no shares vest</td>
+</tr>
+<tr>
+<td>Month 12</td>
+<td>25% — 5% of total equity vests outright</td>
+</tr>
+<tr>
+<td>Month 13–48</td>
+<td>2.083% vests monthly — remaining 15% vests linearly</td>
+</tr>
+<tr>
+<td>Month 48</td>
+<td>100% vested — 20% of total equity</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>2. Roles &amp; Responsibilities</h2>
+<h3>Ariyo Dolapo — Product &amp; Technology</h3>
+<ul>
+<li>Product vision and roadmap ownership</li>
+<li>System architecture and technology stack decisions</li>
+<li>AI model development, agent behaviour, and ML pipeline</li>
+<li>Engineering team leadership (all technical hires)</li>
+<li>Infrastructure, security, and data architecture</li>
+<li>Founder veto on major technology pivots</li>
+</ul>
+<h3>UK Co-Founder — Operations &amp; Revenue</h3>
+<ul>
+<li>UK entity incorporation and Companies House registration</li>
+<li>UK GDPR compliance, ICO registration, Data Protection Impact Assessment</li>
+<li>Sales pipeline management — initial target: D2C ecommerce £10M–£250M GMV</li>
+<li>Customer onboarding and success (first 20 customers hands-on)</li>
+<li>UK investor relationships and fundraising lead</li>
+<li>Legal, accounting, and compliance vendor management</li>
+<li>Revenue operations and pricing strategy</li>
+<li>Partnership management (ad platforms, Azure, Stripe)</li>
+</ul>
+<h3>Shared Responsibilities</h3>
+<ul>
+<li>Fundraising strategy and investor communications</li>
+<li>Board composition and governance</li>
+<li>Brand and market positioning</li>
+<li>Key hire interviewing and culture-setting</li>
+</ul>
+<hr>
+<h2>3. Compensation &amp; Draw</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Term</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Salary</strong></td>
+<td>£0 for both founders until the earlier of (a) £300K ARR, or (b) close of Seed round</td>
+</tr>
+<tr>
+<td><strong>Director&#39;s Loan</strong></td>
+<td>Expenses reimbursed against receipts. Capped at £2,000/mo combined for both founders until funded</td>
+</tr>
+<tr>
+<td><strong>Dividends</strong></td>
+<td>Declared at board discretion once company is profitable and has 6 months&#39; operating cash reserve</td>
+</tr>
+<tr>
+<td><strong>EMI Options</strong></td>
+<td>ESOP pool administered via HMRC EMI scheme (UK tax-advantaged). Key hires receive options at board-determined strike price</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>4. Decision Rights &amp; Governance</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Threshold</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Day-to-day operations within budget</td>
+<td>Either founder acting in their domain</td>
+</tr>
+<tr>
+<td>New equity issuance (outside ESOP)</td>
+<td>Both founders + board (if formed)</td>
+</tr>
+<tr>
+<td>Debt &gt; £50K</td>
+<td>Both founders</td>
+</tr>
+<tr>
+<td>Change of control / acquisition</td>
+<td>Both founders + 75% of shareholders</td>
+</tr>
+<tr>
+<td>Winding up / dissolution</td>
+<td>Both founders</td>
+</tr>
+<tr>
+<td>Raising external capital</td>
+<td>Both founders — Ariyo has veto over terms that dilute below 50%</td>
+</tr>
+<tr>
+<td>IP assignment or licensing &gt; £100K</td>
+<td>Both founders</td>
+</tr>
+<tr>
+<td>Appointing new directors</td>
+<td>Both founders</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. IP &amp; Pre-Existing Work</h2>
+<p>All intellectual property created prior to the formation of KIKI Agent Ltd (including but not limited to: KIKI Agent source code, AI models, agent architectures, dashboard designs, API routes, infrastructure code, brand assets, and business plans) is the exclusive property of STOREGRILL INC LTD and will be assigned to KIKI Agent Ltd via a formal IP Assignment Deed upon incorporation.</p>
+<p>The UK Co-Founder warrants that they have no pre-existing IP or competing businesses that would create a conflict of interest.</p>
+<hr>
+<h2>6. Incorporation Details</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Plan</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Entity</strong></td>
+<td>KIKI Agent Ltd — private company limited by shares</td>
+</tr>
+<tr>
+<td><strong>Jurisdiction</strong></td>
+<td>England &amp; Wales</td>
+</tr>
+<tr>
+<td><strong>Registered Office</strong></td>
+<td>Co-Founder&#39;s address or virtual office (e.g., registered address service)</td>
+</tr>
+<tr>
+<td><strong>Directors</strong></td>
+<td>Ariyo Dolapo + UK Co-Founder</td>
+</tr>
+<tr>
+<td><strong>Share Classes</strong></td>
+<td>Ordinary shares (one class, all rights equal)</td>
+</tr>
+<tr>
+<td><strong>Accounting</strong></td>
+<td>Xero or FreeAgent — annual filing to Companies House</td>
+</tr>
+<tr>
+<td><strong>VAT</strong></td>
+<td>Register when taxable turnover exceeds £90K</td>
+</tr>
+<tr>
+<td><strong>Bank Account</strong></td>
+<td>Wise Business / Starling Bank / HSBC Kinetic</td>
+</tr>
+<tr>
+<td><strong>Insurance</strong></td>
+<td>Professional indemnity (£1M minimum), cyber liability, employer&#39;s liability (when hiring)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. Timetable</h2>
+<table>
+<thead>
+<tr>
+<th>Milestone</th>
+<th>Target Date</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Term sheet agreed</td>
+<td>Week 1</td>
+</tr>
+<tr>
+<td>Due diligence (Co-Founder background, conflict check)</td>
+<td>Week 1–2</td>
+</tr>
+<tr>
+<td>Founders&#39; Agreement drafted by solicitor</td>
+<td>Week 2–3</td>
+</tr>
+<tr>
+<td>Incorporate KIKI Agent Ltd at Companies House</td>
+<td>Week 3</td>
+</tr>
+<tr>
+<td>Assign IP from STOREGRILL INC LTD to KIKI Agent Ltd</td>
+<td>Week 3</td>
+</tr>
+<tr>
+<td>Open UK business bank account</td>
+<td>Week 3–4</td>
+</tr>
+<tr>
+<td>Register with ICO (data protection)</td>
+<td>Week 4</td>
+</tr>
+<tr>
+<td>First customer meeting</td>
+<td>By Month 2</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>8. Exit Pathways</h2>
+<table>
+<thead>
+<tr>
+<th>Exit Type</th>
+<th>Expected Timeline</th>
+<th>Typical Valuation Multiple</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Strategic acquisition (ad tech, platform, agency)</td>
+<td>Year 3–5</td>
+<td>8–12× ARR</td>
+</tr>
+<tr>
+<td>Private equity (growth buyout)</td>
+<td>Year 4–7</td>
+<td>5–8× EBITDA</td>
+</tr>
+<tr>
+<td>IPO / direct listing</td>
+<td>Year 7–10</td>
+<td>N/A — depends on scale at time</td>
+</tr>
+</tbody></table>
+<p><strong>Likely acquirers:</strong> Salesforce (via MuleSoft/ad tech), Adobe (via Experience Cloud), Meta (via acquisition spree), Google, SAS, or a major holding group (WPP, Publicis).</p>
+<hr>
+<p><em>This term sheet is a proposal only and does not create any legally binding obligations. A formal Founders&#39; Agreement should be prepared by a solicitor qualified in English law.</em></p>
+<p><em>KIKI Agent™ is a trademark of STOREGRILL INC LTD.</em></p>
+
+
+</body>
+</html>

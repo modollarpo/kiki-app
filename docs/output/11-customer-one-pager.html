@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  @page {
+    size: A4;
+    margin: 20mm 22mm 25mm 22mm;
+    @bottom-center {
+      content: "KIKI Agent™ — STOREGRILL INC LTD | Confidential";
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    color: #111827;
+    max-width: 170mm;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* --- Cover Page --- */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 250mm;
+    padding: 0;
+  }
+  .cover .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36pt;
+    font-weight: 700;
+    color: #005CFF;
+    letter-spacing: -0.02em;
+    margin-bottom: 8pt;
+  }
+  .cover .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    color: #6B7280;
+    letter-spacing: 0.02em;
+    margin-bottom: 40pt;
+  }
+  .cover .doc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 20pt;
+    max-width: 140mm;
+  }
+  .cover .divider {
+    width: 60mm;
+    height: 1pt;
+    background: #005CFF;
+    margin: 16pt auto;
+  }
+  .cover .meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    color: #6B7280;
+    line-height: 1.8;
+    margin-top: 20pt;
+  }
+  .cover .legal {
+    font-family: 'Inter', sans-serif;
+    font-size: 7.5pt;
+    color: #9CA3AF;
+    margin-top: 50pt;
+    line-height: 1.5;
+  }
+
+  /* --- Headings --- */
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #005CFF;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    padding-bottom: 4pt;
+    border-bottom: 1.5pt solid #005CFF;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+  }
+
+  p { margin: 4pt 0 8pt 0; }
+
+  /* --- Tables --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 8.5pt;
+  }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    background: #005CFF;
+    color: #FFFFFF;
+    text-align: left;
+    padding: 5pt 6pt;
+    font-size: 8pt;
+  }
+  td {
+    padding: 4pt 6pt;
+    border-bottom: 0.5pt solid #E5E7EB;
+  }
+  tr:nth-child(even) td {
+    background: #F9FAFB;
+  }
+
+  /* --- Lists --- */
+  ul, ol { margin: 4pt 0; padding-left: 18pt; }
+  li { margin-bottom: 2pt; }
+
+  /* --- Code / Monospace --- */
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    background: #F3F4F6;
+    padding: 1pt 3pt;
+    border-radius: 2px;
+  }
+  pre {
+    padding: 6pt 8pt;
+    line-height: 1.3;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* --- Blockquote --- */
+  blockquote {
+    border-left: 3pt solid #005CFF;
+    margin: 10pt 0;
+    padding: 6pt 12pt;
+    background: #F0F4FF;
+    font-style: italic;
+    color: #374151;
+  }
+
+  /* --- HR --- */
+  hr {
+    border: none;
+    border-top: 0.5pt solid #D1D5DB;
+    margin: 16pt 0;
+  }
+
+  /* --- Page break --- */
+  .page-break { page-break-before: always; }
+
+  /* --- TOC --- */
+  .toc { margin: 12pt 0; }
+  .toc a {
+    display: block;
+    padding: 2pt 0;
+    color: #005CFF;
+    text-decoration: none;
+    font-size: 9pt;
+    font-family: 'Inter', sans-serif;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  /* --- Accent highlight --- */
+  .accent-box {
+    background: #F0F4FF;
+    border: 0.5pt solid #D1D9E8;
+    border-radius: 3px;
+    padding: 8pt 10pt;
+    margin: 10pt 0;
+    font-size: 9pt;
+  }
+  .accent-box strong { color: #005CFF; }
+
+  strong { color: #111827; }
+  em { color: #6B7280; }
+  a { color: #005CFF; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="brand">KIKI Agent™</div>
+  <div class="tagline">Autonomous LTV Campaign Execution</div>
+  <div class="divider"></div>
+  <div class="doc-title">KIKI Agent™ — Customer One-Pager</div>
+  <div class="meta">
+    <strong>Founder:</strong> Ariyo Dolapo<br>
+    <strong>Date:</strong> 26 July 2026<br>
+    <strong>Status:</strong> Confidential — B2B Outreach Collateral
+  </div>
+  <div class="legal">
+    KIKI Agent™ — A STOREGRILL INC LTD Company<br>
+    Registered in England & Wales
+  </div>
+</div>
+
+<h1>KIKI Agent™ — Customer One-Pager</h1>
+<p><strong>A STOREGRILL INC LTD Company</strong> — Registered in England &amp; Wales</p>
+<h2>Your £149 Order Becomes a £639 Signal.</h2>
+<p>KIKI Agent enriches every conversion with a predicted 90-day LTV before it reaches your ad platform. Your bidding algorithm stops optimising toward transaction value and starts optimising toward customer worth.</p>
+<h3>How It Works</h3>
+<pre><code>Checkout → KIKI intercepts → Fraud scan (18ms) → LTV prediction (38ms) → Enriched signal sent to Meta/Google/TikTok
+</code></pre>
+<h3>The Result</h3>
+<ul>
+<li><strong>4.29× average LTV uplift</strong> — the platform sees the full customer value</li>
+<li><strong>38ms prediction latency</strong> — fast enough to run before the platform receives the event</li>
+<li><strong>R² = 0.91 model accuracy</strong> — reliable predictions across all segments</li>
+<li><strong>99.2% fraud detection</strong> — IVT blocked before enrichment (competitors enrich first, then detect fraud — their models learn to optimise toward bots)</li>
+</ul>
+<h3>14 Platforms. One Control Plane.</h3>
+<table>
+<thead>
+<tr>
+<th>Meta</th>
+<th>Google</th>
+<th>TikTok</th>
+<th>LinkedIn</th>
+<th>YouTube</th>
+<th>Snapchat</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pinterest</td>
+<td>Amazon DSP</td>
+<td>Reddit</td>
+<td>DV360</td>
+<td>X Ads</td>
+<td>TradeDesk</td>
+</tr>
+</tbody></table>
+<h3>What You Get</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Growth (£599/mo)</th>
+<th>Scale (£1,799/mo)</th>
+<th>Enterprise (From £4,999/mo)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Platforms</td>
+<td>1</td>
+<td>5</td>
+<td>All 14</td>
+</tr>
+<tr>
+<td>Campaigns</td>
+<td>3</td>
+<td>Unlimited</td>
+<td>Unlimited</td>
+</tr>
+<tr>
+<td>AI Decisions/mo</td>
+<td>25,000</td>
+<td>100,000</td>
+<td>Custom</td>
+</tr>
+<tr>
+<td>Enriched Signals/mo</td>
+<td>10,000</td>
+<td>50,000</td>
+<td>Custom</td>
+</tr>
+<tr>
+<td>Fraud Detection</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ + custom rules</td>
+</tr>
+<tr>
+<td>Creative Fatigue Detection</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>AI Creative Generation</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>SyncBrain AI Chat</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>42 Dashboard Surfaces</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>SSO</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅ + SAML/Entra</td>
+</tr>
+<tr>
+<td>Support</td>
+<td>Email (48h)</td>
+<td>Chat + Email (8h)</td>
+<td>Dedicated Slack (4h)</td>
+</tr>
+<tr>
+<td>SLA</td>
+<td>99.5% best-effort</td>
+<td>99.9%</td>
+<td>99.95%</td>
+</tr>
+</tbody></table>
+<h3>Why KIKI Agent?</h3>
+<ol>
+<li><strong>Fraud-before-enrichment architecture</strong> — Unique. Prevents model poisoning.</li>
+<li><strong>38ms LTV prediction</strong> — Competitors run batch processes with 12–48 hour latency. KIKI runs in real time, inside the CAPI window.</li>
+<li><strong>6 autonomous AI agents</strong> — Not a single model. A cross-optimising system of Bidding, Creative, Pacing, Signals, SyncBrain, and OaaS agents.</li>
+<li><strong>Multi-platform arbitrage</strong> — When one platform underperforms, KIKI shifts budget before you notice.</li>
+<li><strong>42-dashboard command centre</strong> — Not an API. A full product with AI chat, analytics, fraud monitoring, and creative management.</li>
+</ol>
+<h3>Founded by Ariyo Dolapo</h3>
+<p>10+ years in digital industry. Built KIKI Agent solo — 75+ API routes, 6 AI agents, 14 connectors, 42 dashboards, production-deployed on Azure.</p>
+<h3>Get Started</h3>
+<p>Free 14-day trial. No credit card required.</p>
+<p><strong><a href="https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io">https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io</a></strong></p>
+<hr>
+<p><em>KIKI Agent™ — A STOREGRILL INC LTD Company | Registered in England &amp; Wales</em></p>
+
+
+</body>
+</html>

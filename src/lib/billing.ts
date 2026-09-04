@@ -8,6 +8,7 @@ import { getDb } from "./db";
 import { getPlanLimits, checkPlanLimit } from "./tenant";
 import { eventBus, EVENTS } from "./events";
 import { stripe, stripeEnabled, priceIdForPlan } from "./stripe";
+import { sendEmail } from "./email";
 import { PLAN_PRICING } from "./plans";
 
 // ── Types ──────────────────────────────────────────────────
@@ -477,6 +478,13 @@ export async function handlePaymentFailure(
 ): Promise<void> {
   const db = await getDb();
 
+  // Look up user email for dunning notifications
+  const user = await db.prepare("SELECT email, name FROM users WHERE tenant_id = ? LIMIT 1").get(tenantId) as { email: string; name: string } | undefined;
+  const userEmail = user?.email;
+  const userName = user?.name || "there";
+
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://kiki.ai"}/dashboard/billing`;
+
   switch (attemptCount) {
     case 1:
       // Retry in 3 days, email warning
@@ -484,6 +492,18 @@ export async function handlePaymentFailure(
         UPDATE subscriptions SET status = 'past_due', updated_at = datetime('now')
         WHERE tenant_id = ?
       `).run(tenantId);
+      if (userEmail) {
+        await sendEmail(userEmail, "Payment issue — action required", `
+          <div style="font-family:monospace;max-width:480px;margin:0 auto;padding:24px;background:#111827;color:#f9fafb;border-radius:4px;">
+            <h2 style="color:#10b981;margin:0 0 16px;">KIKI<span style="color:#3b82f6;">.</span>Agent</h2>
+            <p style="font-size:13px;color:#f9fafb;">Hi ${userName},</p>
+            <p style="font-size:13px;color:#9ca3af;line-height:1.6;">We were unable to process your latest payment (Invoice: ${invoiceId}). We'll retry in 3 days.</p>
+            <p style="font-size:13px;color:#9ca3af;line-height:1.6;">Please ensure your payment method is up to date to avoid service interruption.</p>
+            <a href="${dashboardUrl}" style="display:inline-block;padding:10px 24px;margin:16px 0;background:#3b82f6;color:#fff;text-decoration:none;border-radius:3px;font-size:13px;font-weight:700;">Update Payment Method</a>
+            <p style="font-size:11px;color:#6b7280;">If you believe this is an error, contact support.</p>
+          </div>
+        `);
+      }
       eventBus.emit("billing.payment_failed", {
         tenantId,
         invoiceId,
@@ -494,6 +514,17 @@ export async function handlePaymentFailure(
 
     case 2:
       // Retry in 5 days, email + in-app banner
+      if (userEmail) {
+        await sendEmail(userEmail, "Urgent: Payment failed again", `
+          <div style="font-family:monospace;max-width:480px;margin:0 auto;padding:24px;background:#111827;color:#f9fafb;border-radius:4px;">
+            <h2 style="color:#f59e0b;margin:0 0 16px;">KIKI<span style="color:#3b82f6;">.</span>Agent</h2>
+            <p style="font-size:13px;color:#f9fafb;">Hi ${userName},</p>
+            <p style="font-size:13px;color:#9ca3af;line-height:1.6;">Your payment for Invoice ${invoiceId} has failed again. We'll retry once more in 5 days.</p>
+            <p style="font-size:13px;color:#9ca3af;line-height:1.6;"><strong style="color:#f59e0b;">Warning:</strong> If the next attempt fails, your account features will be restricted.</p>
+            <a href="${dashboardUrl}" style="display:inline-block;padding:10px 24px;margin:16px 0;background:#f59e0b;color:#000;text-decoration:none;border-radius:3px;font-size:13px;font-weight:700;">Update Payment Method</a>
+          </div>
+        `);
+      }
       eventBus.emit("billing.payment_failed", {
         tenantId,
         invoiceId,
@@ -508,6 +539,17 @@ export async function handlePaymentFailure(
         UPDATE subscriptions SET status = 'past_due', updated_at = datetime('now')
         WHERE tenant_id = ?
       `).run(tenantId);
+      if (userEmail) {
+        await sendEmail(userEmail, "Account restricted — payment overdue", `
+          <div style="font-family:monospace;max-width:480px;margin:0 auto;padding:24px;background:#111827;color:#f9fafb;border-radius:4px;">
+            <h2 style="color:#ef4444;margin:0 0 16px;">KIKI<span style="color:#3b82f6;">.</span>Agent</h2>
+            <p style="font-size:13px;color:#f9fafb;">Hi ${userName},</p>
+            <p style="font-size:13px;color:#9ca3af;line-height:1.6;">Your account has been restricted due to multiple failed payment attempts for Invoice ${invoiceId}.</p>
+            <p style="font-size:13px;color:#9ca3af;line-height:1.6;">Some features are now limited. Update your payment method to restore full access.</p>
+            <a href="${dashboardUrl}" style="display:inline-block;padding:10px 24px;margin:16px 0;background:#ef4444;color:#fff;text-decoration:none;border-radius:3px;font-size:13px;font-weight:700;">Restore Access</a>
+          </div>
+        `);
+      }
       eventBus.emit("billing.payment_failed", {
         tenantId,
         invoiceId,
@@ -525,6 +567,17 @@ export async function handlePaymentFailure(
         UPDATE users SET status = 'suspended', updated_at = datetime('now')
         WHERE tenant_id = ?
       `).run(tenantId);
+      if (userEmail) {
+        await sendEmail(userEmail, "Account suspended — payment overdue", `
+          <div style="font-family:monospace;max-width:480px;margin:0 auto;padding:24px;background:#111827;color:#f9fafb;border-radius:4px;">
+            <h2 style="color:#ef4444;margin:0 0 16px;">KIKI<span style="color:#3b82f6;">.</span>Agent</h2>
+            <p style="font-size:13px;color:#f9fafb;">Hi ${userName},</p>
+            <p style="font-size:13px;color:#9ca3af;line-height:1.6;">Your KIKI Agent account has been suspended due to unresolved payment issues.</p>
+            <p style="font-size:13px;color:#9ca3af;line-height:1.6;">Your campaigns are paused and features are disabled. Contact support to reactivate.</p>
+            <a href="${dashboardUrl}" style="display:inline-block;padding:10px 24px;margin:16px 0;background:#ef4444;color:#fff;text-decoration:none;border-radius:3px;font-size:13px;font-weight:700;">Contact Support</a>
+          </div>
+        `);
+      }
       eventBus.emit("tenant.suspended", {
         tenantId,
         reason: "payment_failure",

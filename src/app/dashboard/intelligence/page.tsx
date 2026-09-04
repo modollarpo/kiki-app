@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, StatCard } from "@/components/ui";
+import { Card, Badge, StatCard, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Insight { type: string; title: string; description: string; impact: string; confidence: number; }
@@ -12,6 +12,7 @@ interface Prediction { metric: string; value: string; confidence: number; range:
 export default function IntelligencePage() {
   const [insights, setInsights] = useState<Insight[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -30,11 +31,11 @@ export default function IntelligencePage() {
           setPredictions(d.data.predictions);
         }
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   const getInsightColor = (type: string) => type === "opportunity" ? K.mint : type === "alert" ? K.warn : K.blue;
@@ -48,6 +49,12 @@ export default function IntelligencePage() {
           <p className="font-mono text-[11px] text-gray-500">AI-powered insights, predictions, and optimization recommendations</p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
           <StatCard label="Active Insights" value={insights.length > 0 ? String(insights.length) : "—"} accent={K.blue} sub="AI-generated" loading={loading} />
           <StatCard label="Avg Confidence" value={insights.length > 0 ? `${Math.round(insights.reduce((s, i) => s + i.confidence, 0) / insights.length)}%` : "—"} accent={K.mint} sub="Model accuracy" loading={loading} />
@@ -58,7 +65,9 @@ export default function IntelligencePage() {
           <Card accent={K.blue}>
             <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">AI Insights</h3>
             <div className="flex flex-col gap-2">
-              {insights.map((insight, i) => (
+              {insights.length === 0 ? (
+                <EmptyState icon="💡" title="No insights yet" body="Insights will appear once campaigns have sufficient data." />
+              ) : insights.map((insight, i) => (
                 <div key={i} className="p-3.5 rounded-sm bg-g850" style={{ borderLeft: `3px solid ${getInsightColor(insight.type)}` }}>
                   <div className="flex flex-wrap justify-between items-center gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
@@ -78,7 +87,9 @@ export default function IntelligencePage() {
 
           <Card accent={K.teal}>
             <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Predictions</h3>
-            {predictions.map((pred, i) => (
+            {predictions.length === 0 ? (
+              <EmptyState icon="🔮" title="No predictions yet" body="Predictions will be generated as data accumulates." />
+            ) : predictions.map((pred, i) => (
               <div key={i} className="p-3.5 mb-2 rounded-sm bg-g850">
                 <div className="flex flex-wrap justify-between items-center gap-2 mb-1.5">
                   <span className="font-mono text-[11px] text-gray-400">{pred.metric}</span>

@@ -21,6 +21,7 @@ import {
 import { encryptToken, decryptToken } from "@/lib/connectors/base";
 import { type PlatformId } from "@/lib/connectors/types";
 import { getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { eventBus } from "@/lib/events";
 import { logger, handleApiError } from "@/lib/logger";
 
@@ -184,6 +185,9 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
+
+    const enf = await checkEnforcement(user.tenantId);
+    if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
 
     const body = await req.json();
     const { action, platform, code, state, integrationId } = body;

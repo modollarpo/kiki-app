@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button, StatCard, Input, ScrollableTable } from "@/components/ui";
+import { Card, Badge, Button, StatCard, Input, ScrollableTable, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -94,7 +94,7 @@ export default function CommercePage() {
     if (token) load();
   }, [load, token]);
 
-  if (authLoading) return <DashboardLayout><div style={{ color: "var(--t2)", padding: "2rem" }}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   const handleConnect = async () => {
@@ -194,10 +194,10 @@ export default function CommercePage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Stores Connected" value={loading ? "…" : String(totalStores)} sub={loading ? "Loading…" : `${connections.filter(c => c.status === "connected").length} active`} accent={K.mint} loading={loading} />
-          <StatCard label="Orders Synced" value={loading ? "…" : (totalOrders > 0 ? totalOrders.toLocaleString() : "0")} sub={loading ? "Loading…" : "Total across stores"} accent={K.blue} loading={loading} />
-          <StatCard label="Avg LTV Accuracy" value={loading ? "…" : `${avgAccuracy.toFixed(1)}%`} sub={loading ? "Loading…" : "Predicted vs realized"} accent={K.gold} loading={loading} />
-          <StatCard label="Prediction Coverage" value={loading ? "…" : `${coverage.toFixed(1)}%`} sub={loading ? "Loading…" : "Customers with LTV"} accent={K.teal} loading={loading} />
+          <StatCard label="Stores Connected" value={loading ? "…" : String(totalStores)} sub={`${connections.filter(c => c.status === "connected").length} active`} accent={K.mint} loading={loading} />
+          <StatCard label="Orders Synced" value={loading ? "…" : (totalOrders > 0 ? totalOrders.toLocaleString() : "0")} sub="Total across stores" accent={K.blue} loading={loading} />
+          <StatCard label="Avg LTV Accuracy" value={loading ? "…" : `${avgAccuracy.toFixed(1)}%`} sub="Predicted vs realized" accent={K.gold} loading={loading} />
+          <StatCard label="Prediction Coverage" value={loading ? "…" : `${coverage.toFixed(1)}%`} sub="Customers with LTV" accent={K.teal} loading={loading} />
         </div>
 
         <div id="connect-panel">
@@ -237,7 +237,7 @@ export default function CommercePage() {
           {loading ? (
             <p className="font-mono text-[11px] text-gray-500 py-4 text-center">Loading connections…</p>
           ) : connections.length === 0 ? (
-            <p className="font-mono text-[11px] text-gray-500 py-4 text-center">No stores connected yet. Use the Connect Store panel above.</p>
+            <EmptyState icon="🛒" title="No stores connected" body="Use the Connect Store panel to connect your first store." />
           ) : (
             <div className="space-y-2">
               {connections.map((c) => (
@@ -277,7 +277,7 @@ export default function CommercePage() {
           {loading ? (
             <p className="font-mono text-[11px] text-gray-500 py-4 text-center">Loading accuracy…</p>
           ) : segments.length === 0 ? (
-            <p className="font-mono text-[11px] text-gray-500 py-4 text-center">No feedback yet. Connect a store and let realized revenue accumulate to populate LTV accuracy.</p>
+            <EmptyState icon="📉" title="No LTV data yet" body="Connect a store and let realized revenue accumulate to populate LTV accuracy." />
           ) : (
             <ScrollableTable>
               <table className="w-full" style={{ borderCollapse: "collapse" }}>

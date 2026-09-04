@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { getMetacognitionDashboard, analyzeConfidenceCalibration, analyzeFactorAttribution, runSelfReflection, adaptStrategy } from "@/lib/metacognition";
 import { logger, handleApiError } from "@/lib/logger";
 
@@ -44,6 +45,9 @@ export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const enf = await checkEnforcement(user.tenantId);
+    if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
 
     const strategy = await adaptStrategy(user.tenantId);
     return NextResponse.json({ strategy, applied: !!strategy });

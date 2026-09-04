@@ -14,6 +14,7 @@ import { scoreBidsBatch, isGroqConfigured, type GroqBidInput } from "./groq";
 import { decryptToken } from "./connectors/base";
 import { dispatchApprovalRequest, APPROVAL_TTL_MS } from "./slack";
 import { detectCreativeFatigue } from "./creative";
+import { logger } from "./logger";
 
 // ── Circuit-breaker threshold ──────────────────────────────
 // Any bid change beyond this % (or any stop-loss) is sent to
@@ -605,21 +606,17 @@ export function getDayPartingWeights(): { hour: number; dayOfWeek: number; weigh
 // ── Event Wiring (Phase 2 & 3 Loop) ────────────────────────
 
 export function initBiddingEventWiring() {
-  // Listen for Competitor Pricing Arbitrage signals
   eventBus.on("competitor.price_drop", async (payload: any) => {
-    console.log(`[BiddingEngine] Competitor price drop detected (${payload.dropPercent}%). Triggering aggressive arbitrage cycle...`);
+    logger.info(`[BiddingEngine] Competitor price drop detected (${payload.dropPercent}%). Triggering aggressive arbitrage cycle...`);
     try {
       await runBiddingCycle(payload.tenantId);
     } catch (e) {
-      console.error("[BiddingEngine] Arbitrage cycle failed", e);
+      logger.error("[BiddingEngine] Arbitrage cycle failed", { error: e });
     }
   });
 
-  // Listen for Creative Fatigue signals
   eventBus.on("creative.fatigue_detected", async (payload: any) => {
-    console.log(`[BiddingEngine] Creative fatigue detected on ${payload.platform}. Triggering GenAI creative replacement...`);
-    // Phase 2 implementation: Hook into the GPT-4o + DALL-E pipeline
-    // For now, emit a task to the oaas queue to generate new creatives
+    logger.info(`[BiddingEngine] Creative fatigue detected on ${payload.platform}. Triggering GenAI creative replacement...`);
     try {
       const db = await getDb();
       await db.prepare(`
@@ -631,7 +628,7 @@ export function initBiddingEventWiring() {
         `Generate new DALL-E 3 creative for fatigued ad ${payload.creativeId} on ${payload.platform}`
       );
     } catch (e) {
-      console.error("[BiddingEngine] Failed to dispatch creative generation task", e);
+      logger.error("[BiddingEngine] Failed to dispatch creative generation task", { error: e });
     }
   });
 }
