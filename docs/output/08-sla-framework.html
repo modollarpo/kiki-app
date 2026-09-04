@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  @page {
+    size: A4;
+    margin: 20mm 22mm 25mm 22mm;
+    @bottom-center {
+      content: "KIKI Agent™ — STOREGRILL INC LTD | Confidential";
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    color: #111827;
+    max-width: 170mm;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* --- Cover Page --- */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 250mm;
+    padding: 0;
+  }
+  .cover .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36pt;
+    font-weight: 700;
+    color: #005CFF;
+    letter-spacing: -0.02em;
+    margin-bottom: 8pt;
+  }
+  .cover .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    color: #6B7280;
+    letter-spacing: 0.02em;
+    margin-bottom: 40pt;
+  }
+  .cover .doc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 20pt;
+    max-width: 140mm;
+  }
+  .cover .divider {
+    width: 60mm;
+    height: 1pt;
+    background: #005CFF;
+    margin: 16pt auto;
+  }
+  .cover .meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    color: #6B7280;
+    line-height: 1.8;
+    margin-top: 20pt;
+  }
+  .cover .legal {
+    font-family: 'Inter', sans-serif;
+    font-size: 7.5pt;
+    color: #9CA3AF;
+    margin-top: 50pt;
+    line-height: 1.5;
+  }
+
+  /* --- Headings --- */
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #005CFF;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    padding-bottom: 4pt;
+    border-bottom: 1.5pt solid #005CFF;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+  }
+
+  p { margin: 4pt 0 8pt 0; }
+
+  /* --- Tables --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 8.5pt;
+  }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    background: #005CFF;
+    color: #FFFFFF;
+    text-align: left;
+    padding: 5pt 6pt;
+    font-size: 8pt;
+  }
+  td {
+    padding: 4pt 6pt;
+    border-bottom: 0.5pt solid #E5E7EB;
+  }
+  tr:nth-child(even) td {
+    background: #F9FAFB;
+  }
+
+  /* --- Lists --- */
+  ul, ol { margin: 4pt 0; padding-left: 18pt; }
+  li { margin-bottom: 2pt; }
+
+  /* --- Code / Monospace --- */
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    background: #F3F4F6;
+    padding: 1pt 3pt;
+    border-radius: 2px;
+  }
+  pre {
+    padding: 6pt 8pt;
+    line-height: 1.3;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* --- Blockquote --- */
+  blockquote {
+    border-left: 3pt solid #005CFF;
+    margin: 10pt 0;
+    padding: 6pt 12pt;
+    background: #F0F4FF;
+    font-style: italic;
+    color: #374151;
+  }
+
+  /* --- HR --- */
+  hr {
+    border: none;
+    border-top: 0.5pt solid #D1D5DB;
+    margin: 16pt 0;
+  }
+
+  /* --- Page break --- */
+  .page-break { page-break-before: always; }
+
+  /* --- TOC --- */
+  .toc { margin: 12pt 0; }
+  .toc a {
+    display: block;
+    padding: 2pt 0;
+    color: #005CFF;
+    text-decoration: none;
+    font-size: 9pt;
+    font-family: 'Inter', sans-serif;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  /* --- Accent highlight --- */
+  .accent-box {
+    background: #F0F4FF;
+    border: 0.5pt solid #D1D9E8;
+    border-radius: 3px;
+    padding: 8pt 10pt;
+    margin: 10pt 0;
+    font-size: 9pt;
+  }
+  .accent-box strong { color: #005CFF; }
+
+  strong { color: #111827; }
+  em { color: #6B7280; }
+  a { color: #005CFF; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="brand">KIKI Agent™</div>
+  <div class="tagline">Autonomous LTV Campaign Execution</div>
+  <div class="divider"></div>
+  <div class="doc-title">KIKI Agent™ — Service Level Agreement Framework</div>
+  <div class="meta">
+    <strong>Founder:</strong> Ariyo Dolapo<br>
+    <strong>Date:</strong> 26 July 2026<br>
+    <strong>Status:</strong> Confidential — Enterprise Customer SLA
+  </div>
+  <div class="legal">
+    KIKI Agent™ — A STOREGRILL INC LTD Company<br>
+    Registered in England & Wales
+  </div>
+</div>
+
+<h1>KIKI Agent™ — Service Level Agreement Framework</h1>
+<p><strong>A STOREGRILL INC LTD Company</strong> — Registered in England &amp; Wales</p>
+<h2>1. Service Commitments</h2>
+<h3>1.1 Uptime Guarantees</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Scale Plan</th>
+<th>Enterprise Plan</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Platform Dashboard &amp; API</td>
+<td>99.9% uptime (monthly)</td>
+<td>99.95% uptime (monthly)</td>
+</tr>
+<tr>
+<td>CAPI Event Ingestion</td>
+<td>99.9% delivery rate</td>
+<td>99.95% delivery rate</td>
+</tr>
+<tr>
+<td>LTV Prediction Engine</td>
+<td>99.9% availability</td>
+<td>99.95% availability</td>
+</tr>
+<tr>
+<td>Fraud Detection Scoring</td>
+<td>99.5% availability</td>
+<td>99.9% availability</td>
+</tr>
+<tr>
+<td>SyncBrain AI Chat</td>
+<td>99.5% availability</td>
+<td>99.9% availability</td>
+</tr>
+</tbody></table>
+<h3>1.2 Performance Guarantees</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>p50</th>
+<th>p99</th>
+<th>Measurement Period</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LTV Prediction Latency</td>
+<td>38ms</td>
+<td>95ms</td>
+<td>Monthly rolling</td>
+</tr>
+<tr>
+<td>CAPI Delivery (Meta)</td>
+<td>341ms</td>
+<td>500ms</td>
+<td>Monthly rolling</td>
+</tr>
+<tr>
+<td>CAPI Delivery (All platforms)</td>
+<td>400ms</td>
+<td>700ms</td>
+<td>Monthly rolling</td>
+</tr>
+<tr>
+<td>API Response Time</td>
+<td>45ms</td>
+<td>200ms</td>
+<td>Monthly rolling</td>
+</tr>
+<tr>
+<td>Dashboard Page Load</td>
+<td>1.2s</td>
+<td>4s</td>
+<td>Monthly rolling</td>
+</tr>
+</tbody></table>
+<h3>1.3 Financial Remedies</h3>
+<p>If uptime falls below the committed percentage in any calendar month, the customer receives a Service Credit:</p>
+<table>
+<thead>
+<tr>
+<th>Uptime</th>
+<th>Credit (% of monthly fee)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>99.5% – 99.9% (Scale) / 99.9% – 99.95% (Enterprise)</td>
+<td>0% (within SLA)</td>
+</tr>
+<tr>
+<td>99.0% – 99.49% (Scale) / 99.5% – 99.89% (Enterprise)</td>
+<td>10% credit</td>
+</tr>
+<tr>
+<td>98.0% – 98.99% (Scale) / 99.0% – 99.49% (Enterprise)</td>
+<td>25% credit</td>
+</tr>
+<tr>
+<td>95.0% – 97.99% (Scale) / 98.0% – 98.99% (Enterprise)</td>
+<td>50% credit</td>
+</tr>
+<tr>
+<td>Below 95% / Below 98%</td>
+<td>100% credit + termination right</td>
+</tr>
+</tbody></table>
+<p><strong>Maximum aggregate credit:</strong> 100% of one month&#39;s fee per rolling 12-month period.<br><strong>Credit request:</strong> Must be submitted within 30 days of the incident month.</p>
+<hr>
+<h2>2. Support Response Times</h2>
+<h3>2.1 Severity Definitions</h3>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Definition</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Critical (P1)</strong></td>
+<td>Platform unavailable. CAPI events not being delivered. LTV predictions failing for all customers.</td>
+<td>Dashboard 500 errors, Kafka cluster down, database unreachable</td>
+</tr>
+<tr>
+<td><strong>High (P2)</strong></td>
+<td>Major feature unavailable. Single customer&#39;s events not processing. SyncBrain not responding.</td>
+<td>Single platform connector down, fraud engine timeout, SSO failure</td>
+</tr>
+<tr>
+<td><strong>Normal (P3)</strong></td>
+<td>Non-critical feature issue. Minor UI bug. Documentation error.</td>
+<td>Dashboard filter not working, export formatting issue, typo in docs</td>
+</tr>
+<tr>
+<td><strong>Low (P4)</strong></td>
+<td>Cosmetic issue. Feature request. General enquiry.</td>
+<td>Colour mismatch, new platform request, pricing question</td>
+</tr>
+</tbody></table>
+<h3>2.2 Response &amp; Resolution Targets</h3>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Initial Response</th>
+<th>Update Frequency</th>
+<th>Target Resolution</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>P1 — Critical</strong></td>
+<td>1 hour (Enterprise) / 2 hours (Scale)</td>
+<td>Every 2 hours</td>
+<td>4 hours (Enterprise) / 8 hours (Scale)</td>
+</tr>
+<tr>
+<td><strong>P2 — High</strong></td>
+<td>2 hours (Enterprise) / 4 hours (Scale)</td>
+<td>Every 4 hours</td>
+<td>8 hours (Enterprise) / 24 hours (Scale)</td>
+</tr>
+<tr>
+<td><strong>P3 — Normal</strong></td>
+<td>8 business hours</td>
+<td>Daily</td>
+<td>5 business days</td>
+</tr>
+<tr>
+<td><strong>P4 — Low</strong></td>
+<td>24 business hours</td>
+<td>Weekly</td>
+<td>Next release or planned</td>
+</tr>
+</tbody></table>
+<h3>2.3 Support Channels</h3>
+<table>
+<thead>
+<tr>
+<th>Plan</th>
+<th>Channels</th>
+<th>Hours</th>
+<th>Target First Response</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Growth</td>
+<td>Email only</td>
+<td>UK business hours (09:00–18:00, Mon–Fri)</td>
+<td>48 hours</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>Email + In-app chat</td>
+<td>Extended hours (08:00–20:00, Mon–Fri)</td>
+<td>8 hours</td>
+</tr>
+<tr>
+<td>Enterprise</td>
+<td>Email + Chat + Phone + Dedicated Slack</td>
+<td>24/7/365</td>
+<td>1 hour (P1) / 2 hours (P2)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>3. Data Processing &amp; Security</h2>
+<h3>3.1 Data Residency</h3>
+<table>
+<thead>
+<tr>
+<th>Data Type</th>
+<th>Location</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Customer Conversion Data</td>
+<td>Azure UK South (London)</td>
+<td>Primary processing region</td>
+</tr>
+<tr>
+<td>Enriched Signals (in transit)</td>
+<td>Encrypted TLS 1.3</td>
+<td>End-to-end to platform endpoints</td>
+</tr>
+<tr>
+<td>Dashboard &amp; API Traffic</td>
+<td>Azure West Europe (Amsterdam)</td>
+<td>CDN-cached where appropriate</td>
+</tr>
+<tr>
+<td>Backups</td>
+<td>Azure UK South (geo-redundant)</td>
+<td>Daily snapshots, 30-day retention</td>
+</tr>
+<tr>
+<td>AI Model Training Data</td>
+<td>Azure UK South</td>
+<td>Anonymised, never leaves UK</td>
+</tr>
+</tbody></table>
+<h3>3.2 Data Protection</h3>
+<ul>
+<li><strong>Encryption at rest:</strong> AES-256 (Azure Storage Service Encryption)</li>
+<li><strong>Encryption in transit:</strong> TLS 1.3 minimum (all API endpoints, dashboard, CAPI webhooks)</li>
+<li><strong>Access control:</strong> Role-based access control (RBAC) — Admin, Operator, Viewer roles</li>
+<li><strong>Audit logging:</strong> All access to customer data logged and retained for 12 months</li>
+<li><strong>Data Processing Agreement (DPA):</strong> Available on request, executed before data processing begins</li>
+<li><strong>Sub-processors:</strong> Azure (infrastructure), Stripe (payments), Groq (AI inference), OpenAI (AI inference) — full list in Privacy Policy</li>
+</ul>
+<h3>3.3 Backups &amp; Disaster Recovery</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Backup Frequency</th>
+<th>Recovery Time Objective (RTO)</th>
+<th>Recovery Point Objective (RPO)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PostgreSQL Database</td>
+<td>Every 6 hours</td>
+<td>1 hour</td>
+<td>6 hours</td>
+</tr>
+<tr>
+<td>File Storage (Azure Files)</td>
+<td>Daily</td>
+<td>30 minutes</td>
+<td>24 hours</td>
+</tr>
+<tr>
+<td>Kafka Event Logs</td>
+<td>Real-time replication</td>
+<td>15 minutes</td>
+<td>Near-zero</td>
+</tr>
+<tr>
+<td>Application State</td>
+<td>Immutable container images</td>
+<td>10 minutes</td>
+<td>Image-based</td>
+</tr>
+</tbody></table>
+<p><strong>DR testing:</strong> Conducted quarterly. Customer notification 7 days in advance of scheduled tests.</p>
+<hr>
+<h2>4. Incident Management</h2>
+<h3>4.1 Incident Classification</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Security Incident</strong></td>
+<td>Unauthorised access, data breach, credential compromise</td>
+<td>AWS key leaked, customer data accessed without authorisation</td>
+</tr>
+<tr>
+<td><strong>Availability Incident</strong></td>
+<td>Service degradation or outage</td>
+<td>Azure region failure, database connection pool exhaustion</td>
+</tr>
+<tr>
+<td><strong>Performance Incident</strong></td>
+<td>Latency exceeding p99 SLAs</td>
+<td>LTV prediction spiking above 200ms</td>
+</tr>
+<tr>
+<td><strong>Data Loss Incident</strong></td>
+<td>Customer data lost or corrupted</td>
+<td>Accidental database truncation, backup failure</td>
+</tr>
+</tbody></table>
+<h3>4.2 Incident Response Process</h3>
+<ol>
+<li><strong>Detection</strong> — Automated monitoring (Datadog) or customer report</li>
+<li><strong>Triage</strong> — On-call engineer assesses severity (10 minutes)</li>
+<li><strong>Containment</strong> — Isolate affected systems, reroute traffic if possible</li>
+<li><strong>Resolution</strong> — Fix root cause, verify fix, deploy</li>
+<li><strong>Post-Mortem</strong> — Within 48 hours of resolution (Enterprise) / 5 business days (Scale)</li>
+</ol>
+<h3>4.3 Breach Notification</h3>
+<p>Under UK GDPR Article 33, KIKI Agent will notify the ICO of any personal data breach within 72 hours of becoming aware. Affected customers will be notified within 24 hours of breach confirmation.</p>
+<hr>
+<h2>5. Maintenance Windows</h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Frequency</th>
+<th>Notice Period</th>
+<th>Downtime Expected</th>
+<th>Timing</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Routine Platform Updates</td>
+<td>Weekly</td>
+<td>48 hours</td>
+<td>0 minutes (rolling deploy)</td>
+<td>Tue/Thu 02:00–04:00 UK</td>
+</tr>
+<tr>
+<td>Database Maintenance</td>
+<td>Quarterly</td>
+<td>7 days</td>
+<td>&lt;15 minutes</td>
+<td>Weekend 03:00 UK</td>
+</tr>
+<tr>
+<td>Infrastructure Upgrade</td>
+<td>Bi-annual</td>
+<td>14 days</td>
+<td>&lt;30 minutes</td>
+<td>Weekend 02:00–04:00 UK</td>
+</tr>
+<tr>
+<td>Emergency Security Patch</td>
+<td>As needed</td>
+<td>As soon as possible</td>
+<td>Minimised</td>
+<td>Immediate</td>
+</tr>
+</tbody></table>
+<p><strong>Note:</strong> KIKI uses Azure Container Apps with rolling deployments. Most updates involve zero downtime. Any scheduled downtime exceeding 5 minutes will be communicated 48 hours in advance for Scale plans and 7 days in advance for Enterprise.</p>
+<hr>
+<h2>6. Scope &amp; Exclusions</h2>
+<p>The SLA does not apply to:</p>
+<ol>
+<li>Downtime caused by customer-side issues (misconfiguration, expired credentials, network issues at customer site)</li>
+<li>Scheduled maintenance (with proper notice)</li>
+<li>Force majeure events (Azure region-level outage beyond KIKI&#39;s control, natural disasters, war, terrorism)</li>
+<li>Third-party platform API downtime (if Meta CAPI or Google Ads API is down, KIKI&#39;s delivery SLA may be affected)</li>
+<li>Beta or early-access features explicitly marked as &quot;preview&quot; or &quot;experimental&quot;</li>
+<li>Free trials, pilots, or non-paying accounts</li>
+</ol>
+<hr>
+<h2>7. Reporting &amp; Verification</h2>
+<ul>
+<li><strong>Monthly SLA reports:</strong> Published within 5 business days of month-end</li>
+<li><strong>Real-time status page:</strong> <a href="https://status.kiki.ai">https://status.kiki.ai</a></li>
+<li><strong>Verification:</strong> Customers may request third-party monitoring data (Datadog) under NDA</li>
+<li><strong>Dispute resolution:</strong> Any SLA credit dispute escalated per Founders&#39; Agreement dispute clause (mediation → arbitration)</li>
+</ul>
+<hr>
+<p><em>This SLA framework applies to paid Scale and Enterprise subscriptions. Growth plan customers receive best-effort support with 99.5% target uptime (no financial remedies).</em></p>
+<p><em>KIKI Agent™ — A STOREGRILL INC LTD Company. Registered in England &amp; Wales.</em></p>
+
+
+</body>
+</html>

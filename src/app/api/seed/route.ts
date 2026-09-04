@@ -1,12 +1,20 @@
 export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
 
 export async function POST(req: Request) {
   setRequestId(generateRequestId());
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
+
+  const enf = await checkEnforcement(user.tenantId);
+  if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
+
+  const rl = checkRateLimit(`seed:${user.id}`, { maxRequests: 3, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   try {
     const db = await getDb();

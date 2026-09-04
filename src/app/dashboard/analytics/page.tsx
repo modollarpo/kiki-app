@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar, AIThinking, ScrollableTable } from "@/components/ui";
+import { StatCard, Card, Badge, ProgressBar, AIThinking, ScrollableTable, EmptyState } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K, fmt, PLATFORM_COLORS } from "@/lib/kdls";
 
@@ -93,9 +93,7 @@ export default function AnalyticsPage() {
                   ))}
                 </div>
                 {channels.length === 0 ? (
-                  <div className="p-10 text-center">
-                    <p className="font-mono text-[11px] text-gray-600">No campaign data available. Create campaigns to see channel analytics.</p>
-                  </div>
+                  <EmptyState icon="📊" title="No campaign data" body="Create campaigns to see channel analytics." />
                 ) : (
                   channels.map((ch, i) => {
                     const pc = PLATFORM_COLORS[ch.name.split(" ")[0].toLowerCase()] || K.t3;

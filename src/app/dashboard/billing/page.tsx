@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, Button, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,10 +21,15 @@ interface BillingData {
 }
 
 export default function BillingPage() {
-  const { token } = useAuth();
+  const { token, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [tab, setTab] = useState<"overview" | "invoices">("overview");
   const [billing, setBilling] = useState<BillingData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !token) router.push("/auth/login");
+  }, [token, authLoading, router]);
 
   const fetchBilling = useCallback(async () => {
     if (!token) return;
@@ -40,6 +46,9 @@ export default function BillingPage() {
   useEffect(() => {
     fetchBilling();
   }, [fetchBilling]);
+
+  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (!token) return null;
 
   const plan = billing?.subscription;
   const usage = billing?.usage || {};

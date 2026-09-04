@@ -24,6 +24,7 @@ export default function ReportsPage() {
   const [tab, setTab] = useState<"scheduled" | "templates">("scheduled");
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [warehouseFeatures, setWarehouseFeatures] = useState<WarehouseFeature[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function ReportsPage() {
         if (reports?.data) setReportData(reports.data);
         if (warehouse?.data) setWarehouseFeatures(warehouse.data.features ?? []);
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -94,6 +95,12 @@ export default function ReportsPage() {
             <Button variant="primary" size="sm" onClick={() => buildReport("Custom Report", "A custom report generated on demand from the KIKI Agent reporting engine.")}>+ New Report</Button>
           </div>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
 
         {tab === "scheduled" && (
           <>

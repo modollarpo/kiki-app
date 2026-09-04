@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getBillingStats, recordUsage, generateInvoice, createSubscription } from "@/lib/billing";
 import { getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 
@@ -33,6 +34,11 @@ export async function POST(req: NextRequest) {
     const user = getUserFromRequest(req);
     if (!user) {
       return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const enf = await checkEnforcement(user.tenantId);
+    if (!enf.allowed) {
+      return Response.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
     }
 
     // Abuse protection: 60 billing requests per IP per minute.

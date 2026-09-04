@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { createVirtualCard, topUpWallet } from "@/lib/wallet";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { validateBody, walletTopUpSchema } from "@/lib/validation";
@@ -21,8 +22,8 @@ export async function GET(req: Request) {
 
   if (!wallet) {
     const walletId = genId("wlt");
-    await (await db.prepare("INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, 1000, 'USD')")).run(walletId, user.tenantId);
-    wallet = { id: walletId, tenant_id: user.tenantId, balance: 1000, currency: "USD" };
+    await (await db.prepare("INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, 0, 'USD')")).run(walletId, user.tenantId);
+    wallet = { id: walletId, tenant_id: user.tenantId, balance: 0, currency: "USD" };
   }
 
   const cards = await (await db.prepare("SELECT * FROM wallet_cards WHERE wallet_id = ?")).all(wallet.id) as Array<{
@@ -54,6 +55,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
+
+  const enf = await checkEnforcement(user.tenantId);
+  if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
 
   const rl = checkRateLimit(`wallet:POST:${getClientIp(req)}`, { maxRequests: 30 });
   if (!rl.allowed) return rateLimitResponse(rl);

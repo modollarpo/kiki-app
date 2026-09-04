@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError, sanitizeString } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { logger, handleApiError } from "@/lib/logger";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
@@ -57,6 +58,9 @@ export async function PUT(
 
   const rl = checkRateLimit(`campaigns:PUT:${getClientIp(req)}`, { maxRequests: 20 });
   if (!rl.allowed) return rateLimitResponse(rl);
+
+  const enf = await checkEnforcement(user.tenantId);
+  if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
 
   try {
     const { id } = await params;
@@ -187,6 +191,9 @@ export async function DELETE(
 
   const rl = checkRateLimit(`campaigns:DELETE:${getClientIp(_req)}`, { maxRequests: 10 });
   if (!rl.allowed) return rateLimitResponse(rl);
+
+  const enf = await checkEnforcement(user.tenantId);
+  if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
 
   try {
     const { id } = await params;

@@ -10,11 +10,16 @@ export const dynamic = "force-dynamic";
 // ============================================================
 
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { getPendingApprovals, resolveApproval, getApproval } from "@/lib/slack";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
+
+  const rl = checkRateLimit(`approvals:GET:${getClientIp(req)}`, { maxRequests: 30, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   const pending = await getPendingApprovals(user.tenantId);
   return json({ ok: true, approvals: pending, count: pending.length });
@@ -23,6 +28,12 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
+
+  const enf = await checkEnforcement(user.tenantId);
+  if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
+
+  const rl = checkRateLimit(`approvals:POST:${getClientIp(req)}`, { maxRequests: 30, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   let body: { approvalId: string; resolution: string };
   try {

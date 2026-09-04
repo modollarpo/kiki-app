@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
 import { Card, Badge, ProgressBar, StatCard, ScrollableTable } from "@/components/ui";
@@ -17,12 +18,18 @@ function StatusDot({ status }: { status: string }) {
 
 
 export default function AdminPage() {
-  const { token } = useAuth();
+  const { token, loading: authLoading } = useAuth();
+  const router = useRouter();
   const { data, loading: insightsLoading } = useInsights();
   const admin = data?.admin;
   const [systemMetrics, setSystemMetrics] = useState<MetricPoint[]>([]);
   const [agentStatuses, setAgentStatuses] = useState<Record<string, number>>({});
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !token) router.push("/auth/login");
+  }, [token, authLoading, router]);
 
   useEffect(() => {
     if (!token) return;
@@ -34,7 +41,7 @@ export default function AdminPage() {
           setAgentStatuses(d.data.agents?.byStatus ?? {});
         }
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load admin data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -69,6 +76,9 @@ export default function AdminPage() {
   const degraded = services.filter(s => s.status === "degraded").length;
   const errored = services.filter(s => s.status === "error").length;
 
+  if (authLoading) return <RoleGuard allowedRoles={["admin", "superadmin"]}><DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout></RoleGuard>;
+  if (!token) return null;
+
   return (
     <RoleGuard allowedRoles={["admin", "superadmin"]}>
       <DashboardLayout>
@@ -77,6 +87,12 @@ export default function AdminPage() {
           <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Admin Health</h1>
           <p className="font-mono text-[11px] text-gray-500">Platform service status · Uptime · Latency · Region health</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Services Healthy" value={`${healthy}/${services.length}`} accent={K.mint} sub={`${errored} critical, ${degraded} degraded`} />

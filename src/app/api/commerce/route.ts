@@ -17,6 +17,7 @@ import {
 } from "@/lib/commerce";
 import { recordCommerceOrder } from "@/lib/commerce-feedback";
 import { getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { logger, handleApiError } from "@/lib/logger";
 
 interface CommerceConnectionRow {
@@ -83,6 +84,9 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
+
+    const enf = await checkEnforcement(user.tenantId);
+    if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
 
     const body = (await req.json()) as Record<string, unknown>;
     const action = typeof body.action === "string" ? body.action : "";

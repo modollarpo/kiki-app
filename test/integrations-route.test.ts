@@ -22,6 +22,11 @@ vi.mock("@/lib/auth", () => ({
   })),
 }));
 
+// ── Mock tenant enforcement ───────────────────────────────
+vi.mock("@/lib/tenant", () => ({
+  checkEnforcement: vi.fn().mockResolvedValue({ allowed: true }),
+}));
+
 // ── Mock connectors ────────────────────────────────────────
 const mockConnector = {
   listCampaigns: vi.fn().mockResolvedValue({ success: true, data: [], latencyMs: 0 }),

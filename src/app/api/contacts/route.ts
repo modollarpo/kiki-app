@@ -2,10 +2,17 @@ export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { json, jsonError, validateEmail, validateRequired, sanitizeString, getUserFromRequest } from "@/lib/auth";
 import { handleApiError } from "@/lib/logger";
+import { checkEnforcement } from "@/lib/tenant";
 import { NextRequest } from "next/server";
 
 export async function POST(req: Request) {
   try {
+    const user = getUserFromRequest(req);
+    if (!user) return jsonError("Unauthorized", 401);
+
+    const enf = await checkEnforcement(user.tenantId);
+    if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
+
     const body = await req.json();
     const { firstName, lastName, email, company, message } = body;
 

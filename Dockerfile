@@ -10,6 +10,8 @@ COPY package.json package-lock.json* ./
 # better-sqlite3 needs its install script (prebuilt binary fetch).
 # --include=dev is required: NODE_ENV=production would otherwise skip
 # tailwindcss/typescript needed by `next build`.
+# PUPPETEER_SKIP_DOWNLOAD avoids Chrome download in slim image (PDFs use Edge headless on host).
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN npm install --ignore-scripts=false --engine-strict=false --include=dev
 
 # ── Builder ───────────────────────────────────────────────
@@ -19,9 +21,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . /app
 # NEXT_PUBLIC_* are inlined into the client bundle at build time, so they must
 # be set here (not just as Container App runtime env vars). Override per env via
-# `az acr build --build-arg NEXT_PUBLIC_SITE_URL=...` if mapping a custom domain.
-ARG NEXT_PUBLIC_API_URL="https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io"
-ARG NEXT_PUBLIC_SITE_URL="https://kiki-app.purplesky-3fddb402.swedencentral.azurecontainerapps.io"
+# `az acr build --build-arg NEXT_PUBLIC_API_URL=https://<app>.<region>.azurecontainerapps.io --build-arg NEXT_PUBLIC_SITE_URL=https://<app>.<region>.azurecontainerapps.io`
+ARG NEXT_PUBLIC_API_URL="http://localhost:3000"
+ARG NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 # Allow build even if strict type/lint errors exist in the project

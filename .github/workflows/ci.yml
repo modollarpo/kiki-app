@@ -1,0 +1,88 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  ACR: kikiagentacr
+  RG: kiki-agent-rg
+  APP: kiki-app
+  AZURE_REGION: swedencentral
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci --engine-strict=false
+      - run: npm run type-check
+      - run: npm run lint
+      - run: npm run test
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push images
+        run: |
+          TAG="${{ github.sha }}"
+          az acr build -r "$ACR" -t "kiki-app:latest" -t "kiki-app:$TAG" -f Dockerfile .
+          az acr build -r "$ACR" -t "ml-service:latest" -t "ml-service:$TAG" \
+            -f python-ml-service/Dockerfile python-ml-service/
+
+      - name: Deploy to Container App
+        run: |
+          TAG="${{ github.sha }}"
+          az containerapp update -g "$RG" -n "$APP" \
+            --image "$ACR.azurecr.io/kiki-app:$TAG"
+
+      - name: Set environment variables
+        run: |
+          BASE_URL="https://$APP.purplesky-3fddb402.$AZURE_REGION.azurecontainerapps.io"
+          ENV_VARS=(
+            "SEED_DEMO_DATA=true"
+            "NEXT_PUBLIC_BASE_URL=$BASE_URL"
+          )
+          if [ -n "${{ secrets.SMTP_HOST }}" ]; then
+            ENV_VARS+=("SMTP_HOST=${{ secrets.SMTP_HOST }}")
+          fi
+          if [ -n "${{ secrets.SMTP_PORT }}" ]; then
+            ENV_VARS+=("SMTP_PORT=${{ secrets.SMTP_PORT }}")
+          fi
+          if [ -n "${{ secrets.SMTP_USER }}" ]; then
+            ENV_VARS+=("SMTP_USER=${{ secrets.SMTP_USER }}")
+          fi
+          if [ -n "${{ secrets.SMTP_PASS }}" ]; then
+            ENV_VARS+=("SMTP_PASS=${{ secrets.SMTP_PASS }}")
+          fi
+          if [ -n "${{ secrets.SMTP_FROM }}" ]; then
+            ENV_VARS+=("SMTP_FROM=${{ secrets.SMTP_FROM }}")
+          fi
+          if [ -n "${{ secrets.SMTP_FROM_NAME }}" ]; then
+            ENV_VARS+=("SMTP_FROM_NAME=${{ secrets.SMTP_FROM_NAME }}")
+          fi
+          az containerapp update -g "$RG" -n "$APP" \
+            --set-env-vars "${ENV_VARS[@]}"

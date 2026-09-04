@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card } from "@/components/ui";
+import { Card, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import Link from "next/link";
 
@@ -41,7 +41,7 @@ export default function GuidesIndex() {
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
   }, [token, authLoading, router]);
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   return (

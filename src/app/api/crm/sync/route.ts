@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { logger, handleApiError } from "@/lib/logger";
 import { syncShopifyCustomers } from "@/lib/crm-sync";
 import { syncStripeCustomers } from "@/lib/crm-sync";
@@ -29,6 +30,9 @@ export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const enf = await checkEnforcement(user.tenantId);
+    if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
 
     const body = await req.json();
     const { platform, accessToken, shopDomain, stripeApiKey, hubspotApiKey } = body;

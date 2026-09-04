@@ -16,6 +16,7 @@ export default function ScenariosPage() {
   const router = useRouter();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selected, setSelected] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function ScenariosPage() {
           if (d.data.scenarios.length > 0) setSelected(d.data.scenarios[1]?.id || d.data.scenarios[0].id);
         }
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token, router]);
 
@@ -41,6 +42,12 @@ export default function ScenariosPage() {
           <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Scenario Planner</h1>
           <p className="font-mono text-[11px] text-gray-500">Budget allocation scenarios · Projected ROAS · Risk assessment</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Scenarios" value={scenarios.length > 0 ? String(scenarios.length) : "—"} accent={K.blue} loading={loading} />

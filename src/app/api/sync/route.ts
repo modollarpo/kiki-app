@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { syncPlatformCampaigns, syncAllPlatforms, getSyncStatus } from "@/lib/platform-sync";
 import { logger, handleApiError } from "@/lib/logger";
 
@@ -21,6 +22,9 @@ export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const enf = await checkEnforcement(user.tenantId, "capi");
+    if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
 
     const body = await req.json();
     const { platform, syncAll } = body;

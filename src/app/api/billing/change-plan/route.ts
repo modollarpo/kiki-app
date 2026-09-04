@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { eventBus } from "@/lib/events";
@@ -21,6 +22,9 @@ export async function POST(req: NextRequest) {
     if (!rl.ok) {
       return NextResponse.json({ ok: false, error: "Rate limit exceeded" }, { status: 429 });
     }
+
+    const enf = await checkEnforcement(user.tenantId);
+    if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
 
     const body = await req.json();
     const { plan } = body;

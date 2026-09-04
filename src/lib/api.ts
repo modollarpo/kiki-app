@@ -300,6 +300,53 @@ export const commerce = {
     }),
 };
 
+// ── Auth Extras ─────────────────────────────────────────
+export const authExtras = {
+  forgotPassword: (email: string) =>
+    request<{ ok: boolean }>("/api/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+  resetPassword: (token: string, password: string) =>
+    request<{ ok: boolean }>("/api/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    }),
+};
+
+// ── Onboarding ───────────────────────────────────────────
+export const onboarding = {
+  get: (token: string) =>
+    request<{ ok: boolean; progress: Record<string, boolean> }>("/api/onboarding", { token }),
+  update: (token: string, progress: Record<string, boolean>) =>
+    request<{ ok: boolean }>("/api/onboarding", {
+      method: "PUT",
+      token,
+      body: JSON.stringify({ progress }),
+    }),
+};
+
+// ── Seed (Demo Data) ─────────────────────────────────────
+export const seed = {
+  run: (token: string) =>
+    request<{ ok: boolean; message: string; campaigns: number; signals: number }>("/api/seed", {
+      method: "POST",
+      token,
+    }),
+};
+
+// ── Signal (singular — config/routing) ───────────────────
+export const signal = {
+  get: (token: string) => request<Record<string, unknown>>("/api/signal", { token }),
+  update: (token: string, data: Record<string, unknown>) =>
+    request<{ ok: boolean }>("/api/signal", { method: "POST", token, body: JSON.stringify(data) }),
+};
+
+// ── MMM Analysis ─────────────────────────────────────────
+export const mmmAnalysis = {
+  get: (token: string) => request<Record<string, unknown>>("/api/mmm-analysis", { token }),
+};
+
 // ── Status ──────────────────────────────────────────────
 export const status = {
   get: () => request<{ status: string; services: Array<{ name: string; status: string; p99: number; uptime: number }> }>("/api/status"),

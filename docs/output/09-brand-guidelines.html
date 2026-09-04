@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  @page {
+    size: A4;
+    margin: 20mm 22mm 25mm 22mm;
+    @bottom-center {
+      content: "KIKI Agent™ — STOREGRILL INC LTD | Confidential";
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      color: #6B7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    color: #111827;
+    max-width: 170mm;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* --- Cover Page --- */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 250mm;
+    padding: 0;
+  }
+  .cover .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36pt;
+    font-weight: 700;
+    color: #005CFF;
+    letter-spacing: -0.02em;
+    margin-bottom: 8pt;
+  }
+  .cover .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    color: #6B7280;
+    letter-spacing: 0.02em;
+    margin-bottom: 40pt;
+  }
+  .cover .doc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 20pt;
+    max-width: 140mm;
+  }
+  .cover .divider {
+    width: 60mm;
+    height: 1pt;
+    background: #005CFF;
+    margin: 16pt auto;
+  }
+  .cover .meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    color: #6B7280;
+    line-height: 1.8;
+    margin-top: 20pt;
+  }
+  .cover .legal {
+    font-family: 'Inter', sans-serif;
+    font-size: 7.5pt;
+    color: #9CA3AF;
+    margin-top: 50pt;
+    line-height: 1.5;
+  }
+
+  /* --- Headings --- */
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #005CFF;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    padding-bottom: 4pt;
+    border-bottom: 1.5pt solid #005CFF;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+  }
+
+  p { margin: 4pt 0 8pt 0; }
+
+  /* --- Tables --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 8.5pt;
+  }
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    background: #005CFF;
+    color: #FFFFFF;
+    text-align: left;
+    padding: 5pt 6pt;
+    font-size: 8pt;
+  }
+  td {
+    padding: 4pt 6pt;
+    border-bottom: 0.5pt solid #E5E7EB;
+  }
+  tr:nth-child(even) td {
+    background: #F9FAFB;
+  }
+
+  /* --- Lists --- */
+  ul, ol { margin: 4pt 0; padding-left: 18pt; }
+  li { margin-bottom: 2pt; }
+
+  /* --- Code / Monospace --- */
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    background: #F3F4F6;
+    padding: 1pt 3pt;
+    border-radius: 2px;
+  }
+  pre {
+    padding: 6pt 8pt;
+    line-height: 1.3;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* --- Blockquote --- */
+  blockquote {
+    border-left: 3pt solid #005CFF;
+    margin: 10pt 0;
+    padding: 6pt 12pt;
+    background: #F0F4FF;
+    font-style: italic;
+    color: #374151;
+  }
+
+  /* --- HR --- */
+  hr {
+    border: none;
+    border-top: 0.5pt solid #D1D5DB;
+    margin: 16pt 0;
+  }
+
+  /* --- Page break --- */
+  .page-break { page-break-before: always; }
+
+  /* --- TOC --- */
+  .toc { margin: 12pt 0; }
+  .toc a {
+    display: block;
+    padding: 2pt 0;
+    color: #005CFF;
+    text-decoration: none;
+    font-size: 9pt;
+    font-family: 'Inter', sans-serif;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  /* --- Accent highlight --- */
+  .accent-box {
+    background: #F0F4FF;
+    border: 0.5pt solid #D1D9E8;
+    border-radius: 3px;
+    padding: 8pt 10pt;
+    margin: 10pt 0;
+    font-size: 9pt;
+  }
+  .accent-box strong { color: #005CFF; }
+
+  strong { color: #111827; }
+  em { color: #6B7280; }
+  a { color: #005CFF; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="brand">KIKI Agent™</div>
+  <div class="tagline">Autonomous LTV Campaign Execution</div>
+  <div class="divider"></div>
+  <div class="doc-title">KIKI Agent™ — Brand Guidelines</div>
+  <div class="meta">
+    <strong>Founder:</strong> Ariyo Dolapo<br>
+    <strong>Date:</strong> 26 July 2026<br>
+    <strong>Status:</strong> Confidential — Visual Identity Standards
+  </div>
+  <div class="legal">
+    KIKI Agent™ — A STOREGRILL INC LTD Company<br>
+    Registered in England & Wales
+  </div>
+</div>
+
+<h1>KIKI Agent™ — Brand Guidelines</h1>
+<p><strong>A STOREGRILL INC LTD Company</strong> — Registered in England &amp; Wales</p>
+<h2>1. Brand Positioning</h2>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Statement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Brand Name</strong></td>
+<td>KIKI Agent™</td>
+</tr>
+<tr>
+<td><strong>Legal Name</strong></td>
+<td>STOREGRILL INC LTD (trading as KIKI Agent)</td>
+</tr>
+<tr>
+<td><strong>Tagline</strong></td>
+<td>Autonomous LTV Campaign Execution</td>
+</tr>
+<tr>
+<td><strong>Elevator Pitch</strong></td>
+<td>Your £149 order becomes a £639 signal.</td>
+</tr>
+<tr>
+<td><strong>Brand Archetype</strong></td>
+<td>The Engineer — precise, data-driven, reliable</td>
+</tr>
+<tr>
+<td><strong>Tone</strong></td>
+<td>Technical, confident, direct. No hype, no fluff.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>2. Logo &amp; Wordmark</h2>
+<h3>2.1 Logo Variations</h3>
+<p>KIKI Agent uses a wordmark-only identity (no icon). The brand is the name set in JetBrains Mono.</p>
+<p><strong>Primary:</strong> <code>KIKI Agent™</code> in JetBrains Mono Bold, K.blue (<code>#005CFF</code>)<br><strong>Inverted:</strong> White on dark backgrounds (<code>#FFFFFF</code>)<br><strong>Mono:</strong> K.t1 (<code>#F9FAFB</code>) on g900 (<code>#111827</code>)</p>
+<h3>2.2 Clear Space</h3>
+<p>Minimum clear space: the height of the &quot;K&quot; character on all sides.</p>
+<h3>2.3 Minimum Size</h3>
+<ul>
+<li>Digital: 16px font size minimum</li>
+<li>Print: 12pt font size minimum</li>
+</ul>
+<h3>2.4 Incorrect Usage</h3>
+<ul>
+<li>✗ Never stretch or distort the wordmark</li>
+<li>✗ Never change the typeface (must be JetBrains Mono)</li>
+<li>✗ Never use lowercase for &quot;KIKI&quot; (always uppercase)</li>
+<li>✗ Never remove the ™ symbol</li>
+<li>✗ Never apply glow or shadow effects</li>
+</ul>
+<hr>
+<h2>3. Colour Palette</h2>
+<h3>3.1 Brand Colours</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Hex</th>
+<th>Purpose</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>K.blue</strong></td>
+<td><code>#005CFF</code></td>
+<td>Primary brand</td>
+<td>Headlines, primary CTAs, agent indicators</td>
+</tr>
+<tr>
+<td><strong>K.blue4</strong></td>
+<td><code>#3380FF</code></td>
+<td>Blue variant</td>
+<td>Hover states, secondary elements</td>
+</tr>
+<tr>
+<td><strong>K.mint</strong></td>
+<td><code>#31F3C3</code></td>
+<td>Success / ROAS</td>
+<td>Positive metrics, LTV indicators, &quot;online&quot; status</td>
+</tr>
+<tr>
+<td><strong>K.gold</strong></td>
+<td><code>#F0A500</code></td>
+<td>Warning / Finance</td>
+<td>Wallet, billing, warnings, financial data</td>
+</tr>
+<tr>
+<td><strong>K.danger</strong></td>
+<td><code>#FF3B3B</code></td>
+<td>Error / Fraud</td>
+<td>Errors, stop-loss triggers, fraud alerts</td>
+</tr>
+<tr>
+<td><strong>K.teal</strong></td>
+<td><code>#00B8CC</code></td>
+<td>Signals</td>
+<td>Signal stream, data flow indicators</td>
+</tr>
+<tr>
+<td><strong>K.oaas</strong></td>
+<td><code>#7B2FFF</code></td>
+<td>OaaS / Purple</td>
+<td>Task automation, agent actions</td>
+</tr>
+<tr>
+<td><strong>K.green</strong></td>
+<td>`#00CC66**</td>
+<td>SyncBrain</td>
+<td>AI chat, model routing status</td>
+</tr>
+</tbody></table>
+<h3>3.2 Surface Colours</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Hex</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>K.void</td>
+<td><code>#030712</code></td>
+<td>Page background (darkest)</td>
+</tr>
+<tr>
+<td>K.g950</td>
+<td><code>#030712</code></td>
+<td>Darkest surface</td>
+</tr>
+<tr>
+<td>K.g900</td>
+<td><code>#111827</code></td>
+<td>Main surface</td>
+</tr>
+<tr>
+<td>K.g850</td>
+<td><code>#1F2937</code></td>
+<td>Card background</td>
+</tr>
+<tr>
+<td>K.g800</td>
+<td><code>#1F2937</code></td>
+<td>Card border</td>
+</tr>
+<tr>
+<td>K.g750</td>
+<td><code>#374151</code></td>
+<td>Divider</td>
+</tr>
+<tr>
+<td>K.g700</td>
+<td><code>#374151</code></td>
+<td>Input border</td>
+</tr>
+<tr>
+<td>K.g600</td>
+<td><code>#4B5563</code></td>
+<td>Disabled</td>
+</tr>
+</tbody></table>
+<h3>3.3 Text Colours</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Hex</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>K.t1</td>
+<td><code>#F9FAFB</code></td>
+<td>Primary text (headlines, body)</td>
+</tr>
+<tr>
+<td>K.t2</td>
+<td><code>#9CA3AF</code></td>
+<td>Secondary text (labels, descriptions)</td>
+</tr>
+<tr>
+<td>K.t3</td>
+<td><code>#6B7280</code></td>
+<td>Tertiary text (captions, timestamps)</td>
+</tr>
+<tr>
+<td>K.t4</td>
+<td><code>#4B5563</code></td>
+<td>Placeholder text</td>
+</tr>
+</tbody></table>
+<h3>3.4 Colour Usage Rules</h3>
+<ul>
+<li>Do not use K.mint for error states (use K.danger)</li>
+<li>Do not use K.danger for success metrics (use K.mint)</li>
+<li>K.blue is the primary brand colour. Any external-facing document&#39;s primary accent must be K.blue.</li>
+<li>Always ensure WCAG AA contrast ratio (4.5:1 for body text, 3:1 for large text)</li>
+</ul>
+<hr>
+<h2>4. Typography</h2>
+<h3>4.1 Primary Typeface: JetBrains Mono</h3>
+<p>Used for: Headlines, data, metrics, code blocks, technical documentation, all UI text.</p>
+<table>
+<thead>
+<tr>
+<th>Weight</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Bold (700)</td>
+<td>H1–H3 headlines, stat values</td>
+</tr>
+<tr>
+<td>Medium (500)</td>
+<td>H4–H6, body text, labels</td>
+</tr>
+<tr>
+<td>Regular (400)</td>
+<td>Long-form body text, documentation</td>
+</tr>
+</tbody></table>
+<p><strong>Fallback:</strong> Courier New, monospace</p>
+<h3>4.2 Secondary Typeface: Inter</h3>
+<p>Used for: Long-form content, marketing copy, presentations, business documents.</p>
+<table>
+<thead>
+<tr>
+<th>Weight</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Bold (700)</td>
+<td>Document titles, section headers</td>
+</tr>
+<tr>
+<td>Medium (500)</td>
+<td>Body text</td>
+</tr>
+<tr>
+<td>Regular (400)</td>
+<td>Long-form paragraphs</td>
+</tr>
+</tbody></table>
+<p><strong>Fallback:</strong> system-ui, sans-serif</p>
+<h3>4.3 Typography Scale</h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Size</th>
+<th>Weight</th>
+<th>Leading</th>
+<th>Tracking</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>H1</td>
+<td>48px / 3rem</td>
+<td>Bold</td>
+<td>1.1</td>
+<td>-0.02em</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>36px / 2.25rem</td>
+<td>Bold</td>
+<td>1.2</td>
+<td>-0.01em</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>28px / 1.75rem</td>
+<td>Bold</td>
+<td>1.25</td>
+<td>0</td>
+</tr>
+<tr>
+<td>H4</td>
+<td>20px / 1.25rem</td>
+<td>Bold</td>
+<td>1.3</td>
+<td>0</td>
+</tr>
+<tr>
+<td>H5</td>
+<td>16px / 1rem</td>
+<td>Medium</td>
+<td>1.4</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Body</td>
+<td>14px / 0.875rem</td>
+<td>Regular</td>
+<td>1.5</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Caption</td>
+<td>12px / 0.75rem</td>
+<td>Regular</td>
+<td>1.4</td>
+<td>0.01em</td>
+</tr>
+<tr>
+<td>Label</td>
+<td>11px / 0.6875rem</td>
+<td>Medium</td>
+<td>1.3</td>
+<td>0.02em</td>
+</tr>
+<tr>
+<td>Small</td>
+<td>9px / 0.5625rem</td>
+<td>Medium</td>
+<td>1.2</td>
+<td>0.03em</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. Tone of Voice</h2>
+<h3>5.1 Principles</h3>
+<table>
+<thead>
+<tr>
+<th>Principle</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Precise</strong></td>
+<td>Use exact numbers, not approximations. &quot;38ms&quot; not &quot;~40ms&quot;. &quot;R²=0.91&quot; not &quot;very accurate&quot;.</td>
+</tr>
+<tr>
+<td><strong>Technical</strong></td>
+<td>Assume the reader understands ad tech. Use correct terminology (CAPI, LTV, IVT, SyncBrain).</td>
+</tr>
+<tr>
+<td><strong>Confident</strong></td>
+<td>State facts without hyperbole. &quot;KIKI predicts 90-day LTV in 38ms&quot; not &quot;KIKI revolutionises prediction with blistering speed&quot;.</td>
+</tr>
+<tr>
+<td><strong>Direct</strong></td>
+<td>Short sentences. Active voice. &quot;Bid optimisation becomes a race to the bottom&quot; not &quot;It can be observed that bid optimisation...&quot;</td>
+</tr>
+</tbody></table>
+<h3>5.2 Do &amp; Don&#39;t</h3>
+<table>
+<thead>
+<tr>
+<th>Do</th>
+<th>Don&#39;t</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Your £149 order becomes a £639 signal.&quot;</td>
+<td>&quot;Unlock the hidden potential of your customer data with our AI-powered platform!&quot;</td>
+</tr>
+<tr>
+<td>&quot;Six autonomous AI agents execute within your guardrails.&quot;</td>
+<td>&quot;Our cutting-edge AI agents work tirelessly to optimise your campaigns.&quot;</td>
+</tr>
+<tr>
+<td>&quot;38ms LTV prediction. R²=0.91. 4.29× average uplift.&quot;</td>
+<td>&quot;Lightning-fast predictions with industry-leading accuracy.&quot;</td>
+</tr>
+<tr>
+<td>KIKI Agent</td>
+<td>kiki agent, Kiki Agent, KIKI Agent platform</td>
+</tr>
+<tr>
+<td>STOREGRILL INC LTD</td>
+<td>Storegrill, storegrill inc ltd</td>
+</tr>
+</tbody></table>
+<h3>5.3 Capitalisation Rules</h3>
+<ul>
+<li>KIKI Agent (always uppercase KIKI, capital A for Agent)</li>
+<li>STOREGRILL INC LTD (always uppercase)</li>
+<li>SyncBrain™ (capital S, capital B, ™ on first use)</li>
+<li>CAPI (always uppercase)</li>
+<li>LTV (always uppercase)</li>
+<li>ROAS (always uppercase)</li>
+<li>IoT (always uppercase)</li>
+<li>SaaS (always uppercase)</li>
+<li>UK (always uppercase)</li>
+</ul>
+<hr>
+<h2>6. Document Templates</h2>
+<h3>6.1 Business Document Template</h3>
+<p><strong>Page setup:</strong></p>
+<ul>
+<li>A4 (210mm × 297mm)</li>
+<li>Margin: 20mm all sides</li>
+<li>Header: Thin K.blue line at top (1pt), document title in JetBrains Mono Bold 10pt</li>
+<li>Footer: &quot;KIKI Agent™ — STOREGRILL INC LTD | Confidential&quot; in 8pt, centred</li>
+<li>Section headers: K.blue <code>#005CFF</code></li>
+<li>Tables: Alternating row colours (white / K.g850 <code>#1F2937</code>)</li>
+<li>Page numbers: Bottom right, 8pt</li>
+</ul>
+<p><strong>Colour scheme for printed documents:</strong></p>
+<ul>
+<li>Use dark text on white background for printed documents (K.blue for headers, black for body)</li>
+<li>Digital-only documents keep the dark theme (white text on dark background)</li>
+</ul>
+<h3>6.2 Presentation Template (Pitch Deck)</h3>
+<ul>
+<li>Dark background (K.void <code>#030712</code>)</li>
+<li>White text (K.t1 <code>#F9FAFB</code>), K.blue <code>#005CFF</code> accents</li>
+<li>JetBrains Mono throughout</li>
+<li>2px border radius on all graphic elements</li>
+<li>No bullet points — use short statements on slides, expand verbally</li>
+<li>Full-bleed dark slides with accent-colour glow effects</li>
+</ul>
+<hr>
+<h2>7. Glossary (Brand-Approved Terms)</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Correct Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LTV-enriched bidding</td>
+<td>KIKI&#39;s core capability. Always hyphenate &quot;LTV-enriched&quot;.</td>
+</tr>
+<tr>
+<td>SyncBrain™</td>
+<td>TM on first mention. &quot;SyncBrain AI routing engine&quot;</td>
+</tr>
+<tr>
+<td>CAPI enrichment</td>
+<td>The process of enhancing server-side events with LTV data</td>
+</tr>
+<tr>
+<td>Agent (capitalised)</td>
+<td>When referring to KIKI&#39;s six AI agents specifically</td>
+</tr>
+<tr>
+<td>Signal Stream</td>
+<td>KIKI&#39;s real-time event feed dashboard</td>
+</tr>
+<tr>
+<td>Guardrails</td>
+<td>Configurable limits within which agents operate</td>
+</tr>
+<tr>
+<td>KDLS</td>
+<td>KIKI Design Language System (internal reference only)</td>
+</tr>
+<tr>
+<td>Autonomous campaign execution</td>
+<td>KIKI&#39;s market category (preferred over &quot;AI bidding&quot; or &quot;optimisation&quot;)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>8. Digital Presence</h2>
+<ul>
+<li><strong>Website:</strong> KIKI Agent branded dark theme with JetBrains Mono</li>
+<li><strong>Email:</strong> Plain-text preferred for technical communications. HTML with minimal KIKI branding for marketing.</li>
+<li><strong>Social:</strong> LinkedIn primary channel. Technical content, product updates, thought leadership on CAPI and LTV.</li>
+<li><strong>Slack/Discord:</strong> KIKI Agent logomark in channel headers. Platform status bot.</li>
+</ul>
+<hr>
+<p><em>These guidelines apply to all KIKI Agent external and internal communications, documents, and interfaces.</em></p>
+<p><em>KIKI Agent™ — A STOREGRILL INC LTD Company. Registered in England &amp; Wales.</em></p>
+
+
+</body>
+</html>

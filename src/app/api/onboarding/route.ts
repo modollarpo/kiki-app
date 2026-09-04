@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
 
 export async function GET(req: Request) {
@@ -24,6 +25,9 @@ export async function PUT(req: Request) {
   setRequestId(generateRequestId());
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
+
+  const enf = await checkEnforcement(user.tenantId);
+  if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
 
   try {
     const { step_id, completed } = await req.json();

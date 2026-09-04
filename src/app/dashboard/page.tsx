@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, Button, AIThinking, ProgressBar, StatusBadge, ScrollableTable } from "@/components/ui";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { WelcomeOverlay } from "@/components/dashboard/WelcomeOverlay";
 import { useKikiStore } from "@/store";
@@ -42,6 +43,7 @@ export default function DashboardPage() {
   const [signalStats, setSignalStats] = useState<SignalStats | null>(null);
   const [runwayDays, setRunwayDays] = useState<number | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSeedDemo = async () => {
     if (!token) return;
@@ -61,7 +63,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!token) { router.push("/auth/login"); return; }
-    dashboard.get(token).then(d => { setData(d); setLoading(false); setLastUpdate(new Date()); }).catch(() => setLoading(false));
+    dashboard.get(token).then(d => { setData(d); setLoading(false); setLastUpdate(new Date()); }).catch((err) => { setError(err?.message || "Failed to load dashboard data"); setLoading(false); });
   }, [token, router]);
 
   useEffect(() => {
@@ -78,7 +80,7 @@ export default function DashboardPage() {
     fetch("/api/syncbrain", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setSyncbrainStats(d); })
-      .catch(() => {});
+      .catch((err) => { setError(err?.message || "Failed to load SyncBrain stats"); });
   }, [token]);
 
   // Fetch signal stats
@@ -87,7 +89,7 @@ export default function DashboardPage() {
     fetch("/api/signals", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setSignalStats(d); })
-      .catch(() => {});
+      .catch((err) => { setError(err?.message || "Failed to load signal stats"); });
   }, [token]);
 
   const agents = data?.agents || storeAgents;
@@ -128,7 +130,7 @@ export default function DashboardPage() {
           <div className="min-w-0">
             <h1 className="font-mono font-bold text-[clamp(16px,2.5vw,20px)] text-t1 tracking-tight mb-1">Command Center</h1>
             <p className="font-mono text-[11px] text-t3 overflow-hidden text-ellipsis whitespace-nowrap">
-              {loading ? "Loading..." : `Live · ${data?.system?.status || "nominal"} · ${data?.system?.agentsRunning || 0} agents · ${lastUpdate.toLocaleTimeString()}`}
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `Live · ${data?.system?.status || "nominal"} · ${data?.system?.agentsRunning || 0} agents · ${lastUpdate.toLocaleTimeString()}`}
             </p>
           </div>
           <div className="page-header-actions">
@@ -137,17 +139,26 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
+
         <OnboardingChecklist />
 
         {/* KPI Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Platform ROAS" value={data ? `${data.kpis.roas.value}×` : "—"} delta={data?.kpis.roas.delta} period="last month" accent={K.mint} loading={loading} />
-          <StatCard label="Total Ad Spend" value={data ? `$${fmt(data.kpis.spend.value)}` : "—"} delta={data?.kpis.spend.delta} accent={K.blue} loading={loading} />
-          <StatCard label="Avg LTV Signal" value={data ? `$${data.kpis.ltv.value}` : "—"} delta={data?.kpis.ltv.delta} accent={K.gold} loading={loading} />
-          <StatCard label="Wallet Balance" value={`$${fmt(balance)}`} accent={K.gold} sub={runwayDays !== null ? `~${runwayDays} days runway` : "—"} loading={loading} />
-        </div>
+        <ErrorBoundary>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <StatCard label="Platform ROAS" value={data ? `${data.kpis.roas.value}×` : "—"} delta={data?.kpis.roas.delta} period="last month" accent={K.mint} loading={loading} />
+            <StatCard label="Total Ad Spend" value={data ? `$${fmt(data.kpis.spend.value)}` : "—"} delta={data?.kpis.spend.delta} accent={K.blue} loading={loading} />
+            <StatCard label="Avg LTV Signal" value={data ? `$${data.kpis.ltv.value}` : "—"} delta={data?.kpis.ltv.delta} accent={K.gold} loading={loading} />
+            <StatCard label="Wallet Balance" value={`$${fmt(balance)}`} accent={K.gold} sub={runwayDays !== null ? `~${runwayDays} days runway` : "—"} loading={loading} />
+          </div>
+        </ErrorBoundary>
 
         {/* Main Grid: Campaigns + Agents */}
+        <ErrorBoundary>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] gap-3 mb-3">
           <Card padding={0}>
             <div className="px-5 py-[14px] border-b border-kcardborder flex items-center justify-between gap-2 flex-wrap">
@@ -207,8 +218,10 @@ export default function DashboardPage() {
             ))}
           </Card>
         </div>
+        </ErrorBoundary>
 
         {/* Bottom 3-column: SyncBrain, Signal, Wallet */}
+        <ErrorBoundary>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <Card accent={K.green}>
             <div className="flex items-center gap-2 mb-3">
@@ -297,6 +310,7 @@ export default function DashboardPage() {
             </div>
           </Card>
         </div>
+        </ErrorBoundary>
       </div>
     </DashboardLayout>
   );

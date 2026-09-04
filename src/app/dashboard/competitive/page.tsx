@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, StatCard, ScrollableTable } from "@/components/ui";
+import { Card, Badge, StatCard, ScrollableTable, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Competitor {
@@ -24,6 +24,7 @@ export default function CompetitiveIntelligencePage() {
   const [trends, setTrends] = useState<MarketTrend[]>([]);
   const [sov, setSov] = useState<{ yourShare: number; topCompetitor: number; industryAvg: number } | null>(null);
   const [cpmBenchmarks, setCpmBenchmarks] = useState<CpmBenchmark[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -44,11 +45,11 @@ export default function CompetitiveIntelligencePage() {
           if (d.data.cpmBenchmarks) setCpmBenchmarks(d.data.cpmBenchmarks);
         }
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load competitive data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   return (
@@ -58,6 +59,12 @@ export default function CompetitiveIntelligencePage() {
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Competitive Intelligence</h1>
           <p className="font-mono text-[11px] text-t3">Track competitor ad spend, benchmarks, and market share</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Market Share" value={sov ? `${sov.yourShare}%` : "—"} delta={2.3} sub="+2.3% vs last quarter" accent={K.mint} loading={loading} />

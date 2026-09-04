@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
 import { StatCard, Card, Badge, ProgressBar, AIThinking } from "@/components/ui";
@@ -18,13 +19,19 @@ interface RecentAction {
 }
 
 export default function AIOpsPage() {
-  const { token } = useAuth();
+  const { token, loading: authLoading } = useAuth();
+  const router = useRouter();
   const { data, loading: insightsLoading } = useInsights();
   const aiops = data?.aiops ?? { metrics: [], uptime: 0, activeServices: 0 };
   const [agents, setAgents] = useState<AgentModel[]>([]);
   const [systemMetrics, setSystemMetrics] = useState<SystemMetric[]>([]);
   const [recentActions, setRecentActions] = useState<RecentAction[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !token) router.push("/auth/login");
+  }, [token, authLoading, router]);
 
   useEffect(() => {
     if (!token) return;
@@ -37,7 +44,7 @@ export default function AIOpsPage() {
           setRecentActions(d.data.recentActions ?? []);
         }
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load AI Ops data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -68,6 +75,9 @@ export default function AIOpsPage() {
 
   const isLoading = loading || insightsLoading;
 
+  if (authLoading) return <RoleGuard allowedRoles={["admin", "superadmin"]}><DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout></RoleGuard>;
+  if (!token) return null;
+
   return (
     <RoleGuard allowedRoles={["admin", "superadmin"]}>
       <DashboardLayout>
@@ -76,6 +86,12 @@ export default function AIOpsPage() {
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">AI Ops &amp; MLOps</h1>
           <p className="font-mono text-[11px] text-t3">Model registry · training queue · experiments</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Active Agents" value={isLoading ? "…" : String(aiops.activeServices)} accent={K.mint} sub="Running services" />

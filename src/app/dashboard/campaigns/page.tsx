@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Button, StatusBadge, ProgressBar, ScrollableTable } from "@/components/ui";
+import { StatCard, Card, Button, StatusBadge, ProgressBar, ScrollableTable, AIThinking } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { campaigns as campaignsApi, type Campaign } from "@/lib/api";
 import { K } from "@/lib/kdls";
@@ -47,7 +47,7 @@ export default function CampaignsPage() {
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Campaigns</h1>
             <p className="font-mono text-[11px] text-t3">
-              {loading ? "Loading..." : `${campaignList.length} campaigns · ${active.length} active · Bidding Agent active`}
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `${campaignList.length} campaigns · ${active.length} active · Bidding Agent active`}
             </p>
           </div>
           <div className="page-header-actions">

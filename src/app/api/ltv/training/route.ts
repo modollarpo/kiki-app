@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
+import { checkEnforcement } from "@/lib/tenant";
 import { trainModel, getActiveModel, getModelHistory, getMetacognitionLog, getFeatureStore, getFeedbackSummary } from "@/lib/ltv-training";
 import { logger, handleApiError } from "@/lib/logger";
 
@@ -53,6 +54,9 @@ export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const enf = await checkEnforcement(user.tenantId, "ltv_prediction");
+    if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
 
     const result = await trainModel(user.tenantId);
     return NextResponse.json(result);

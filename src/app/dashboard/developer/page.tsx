@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
-import { Card, Badge, Button } from "@/components/ui";
+import { Card, Badge, Button, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -16,6 +16,7 @@ export default function DeveloperPage() {
   const [usage, setUsage] = useState<{ byType: UsageByType[]; totalApiCalls: number; totalCost: number } | null>(null);
   const [systemMetrics, setSystemMetrics] = useState<SystemMetric[]>([]);
   const [recentActions, setRecentActions] = useState<RecentAction[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function DeveloperPage() {
           setRecentActions(d.data.recentActions ?? []);
         }
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -74,6 +75,12 @@ export default function DeveloperPage() {
           <p className="font-mono text-[11px] text-gray-500">API keys · Webhooks · SDK version · Rate limits · Usage</p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {[{ label: "API Calls (24h)", value: loading ? "…" : totalApiCalls > 1000 ? `${(totalApiCalls / 1000).toFixed(1)}K` : String(totalApiCalls), color: K.blue },
             { label: "Avg Latency", value: loading ? "…" : `${avgLatency}ms`, color: K.mint },
@@ -94,7 +101,7 @@ export default function DeveloperPage() {
               <Button variant="secondary" size="sm">+ Generate Key</Button>
             </div>
             {loading ? (
-              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading…</span></div>
+              <div className="flex items-center justify-center py-8"><AIThinking text="Loading..." /></div>
             ) : apiKeys.length === 0 ? (
               <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No API keys generated yet. Click "+ Generate Key" to create one.</span></div>
             ) : (
@@ -130,7 +137,7 @@ export default function DeveloperPage() {
               <Button variant="secondary" size="sm">+ Add Endpoint</Button>
             </div>
             {loading ? (
-              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading…</span></div>
+              <div className="flex items-center justify-center py-8"><AIThinking text="Loading..." /></div>
             ) : webhooks.length === 0 ? (
               <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No webhook endpoints configured. Click "+ Add Endpoint" to create one.</span></div>
             ) : (
@@ -155,7 +162,7 @@ export default function DeveloperPage() {
           <Card>
             <h2 className="font-mono font-bold text-[13px] text-white mb-3.5 flex items-center gap-2">Rate Limits <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h2>
             {loading ? (
-              <div className="py-4 text-center"><span className="font-mono text-[11px] text-gray-500">Loading…</span></div>
+              <div className="flex items-center justify-center py-4"><AIThinking text="Loading..." /></div>
             ) : (
               rateLimits.map((r, i) => (
                 <div key={i} className="mb-3">
@@ -174,7 +181,7 @@ export default function DeveloperPage() {
           <Card>
             <h2 className="font-mono font-bold text-[13px] text-white mb-3.5">Recent Actions</h2>
             {loading ? (
-              <div className="py-4 text-center"><span className="font-mono text-[11px] text-gray-500">Loading…</span></div>
+              <div className="flex items-center justify-center py-4"><AIThinking text="Loading..." /></div>
             ) : recentActions.length === 0 ? (
               <div className="py-4 text-center"><span className="font-mono text-[11px] text-gray-500">No recent actions.</span></div>
             ) : (

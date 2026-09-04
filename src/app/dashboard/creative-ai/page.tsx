@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, StatCard, Badge, Button, ScrollableTable } from "@/components/ui";
+import { Card, StatCard, Badge, Button, ScrollableTable, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { creativeGenerate } from "@/lib/api";
 
@@ -140,7 +140,7 @@ export default function CreativeAIPage() {
               <p className="font-mono text-[10px] mt-1" style={{ color: K.t3 }}>ROAS below 60% of target for 3+ days</p>
             </div>
             {loading ? (
-              <div className="px-5 py-8 text-center font-mono text-[11px]" style={{ color: K.t3 }}>Loading…</div>
+              <div className="flex items-center justify-center py-8"><AIThinking text="Loading..." /></div>
             ) : !data?.fatigued.length ? (
               <div className="px-5 py-8 text-center font-mono text-[11px]" style={{ color: K.t3 }}>
                 ✅ No fatigued campaigns detected
@@ -189,7 +189,7 @@ export default function CreativeAIPage() {
             <h2 className="font-mono font-bold text-[13px]" style={{ color: K.t1 }}>Generated Creative Bundles</h2>
           </div>
           {loading ? (
-            <div className="px-5 py-8 text-center font-mono text-[11px]" style={{ color: K.t3 }}>Loading…</div>
+            <div className="flex items-center justify-center py-8"><AIThinking text="Loading..." /></div>
           ) : !data?.creatives.length ? (
             <div className="px-5 py-12 text-center">
               <p className="font-mono text-[13px] mb-2" style={{ color: K.t2 }}>No creatives generated yet</p>

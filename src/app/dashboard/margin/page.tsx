@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, ProgressBar, StatCard, ScrollableTable } from "@/components/ui";
+import { Card, Badge, ProgressBar, StatCard, ScrollableTable, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface ChannelMargin { name: string; spend: number; revenue: number; margin: number; cac: number; ltv: number; }
@@ -12,6 +12,7 @@ export default function ProfitMarginPage() {
   const [overview, setOverview] = useState<{ avgMargin: number; profitAdjCAC: number; grossProfit: number } | null>(null);
   const [channels, setChannels] = useState<ChannelMargin[]>([]);
   const [trend, setTrend] = useState<{ month: string; margin: number }[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -31,11 +32,11 @@ export default function ProfitMarginPage() {
           setTrend(d.data.marginTrend);
         }
       })
-      .catch(() => {})
+      .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
-  if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
+  if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
 
   return (
@@ -46,6 +47,12 @@ export default function ProfitMarginPage() {
           <p className="font-mono text-[11px] text-gray-500">Channel-level margins and profit-adjusted acquisition costs</p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
+            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Avg Margin" value={overview ? `${overview.avgMargin}%` : "—"} delta={3.2} sub="+3.2% this quarter" accent={K.mint} loading={loading} />
           <StatCard label="Profit-Adj CAC" value={overview ? `$${overview.profitAdjCAC}` : "—"} delta={-4.8} sub="-$4.80 improvement" accent={K.blue} loading={loading} />
@@ -55,6 +62,9 @@ export default function ProfitMarginPage() {
 
         <Card accent={K.mint} className="mb-4">
           <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Channel Margins</h3>
+          {channels.length === 0 ? (
+            <EmptyState icon="💰" title="No channel data" body="Channel margin data will appear once campaigns are running." />
+          ) : (
           <ScrollableTable>
             <div className="flex flex-col gap-2 min-w-[500px]">
             {channels.map((ch, i) => (
@@ -85,6 +95,7 @@ export default function ProfitMarginPage() {
             ))}
             </div>
           </ScrollableTable>
+          )}
         </Card>
 
         <Card accent={K.teal}>
