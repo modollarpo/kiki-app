@@ -7,8 +7,9 @@ const OUT = "public/icons";
 const sizes = [16, 32, 48, 72, 96, 128, 180, 192, 512];
 
 async function render(size, filename) {
-  const glowScale = Math.max(2, Math.round(size * 0.72));
-  const blurPx = Math.max(1, Math.round(size * 0.10));
+  const isFavicon = size <= 48;
+  const glowScale = isFavicon ? Math.round(size) : Math.max(2, Math.round(size * 0.72));
+  const blurPx = isFavicon ? 1 : Math.max(1, Math.round(size * 0.10));
   const glow = await sharp(SRC)
     .resize(glowScale, glowScale, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .tint({ r: 0, g: 92, b: 255 })
@@ -16,7 +17,7 @@ async function render(size, filename) {
     .blur(blurPx)
     .toBuffer();
 
-  const tileScale = Math.max(1, Math.round(size * 0.54));
+  const tileScale = isFavicon ? Math.round(size * 0.94) : Math.max(1, Math.round(size * 0.54));
   const tile = await sharp(SRC)
     .resize(tileScale, tileScale, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .toBuffer();

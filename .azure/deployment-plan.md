@@ -81,3 +81,52 @@ AZCLI + Bicep (infra-as-code committed to `./infra/`), deployed via `az`. Image 
 | 8 | `opencode-backend` container set `OPENCODE_SECRET` from `jwt-secret` (`infra/main.bicep:264`) — wrong secret, would break OpenCode agent auth | Changed to `opencode-secret` (matches web container) | ✅ |
 
 **Verification**: `npm run type-check` (0 errors), `npm run lint` (clean), `npm test` (177 passed / 22 skipped), `npm run build` (84/84 pages compiled).
+
+## 10. Live Deployment — Verified 2026-09-05 (Storegrill_Azure)
+
+> **Subscription**: `Storegrill_Azure` (`a7d8e706-d6e4-41b1-9b21-aab49e3a8e6d`) — Azure Sponsorship (`quotaId Sponsored_2016-01-01`, spending limit **off**). OpenAI/AI Foundry deployable conditionally; gpt-4o/gpt-4.1-mini quotas approved in swedencentral.
+
+### Deployed Resources (resource group `kiki-agent-rg`, swedencentral)
+
+| Resource | Name | Notes |
+|---|---|---|
+| Container App | `kiki-app` | 4 containers, revision `kiki-app--0000003`, all Running/Healthy |
+| Container App env | `kiki-env` | Consumption workload profile |
+| Container Registry | `kikiagentacrchrdtvff` (`kikiagentacrchrdtvff.azurecr.io`) | images: `kiki-app:latest`, `ml-service:latest` (+ `scipy112` tag) |
+| OpenAI account | `kikiopenaichrdtvff` | `https://kikiopenaichrdtvff.openai.azure.com/` |
+| OpenAI deployments | `gpt-4.1-mini` (2025-04-14, GlobalStandard), `gpt-4o` (2024-11-20, GlobalStandard) | gpt-4o-mini 2024-07-18 is **deprecating** → replaced by gpt-4.1-mini |
+| Storage account | `kikistore<suffix>` | file share `kikidata` mounted at `/app/data` (SQLite persistence) |
+| Log Analytics | `kiki-logs` | `ContainerAppConsoleLogs_CL` |
+
+**App FQDN**: `https://kiki-app.salmonforest-af3a732c.swedencentral.azurecontainerapps.io` — NOTE: output `containerAppUrl` uses the no-hash hostname (`kiki-app.swedencentral...`) which does NOT resolve; real FQDN carries the `salmonforest-af3a732c` hash.
+
+### Containers
+1. `kiki-web` — Next.js standalone, port 3000, AzureFile volume `/app/data`
+2. `ml-service` — FastAPI/pymc, port 8000, **scipy pinned `1.12.0`** (1.13+ removed `scipy.signal.gaussian`; 1.13.1 pin still crashed — 1.12.0 is the correct floor)
+3. `opencode-backend` — `opencode-ai@1.18.2 serve --port 8080`, same `kiki-app` image
+4. `libretranslate` — `libretranslate/libretranslate:latest`, 17 languages
+
+### Env overrides on `kiki-web`
+`AZURE_OPENAI_DEPLOYMENT_MINI=gpt-4.1-mini` (was `gpt-4o-mini`, deprecating → tried to deploy → rejected `ServiceModelDeprecating`), `GROQ_MODEL=openai/gpt-oss-20b`, `SEED_DEMO_DATA=false`, `DATABASE_URL` empty (SQLite on file share), `AZURE_OPENAI_API_KEY` from `openAi.listKeys().key1`.
+
+### Smoke test results (all passed)
+- `GET /` → 200 (marketing site)
+- `GET /api/health` → `{ok:true,status:"healthy"}`
+- `GET /api/status` → `{ok:true,status:"operational"}`
+- `POST /api/auth/signup` → 201 + JWT; `POST /api/auth/login` → 200 (persistence confirmed across revision recycle)
+- `POST /api/ai/chat` → 200 `"content":"AI-OK"` (routed to Azure OpenAI gpt-4.1-mini via live deployment)
+- Direct OpenAI: both `gpt-4.1-mini` and `gpt-4o` deployments returned `PONG` via account key1
+
+### Bicep fixes applied during this deployment
+1. `sha256()`/`uuid()` don't exist in Bicep → secret derivation uses concatenated `uniqueString()` (5× for encryptionKey/opencodeSecret to reach 64 chars)
+2. Duplicate `opencodeSecret` symbol → `opencodeSecretResolved` var with `empty()? derived : param`
+3. `acr.loginServer` → `acr.properties.loginServer`
+4. VolumeMount `name` → `volumeName` (ContainerAppInvalidValue)
+5. Empty secrets rejected → `union([...], empty(x)? [] : [{...}])` conditional audit
+6. Globally-unique name collisions (`kikiopenai` taken) → `uniqueSuffix = substring(uniqueString(subscriptionId, location, baseName),0,8)`
+7. `az deployment group what-if` broken in this az CLI version (deserialization + echoes secrets) → use `az deployment group create` inline
+
+### Post-deploy rotation (REQUIRED)
+- **GROQ_API_KEY and OPENCODE_SECRET were echoed in `what-if`/`deployment group create` error output** → rotate both after this session.
+- Stripe keys: rotate once live; set `STRIPE_WEBHOOK_SECRET` for Container App endpoint.
+- Old `DATABASE_URL` (old subscription Postgres) — replace when Postgres is provisioned, or keep empty for SQLite.
