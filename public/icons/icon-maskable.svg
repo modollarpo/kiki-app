@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Full-bleed opaque background: OS mask (circle/squircle/rounded-square) crops it -->
+  <rect width="32" height="32" fill="#0A0A0B"/>
+  <!-- K logo scaled to fit the 80% safe zone (radius 40% of shortest side) so no mask clips it -->
+  <g transform="translate(16,16) scale(0.7167) translate(-15.44,-16)">
+    <rect x="3.68" y="2.56" width="6.16" height="26.88" rx="0.8" fill="#005CFF"/>
+    <polygon points="11.52,16 11.52,9.28 24.96,2.56 24.96,7.6" fill="#005CFF"/>
+    <polygon points="11.52,16 11.52,22.72 24.96,29.44 24.96,22.72" fill="#31F3C3"/>
+    <polygon points="18.24,9.28 27.2,2.56 27.2,12.64" fill="#31F3C3"/>
+  </g>
+</svg>
