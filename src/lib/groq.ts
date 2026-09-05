@@ -7,13 +7,14 @@ import { logger } from "./logger";
 import { withRetry } from "./retry";
 
 export const GROQ_CONFIG = {
-  // Llama 3.1 8B Instant: ~$0.05/1M input, ~$0.08/1M output
+  // GPT-OSS 20B: ~$0.075/1M input, ~$0.30/1M output (Groq, production tier)
+  // Replaced llama-3.1-8b-instant (retired by Groq 16 Aug 2026).
   // Great for: real-time bidding, fast classification, routing
   fast: {
-    model: process.env.GROQ_MODEL || "llama-3.1-8b-instant",
+    model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
     maxTokens: 2048,
-    costPer1kInput: 0.00005,
-    costPer1kOutput: 0.00008,
+    costPer1kInput: 0.000075,
+    costPer1kOutput: 0.0003,
   },
 } as const;
 
