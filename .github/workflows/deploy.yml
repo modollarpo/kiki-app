@@ -15,7 +15,7 @@ concurrency:
 
 env:
   RESOURCE_GROUP: kiki-agent-rg
-  ACR_NAME: kikiagentacr
+  ACR_NAME: kikiagentacrchrdtvff
   CONTAINER_APP: kiki-app
   IMAGE: kiki-app
 
