@@ -9,6 +9,7 @@ export const AgentsShowcase: React.FC = () => {
 
   const agents = AGENT_COLORS.map((a, i) => ({
     ...a,
+    code: ["BD", "CR", "SP", "SG", "OS", "SB"][i],
     tasks: [142, 89, 203, 167, 94, 312][i],
     accuracy: [96.2, 91.8, 98.1, 94.5, 97.3, 99.1][i],
   }));
@@ -21,9 +22,9 @@ export const AgentsShowcase: React.FC = () => {
           <div style={{ fontFamily: "sans-serif", color: K.t1, fontSize: 48, fontWeight: 800 }}>6 agents. Working 24/7.</div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 20, alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, alignItems: "center" }}>
           {[0, 1].map(row => (
-            <div key={row} style={{ display: "flex", gap: 20 }}>
+            <div key={row} style={{ display: "flex", gap: 24 }}>
               {agents.slice(row * 3, row * 3 + 3).map((agent, idx) => {
                 const i = row * 3 + idx;
                 const delay = 30 + i * 18;
@@ -35,22 +36,33 @@ export const AgentsShowcase: React.FC = () => {
                     opacity: interpolate(progress, [0, 1], [0, 1]),
                     transform: `translateY(${interpolate(progress, [0, 1], [60, 0])}px)`,
                     background: K.g850, border: `1px solid ${agent.color}40`, borderRadius: 16,
-                    padding: "24px 28px", width: 460, textAlign: "left",
+                    padding: "28px 28px 24px", width: 468, textAlign: "left",
                     boxShadow: `0 0 20px ${agent.color}10`,
                   }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 42, height: 42, borderRadius: 12, background: `${agent.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{agent.icon}</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 46, height: 46, borderRadius: 12, background: `${agent.color}1c`, border: `1px solid ${agent.color}45`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div style={{ fontFamily: "monospace", color: agent.color, fontSize: 18, fontWeight: 900, letterSpacing: 1 }}>{agent.code}</div>
+                        </div>
                         <div>
-                          <div style={{ fontFamily: "sans-serif", color: K.t1, fontSize: 16, fontWeight: 700 }}>{agent.name}</div>
+                          <div style={{ fontFamily: "sans-serif", color: K.t1, fontSize: 18, fontWeight: 700 }}>{agent.name}</div>
                         </div>
                       </div>
                       <div style={{ width: 10, height: 10, borderRadius: "50%", background: K.mint, opacity: pulseOpacity, boxShadow: `0 0 8px ${K.mint}` }} />
                     </div>
-                    <div style={{ display: "flex", gap: 32 }}>
-                      <div><div style={{ color: K.t3, fontSize: 11 }}>TASKS</div><div style={{ fontFamily: "monospace", color: K.t1, fontSize: 22, fontWeight: 800 }}>{agent.tasks}</div></div>
-                      <div><div style={{ color: K.t3, fontSize: 11 }}>ACCURACY</div><div style={{ fontFamily: "monospace", color: agent.color, fontSize: 22, fontWeight: 800 }}>{agent.accuracy}%</div></div>
-                      <div><div style={{ color: K.t3, fontSize: 11 }}>STATUS</div><div style={{ fontFamily: "monospace", color: K.mint, fontSize: 13, marginTop: 4 }}>● RUNNING</div></div>
+                    <div style={{ display: "flex", gap: 16 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ color: K.t3, fontSize: 12 }}>TASKS</div>
+                        <div style={{ fontFamily: "monospace", color: K.t1, fontSize: 24, fontWeight: 800 }}>{agent.tasks}</div>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ color: K.t3, fontSize: 12 }}>ACCURACY</div>
+                        <div style={{ fontFamily: "monospace", color: agent.color, fontSize: 24, fontWeight: 800 }}>{agent.accuracy}%</div>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ color: K.t3, fontSize: 12 }}>STATUS</div>
+                        <div style={{ fontFamily: "monospace", color: K.mint, fontSize: 15, marginTop: 5 }}>● RUNNING</div>
+                      </div>
                     </div>
                   </div>
                 );

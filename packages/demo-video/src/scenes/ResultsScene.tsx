@@ -22,7 +22,7 @@ export const ResultsScene: React.FC = () => {
           <div style={{ fontFamily: "sans-serif", color: K.t1, fontSize: 52, fontWeight: 800 }}>A raw order becomes an <span style={{ color: K.mint }}>LTV signal.</span></div>
         </div>
 
-        <div style={{ display: "flex", gap: 32, justifyContent: "center", marginBottom: 60 }}>
+        <div style={{ display: "flex", gap: 28, justifyContent: "center", marginBottom: 60 }}>
           {metrics.map((m, i) => {
             const delay = 20 + i * 25;
             const progress = spring({ frame: frame - delay, fps, config: { damping: 18 } });
@@ -32,11 +32,11 @@ export const ResultsScene: React.FC = () => {
               <div key={i} style={{
                 opacity: interpolate(progress, [0, 1], [0, 1]),
                 transform: `scale(${interpolate(progress, [0, 1], [0.85, 1])})`,
-                background: K.g850, border: `1px solid ${m.color}30`, borderRadius: 20, padding: "36px 48px", width: 300,
+                background: K.g850, border: `1px solid ${m.color}30`, borderRadius: 20, padding: "38px 40px", width: 376,
                 boxShadow: `0 0 30px ${m.color}10`,
               }}>
-                <div style={{ fontFamily: "sans-serif", color: K.t3, fontSize: 14, marginBottom: 12, letterSpacing: 2 }}>{m.label}</div>
-                <div style={{ fontFamily: "monospace", color: m.color, fontSize: 56, fontWeight: 900 }}>
+                <div style={{ fontFamily: "sans-serif", color: K.t3, fontSize: 15, marginBottom: 12, letterSpacing: 2 }}>{m.label}</div>
+                <div style={{ fontFamily: "monospace", color: m.color, fontSize: 60, fontWeight: 900 }}>
                   {currentValue.toFixed(0)}{m.suffix}
                 </div>
               </div>
