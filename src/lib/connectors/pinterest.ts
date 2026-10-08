@@ -231,7 +231,8 @@ export class PinterestConnector extends BaseConnector {
       name: c.name,
       status: c.status === "ACTIVE" ? "active" : "paused",
       objective: c.objective_type,
-      dailyBudget: c.daily_spend_cap || 0,
+      // daily_spend_cap is in microcurrency (1e-6 of the account currency).
+      dailyBudget: (c.daily_spend_cap || 0) / 1_000_000,
       createdAt: new Date(c.created_time * 1000).toISOString(),
       updatedAt: new Date(c.updated_time * 1000).toISOString(),
     }));
@@ -268,7 +269,8 @@ export class PinterestConnector extends BaseConnector {
         name: c.name,
         status: c.status === "ACTIVE" ? "active" : "paused",
         objective: c.objective_type,
-        dailyBudget: c.daily_spend_cap || 0,
+        // daily_spend_cap is in microcurrency (1e-6 of the account currency).
+        dailyBudget: (c.daily_spend_cap || 0) / 1_000_000,
         createdAt: new Date(c.created_time * 1000).toISOString(),
         updatedAt: new Date(c.updated_time * 1000).toISOString(),
       },
@@ -335,6 +337,119 @@ export class PinterestConnector extends BaseConnector {
       },
       latencyMs: result.latencyMs,
     };
+  }
+
+  // ── Campaign Write Operations ───────────────────────────
+
+  private normalizeStatus(status: string): string {
+    const s = status.toLowerCase();
+    return s === "paused" || s === "archived" ? "PAUSED" : "ACTIVE";
+  }
+
+  async updateCampaign(
+    accessToken: string,
+    campaignId: string,
+    updates: { dailyBudget?: number; status?: string; name?: string }
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    try {
+      // Resolve the owning ad account from the campaign object.
+      const current = await this.get<{
+        data: { id: string; ad_account_id: string };
+      }>(`/campaigns/${campaignId}`, accessToken);
+      if (!current.success || !current.data?.data?.id) {
+        return { success: false, error: current.error || "Campaign not found", latencyMs: current.latencyMs };
+      }
+
+      const item: Record<string, unknown> = { id: campaignId };
+      const updateMask: string[] = [];
+      if (updates.status !== undefined) {
+        item.status = this.normalizeStatus(updates.status);
+        updateMask.push("status");
+      }
+      if (updates.name !== undefined) {
+        item.name = updates.name;
+        updateMask.push("name");
+      }
+      if (updates.dailyBudget !== undefined) {
+        item.daily_spend_cap = Math.round(updates.dailyBudget * 1_000_000);
+        updateMask.push("daily_spend_cap");
+      }
+      if (updateMask.length === 0) {
+        return { success: true, data: { id: campaignId }, latencyMs: 0 };
+      }
+      item.update_mask = updateMask;
+
+      const result = await this.patch<{ items: Array<{ id: string }> }>(
+        `/ad_accounts/${current.data.data.ad_account_id}/campaigns`,
+        accessToken,
+        [item]
+      );
+
+      return {
+        success: result.success,
+        data: { id: campaignId },
+        latencyMs: result.latencyMs,
+        error: result.error,
+        httpStatus: result.httpStatus,
+      };
+    } catch (error) {
+      return { success: false, error: String(error), latencyMs: 0 };
+    }
+  }
+
+  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { status: "PAUSED" });
+  }
+
+  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { status: "ACTIVE" });
+  }
+
+  async setBid(
+    accessToken: string,
+    adGroupId: string,
+    bidAmount: number
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    try {
+      // Pinterest bids live on ad groups; the update endpoint requires the
+      // owning ad account, so resolve it by locating the ad group.
+      const accounts = await this.get<{
+        items: Array<{ id: string }>;
+      }>("/ad_accounts", accessToken, { page_size: "100", order: "DESCENDING" });
+      if (!accounts.success || !accounts.data?.items?.length) {
+        return { success: false, error: accounts.error || "No ad accounts found", latencyMs: accounts.latencyMs };
+      }
+
+      let accountId: string | undefined;
+      for (const account of accounts.data.items) {
+        const lookup = await this.get<{
+          items: Array<{ id: string }>;
+        }>(`/ad_accounts/${account.id}/ad_groups`, accessToken, { ad_group_ids: adGroupId, page_size: "1" });
+        if (lookup.success && lookup.data?.items?.some(g => g.id === adGroupId)) {
+          accountId = account.id;
+          break;
+        }
+      }
+      if (!accountId) {
+        return { success: false, error: "Ad group not found on any ad account", latencyMs: 0 };
+      }
+
+      const result = await this.patch<{ items: Array<{ id: string }> }>(
+        `/ad_accounts/${accountId}/ad_groups`,
+        accessToken,
+        [{ id: adGroupId, bid_in_micro_currency: Math.round(bidAmount * 1_000_000), update_mask: ["bid_in_micro_currency"] }]
+      );
+
+      return {
+        success: result.success,
+        data: { id: adGroupId },
+        latencyMs: result.latencyMs,
+        error: result.error,
+        httpStatus: result.httpStatus,
+      };
+    } catch (error) {
+      return { success: false, error: String(error), latencyMs: 0 };
+    }
   }
 
   // ── CAPI (Conversions API) ─────────────────────────────
