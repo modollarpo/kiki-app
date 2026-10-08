@@ -82,14 +82,18 @@ export const KikiDemo: React.FC = () => {
         </CrossFade>
       </Sequence>
 
-      {/* Voiceover — each scene's audio starts at the scene's frame */}
-      <Audio src={staticFile("demo/voiceover/problem.mp3")} volume={1} />
-      <Sequence from={T.LOGO.start}><Audio src={staticFile("demo/voiceover/logo.mp3")} volume={1} /></Sequence>
-      <Sequence from={T.DASHBOARD.start}><Audio src={staticFile("demo/voiceover/dashboard.mp3")} volume={1} /></Sequence>
-      <Sequence from={T.AGENTS.start}><Audio src={staticFile("demo/voiceover/agents.mp3")} volume={1} /></Sequence>
-      <Sequence from={T.RESULTS.start}><Audio src={staticFile("demo/voiceover/results.mp3")} volume={1} /></Sequence>
-      <Sequence from={T.CTA.start}><Audio src={staticFile("demo/voiceover/cta.mp3")} volume={1} /></Sequence>
-      <Sequence from={T.HOLD.start}><Audio src={staticFile("demo/voiceover/hold.mp3")} volume={1} /></Sequence>
+      {/* Voiceover — each scene's audio starts at the scene's frame and is
+          hard-cut at the scene boundary so no voiceover can ever bleed into
+          the next scene. */}
+      <Sequence from={T.PROBLEM.start} durationInFrames={T.PROBLEM.duration}>
+        <Audio src={staticFile("demo/voiceover/problem.mp3")} volume={1} />
+      </Sequence>
+      <Sequence from={T.LOGO.start} durationInFrames={T.LOGO.duration}><Audio src={staticFile("demo/voiceover/logo.mp3")} volume={1} /></Sequence>
+      <Sequence from={T.DASHBOARD.start} durationInFrames={T.DASHBOARD.duration}><Audio src={staticFile("demo/voiceover/dashboard.mp3")} volume={1} /></Sequence>
+      <Sequence from={T.AGENTS.start} durationInFrames={T.AGENTS.duration}><Audio src={staticFile("demo/voiceover/agents.mp3")} volume={1} /></Sequence>
+      <Sequence from={T.RESULTS.start} durationInFrames={T.RESULTS.duration}><Audio src={staticFile("demo/voiceover/results.mp3")} volume={1} /></Sequence>
+      <Sequence from={T.CTA.start} durationInFrames={T.CTA.duration}><Audio src={staticFile("demo/voiceover/cta.mp3")} volume={1} /></Sequence>
+      <Sequence from={T.HOLD.start} durationInFrames={T.HOLD.duration}><Audio src={staticFile("demo/voiceover/hold.mp3")} volume={1} /></Sequence>
     </AbsoluteFill>
   );
 };

@@ -6,18 +6,19 @@ const ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT;
 const API_KEY = process.env.AZURE_OPENAI_API_KEY;
 const API_VERSION = "2024-10-21";
 
-// Voiceover lines matched to scene timing (seconds)
+// Voiceover lines matched to scene timing (seconds). Keep in sync with
+// generate_voiceover.py — each line must fit inside ~90% of its slot.
 const SCENES = [
-  { name: "problem",  seconds: 7,  text: "Manual bidding. Scattered data. Zero visibility. Wasted spend, missed conversions. Your competitors are already using AI. Are you?" },
-  { name: "logo",     seconds: 4,  text: "Introducing KIKI Agent." },
-  { name: "dashboard", seconds: 15, text: "KIKI Agent unifies your entire ad pipeline into one intelligent dashboard. Real-time signals from Meta, Google, TikTok, LinkedIn, Snapchat, and Pinterest. One view. One system. Total control." },
-  { name: "agents",   seconds: 10, text: "Six autonomous AI agents work around the clock. Bidding. Creative. Smart Pacing. Signals. OaaS. SyncBrain. Each one specialized. All one team." },
-  { name: "results",  seconds: 10, text: "Every conversion enriched in under fifty milliseconds. Twenty-eight signal features. A ninety-day lifetime value prediction, delivered to every connected platform." },
-  { name: "cta",      seconds: 6,  text: "Start your free trial today. No credit card required. KIKI Agent. Built for performance." },
-  { name: "hold",     seconds: 8,  text: "KIKI dot net. Your autonomous growth platform." },
+  { name: "problem",  seconds: 7,  text: "Manual bidding wastes budget. Bots, fatigue, no visibility. Competitors use AI. Are you?", speed: 1.12 },
+  { name: "logo",     seconds: 4,  text: "Introducing KIKI Agent.", speed: 1.0 },
+  { name: "dashboard", seconds: 15, text: "KIKI Agent unifies your entire ad pipeline into one intelligent dashboard. Real-time signals from Meta, Google, TikTok, LinkedIn, Snapchat, and Pinterest. One view. One system. Total control.", speed: 1.12 },
+  { name: "agents",   seconds: 10, text: "Six autonomous AI agents. Bidding. Creative. Smart Pacing. Signals. OaaS. SyncBrain. Specialists. One team.", speed: 1.12 },
+  { name: "results",  seconds: 10, text: "Every conversion enriched in under fifty milliseconds. Twenty-eight signal features. A ninety-day lifetime value prediction, delivered to every connected platform.", speed: 1.25 },
+  { name: "cta",      seconds: 6,  text: "Start your free trial today. No credit card required. KIKI Agent. Built for performance.", speed: 1.18 },
+  { name: "hold",     seconds: 8,  text: "KIKI dot net. Your autonomous growth platform.", speed: 1.0 },
 ];
 
-function ttsRequest(text, voice = "onyx") {
+function ttsRequest(text, voice = "onyx", speed = 1.0) {
   return new Promise((resolve, reject) => {
     // Azure OpenAI TTS via deployments endpoint
     const deployment = "tts-1-hd";
@@ -30,7 +31,7 @@ function ttsRequest(text, voice = "onyx") {
       input: text,
       voice: voice,
       response_format: "mp3",
-      speed: 1.0,
+      speed: speed,
     });
 
     const options = {
@@ -77,7 +78,7 @@ async function main() {
     }
     console.log(`Generating: ${scene.name} (${scene.seconds}s) ...`);
     try {
-      const buf = await ttsRequest(scene.text);
+      const buf = await ttsRequest(scene.text, "onyx", scene.speed);
       fs.writeFileSync(outFile, buf);
       console.log(`  -> ${scene.name}.mp3 (${(buf.length / 1024).toFixed(0)} KB)`);
     } catch (err) {

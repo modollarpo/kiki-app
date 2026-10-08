@@ -66,7 +66,7 @@ const CampaignCards: React.FC = () => {
             <div key={i} style={{
               opacity: interpolate(progress, [0, 1], [0, 1]),
               transform: `translateY(${interpolate(progress, [0, 1], [60, 0])}px)`,
-              background: K.g850, border: `1px solid ${K.g750}`, borderRadius: 16, padding: 28, width: 340,
+              background: K.g850, border: `1px solid ${K.g750}`, borderRadius: 16, padding: 28, width: 400,
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
                 <div style={{ fontFamily: "sans-serif", color: K.t1, fontSize: 18, fontWeight: 700 }}>{c.name}</div>
@@ -118,10 +118,10 @@ const MetricsView: React.FC = () => {
             <div key={i} style={{
               opacity: interpolate(progress, [0, 1], [0, 1]),
               transform: `scale(${interpolate(progress, [0, 1], [0.85, 1])})`,
-              background: K.g850, border: `1px solid ${m.color}30`, borderRadius: 16, padding: 24, width: 240,
+              background: K.g850, border: `1px solid ${m.color}30`, borderRadius: 16, padding: 24, width: 280,
             }}>
               <div style={{ fontFamily: "sans-serif", color: K.t3, fontSize: 12, marginBottom: 8 }}>{m.label}</div>
-              <div style={{ fontFamily: "monospace", color: m.color, fontSize: 32, fontWeight: 800, marginBottom: 12 }}>{m.value}</div>
+              <div style={{ fontFamily: "monospace", color: m.color, fontSize: 34, fontWeight: 800, marginBottom: 12 }}>{m.value}</div>
               {/* Simple bar */}
               <div style={{ width: "100%", height: 6, background: K.g800, borderRadius: 3 }}>
                 <div style={{
@@ -143,7 +143,7 @@ const MetricsView: React.FC = () => {
           return (
             <div key={i} style={{
               opacity: interpolate(progress, [0, 1], [0, 1]),
-              background: K.g850, border: `1px solid ${K.g750}`, borderRadius: 12, padding: "16px 24px", width: 220,
+              background: K.g850, border: `1px solid ${K.g750}`, borderRadius: 12, padding: "16px 24px", width: 260,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: `${p.color}20`, display: "flex", alignItems: "center", justifyContent: "center", color: p.color, fontWeight: 800, fontSize: 16 }}>{p.name[0]}</div>
