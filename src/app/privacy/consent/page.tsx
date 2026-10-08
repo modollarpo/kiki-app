@@ -212,7 +212,7 @@ export default function ConsentPage() {
             </Button>
           </div>
           <p className="font-mono text-[10px] text-t4 mt-3">
-            For questions, contact <span style={{ color: K.blue4 }}>privacy@kiki.ai</span>
+            For questions, contact <span style={{ color: K.blue4 }}>privacy@keekii.net</span>
           </p>
         </div>
       </div>

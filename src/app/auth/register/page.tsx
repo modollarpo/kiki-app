@@ -119,7 +119,7 @@ export default function RegisterPage() {
 
           <Input
             label="Full Name"
-            placeholder="Alex Chen"
+            placeholder="Your name"
             value={name}
             onChange={(v) => { setName(v); setErrors((e) => ({ ...e, name: "" })); }}
             error={errors.name}

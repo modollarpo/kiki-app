@@ -52,7 +52,7 @@ export default function DocsPage() {
           <p className="font-sans text-[16px] text-t3 max-w-[520px] mx-auto mb-7">Everything you need to integrate, extend, and automate the KIKI Agent platform.</p>
           <div className="flex gap-2.5 justify-center flex-wrap">
             <Button size="lg" onClick={() => router.push("/auth/login")}>Get API Key →</Button>
-            <Button variant="secondary" size="lg" onClick={() => window.open("https://github.com/kiki-agent/sdk", "_blank")}>View on GitHub</Button>
+            <Button variant="secondary" size="lg" onClick={() => window.open("https://github.com/modollarpo/kiki-app", "_blank")}>View on GitHub</Button>
           </div>
         </div>
 
@@ -92,10 +92,9 @@ export default function DocsPage() {
         <div className="mt-10 p-5 bg-g900 rounded-sm flex items-center justify-between flex-wrap gap-4" style={{ border:`1px solid ${K.g800}` }}>
           <div>
             <p className="font-mono font-bold text-[13px] text-t1 mb-1">Need help integrating?</p>
-            <p className="font-sans text-[13px] text-t3">Join our developer Discord or email <span style={{color:K.blue4}}>developers@kiki.ai</span></p>
+            <p className="font-sans text-[13px] text-t3">Email <span style={{color:K.blue4}}>developers@keekii.net</span></p>
           </div>
           <div className="flex gap-2.5">
-            <Button variant="secondary" size="sm" onClick={() => window.open("https://discord.gg/kiki-agent", "_blank")}>Join Discord</Button>
             <Button size="sm" onClick={() => router.push("/contact")}>Book Integration Call</Button>
           </div>
         </div>

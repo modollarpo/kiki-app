@@ -49,12 +49,12 @@ export const K = {
 
 // Agent brand colors (6 agents)
 export const AGENT_COLORS = [
-  { name: "Bid Optimizer", color: K.blue, icon: "⚡" },
-  { name: "Creative Analyst", color: K.mint, icon: "🎨" },
-  { name: "Budget Guardian", color: K.gold, icon: "🛡" },
-  { name: "Signal Scanner", color: K.teal, icon: "📡" },
-  { name: "LTV Predictor", color: K.oaas, icon: "📊" },
-  { name: "Fraud Detector", color: K.danger, icon: "🔒" },
+  { name: "Bidding", color: K.blue, icon: "⚡" },
+  { name: "Creative", color: K.mint, icon: "🎨" },
+  { name: "Smart Pacing", color: K.gold, icon: "🛡" },
+  { name: "Signals", color: K.teal, icon: "📡" },
+  { name: "OaaS", color: K.oaas, icon: "📊" },
+  { name: "SyncBrain", color: K.danger, icon: "🔒" },
 ] as const;
 
 // Platform colors

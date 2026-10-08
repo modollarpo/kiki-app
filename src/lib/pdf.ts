@@ -33,7 +33,7 @@ export async function generatePDF(opts: {
   doc.text("KIKI Agent", margin, 18);
   doc.setFontSize(9);
   doc.setTextColor(136, 136, 170);
-  doc.text("KIKI Agent \u00b7 a STOREGRILL INC LTD product \u00b7 kiki.ai", margin, 26);
+  doc.text("KIKI Agent \u00b7 a STOREGRILL INC LTD product \u00b7 keekii.net", margin, 26);
 
   y = 44;
   doc.setFont("helvetica", "bold");

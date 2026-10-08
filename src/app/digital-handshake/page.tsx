@@ -125,7 +125,7 @@ export default function DigitalHandshakePage() {
 
         <div className="mt-8 p-4.5 bg-g900 border border-g800 rounded-sm">
           <p className="font-mono font-bold text-[12px] text-t1 mb-1.5">Need a custom agreement?</p>
-          <p className="font-sans text-[13px] text-t3">Enterprise customers can request custom MSAs, BAAs, and tailored DPAs. Contact <span style={{color:K.blue4}}>legal@kiki.ai</span></p>
+          <p className="font-sans text-[13px] text-t3">Enterprise customers can request custom MSAs, BAAs, and tailored DPAs. Contact <span style={{color:K.blue4}}>legal@keekii.net</span></p>
         </div>
       </div>
     </MarketingLayout>

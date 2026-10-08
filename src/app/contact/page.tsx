@@ -48,7 +48,7 @@ export default function ContactPage() {
               <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">GET IN TOUCH</p>
               <h1 className="font-mono font-bold text-[clamp(28px,4vw,44px)] tracking-[-0.03em] text-t1 mb-4">Let&apos;s talk.</h1>
               <p className="font-sans text-[15px] text-t3 leading-[1.7] mb-10">Evaluating KIKI, have a technical question, or want to partner — we respond within 4 hours.</p>
-              {[{icon:"✉",label:"Email",val:"hello@kiki.ai"},{icon:"💬",label:"Live chat",val:"Available in the dashboard"},{icon:"📞",label:"Enterprise",val:"Book a 30-min call"}].map(c=>(
+              {[{icon:"✉",label:"Email",val:"hello@keekii.net"},{icon:"💬",label:"Live chat",val:"Available in the dashboard"},{icon:"📞",label:"Enterprise",val:"Book a 30-min call"}].map(c=>(
                 <div key={c.label} className="flex items-center gap-3.5 mb-5">
                   <div className="w-10 h-10 rounded-sm bg-g850 flex items-center justify-center text-[18px] shrink-0">{c.icon}</div>
                   <div>

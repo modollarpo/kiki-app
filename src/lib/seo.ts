@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 // ─── Shared brand constants ────────────────────────────────
 const BRAND   = "KIKI Agent™";
 const TAGLINE = "Autonomous LTV Campaign Execution Platform";
-const BASE_URL = "https://kiki.ai";
+const BASE_URL = "https://keekii.net";
 const OG_IMAGE = `${BASE_URL}/og/default.png`;
 
 // ─── Helper ───────────────────────────────────────────────
@@ -58,7 +58,7 @@ function meta(
 
 export const homeMetadata = meta(
   "KIKI Agent™ — Autonomous LTV Campaign Execution Platform",
-  "KIKI intercepts every ad conversion, predicts 90-day customer LTV with ML, and feeds enriched signals to Meta, Google, TikTok, and 12 other platforms. Increase ROAS 4× with autonomous AI agents. SOC2 Type II. GDPR compliant.",
+  "KIKI intercepts every ad conversion, predicts 90-day customer LTV with ML, and feeds enriched signals to Meta, Google, TikTok, and 5 other ad platforms. Bidding, pacing, and creative decisions run autonomously. GDPR & CCPA compliant.",
   [
     "LTV enrichment platform", "CAPI enrichment", "conversion API enrichment",
     "autonomous bid management", "AI ad optimization", "ROAS improvement",
@@ -71,7 +71,7 @@ export const homeMetadata = meta(
 
 export const featuresMetadata = meta(
   "Platform Features — LTV Enrichment, AI Agents & SyncBrain",
-  "Explore every KIKI Agent feature: ML-powered LTV enrichment (4.29× avg uplift), 6 autonomous AI agents, SyncBrain multi-model routing, real-time fraud & IVT detection, cross-platform attribution, and virtual card spend control.",
+  "Explore every KIKI Agent feature: ML-powered LTV enrichment (sub-50ms prediction), 6 autonomous AI agents, SyncBrain multi-model routing, real-time fraud & IVT detection, cross-platform attribution, and virtual card spend control.",
   [
     "LTV enrichment features", "AI bidding agent", "SyncBrain AI routing",
     "fraud IVT detection", "conversion signal enrichment", "autonomous campaign optimization",
@@ -102,7 +102,7 @@ export const enterpriseMetadata = meta(
     "enterprise ad tech platform", "white label advertising platform",
     "dedicated ad infrastructure", "custom SLA ad platform",
     "enterprise LTV enrichment", "large scale CAPI enrichment",
-    "ad platform data residency", "SOC2 enterprise advertising",
+    "ad platform data residency", "enterprise advertising security",
     "enterprise campaign management AI", "custom LTV model enterprise",
     "advertising AI white label", "multi-tenant ad platform enterprise",
   ],
@@ -110,13 +110,13 @@ export const enterpriseMetadata = meta(
 );
 
 export const securityMetadata = meta(
-  "Security — SOC2 Type II, GDPR & Zero-Trust Architecture",
-  "KIKI Agent is SOC2 Type II certified, GDPR and CCPA compliant. TLS 1.3 encryption in transit, AES-256 at rest, mTLS between microservices, zero-trust RBAC, quarterly penetration testing, and immutable audit logs.",
+  "Security — SOC 2 Programme, GDPR & Zero-Trust Architecture",
+  "KIKI Agent is GDPR and CCPA compliant, with a SOC 2 Type II audit programme in progress. TLS 1.3 encryption in transit, AES-256 at rest, mTLS between microservices, zero-trust RBAC, quarterly penetration testing, and immutable audit logs.",
   [
-    "SOC2 Type II ad platform", "GDPR compliant ad tech", "CCPA advertising platform",
+    "GDPR compliant ad tech", "CCPA advertising platform",
     "zero trust ad platform security", "encrypted conversion data",
     "mTLS microservices advertising", "secure CAPI implementation",
-    "ad data privacy compliance", "PCI DSS ad platform",
+    "ad data privacy compliance", "SOC 2 programme ad platform",
     "immutable audit log advertising", "penetration tested ad SaaS",
   ],
   { path: "/security" }
@@ -124,7 +124,7 @@ export const securityMetadata = meta(
 
 export const aboutMetadata = meta(
   "About KIKI — Our Mission, Team & Story",
-  "KIKI Agent was founded in 2024 by performance marketers who spent a decade optimizing for first-order value instead of real LTV. We manage $2.4B in ad spend for 47 enterprise customers across 14 platforms.",
+  "KIKI is a new, founder-led product built by Dolapo Ariyo, a performance marketer who spent a decade optimizing for first-order value instead of real customer LTV. The corporate structure is being finalised.",
   [
     "KIKI Agent company", "ad tech startup", "LTV enrichment company founder",
     "performance marketing AI company", "advertising AI team",
@@ -222,7 +222,7 @@ export const agentsMetadata = meta(
 
 export const syncbrainMetadata = meta(
   "SyncBrain™ — Multi-Model AI Orchestration Canvas",
-  "Visualize your SyncBrain model routing: GPT-4o, Claude, Gemini, LLaMA, and custom models. Token budget controls, decision logs, metacognition scores, and real-time routing decisions.",
+  "Visualize your SyncBrain model routing: GPT-4o, GPT-4o-mini, Llama 3.1, and gpt-oss. Token budget controls, decision logs, metacognition scores, and real-time routing decisions.",
   ["multi-model AI routing", "SyncBrain orchestration", "AI model selection"],
   { path: "/dashboard/syncbrain", robots: "noindex,nofollow" }
 );
@@ -292,7 +292,7 @@ export const scenariosMetadata = meta(
 
 export const fraudMetadata = meta(
   "Fraud & IVT — Real-Time Bot Detection Dashboard",
-  "Monitor and block invalid traffic in real time: datacenter IPs, synthetic browsers, velocity anomalies, and geo mismatches. 99.2% IVT detection, 0.03% false positive rate.",
+  "Monitor and block invalid traffic in real time: datacenter IPs, synthetic browsers, velocity anomalies, and geo mismatches. IP reputation, fingerprint, and velocity detection layers.",
   ["ad fraud detection", "IVT blocking", "invalid traffic prevention"],
   { path: "/dashboard/fraud", robots: "noindex,nofollow" }
 );
@@ -312,9 +312,9 @@ export const reportsMetadata = meta(
 );
 
 export const auditMetadata = meta(
-  "Audit Log — Immutable SOC2 & GDPR Event Log",
-  "Cryptographically hashed immutable audit log for every KIKI Agent action: agent decisions, billing events, API calls, GDPR requests, and admin actions. SOC2 Type II compliant.",
-  ["SOC2 audit log", "GDPR compliance log", "immutable event log"],
+  "Audit Log — Immutable SOC 2 & GDPR Event Log",
+  "Cryptographically hashed immutable audit log for every KIKI Agent action: agent decisions, billing events, API calls, GDPR requests, and admin actions. Supports SOC 2 and GDPR compliance requirements.",
+  ["SOC 2 audit log", "GDPR compliance log", "immutable event log"],
   { path: "/dashboard/audit", robots: "noindex,nofollow" }
 );
 

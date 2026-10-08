@@ -139,7 +139,7 @@ export const PLANS: PlanDisplay[] = [
       "Custom SLA 99.99%",
       "Unlimited virtual cards",
       "Dedicated CSM",
-      "SOC2 Type II reports",
+      "SOC 2 progress documentation",
       "Custom data residency",
     ],
     ctaLabel: "Talk to Sales →",

@@ -39,7 +39,7 @@ export const CONTRACTS: Record<string, ContractDoc> = {
         "These Terms govern access to and use of the KIKI Agent platform, including its websites, APIs, dashboards, AI agents, virtual cards, and related services (collectively, the \"Service\"). By creating an account or using the Service you agree to these Terms and our Privacy Policy.",
       ]},
       { heading: "2. Description of Service", body: [
-        "KIKI provides an autonomous Lifetime Value (LTV) optimization platform. The Service ingests first-party conversion signals via our Conversions API (CAPI) pipeline, builds LTV prediction models, and operates a suite of AI agents (Acquisition, Retention, Creative, Audience, Bidding, and Insight) that optimize advertising spend across connected platforms. Optimization-as-a-Service (OaaS) engagements are governed additionally by the OaaS Master Services Agreement.",
+        "KIKI provides an autonomous Lifetime Value (LTV) optimization platform. The Service ingests first-party conversion signals via our Conversions API (CAPI) pipeline, builds LTV prediction models, and operates a suite of AI agents (Bidding, Creative, Smart Pacing, Signals, OaaS Optimizer, and SyncBrain Router) that optimize advertising spend across connected platforms. Optimization-as-a-Service (OaaS) engagements are governed additionally by the OaaS Master Services Agreement.",
       ]},
       { heading: "3. Accounts & Eligibility", body: [
         "You must be at least 18 years old and authorized to bind your organization. You are responsible for safeguarding credentials, for all activity under your account, and for keeping billing and contact information current. Each registered tenant is isolated; you may not access data belonging to other tenants.",
@@ -83,16 +83,16 @@ export const CONTRACTS: Record<string, ContractDoc> = {
     effective: "March 20, 2026",
     sections: [
       { heading: "1. WHO WE ARE", body: ["KIKI Agent is a privacy-first marketing optimization platform and a product of STOREGRILL INC LTD (Company No. 14581073, registered in England & Wales). This Policy explains what personal data we collect, why, how long we keep it, and the rights you have. Our registered address is Coventry, CV3 2FP, England."] },
-      { heading: "2. SCOPE", body: ["This Policy applies to visitors of kiki.ai, account holders (our Customers), and the end consumers whose data Customers process through the Service (data subjects). For data subjects, KIKI acts as a processor under the instructions of the Customer, who is the controller. For website visitors and account holders, KIKI is the controller."] },
+      { heading: "2. SCOPE", body: ["This Policy applies to visitors of keekii.net, account holders (our Customers), and the end consumers whose data Customers process through the Service (data subjects). For data subjects, KIKI acts as a processor under the instructions of the Customer, who is the controller. For website visitors and account holders, KIKI is the controller."] },
       { heading: "3. DATA WE COLLECT", body: ["(a) Account data: name, email, company, billing details. (b) Signal data: conversion events, click identifiers, hashed emails, device and attribution metadata sent through the CAPI pipeline. (c) Derived data: LTV scores, audience segments, and model features computed from signal data. (d) Technical data: IP address, browser, and usage telemetry used for security and product analytics."] },
       { heading: "4. LEGAL BASIS (GDPR)", body: ["We rely on: contractual necessity to provide the Service; legitimate interests for security and analytics (balanced against your rights); and consent for non-essential marketing cookies. You may withdraw consent at any time without affecting prior processing."] },
       { heading: "5. HOW WE USE DATA", body: ["To operate and secure the Service, compute LTV predictions, optimize campaigns, detect fraud and invalid traffic, issue virtual cards, produce invoices, and comply with legal obligations. We do not sell personal data. We do not use Customer data to train third-party foundational models."] },
-      { heading: "6. SUB-PROCESSORS", body: ["We engage vetted sub-processors (Microsoft Azure, Stripe, OpenAI, Anthropic, Google Vertex AI, Meta Llama, SendGrid, DataDog, PostHog). Each operates under a written contract with security and confidentiality obligations; AI sub-processors are bound by zero-retention DPAs. The current list is maintained on the Compliance Hub."] },
+      { heading: "6. SUB-PROCESSORS", body: ["We engage vetted sub-processors (Microsoft Azure, Azure OpenAI, Groq, Stripe, IPQualityScore, and our SMTP email provider). Each operates under a written contract with security and confidentiality obligations; AI sub-processors are bound by zero-retention DPAs. The current list is maintained on the Compliance Hub."] },
       { heading: "7. INTERNATIONAL TRANSFERS", body: ["Data may be processed in the US, EU, APAC, and other regions where sub-processors operate. Transfers from the EEA/UK rely on Standard Contractual Clauses and supplementary measures including encryption and access controls."] },
       { heading: "8. RETENTION", body: ["Account data is retained for the life of the contract plus 90 days. Signal and derived data are retained per the Customer's configured retention window (default 24 months) and deleted on contract termination. Backups are purged within 35 days."] },
-      { heading: "9. YOUR RIGHTS", body: ["Depending on your jurisdiction you may access, correct, delete, port, restrict, or object to processing, and lodge a complaint with a supervisory authority. EU/UK residents may contact our representative; California residents may exercise CCPA rights without discrimination. Requests: privacy@kiki.ai."] },
-      { heading: "10. SECURITY", body: ["We apply encryption in transit (TLS 1.2+) and at rest (AES-256), role-based access control, MFA for staff, network segmentation, and continuous monitoring. We are SOC 2 Type II certified and undergo annual third-party penetration testing."] },
-      { heading: "11. CONTACT", body: ["Privacy Officer: privacy@kiki.ai. KIKI Agent is a product of STOREGRILL INC LTD, Company No. 14581073, registered in England & Wales (Coventry, CV3 2FP, England). EU Representative: KIKI Agent EU Ltd., Dublin, Ireland. UK Representative: KIKI Agent UK Ltd., London, UK."] },
+      { heading: "9. YOUR RIGHTS", body: ["Depending on your jurisdiction you may access, correct, delete, port, restrict, or object to processing, and lodge a complaint with a supervisory authority. EU/UK residents may contact our representative; California residents may exercise CCPA rights without discrimination. Requests: privacy@keekii.net."] },
+      { heading: "10. SECURITY", body: ["We apply encryption in transit (TLS 1.2+) and at rest (AES-256), role-based access control, MFA for staff, network segmentation, and continuous monitoring. Our SOC 2 Type II audit programme is in progress, and we undergo annual third-party penetration testing."] },
+      { heading: "11. CONTACT", body: ["Privacy Officer: privacy@keekii.net. KIKI Agent is a product of STOREGRILL INC LTD, Company No. 14581073, registered in England & Wales (Coventry, CV3 2FP, England). EU Representative: KIKI Agent EU Ltd., Dublin, Ireland. UK Representative: KIKI Agent UK Ltd., London, UK."] },
       { heading: "12. CHANGES", body: ["We will post material changes here and notify Customers by email at least 30 days in advance."] }
     ],
   },
@@ -139,7 +139,7 @@ export const CONTRACTS: Record<string, ContractDoc> = {
     effective: "March 1, 2026",
     sections: [
       { heading: "1. ENGAGEMENT", body: ["This OaaS Master Services Agreement (\"Agreement\") governs Optimization-as-a-Service engagements where KIKI operates the Customer's paid acquisition campaigns end-to-end using its autonomous AI agents. It supplements the Terms of Service and applies where the Customer selects the OaaS plan."] },
-      { heading: "2. SCOPE OF SERVICES", body: ["KIKI will (a) connect the Customer's ad accounts and CAPI pipelines; (b) build and maintain LTV prediction models; (c) run the Acquisition, Retention, Creative, Audience, Bidding, and Insight agents 24/7; (d) issue virtual cards to fund spend within approved caps; and (e) deliver a monthly P&L and quarterly business review."] },
+      { heading: "2. SCOPE OF SERVICES", body: ["KIKI will (a) connect the Customer's ad accounts and CAPI pipelines; (b) build and maintain LTV prediction models; (c) run the Bidding, Creative, Smart Pacing, Signals, OaaS Optimizer, and SyncBrain Router agents 24/7; (d) issue virtual cards to fund spend within approved caps; and (e) deliver a monthly P&L and quarterly business review."] },
       { heading: "3. PERFORMANCE TARGETS", body: ["Each engagement sets a contractual baseline ROAS and an uplift target (e.g., +15% ROAS over the trailing 90-day baseline). KIKI reports actual vs. target monthly. Targets are re-baselined at each quarterly business review to reflect market conditions."] },
       { heading: "4. FEES", body: ["The Customer pays (a) a management fee equal to 1.35% of managed ad spend, and (b) a performance bonus equal to 5% of incremental revenue uplift above the contractual baseline. Both are calculated on verified platform spend and revenue and invoiced monthly."] },
       { heading: "5. SPEND AUTHORITY & CARDS", body: ["KIKI funds campaigns via virtual cards drawn from the Customer's prefunded wallet. Per-campaign caps and a global monthly cap are agreed in the Order Form. KIKI may pause a campaign whose actual CAC exceeds target CAC by more than 20% pending Customer approval."] },
@@ -196,14 +196,14 @@ export const CONTRACTS: Record<string, ContractDoc> = {
   },
 
   "soc2-type-ii": {
-    title: "SOC 2 Type II Report — Summary",
-    version: "FY2025",
-    effective: "December 2025",
+    title: "SOC 2 Type II — Audit Programme Status",
+    version: "2026.1",
+    effective: "March 2026",
     sections: [
-      { heading: "", body: ["The KIKI Agent SOC 2 Type II report is issued by an independent Big 4 accounting firm and covers the Security, Availability, and Confidentiality trust services criteria for the trailing 12-month period."] },
-      { heading: "", body: ["Scope of the examination includes the KIKI control plane, the CAPI ingestion pipeline, the model-training and inference environment, and the wallet/virtual-card subsystem. The report contains the service auditor's description of controls and the results of tests of operating effectiveness."] },
+      { heading: "", body: ["KIKI Agent has an active SOC 2 Type II programme covering the Security, Availability, and Confidentiality trust services criteria. The audit has not yet been completed, so no report has been issued."] },
+      { heading: "", body: ["Scope of the examination includes the KIKI control plane, the CAPI ingestion pipeline, the model-training and inference environment, and the wallet/virtual-card subsystem. When issued, the report will contain the service auditor's description of controls and the results of tests of operating effectiveness."] },
       { heading: "", body: ["Key control areas: logical access (least privilege, MFA, just-in-time admin), change management (peer review, CI gating, immutable deploys), risk assessment (quarterly reviews), monitoring (24/7 detection, alerting), and incident response (documented runbooks, tabletop exercises)."] },
-      { heading: "", body: ["The full report, including the auditor's opinion and detailed control narratives, is available under NDA. Request access via the Compliance Hub or email security@kiki.ai. A redacted bridge letter is provided between annual reports."] }
+      { heading: "", body: ["The report will be available under NDA once issued. Track progress or request interim control documentation via security@keekii.net."] }
     ],
   },
 
@@ -213,16 +213,13 @@ export const CONTRACTS: Record<string, ContractDoc> = {
     effective: "March 20, 2026",
     sections: [
       { heading: "", body: ["This is the complete list of sub-processors engaged by KIKI Agent, a product of STOREGRILL INC LTD, to process personal data on behalf of Customers, maintained per GDPR Article 28(2)."] },
-      { heading: "", body: ["Microsoft Azure — Cloud infrastructure, compute, storage. Regions: EU (Frankfurt), US (Virginia), APAC (Singapore). Certifications: ISO 27001, SOC 2."] },
+      { heading: "", body: ["Microsoft Azure — Cloud infrastructure, compute, storage, and database. Regions: EU (Frankfurt), US (Virginia), APAC (Singapore). Certifications: ISO 27001, SOC 2."] },
       { heading: "", body: ["Stripe — Payment processing and virtual card issuance. Regions: US, EU. Certifications: PCI DSS Level 1."] },
-      { heading: "", body: ["OpenAI — AI model inference (GPT-4o). No customer data retained per DPA. Region: US. Certifications: SOC 2 Type II."] },
-      { heading: "", body: ["Anthropic — AI model inference (Claude). No customer data retained per DPA. Region: US. Certifications: SOC 2 Type II."] },
-      { heading: "", body: ["Google (Vertex AI) — AI model inference (Gemini). No customer data retained per DPA. Regions: US, EU. Certifications: ISO 27001, SOC 2."] },
-      { heading: "", body: ["Meta (Llama) — On-premise LLaMA inference; data stays in KIKI infrastructure. Region: Azure VMs. Certifications: N/A (on-prem)."] },
-      { heading: "", body: ["SendGrid — Transactional email delivery. Regions: US, EU. Certifications: SOC 2 Type II."] },
-      { heading: "", body: ["DataDog — Infrastructure monitoring; no customer data. Region: EU. Certifications: SOC 2 Type II."] },
-      { heading: "", body: ["PostHog — Privacy-preserving product analytics; self-hosted in EU. Certifications: SOC 2 Type II."] },
-      { heading: "", body: ["Changes to this list are notified by email with at least 30 days' notice. To object to a new sub-processor or obtain the full DPA, email privacy@kiki.ai."] }
+      { heading: "", body: ["Azure OpenAI — AI model inference (GPT-4o, GPT-4o-mini). No customer data retained per DPA. Region: US. Certifications: SOC 2 Type II."] },
+      { heading: "", body: ["Groq — AI model inference (Llama 3.1 fast tier) for latency-sensitive calls. No customer data retained per DPA. Region: US."] },
+      { heading: "", body: ["IPQualityScore — IP and device reputation signals for fraud/IVT scoring. Region: US. Requests are hashed where possible."] },
+      { heading: "", body: ["SMTP email provider — Transactional email delivery (welcome, password reset, alerts). Region: per provider configuration."] },
+      { heading: "", body: ["Changes to this list are notified by email with at least 30 days' notice. To object to a new sub-processor or obtain the full DPA, email privacy@keekii.net."] }
     ],
   },
 
@@ -234,7 +231,7 @@ export const CONTRACTS: Record<string, ContractDoc> = {
       { heading: "", body: ["A third-party offensive security firm performed a web application, API, and infrastructure penetration test against the production KIKI platform during Q1 2026."] },
       { heading: "", body: ["Methodology: authenticated and unauthenticated testing of the marketing site, dashboard, and REST/GraphQL APIs; business-logic abuse of the wallet and virtual-card flows; and cloud configuration review of the Azure tenant."] },
       { heading: "", body: ["Findings: 0 critical, 1 high (remediated within 72 hours — improper rate-limit on a public endpoint), 4 medium (all remediated within 14 days), 9 low/info. Retesting confirmed closure of all items."] },
-      { heading: "", body: ["The detailed report, including exploit narratives and evidence, is available under NDA via security@kiki.ai. Remediation status is tracked to closure in the issue tracker and reviewed by the security committee."] }
+      { heading: "", body: ["The detailed report, including exploit narratives and evidence, is available under NDA via security@keekii.net. Remediation status is tracked to closure in the issue tracker and reviewed by the security committee."] }
     ],
   },
 
@@ -264,7 +261,7 @@ export const CONTRACTS: Record<string, ContractDoc> = {
       { heading: "", body: ["Authentication: Bearer tokens issued from the dashboard under Settings > API Keys. Tokens are scoped per tenant and may be restricted to specific endpoints."] },
       { heading: "", body: ["Core resources: /v1/signals (CAPI ingestion), /v1/ltv (predictions), /v1/campaigns (read/optimize), /v1/wallet (cards & balance), /v1/billing (invoices & usage)."] },
       { heading: "", body: ["Rate limits: 600 requests/minute per tenant for ingestion, 120/minute for read endpoints. Exceeding limits returns HTTP 429 with a Retry-After header."] },
-      { heading: "", body: ["The full interactive specification, SDKs, and runnable examples are available at kiki.ai/docs/api. Webhooks stream signal, anomaly, and billing events to your endpoint over signed HTTPS."] }
+      { heading: "", body: ["The full interactive specification, SDKs, and runnable examples are available at keekii.net/docs/api. Webhooks stream signal, anomaly, and billing events to your endpoint over signed HTTPS."] }
     ],
   },
 
@@ -276,7 +273,7 @@ export const CONTRACTS: Record<string, ContractDoc> = {
       { heading: "", body: ["Official KIKI SDKs wrap the REST API with typed clients and automatic retry/backoff. Languages: JavaScript/TypeScript, Python, Go, and PHP."] },
       { heading: "", body: ["Install: npm i @kiki/sdk (JS), pip install kiki (Python), go get github.com/kiki-agent/sdk-go, composer require kiki/sdk (PHP)."] },
       { heading: "", body: ["Quickstart: initialize the client with your API key, then call kiki.signals.send(event) to ingest a conversion, and kiki.ltv.predict(userId) to fetch a score."] },
-      { heading: "", body: ["Best practices: batch signals (up to 500/request), idempotify events with an event_id, and verify webhook signatures using your signing secret. See kiki.ai/docs/sdk for full recipes."] }
+      { heading: "", body: ["Best practices: batch signals (up to 500/request), idempotify events with an event_id, and verify webhook signatures using your signing secret. See keekii.net/docs/sdk for full recipes."] }
     ],
   },
 
@@ -285,13 +282,13 @@ export const CONTRACTS: Record<string, ContractDoc> = {
     version: "v2.3",
     effective: "March 10, 2026",
     sections: [
-      { heading: "", body: ["The KIKI CAPI pipeline unifies conversion signals from 14 ad platforms into a single LTV-optimized event stream. This walkthrough covers setup in 6 steps."] },
-      { heading: "1. Connect sources: authorize Meta, Google, TikTok, LinkedIn, Pinterest, Snap, and 8 more from the dashboard Integrations page", body: ["OAuth tokens are encrypted at rest."] },
+      { heading: "", body: ["The KIKI CAPI pipeline unifies conversion signals from 8 ad platforms into a single LTV-optimized event stream. This walkthrough covers setup in 6 steps."] },
+      { heading: "1. Connect sources: authorize Meta, Google, TikTok, LinkedIn, Pinterest, Snap, Amazon, and CTV from the dashboard Integrations page", body: ["OAuth tokens are encrypted at rest."] },
       { heading: "2. Map events: match your conversion events (Purchase, Lead, Signup) to KIKI event types", body: ["Hashed emails/phones are sent for identity resolution."] },
       { heading: "3. Deploy the snippet: add the KIKI tag to your site or forward server-side events to /v1/signals", body: ["Validate delivery in the Live Signals viewer."] },
       { heading: "4. Train the model: LTV predictions become available after ~1,000 events", body: ["Monitor calibration in the Model tab."] },
-      { heading: "5. Activate agents: enable Acquisition, Retention, Creative, Audience, Bidding, and Insight agents per campaign", body: [] },
-      { heading: "6. Verify: confirm ROAS and CAC dashboards populate", body: ["See kiki.ai/docs/capi for platform-specific notes and troubleshooting."] }
+      { heading: "5. Activate agents: enable Bidding, Creative, Smart Pacing, Signals, OaaS Optimizer, and SyncBrain Router agents per campaign", body: [] },
+      { heading: "6. Verify: confirm ROAS and CAC dashboards populate", body: ["See keekii.net/docs/capi for platform-specific notes and troubleshooting."] }
     ],
   },
 
@@ -304,7 +301,7 @@ export const CONTRACTS: Record<string, ContractDoc> = {
       { heading: "", body: ["Identity: customers authenticate via email/MFA; service-to-service calls use short-lived mTLS certificates rotated hourly. Admin access is just-in-time and fully logged."] },
       { heading: "", body: ["Network: VNet isolation, private endpoints for data stores, WAF at the edge, and egress filtering. The model-training environment is network-isolated from production data stores."] },
       { heading: "", body: ["Data protection: TLS 1.2+ in transit, AES-256 at rest, field-level encryption for payment and identity tokens. Keys are managed in a hardware-backed key vault with split administration."] },
-      { heading: "", body: ["AI supply chain: third-party model sub-processors operate under zero-retention DPAs; on-premise LLaMA keeps data inside KIKI infrastructure. Prompts and customer data are never used to train foundational models."] },
+      { heading: "", body: ["AI supply chain: third-party model sub-processors operate under zero-retention DPAs; Llama 3.1 fast-tier inference runs on Groq. Prompts and customer data are never used to train foundational models."] },
       { heading: "", body: ["Operations: continuous monitoring, automated vulnerability scanning, annual third-party pen tests, and an incident-response plan with a 72-hour breach notification commitment. See the SOC 2 report and Pen Test Summary for evidence."] }
     ],
   },
@@ -324,7 +321,7 @@ export const DOC_SLUGS: Record<string, string> = {
   "Reseller / Partner Agreement v2.1": "reseller-partner",
   "Enterprise Order Form Template": "enterprise-order",
   "Agency Frame Agreement v1.3": "agency-frame",
-  "SOC 2 Type II Report": "soc2-type-ii",
+  "SOC 2 Type II Status": "soc2-type-ii",
   "Sub-Processor List": "subprocessor-list",
   "Penetration Test Summary 2026": "penetration-test",
   "GDPR Article 30 RoPA Template": "ropa",

@@ -32,7 +32,7 @@ export const ProblemScene: React.FC = () => {
           <div style={{ opacity: interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" }), transform: `translateY(${interpolate(frame, [0, 20], [30, 0], { extrapolateRight: "clamp" })}px)` }}>
             <div style={{ fontFamily: "monospace", color: K.danger, fontSize: 18, letterSpacing: 4, marginBottom: 16 }}>THE PROBLEM</div>
             <div style={{ fontFamily: "sans-serif", color: K.t1, fontSize: 56, fontWeight: 800, lineHeight: 1.15 }}>
-              65% of ad spend<br /><span style={{ color: K.danger }}>is wasted.</span>
+              Manual bidding<br /><span style={{ color: K.danger }}>wastes budget.</span>
             </div>
           </div>
           <div style={{ opacity: interpolate(frame, [40, 60], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }), marginTop: 32 }}>
@@ -59,8 +59,8 @@ export const ProblemScene: React.FC = () => {
             return <path key={i} d={`M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`} fill={seg.color} opacity={0.85} />;
           })}
           <circle cx={cx} cy={cy} r={70} fill={K.g950} />
-          <text x={cx} y={cy - 8} textAnchor="middle" fill={K.danger} fontFamily="monospace" fontSize={36} fontWeight={800}>65%</text>
-          <text x={cx} y={cy + 22} textAnchor="middle" fill={K.t3} fontFamily="sans-serif" fontSize={14}>WASTED</text>
+          <text x={cx} y={cy - 8} textAnchor="middle" fill={K.danger} fontFamily="monospace" fontSize={40} fontWeight={800}>WASTE</text>
+          <text x={cx} y={cy + 22} textAnchor="middle" fill={K.t3} fontFamily="sans-serif" fontSize={14}>GOES UNSEEN</text>
         </svg>
       </div>
     </AbsoluteFill>
