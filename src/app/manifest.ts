@@ -15,10 +15,16 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en",
     dir: "ltr",
     id: "/",
+    scope: "/",
+    display_override: ["standalone", "minimal-ui"],
+    prefer_related_applications: false,
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
       { src: "/icons/icon-1024.png", sizes: "1024x1024", type: "image/png", purpose: "any maskable" },
+    ],
+    shortcuts: [
+      { name: "Dashboard", short_name: "Dashboard", url: "/dashboard", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
     ],
     screenshots: [
       {

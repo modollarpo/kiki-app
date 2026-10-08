@@ -24,6 +24,16 @@ export const AZURE_OPENAI_CONFIG = {
     costPer1kInput: 0.0025,
     costPer1kOutput: 0.01,
   },
+  // DeepSeek R1 — ~$0.50/1M input, ~$2.00/1M output
+  // Great for: batch LTV analysis, reasoning, offline processing
+  // 90%+ cost savings vs. GPT-4o, but higher latency (5-15s)
+  deepseek_r1: {
+    deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_R1 || "deepseek-r1",
+    modelName: "deepseek-r1",
+    maxTokens: 32768,
+    costPer1kInput: 0.0005,
+    costPer1kOutput: 0.002,
+  },
 } as const;
 
 // Model tiers: "fast" routes to Groq (<200ms), "mini"/"standard" route to Azure OpenAI
