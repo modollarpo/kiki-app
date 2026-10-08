@@ -56,7 +56,7 @@ jobs:
       - name: Deploy to Container App
         run: |
           TAG="${{ github.sha }}"
-          az containerapp update -g "$RG" -n "$APP" \
+          az containerapp update -g "$RG" -n "$APP" --container-name kiki-web \
             --image "$ACR.azurecr.io/kiki-app:$TAG"
 
       - name: Set environment variables
@@ -84,5 +84,5 @@ jobs:
           if [ -n "${{ secrets.SMTP_FROM_NAME }}" ]; then
             ENV_VARS+=("SMTP_FROM_NAME=${{ secrets.SMTP_FROM_NAME }}")
           fi
-          az containerapp update -g "$RG" -n "$APP" \
+          az containerapp update -g "$RG" -n "$APP" --container-name kiki-web \
             --set-env-vars "${ENV_VARS[@]}"

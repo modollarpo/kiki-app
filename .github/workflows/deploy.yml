@@ -67,4 +67,5 @@ jobs:
           az containerapp update \
             -g ${{ env.RESOURCE_GROUP }} \
             -n ${{ env.CONTAINER_APP }} \
+            --container-name kiki-web \
             --image "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE }}:${{ github.sha }}"
