@@ -26,10 +26,10 @@ export default function ProfitMarginPage() {
     fetch("/api/margin", { headers: { "Authorization": `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => {
-        if (d.success) {
+        if (d.ok) {
           setOverview(d.data.overview);
           setChannels(d.data.byChannel);
-          setTrend(d.data.marginTrend);
+          if (d.data.marginTrend) setTrend(d.data.marginTrend);
         }
       })
       .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
@@ -54,9 +54,9 @@ export default function ProfitMarginPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Avg Margin" value={overview ? `${overview.avgMargin}%` : "—"} delta={3.2} sub="+3.2% this quarter" accent={K.mint} loading={loading} />
-          <StatCard label="Profit-Adj CAC" value={overview ? `$${overview.profitAdjCAC}` : "—"} delta={-4.8} sub="-$4.80 improvement" accent={K.blue} loading={loading} />
-          <StatCard label="Gross Profit" value={overview ? `$${(overview.grossProfit / 1000).toFixed(0)}K` : "—"} delta={180} sub="+$180K vs last month" accent={K.mint} loading={loading} />
+          <StatCard label="Avg Margin" value={overview ? `${overview.avgMargin}%` : "—"} accent={K.mint} loading={loading} />
+          <StatCard label="Profit-Adj CAC" value={overview ? `$${overview.profitAdjCAC}` : "—"} accent={K.blue} loading={loading} />
+          <StatCard label="Gross Profit" value={overview ? `$${(overview.grossProfit / 1000).toFixed(0)}K` : "—"} accent={K.mint} loading={loading} />
           <StatCard label="Channels" value={channels.length > 0 ? String(channels.length) : "—"} sub="Tracked channels" accent={K.teal} loading={loading} />
         </div>
 

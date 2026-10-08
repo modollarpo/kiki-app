@@ -348,8 +348,16 @@ export const mmmAnalysis = {
 };
 
 // ── Status ──────────────────────────────────────────────
+export interface ServiceStatus {
+  name: string;
+  status: "operational" | "degraded" | "not_configured" | "unknown";
+  p99: number | null;
+  uptime: number | null;
+  detail: string;
+}
+
 export const status = {
-  get: () => request<{ status: string; services: Array<{ name: string; status: string; p99: number; uptime: number }> }>("/api/status"),
+  get: () => request<{ status: string; services: ServiceStatus[] }>("/api/status"),
 };
 
 // ── Insights ────────────────────────────────────────────
@@ -611,7 +619,7 @@ export const nlQuery = {
 export const attribution = {
   get: (token: string) => request<Record<string, unknown>>("/api/attribution", { token }),
   breakdown: (token: string) =>
-    request<{ success: boolean; data: unknown[] }>("/api/attribution?path=/api/attributions/breakdown", { token }),
+    request<{ ok: boolean; data: unknown[]; demo?: boolean }>("/api/attribution?path=/api/attributions/breakdown", { token }),
 };
 
 // ── CAPI Enrich ──────────────────────────────────────────
@@ -641,11 +649,11 @@ export const arbitrage = {
 
 // ── Influencer ───────────────────────────────────────────
 export const influencer = {
-  list: (token: string) => request<{ success: boolean; data: Array<{ id: string; name: string; handle: string; platform: string; promoCode: string; totalConversions: number; totalRevenue: number; totalLtv: number; roi: number }> }>("/api/influencer", { token }),
+  list: (token: string) => request<{ ok: boolean; data: Array<{ id: string; name: string; handle: string; platform: string; promoCode: string; totalConversions: number; totalRevenue: number; totalLtv: number; roi: number }> }>("/api/influencer", { token }),
   create: (token: string, data: { name: string; handle: string; platform: string }) =>
-    request<{ success: boolean; data?: unknown }>("/api/influencer", { method: "POST", token, body: JSON.stringify(data) }),
+    request<{ ok: boolean; data?: unknown }>("/api/influencer", { method: "POST", token, body: JSON.stringify(data) }),
   darkSocial: (token: string) =>
-    request<{ success: boolean; data: { totalUnattributedConversions: number; totalUnattributedRevenue: number } }>("/api/influencer/dark-social", { token }),
+    request<{ ok: boolean; data: { totalUnattributedConversions: number; totalUnattributedRevenue: number } }>("/api/influencer/dark-social", { token }),
 };
 
 // ── Incrementality ───────────────────────────────────────

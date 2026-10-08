@@ -6,7 +6,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, StatCard, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
-interface Insight { type: string; title: string; description: string; impact: string; confidence: number; }
+interface Insight { type: string; title: string; description: string; impact: string; confidence: number | null; }
 interface Prediction { metric: string; value: string; confidence: number; range: string; }
 
 export default function IntelligencePage() {
@@ -26,7 +26,7 @@ export default function IntelligencePage() {
     fetch("/api/intelligence", { headers: { "Authorization": `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => {
-        if (d.success) {
+        if (d.ok && d.data) {
           setInsights(d.data.insights);
           setPredictions(d.data.predictions);
         }
@@ -57,7 +57,7 @@ export default function IntelligencePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
           <StatCard label="Active Insights" value={insights.length > 0 ? String(insights.length) : "—"} accent={K.blue} sub="AI-generated" loading={loading} />
-          <StatCard label="Avg Confidence" value={insights.length > 0 ? `${Math.round(insights.reduce((s, i) => s + i.confidence, 0) / insights.length)}%` : "—"} accent={K.mint} sub="Model accuracy" loading={loading} />
+          <StatCard label="Avg Confidence" value={insights.some(i => i.confidence != null) ? `${Math.round(insights.reduce((s, i) => s + (i.confidence ?? 0), 0) / insights.length)}%` : "—"} accent={K.mint} sub="Model accuracy" loading={loading} />
           <StatCard label="High Impact" value={insights.length > 0 ? String(insights.filter(i => i.impact === "high").length) : "—"} accent={K.gold} sub="Action needed" loading={loading} />
         </div>
 
@@ -76,7 +76,7 @@ export default function IntelligencePage() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Badge color={getImpactColor(insight.impact)}>{insight.impact} impact</Badge>
-                      <span className="font-mono text-[10px] text-gray-500">{insight.confidence}% conf</span>
+                      <span className="font-mono text-[10px] text-gray-500">{insight.confidence != null ? `${insight.confidence}% conf` : "no model"}</span>
                     </div>
                   </div>
                   <p className="font-mono text-[11px] text-gray-400 leading-relaxed">{insight.description}</p>

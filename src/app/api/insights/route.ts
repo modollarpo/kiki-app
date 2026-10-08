@@ -112,8 +112,8 @@ export async function GET(req: Request) {
   const margin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
 
   const revenueStreams = [
-    { name: "Ad Spend Managed", amount: totalSpend, share: totalRevenue > 0 ? (totalSpend / totalRevenue) * 100 : 0, color: "blue", trend: [28, 30, 29, 32, 34, 33, 36] },
-    { name: "Platform Fees (OaaS)", amount: totalUsageCost, share: totalRevenue > 0 ? (totalUsageCost / totalRevenue) * 100 : 0, color: "mint", trend: [8, 9, 9, 10, 10, 10, 10] },
+    { name: "Ad Spend Managed", amount: totalSpend, share: totalRevenue > 0 ? (totalSpend / totalRevenue) * 100 : 0, color: "blue" },
+    { name: "Platform Fees (OaaS)", amount: totalUsageCost, share: totalRevenue > 0 ? (totalUsageCost / totalRevenue) * 100 : 0, color: "mint" },
   ].filter(s => s.amount > 0);
 
   const costCategories = [
@@ -121,34 +121,40 @@ export async function GET(req: Request) {
     { name: "Platform Hosting", amount: totalUsageCost, pct: costs > 0 ? (totalUsageCost / costs) * 100 : 0, color: "teal" },
   ];
 
-  // Monthly P&L derived from real campaign data aggregated by month
+// Monthly P&L derived from real campaign data aggregated by month
   const monthlyRows = await db.prepare(`
-    SELECT strftime('%m', created_at) as mon, SUM(spend) as spend, SUM(revenue) as revenue
+    SELECT strftime('%m', created_at) as mon, strftime('%Y', created_at) as yr, SUM(spend) as spend, SUM(revenue) as revenue
     FROM campaigns WHERE tenant_id = ? AND created_at >= datetime('now', '-7 months')
-    GROUP BY mon ORDER BY mon
+    GROUP BY yr, mon ORDER BY yr, mon
   `).all(tenantId) as any[];
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const monthlyPnl = monthlyRows.length > 0
-    ? monthlyRows.map((r: any, i: number) => ({
-        month: monthNames[parseInt(r.mon) - 1] || `M${r.mon}`,
+    ? monthlyRows.map((r: any) => ({
+        month: `${monthNames[parseInt(r.mon) - 1] || `M${r.mon}`} ${String(r.yr).slice(2)}`,
         revenue: Number(((r.revenue || 0) / 1000).toFixed(1)),
         costs: Number(((r.spend || 0) / 1000).toFixed(1)),
         profit: Number((((r.revenue || 0) - (r.spend || 0)) / 1000).toFixed(1)),
       }))
-    : [{ month: monthNames[new Date().getMonth()], revenue: Number((totalRevenue / 1000).toFixed(1)), costs: Number((totalSpend / 1000).toFixed(1)), profit: Number((profit / 1000).toFixed(1)) }];
+    : [];
 
-  // ── OaaS Tasks (derived from underperforming campaigns) ──
-  const underperformers = campaigns.filter(c => (c.roas || 0) < (c.target_roas || 4) && (c.status === "active"));
-  const oaasTasks = underperformers.slice(0, 6).map((c, i) => ({
-    id: `task-${i + 1}`,
-    title: `Reallocate budget from underperforming ${c.name}`,
-    agent: "Bid Optimizer",
-    type: i % 2 === 0 ? "budget" : "bidding",
-    status: i < 2 ? "pending" : i < 4 ? "approved" : "completed",
-    expectedImpact: `+${Math.round((c.target_roas - (c.roas || 0)) * 100)}% ROAS`,
-    confidence: 75 + (i * 3) % 20,
-    createdAt: `${i + 1} hr ago`,
-    details: `${c.name} on ${c.platform} has ROAS ${(c.roas || 0).toFixed(1)}× vs target ${(c.target_roas || 4).toFixed(1)}×. Redirecting $${Math.round((c.budget || 1000) / 30)}/day to top performers.`,
+  // ── OaaS Tasks (only tasks that actually exist — no fabrication) ──
+  const storedTasks = await db.prepare(`
+    SELECT id, campaign_name, title, agent, type, status, expected_impact, confidence, created_at, details
+    FROM oaas_tasks WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 10
+  `).all<{
+    id: string; campaign_name: string; title: string; agent: string; type: string; status: string;
+    expected_impact: string | null; confidence: number | null; created_at: string; details: string;
+  }>(tenantId);
+  const oaasTasks = storedTasks.map(t => ({
+    id: t.id,
+    title: t.title,
+    agent: t.agent,
+    type: t.type,
+    status: t.status,
+    expectedImpact: t.expected_impact,
+    confidence: t.confidence,
+    createdAt: t.created_at,
+    details: t.details,
   }));
 
   // ── Partners / Integrations ──────────────────────────
@@ -160,18 +166,18 @@ export async function GET(req: Request) {
     lastSync: it.last_sync_at,
   })) : [];
 
-  // ── Savings (fraud + optimization) ───────────────────
-  const fraudEvents = await db.prepare(`SELECT COUNT(*) as c, SUM(CASE WHEN blocked=1 THEN 1 ELSE 0 END) as b FROM fraud_events WHERE tenant_id = ?`).get<FraudCountRow>(tenantId);
-  const fraudSavings = (fraudEvents?.b || 0) * 33.4;
-  const optSavings = underperformers.reduce((s, c) => s + (c.budget || 0) * 0.1, 0);
+// ── Savings ───────────────────────────────────────────
+  // Reported honestly: fraud savings are estimated only when dollars are
+  // implicated by a blocked event; otherwise null. No fixed per-event
+  // dollar multipliers and no invented optimization savings.
+  const fraudSavings = null;
+  const optSavings = null;
   const savings = {
-    total: Math.round(fraudSavings + optSavings),
-    fraud: Math.round(fraudSavings),
-    optimization: Math.round(optSavings),
-    breakdown: [
-      { category: "Fraud Prevention", amount: Math.round(fraudSavings), pct: fraudSavings + optSavings > 0 ? (fraudSavings / (fraudSavings + optSavings)) * 100 : 0 },
-      { category: "Bid Optimization", amount: Math.round(optSavings), pct: fraudSavings + optSavings > 0 ? (optSavings / (fraudSavings + optSavings)) * 100 : 0 },
-    ],
+    total: null,
+    fraud: fraudSavings,
+    optimization: optSavings,
+    breakdown: [],
+    note: "Dollar savings require a monetary adjudication source; reported as null rather than estimated.",
   };
 
   // ── Workflow (agent actions) ─────────────────────────
@@ -197,11 +203,11 @@ export async function GET(req: Request) {
     walletBalance,
   };
 
-  // ── AIOps (system metrics) ───────────────────────────
+// ── AIOps (system metrics) ───────────────────────────
   const sysMetrics = await db.prepare(`SELECT metric_name, AVG(metric_value) as avg, MAX(metric_value) as max FROM system_metrics WHERE tenant_id = ? GROUP BY metric_name`).all<SystemMetricRow>(tenantId);
   const aiops = {
     metrics: sysMetrics.length > 0 ? sysMetrics.map(m => ({ name: m.metric_name, avg: m.avg, max: m.max })) : [],
-    uptime: 99.7,
+    uptime: null, // no uptime tracking source wired — not fabricated
     activeServices: agentCount?.c || 0,
   };
 

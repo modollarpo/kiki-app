@@ -17,6 +17,14 @@ export async function POST(req: Request) {
     const user = await (await db.prepare("SELECT id, name FROM users WHERE email = ?")).get(email) as { id: string; name: string } | undefined;
     if (!user) return json({ message: "If that email exists, a reset link has been sent" });
 
+    // Rate-limit token issuance: max 3 per email per hour to prevent mailbox bombs.
+    const perHour = await (await db.prepare(
+      "SELECT COUNT(*) as c FROM reset_tokens WHERE email = ? AND created_at >= datetime('now', '-1 hour')"
+    )).get(email) as { c: number } | undefined;
+    if ((perHour?.c ?? 0) >= 3) {
+      return jsonError("Too many reset requests. Try again later.", 429);
+    }
+
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 

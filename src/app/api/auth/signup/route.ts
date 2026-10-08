@@ -49,23 +49,9 @@ export async function POST(req: Request) {
       `)
     ).run(genId("wlt"), tenantId);
 
-    // Auto-seed sample campaigns and signals so dashboard isn't blank
-    const insertCampaign = db.prepare(`
-      INSERT INTO campaigns (id, tenant_id, name, platform, status, roas, spend, budget, impressions, clicks, conversions, cpa, ltv_predicted)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    for (const c of [
-      [genId("cmp"), tenantId, "Getting Started Meta", "meta", "active", 0, 0, 500, 0, 0, 0, 0, 0],
-      [genId("cmp"), tenantId, "Welcome Retargeting", "google", "draft", 0, 0, 300, 0, 0, 0, 0, 0],
-    ]) await insertCampaign.run(...c);
-
-    const insertSignal = db.prepare(`
-      INSERT INTO signals (id, tenant_id, platform, event_type, value, ltv_predicted, ltv_confidence, enriched, delivered, raw_data, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', ?))
-    `);
-    for (let i = 0; i < 3; i++) {
-      await insertSignal.run(genId("sig"), tenantId, "meta", "page_view", 0, 25 + i * 10, 0.5, 0, 0, "{}", `-${(i + 1) * 10} minutes`);
-    }
+    // NOTE: no fabricated campaign/signal seeding here. New accounts start
+    // with real (empty) performance data. The explicit /api/seed endpoint
+    // is the only place demo data can be loaded, and only on request.
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     await sendWelcomeEmail(parsed.email, parsed.name, `${baseUrl}/dashboard`);

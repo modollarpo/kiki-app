@@ -7,7 +7,7 @@ import { logger, handleApiError } from "@/lib/logger";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const db = await getDb();
     const tenantId = user.tenantId;
@@ -36,14 +36,14 @@ export async function GET(req: NextRequest) {
     // Build insights from real data
     const insights: any[] = [];
 
-    // Top performing campaign
+// Top performing campaign
     const topCampaign = campaigns.sort((a, b) => (b.roas || 0) - (a.roas || 0))[0];
     if (topCampaign) {
       insights.push({
         type: "performance",
         title: `Top performer: ${topCampaign.name}`,
         description: `${topCampaign.platform} campaign with ${(topCampaign.roas || 0).toFixed(1)}× ROAS`,
-        confidence: 95,
+        confidence: null,
         impact: "high",
       });
     }
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
         type: "alert",
         title: `${underperformers.length} campaign(s) below 2× ROAS`,
         description: "Consider pausing or optimizing these campaigns",
-        confidence: 88,
+        confidence: null,
         impact: "high",
       });
     }
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
         type: "trend",
         title: `${totalSignals} signals processed this week`,
         description: `Top platform: ${signalTrends[0]?.platform || "N/A"} (${signalTrends[0]?.count || 0} events)`,
-        confidence: 100,
+        confidence: null,
         impact: "medium",
       });
     }
@@ -79,30 +79,18 @@ export async function GET(req: NextRequest) {
         type: "opportunity",
         title: `${highValueCustomers.count} high-value customers identified`,
         description: `Average predicted LTV: $${Math.round(highValueCustomers.avg_ltv || 0)}`,
-        confidence: 82,
+        confidence: null,
         impact: "high",
       });
     }
 
-    // Predictions based on current trends
+// Predictions are not produced — no calibrated forecasting model is wired
+    // to platform data. Return empty so the UI surfaces the honest empty state.
+    const predictions: any[] = [];
+
     const totalRevenue = campaigns.reduce((s, c) => s + (c.revenue || 0), 0);
     const totalSpend = campaigns.reduce((s, c) => s + (c.spend || 0), 0);
     const avgRoas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
-
-    const predictions = [
-      {
-        metric: "Projected Monthly Revenue",
-        value: `$${Math.round(totalRevenue * 1.1).toLocaleString()}`,
-        confidence: 78,
-        basis: "Based on current ROAS trend",
-      },
-      {
-        metric: "Optimal Budget Allocation",
-        value: `$${Math.round(totalSpend * 1.15).toLocaleString()}`,
-        confidence: 72,
-        basis: "15% increase recommended for top performers",
-      },
-    ];
 
     return NextResponse.json({
       ok: true,

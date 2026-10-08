@@ -8,9 +8,15 @@ const ACCESS_TOKEN_SECRET = new TextEncoder().encode(
   process.env.MOBILE_JWT_SECRET || process.env.JWT_SECRET || 'kiki-mobile-secret-change-in-production'
 );
 
+// Single source of truth for the refresh-token secret. Resolution order:
+// MOBILE_REFRESH_SECRET → REFRESH_SECRET → dev fallback. Login and refresh
+// MUST resolve to the same secret or refresh tokens can never be verified.
 const REFRESH_TOKEN_SECRET = new TextEncoder().encode(
-  process.env.MOBILE_REFRESH_SECRET || 'kiki-mobile-refresh-secret-change-in-production'
+  process.env.MOBILE_REFRESH_SECRET || process.env.REFRESH_SECRET || 'kiki-refresh-secret-2024'
 );
+
+export const REFRESH_ISSUER = 'kiki-mobile';
+export const REFRESH_AUDIENCE = 'kiki-api';
 
 export { ACCESS_TOKEN_SECRET as JWT_SECRET, REFRESH_TOKEN_SECRET as REFRESH_SECRET };
 
@@ -37,6 +43,8 @@ export async function signRefreshToken(payload: Omit<MobileAuthPayload, 'type' |
   return new SignJWT({ ...payload, type: 'refresh' })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
+    .setIssuer(REFRESH_ISSUER)
+    .setAudience(REFRESH_AUDIENCE)
     .setExpirationTime('30d')
     .sign(REFRESH_TOKEN_SECRET);
 }

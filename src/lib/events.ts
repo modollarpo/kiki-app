@@ -5,9 +5,18 @@ import { logger } from "./logger";
 
 type EventListener = (event: string, data: unknown) => void;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+interface SSEClient {
+  controller: ReadableStreamDefaultController;
+  tenantId: string | null; // null = system-scoped (sees all events)
+}
+
 class EventBus {
   private listeners: Map<string, Set<EventListener>> = new Map();
-  private sseClients: Set<ReadableStreamDefaultController> = new Set();
+  private sseClients: Set<SSEClient> = new Set();
 
   // Subscribe to events
   on(event: string, listener: EventListener): () => void {
@@ -31,24 +40,45 @@ class EventBus {
       }
     }
 
-    // Also push to SSE clients
+    // Also push to SSE clients (tenant-scoped — never leak another
+    // tenant's events to a browser session).
     const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-    for (const controller of this.sseClients) {
+    const encoder = new TextEncoder();
+    const dataTenantId = isRecord(data) && typeof data.tenantId === "string" ? data.tenantId : undefined;
+
+    for (const client of this.sseClients) {
+      if (!this.shouldDeliver(client, event, dataTenantId)) continue;
       try {
-        controller.enqueue(new TextEncoder().encode(payload));
+        client.controller.enqueue(encoder.encode(payload));
       } catch {
-        this.sseClients.delete(controller);
+        this.sseClients.delete(client);
       }
     }
   }
 
+  private shouldDeliver(client: SSEClient, event: string, dataTenantId: string | undefined): boolean {
+    // System-scoped clients (e.g. admin consoles) receive everything.
+    if (!client.tenantId) return true;
+
+    // Tenant-scoped events are only delivered to their own tenant.
+    if (dataTenantId) return client.tenantId === dataTenantId;
+
+    // Undifferentiated events fall through to a small system whitelist.
+    return SYSTEM_EVENTS.has(event);
+  }
+
   // Register SSE client
-  addSSEClient(controller: ReadableStreamDefaultController): void {
-    this.sseClients.add(controller);
+  addSSEClient(controller: ReadableStreamDefaultController, tenantId: string | null = null): void {
+    this.sseClients.add({ controller, tenantId });
   }
 
   removeSSEClient(controller: ReadableStreamDefaultController): void {
-    this.sseClients.delete(controller);
+    for (const client of this.sseClients) {
+      if (client.controller === controller) {
+        this.sseClients.delete(client);
+        break;
+      }
+    }
   }
 
   get clientCount(): number {
@@ -90,3 +120,15 @@ export const EVENTS = {
   WALLET_CARD_UNFROZEN: "wallet:card_unfrozen",
   WALLET_UNFREEZE_REQUESTED: "wallet:unfreeze_requested",
 } as const;
+
+// Events that are safe to broadcast to every connected tenant. Everything
+// else is only delivered to the tenant it belongs to (via a top-level
+// `tenantId` field on the payload). Kept lean: tenant-scoped events that
+// omit `tenantId` are not delivered to browsers until their emit sites are
+// annotated (see GAP-REPORT).
+const SYSTEM_EVENTS = new Set<string>([
+  EVENTS.AGENT_STARTED,
+  EVENTS.AGENT_COMPLETED,
+  EVENTS.AGENT_ERROR,
+  EVENTS.SYSTEM_METRIC,
+]);

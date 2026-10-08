@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const { agents: storeAgents, walletBalance, toggleAgent, addToast } = useKikiStore();
   const { token } = useAuth();
   const router = useRouter();
-  const { connected } = useSSE();
+  const { connected, subscribe } = useSSE("/api/events", token ?? undefined);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -91,6 +91,30 @@ export default function DashboardPage() {
       .then(d => { if (d) setSignalStats(d); })
       .catch((err) => { setError(err?.message || "Failed to load signal stats"); });
   }, [token]);
+
+  // Live agent events: refresh dashboard state and surface activity toasts.
+  useEffect(() => {
+    if (!token) return;
+    const refresh = () => dashboard.get(token).then(d => { setData(d); setLastUpdate(new Date()); }).catch(() => {});
+    const unsubs = [
+      subscribe("agent:started", (payload) => {
+        const p = payload as { agentType?: string };
+        addToast("info", `${p?.agentType || "Agent"} started`);
+        refresh();
+      }),
+      subscribe("agent:completed", (payload) => {
+        const p = payload as { agentType?: string };
+        addToast("info", `${p?.agentType || "Agent"} cycle completed`);
+        refresh();
+      }),
+      subscribe("agent:error", (payload) => {
+        const p = payload as { agentType?: string };
+        addToast("error", `${p?.agentType || "Agent"} error`);
+        refresh();
+      }),
+    ];
+    return () => unsubs.forEach(u => u?.());
+  }, [token, subscribe, addToast]);
 
   const agents = data?.agents || storeAgents;
   const balance = data?.wallet?.balance || walletBalance;
@@ -150,9 +174,9 @@ export default function DashboardPage() {
         {/* KPI Row */}
         <ErrorBoundary>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-            <StatCard label="Platform ROAS" value={data ? `${data.kpis.roas.value}×` : "—"} delta={data?.kpis.roas.delta} period="last month" accent={K.mint} loading={loading} />
-            <StatCard label="Total Ad Spend" value={data ? `$${fmt(data.kpis.spend.value)}` : "—"} delta={data?.kpis.spend.delta} accent={K.blue} loading={loading} />
-            <StatCard label="Avg LTV Signal" value={data ? `$${data.kpis.ltv.value}` : "—"} delta={data?.kpis.ltv.delta} accent={K.gold} loading={loading} />
+            <StatCard label="Platform ROAS" value={data ? `${data.kpis.roas.value}×` : "—"} delta={data?.kpis.roas.delta ?? undefined} period="last month" accent={K.mint} loading={loading} />
+            <StatCard label="Total Ad Spend" value={data ? `$${fmt(data.kpis.spend.value)}` : "—"} delta={data?.kpis.spend.delta ?? undefined} accent={K.blue} loading={loading} />
+            <StatCard label="Avg LTV Signal" value={data ? `$${data.kpis.ltv.value}` : "—"} delta={data?.kpis.ltv.delta ?? undefined} accent={K.gold} loading={loading} />
             <StatCard label="Wallet Balance" value={`$${fmt(balance)}`} accent={K.gold} sub={runwayDays !== null ? `~${runwayDays} days runway` : "—"} loading={loading} />
           </div>
         </ErrorBoundary>
@@ -184,7 +208,7 @@ export default function DashboardPage() {
                 <StatusBadge status={c.status} />
                 <span className={`font-mono text-xs font-bold ${c.roas >= 4 ? "text-kmint" : c.roas >= 2 ? "text-kwarn" : "text-kdanger"}`}>{c.roas}×</span>
                 <span className="font-mono text-[11px] text-t2">${fmt(c.spend)}</span>
-                <Badge color={K.blue} dot pulse>LIVE</Badge>
+                <StatusBadge status={c.status} />
               </div>
             ))}
             {loading && [1, 2, 3].map(i => (
@@ -227,7 +251,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xl text-kgreen">⬡</span>
               <h3 className="font-mono font-bold text-[13px] text-t1">SyncBrain™</h3>
-              <Badge color={K.green} dot pulse>LIVE</Badge>
+              <Badge color={connected ? K.green : K.t3} dot pulse={connected}>{connected ? "LIVE" : "STANDBY"}</Badge>
             </div>
             <AIThinking label="Routing AI tasks across GPT-4o-mini and GPT-4o..." />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
@@ -248,7 +272,7 @@ export default function DashboardPage() {
           <Card accent={K.teal}>
             <div className="page-header-row">
               <h3 className="font-mono font-bold text-[13px] text-t1">Signal Quality</h3>
-              <Badge color={K.teal}>LIVE</Badge>
+              <Badge color={connected ? K.teal : K.t3} dot pulse={connected}>{connected ? "LIVE" : "STANDBY"}</Badge>
             </div>
             {[
               { l: "Enrichment rate", v: enrichmentRate, c: K.mint, unit: "%" },

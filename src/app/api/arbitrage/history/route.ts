@@ -12,7 +12,7 @@ import { getArbitrageHistory } from "@/lib/platform-arbitrage";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") || "20", 10);

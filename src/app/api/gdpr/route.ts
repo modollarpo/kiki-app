@@ -8,7 +8,7 @@ import { logger, handleApiError } from "@/lib/logger";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
 
     const url = new URL(req.url);
     const action = url.searchParams.get("action") || "consent";
@@ -22,19 +22,23 @@ export async function GET(req: NextRequest) {
         const consents = await getConsentStatus(user.tenantId, user.id);
         return NextResponse.json({ ok: true, data: { consents } });
       }
+      case "delete": {
+        const result = await deleteUserData(user.tenantId, user.id, {});
+        return NextResponse.json({ ok: true, data: result });
+      }
       default:
-        return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+        return NextResponse.json({ ok: false, error: "Unknown action" }, { status: 400 });
     }
   } catch (e) {
     logger.error("gdpr/handler", { message: e instanceof Error ? e.message : String(e) });
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
 
     const enf = await checkEnforcement(user.tenantId);
     if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
@@ -47,7 +51,7 @@ export async function POST(req: NextRequest) {
         const consentType = body.consentType as "analytics" | "marketing" | "third_party" | "data_processing";
         const granted = body.granted as boolean;
         if (!consentType || granted === undefined) {
-          return NextResponse.json({ error: "consentType and granted required" }, { status: 400 });
+          return NextResponse.json({ ok: false, error: "consentType and granted required" }, { status: 400 });
         }
         const ipAddress = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || undefined;
         const userAgent = req.headers.get("user-agent") || undefined;
@@ -62,16 +66,20 @@ export async function POST(req: NextRequest) {
         });
         return NextResponse.json({ ok: true });
       }
+      case "export": {
+        const data = await exportUserData(user.tenantId, user.id);
+        return NextResponse.json({ ok: true, data });
+      }
       case "delete": {
         const { anonymizeOnly, ...options } = body;
         const result = await deleteUserData(user.tenantId, user.id, { anonymizeOnly, ...options });
-        return NextResponse.json(result);
+        return NextResponse.json({ ok: true, data: result });
       }
       default:
-        return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+        return NextResponse.json({ ok: false, error: "Unknown action" }, { status: 400 });
     }
   } catch (e) {
     logger.error("gdpr/handler", { message: e instanceof Error ? e.message : String(e) });
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
 }

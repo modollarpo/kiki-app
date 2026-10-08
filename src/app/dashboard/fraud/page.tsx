@@ -60,7 +60,7 @@ export default function FraudIVTPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Blocked Today" value={String(stats?.totalBlocked || 0)} accent={K.danger} sub="Events prevented" loading={loading} />
           <StatCard label="Detection Rate" value={stats ? `${((stats.totalDetected / Math.max(1, stats.totalDetected + 10000)) * 100).toFixed(2)}%` : "0.08%"} accent={K.warn} sub="Of total traffic" loading={loading} />
-          <StatCard label="Protection Score" value={`${stats?.dataQualityScore || 99.1}%`} accent={K.mint} delta={0.3} period="this week" loading={loading} />
+          <StatCard label="Protection Score" value={stats?.dataQualityScore != null ? `${stats.dataQualityScore}%` : "—"} accent={K.mint} period="this week" loading={loading} />
           <StatCard label="Savings" value={`$${(stats?.estimatedSavings || 0).toLocaleString()}`} accent={K.gold} sub="Prevented wasted spend" loading={loading} />
         </div>
 

@@ -14,7 +14,7 @@ import { enrichConversionEvent, getEnrichmentStats } from "@/lib/capi";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const stats = await getEnrichmentStats(user.tenantId);
     return NextResponse.json({ ok: true, data: stats });
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const enf = await checkEnforcement(user.tenantId);
     if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const { platform, eventName, eventTime, userData, customData, consent } = body;
 
     if (!platform || !eventName || !userData) {
-      return NextResponse.json({ error: "platform, eventName, and userData required" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "platform, eventName, and userData required" }, { status: 400 });
     }
 
     const result = await enrichConversionEvent(user.tenantId, {

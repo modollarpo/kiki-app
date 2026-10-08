@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button } from "@/components/ui";
+import { Card, Button } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 import { useInsights } from "@/hooks/useInsights";
@@ -26,7 +26,7 @@ export default function WorkflowPage() {
   const router = useRouter();
   const { data, loading: insightsLoading } = useInsights();
   const fires = data?.workflow?.length ?? 0;
-  const budgetSaved = 0; // Savings page/feature has been deleted
+  // Savings tracking was deleted — there is no budget-saved figure to show.
   const workflowFromInsights = (data?.workflow ?? []) as WorkflowInsight[];
   const [events, setEvents] = useState<WorkflowEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +96,7 @@ export default function WorkflowPage() {
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Automation Builder</h1>
-            <p className="font-mono text-[11px] text-gray-500">Workflow rules · Trigger conditions · Automated actions · {workflows.length} active rules</p>
+            <p className="font-mono text-[11px] text-gray-500">Workflow rules · Trigger conditions · Automated actions · {workflows.length} action types</p>
           </div>
           <div className="flex gap-2">
             <div className="flex gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
@@ -119,9 +119,9 @@ export default function WorkflowPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          {[{ label: "Active Rules", value: `${workflows.length}`, color: K.mint },
+          {[{ label: "Action Types", value: `${workflows.length}`, color: K.mint },
             { label: "Triggered (30d)", value: isLoading ? "…" : String(fires), color: K.blue },
-            { label: "Budget Saved", value: isLoading ? "…" : `$${Number(budgetSaved).toLocaleString()}`, color: K.gold },
+            { label: "Budget Saved", value: isLoading ? "…" : "—", color: K.gold },
             { label: "Avg Response Time", value: isLoading ? "…" : allActions.length > 0 ? `${Math.round(allActions.reduce((s, a) => s + (a.durationMs || 0), 0) / allActions.length)}ms` : "< 1 min", color: K.teal },
           ].map((s, i) => (
             <Card key={i} accent={s.color}>
@@ -143,7 +143,6 @@ export default function WorkflowPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2.5 mb-1">
                       <h3 className="font-mono font-bold text-[13px] text-white">{wf.name}</h3>
-                      <Badge color={wf.active ? K.mint : K.t3} dot pulse={wf.active}>{wf.active ? "ACTIVE" : "PAUSED"}</Badge>
                     </div>
                     <p className="font-sans text-[11px] text-gray-500 leading-relaxed max-w-[600px]">{wf.description}</p>
                   </div>

@@ -27,7 +27,7 @@ export default function CRMPage() {
     fetch("/api/crm", { headers: { "Authorization": `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => {
-        if (d.success) {
+        if (d.ok) {
           setStats(d.data.stats);
           setLeads(d.data.recentLeads);
           setSegments(d.data.segments);
@@ -55,10 +55,10 @@ export default function CRMPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Pipeline Value" value={stats ? `$${(stats.pipelineValue / 1000).toFixed(0)}K` : "—"} delta={280} sub="+$280K this month" accent={K.mint} loading={loading} />
-          <StatCard label="Total Contacts" value={stats ? String(stats.totalContacts) : "—"} delta={23} sub="+23 new leads" accent={K.blue} loading={loading} />
-          <StatCard label="Conversion Rate" value={stats ? `${stats.conversionRate}%` : "—"} delta={2.1} sub="+2.1% improvement" accent={K.mint} loading={loading} />
-          <StatCard label="Avg Deal Size" value={stats ? `$${(stats.avgDealSize / 1000).toFixed(1)}K` : "—"} delta={3.2} sub="+$3.2K vs last quarter" accent={K.gold} loading={loading} />
+          <StatCard label="Pipeline Value" value={stats ? `$${(stats.pipelineValue / 1000).toFixed(0)}K` : "—"} accent={K.mint} loading={loading} />
+          <StatCard label="Total Contacts" value={stats ? String(stats.totalContacts) : "—"} accent={K.blue} loading={loading} />
+          <StatCard label="Conversion Rate" value={stats ? `${stats.conversionRate}%` : "—"} accent={K.mint} loading={loading} />
+          <StatCard label="Avg Deal Size" value={stats ? `$${(stats.avgDealSize / 1000).toFixed(1)}K` : "—"} accent={K.gold} loading={loading} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">

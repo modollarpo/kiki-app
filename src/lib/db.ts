@@ -761,6 +761,7 @@ const SCHEMA = `
     company TEXT NOT NULL,
     message TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'new',
+    tenant_id TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -1178,6 +1179,12 @@ async function runMigrations(db: PgDb) {
 
   await addColumnIfMissing("signals", "customer_id", "TEXT");
   await addColumnIfMissing("ltv_predictions", "customer_id", "TEXT");
+  await addColumnIfMissing("users", "trial_ends_at", "TEXT");
+  await addColumnIfMissing("users", "status", "TEXT NOT NULL DEFAULT 'active'");
+  await addColumnIfMissing("users", "updated_at", "TEXT");
+  await addColumnIfMissing("contacts", "tenant_id", "TEXT");
+  await addColumnIfMissing("wallet_cards", "issuer", "TEXT NOT NULL DEFAULT 'local'");
+  await addColumnIfMissing("wallet_cards", "issuer_card_id", "TEXT");
   await addColumnIfMissing("customer_profiles", "realized_ltv", "REAL NOT NULL DEFAULT 0");
   await addColumnIfMissing("customer_profiles", "realized_orders", "INTEGER NOT NULL DEFAULT 0");
   await addColumnIfMissing("customer_profiles", "last_commerce_sync_at", "TEXT");

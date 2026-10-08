@@ -5,6 +5,9 @@ import { checkEnforcement } from "@/lib/tenant";
 import { handleApiError } from "@/lib/logger";
 
 // Generate OaaS tasks from live underperforming campaigns when none are stored.
+// Titles/descriptions are derived from real campaign data. Impact and
+// confidence are reported as null — no model has evaluated projected ROAS,
+// so claiming a percentage would be fabrication.
 async function generateTasks(tenantId: string) {
   const db = await getDb();
   const campaigns = await db.prepare(`
@@ -17,18 +20,17 @@ async function generateTasks(tenantId: string) {
 
   const tasks = await Promise.all(underperformers.slice(0, 6).map(async (c: any, i: number) => {
     const id = genId("oaas");
-    const title = `Reallocate budget from underperforming ${c.name}`;
-    const expectedImpact = `+${Math.round(((c.target_roas || 4) - (c.roas || 0)) * 100)}% ROAS`;
-    const details = `${c.name} on ${c.platform} has ROAS ${(c.roas || 0).toFixed(1)}× vs target ${(c.target_roas || 4).toFixed(1)}×. Redirecting $${Math.round((c.budget || 1000) / 30)}/day to top performers.`;
+    const title = `Review underperforming ${c.name}`;
+    const details = `${c.name} on ${c.platform} is at ROAS ${(c.roas || 0).toFixed(1)}× vs target ${(c.target_roas || 4).toFixed(1)}×. Pause, reallocate, or refresh creative before the next bid cycle.`;
     await db.prepare(`
       INSERT INTO oaas_tasks
       (id, tenant_id, campaign_id, campaign_name, title, agent, type, status, expected_impact, confidence, details)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NULL, NULL, ?)
     `).run(
       id, tenantId, c.id, c.name, title, "Bid Optimizer",
-      i % 2 === 0 ? "budget" : "bidding", expectedImpact, 75 + (i * 3) % 20, details
+      i % 2 === 0 ? "budget" : "bidding", details
     );
-    return { id, title, agent: "Bid Optimizer", type: i % 2 === 0 ? "budget" : "bidding", status: "pending", expectedImpact, confidence: 75 + (i * 3) % 20, createdAt: "now", details };
+    return { id, title, agent: "Bid Optimizer", type: i % 2 === 0 ? "budget" : "bidding", status: "pending", expectedImpact: null, confidence: null, createdAt: new Date().toISOString(), details };
   }));
 
   return tasks;

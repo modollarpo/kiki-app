@@ -101,9 +101,18 @@ export function verifyPassword(password: string, stored: string): boolean {
 // ── Request Helpers ────────────────────────────────────────
 export function getUserFromRequest(req: Request): AuthUser | null {
   const authHeader = req.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) return null;
+  let token: string | null = null;
 
-  const token = authHeader.slice(7);
+  if (authHeader?.startsWith("Bearer ")) {
+    token = authHeader.slice(7);
+  } else {
+    // EventSource cannot set Authorization headers, so the token may be
+    // passed as a query param (used by /api/events). Logs may retain it.
+    const url = new URL(req.url);
+    token = url.searchParams.get("token");
+  }
+
+  if (!token) return null;
   if (token.length > 2048) return null; // Reject obviously invalid tokens
 
   const payload = verifyToken(token);

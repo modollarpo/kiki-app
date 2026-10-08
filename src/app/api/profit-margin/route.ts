@@ -6,7 +6,7 @@ import { proxyToService } from "@/lib/service-proxy";
 
 export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const enf = await checkEnforcement(user.tenantId);
   if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   return proxyToService(req, {
     path: "/api/margins/portfolio",
     method: "GET",
@@ -32,16 +32,18 @@ export async function GET(req: NextRequest) {
     serviceName: "Profit Margin",
     envVar: "PROFIT_MARGIN_URL",
     fallback: {
-      portfolioMargin: 0.42,
-      totalRevenue: 185000,
-      totalCosts: 107300,
-      grossProfit: 77700,
-      breakdown: [
-        { campaign: "Q4 Fitness Acquisition", revenue: 62500, costs: 35800, margin: 0.43 },
-        { campaign: "Retargeting - Cart Abandon", revenue: 48300, costs: 21400, margin: 0.56 },
-        { campaign: "Brand Awareness YouTube", revenue: 42000, costs: 28500, margin: 0.32 },
-        { campaign: "TikTok Gen-Z Acquisition", revenue: 32200, costs: 22400, margin: 0.30 },
-      ],
+      data: {
+        summary: {
+          total_skus: 0,
+          avg_margin: null,
+          total_cogs: 0,
+          total_revenue: 0,
+          low_margin_count: 0,
+          mid_margin_count: 0,
+          high_margin_count: 0,
+        },
+        distribution: [],
+      },
     },
   });
 }

@@ -29,8 +29,8 @@ export default function InfluencerPage() {
         influencerApi.list(token),
         influencerApi.darkSocial(token).catch(() => null),
       ]);
-      if (creatorsRes.success) setCreators(creatorsRes.data);
-      if (darkRes?.success) setDarkSocial(darkRes.data);
+      if (creatorsRes.ok) setCreators(creatorsRes.data);
+      if (darkRes?.ok) setDarkSocial(darkRes.data);
     } catch {}
     setLoading(false);
   }, [token]);

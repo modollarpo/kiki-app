@@ -45,6 +45,31 @@ function getStoredConsent(): CookieConsent | null {
   }
 }
 
+// /api/gdpr requires a JWT. The consent banner may render on pre-login
+// marketing pages where no token exists yet — in that case the request
+// stays unauthorized (and is ignored) until the user logs in.
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (typeof window === "undefined") return headers;
+  try {
+    const raw = localStorage.getItem("kiki-auth");
+    if (raw) {
+      const parsed = JSON.parse(raw) as { state?: { token?: string | null } };
+      const token = parsed.state?.token;
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+    }
+  } catch { /* ignore */ }
+  return headers;
+}
+
+function post(path: string, body: unknown) {
+  fetch(path, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(body),
+  }).catch(() => {});
+}
+
 function storeConsent(consent: CookieConsent) {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + CONSENT_EXPIRY_DAYS);
@@ -53,21 +78,9 @@ function storeConsent(consent: CookieConsent) {
 
 function sendConsentToServer(consent: CookieConsent) {
   try {
-    fetch("/api/gdpr", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "consent", consentType: "analytics", granted: consent.analytics }),
-    }).catch(() => {});
-    fetch("/api/gdpr", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "consent", consentType: "marketing", granted: consent.marketing }),
-    }).catch(() => {});
-    fetch("/api/gdpr", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "consent", consentType: "third_party", granted: consent.thirdParty }),
-    }).catch(() => {});
+    post("/api/gdpr", { action: "consent", consentType: "analytics", granted: consent.analytics });
+    post("/api/gdpr", { action: "consent", consentType: "marketing", granted: consent.marketing });
+    post("/api/gdpr", { action: "consent", consentType: "third_party", granted: consent.thirdParty });
   } catch {}
 }
 

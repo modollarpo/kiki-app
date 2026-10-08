@@ -9,7 +9,7 @@ const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const db = await getDb();
     const tenantId = user.tenantId;

@@ -30,7 +30,7 @@ export default function B2BPage() {
     fetch("/api/b2b", { headers: { "Authorization": `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => {
-        if (d.success) {
+        if (d.ok) {
           setPipeline(d.data.pipeline);
           setStages(d.data.stages);
           setAccounts(d.data.topAccounts);
@@ -61,10 +61,10 @@ export default function B2BPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Pipeline Value" value={pipeline ? `$${(pipeline.totalValue / 1000).toFixed(0)}K` : "—"} delta={340} sub="+$340K this quarter" accent={K.mint} loading={loading} />
+          <StatCard label="Pipeline Value" value={pipeline ? `$${(pipeline.totalValue / 1000).toFixed(0)}K` : "—"} accent={K.mint} loading={loading} />
           <StatCard label="Total Deals" value={pipeline ? String(pipeline.deals) : "—"} sub="Active opportunities" accent={K.blue} loading={loading} />
           <StatCard label="Avg Deal Size" value={pipeline ? `$${(pipeline.avgSize / 1000).toFixed(1)}K` : "—"} sub="Per deal" accent={K.gold} loading={loading} />
-          <StatCard label="Win Rate" value={pipeline ? `${pipeline.winRate}%` : "—"} delta={3.2} sub="+3.2% improvement" accent={K.mint} loading={loading} />
+          <StatCard label="Win Rate" value={pipeline ? `${pipeline.winRate}%` : "—"} accent={K.mint} loading={loading} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-3 mb-4">

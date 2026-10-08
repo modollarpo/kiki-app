@@ -13,7 +13,7 @@ import { createExperiment } from "@/lib/incrementality-arbiter";
 export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const enf = await checkEnforcement(user.tenantId);
     if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
@@ -22,11 +22,11 @@ export async function POST(req: NextRequest) {
     const { campaignId, name, holdoutPercentage } = body;
 
     if (!campaignId || !name) {
-      return NextResponse.json({ error: "campaignId and name required" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "campaignId and name required" }, { status: 400 });
     }
 
     if (holdoutPercentage !== undefined && (holdoutPercentage < 0.01 || holdoutPercentage > 0.50)) {
-      return NextResponse.json({ error: "holdoutPercentage must be between 0.01 and 0.50" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "holdoutPercentage must be between 0.01 and 0.50" }, { status: 400 });
     }
 
     const experimentId = await createExperiment(

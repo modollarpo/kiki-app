@@ -3,19 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { verifyPassword, createSession } from '@/lib/auth';
 import type { AuthUser } from '@/types';
-import { SignJWT } from 'jose';
-
-const REFRESH_SECRET = new TextEncoder().encode(process.env.REFRESH_SECRET || 'kiki-refresh-secret-2024');
-
-async function signRefreshToken(payload: any) {
-  return new SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setIssuer('kiki-mobile')
-    .setAudience('kiki-api')
-    .setExpirationTime('30d')
-    .sign(REFRESH_SECRET);
-}
+import { signRefreshToken } from '@/lib/mobile/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,8 +61,9 @@ export async function POST(request: NextRequest) {
 
     const refreshToken = await signRefreshToken({
       sub: user.id,
+      email: user.email,
+      role: user.role,
       tenantId: user.tenant_id,
-      type: 'refresh',
     });
 
     // Store device info if provided

@@ -75,7 +75,7 @@ export async function PUT(req: Request) {
       return jsonError("Invalid plan. Must be: starter, growth, scale, or enterprise", 400);
     }
 
-    const db = await getDb();
+const db = await getDb();
 
     if (name !== undefined) {
       const initials = name
@@ -90,7 +90,13 @@ export async function PUT(req: Request) {
       await (await db.prepare("UPDATE users SET name = ?, avatar_initials = ? WHERE id = ?")).run(name, initials, user.id);
     }
 
+    // Plan changes are privileged: a regular advertiser must not self-escalate
+    // to a higher tier. Only platform admins/superadmins may change the plan.
     if (plan !== undefined) {
+      const isPlatformAdmin = user.role === "admin" || user.role === "superadmin";
+      if (!isPlatformAdmin) {
+        return jsonError("Only platform admins may change the subscription plan", 403);
+      }
       await (await db.prepare("UPDATE users SET plan = ? WHERE id = ?")).run(plan, user.id);
     }
 

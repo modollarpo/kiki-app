@@ -3,12 +3,20 @@ import { getDb } from "@/lib/db";
 import { hashPassword, json, jsonError } from "@/lib/auth";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
 
+// In-memory per-token attempt throttle (5 attempts per token) to blunt
+// password-guessing on a leaked reset link. Resets on process restart.
+const resetAttempts = new Map<string, number>();
+
 export async function POST(req: Request) {
   setRequestId(generateRequestId());
   try {
     const { token, password } = await req.json();
     if (!token || !password) return jsonError("Token and password are required", 400);
     if (password.length < 8) return jsonError("Password must be at least 8 characters", 400);
+
+    const attempts = resetAttempts.get(token) ?? 0;
+    if (attempts >= 5) return jsonError("Too many attempts for this reset token", 429);
+    resetAttempts.set(token, attempts + 1);
 
     const db = await getDb();
     const row = await (await db.prepare(`

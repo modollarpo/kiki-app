@@ -58,7 +58,7 @@ export default function CampaignsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Active Campaigns" value={String(active.length)} accent={K.mint} loading={loading} />
-          <StatCard label="Best ROAS" value={`${bestRoas.toFixed(2)}×`} accent={K.mint} delta={12.4} loading={loading} />
+          <StatCard label="Best ROAS" value={`${bestRoas.toFixed(2)}×`} accent={K.mint} loading={loading} />
           <StatCard label="Total Spend" value={`$${fmt(totalSpend)}`} accent={K.blue} loading={loading} />
           <StatCard label="Total Budget" value={`$${fmt(campaignList.reduce((s, c) => s + c.budget, 0))}`} accent={K.teal} loading={loading} />
         </div>

@@ -13,6 +13,7 @@ export default function CreativeAttributionPage() {
   const [attributions, setAttributions] = useState<Attribution[]>([]);
   const [model, setModel] = useState("last_touch");
   const [loading, setLoading] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -25,10 +26,13 @@ export default function CreativeAttributionPage() {
     setLoading(true);
     try {
       const data = await attribution.breakdown(token);
-      if (data.success) setAttributions(data.data as Attribution[]);
+      if (data.ok) setAttributions(Array.isArray(data.data) ? data.data as Attribution[] : []);
+      setDemoMode(Boolean(data.demo));
     } catch {}
     setLoading(false);
   }, [token]);
+
+  useEffect(() => { fetchBreakdown(); }, [fetchBreakdown]);
 
   if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
@@ -55,6 +59,12 @@ export default function CreativeAttributionPage() {
             </button>
           </div>
         </div>
+
+        {demoMode && !loading && (
+          <div className="mb-4 p-3 rounded-sm font-mono text-[11px]" style={{ background: `${K.warn}12`, border: `1px solid ${K.warn}40`, color: K.warn }}>
+            Attribution service not configured — showing connection status only. Set CREATIVE_ATTRIBUTION_URL to enable live breakdowns.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
           <StatCard label="Total Attributions" value={String(attributions.reduce((s, a) => s + (a.attributions || 0), 0))} accent={K.blue} loading={loading} />

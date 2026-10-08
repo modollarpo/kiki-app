@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
-import { StatCard, Card, Badge, ProgressBar, AIThinking } from "@/components/ui";
+import { StatCard, Card, Badge, ProgressBar } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 import { useInsights } from "@/hooks/useInsights";
@@ -22,7 +22,7 @@ export default function AIOpsPage() {
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
   const { data, loading: insightsLoading } = useInsights();
-  const aiops = data?.aiops ?? { metrics: [], uptime: 0, activeServices: 0 };
+  const aiops = data?.aiops ?? { metrics: [], uptime: null, activeServices: 0 };
   const [agents, setAgents] = useState<AgentModel[]>([]);
   const [systemMetrics, setSystemMetrics] = useState<SystemMetric[]>([]);
   const [recentActions, setRecentActions] = useState<RecentAction[]>([]);
@@ -59,7 +59,7 @@ export default function AIOpsPage() {
         type: a.type ?? "Agent",
         status: a.status === "running" ? "deployed" : a.status === "error" ? "error" : "training",
         accuracy: a.metric ?? "—",
-        latency: a.status === "running" ? `${Math.round(Math.random() * 15 + 5)}ms` : "—",
+        latency: a.status === "running" ? "—" : "—",
         lastTrained: a.lastAction ?? "Unknown",
       }))
     : [];
@@ -96,13 +96,13 @@ export default function AIOpsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Active Agents" value={isLoading ? "…" : String(aiops.activeServices)} accent={K.mint} sub="Running services" />
           <StatCard label="Avg p99 Latency" value={isLoading ? "…" : `${avgLatency}ms`} accent={K.warn} sub="Model inference" />
-          <StatCard label="Avg Uptime" value={isLoading ? "…" : `${aiops.uptime}%`} accent={K.blue} />
+          <StatCard label="Avg Uptime" value={isLoading ? "…" : aiops.uptime != null ? `${aiops.uptime}%` : "—"} accent={K.blue} />
           <StatCard label="Deployed Models" value={isLoading ? "…" : String(deployed)} accent={K.teal} sub="ML registry" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
           <Card accent={K.mint}>
-            <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Model Registry <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h3>
+            <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Model Registry <Badge color={K.mint} className="text-[10px]">REGISTRY</Badge></h3>
             {models.map((m, i) => (
               <div key={i} className="px-3 py-[10px] mb-2 bg-g850 rounded-kdls" style={{ border:`1px solid ${m.status === "deployed" ? K.mint + "30" : m.status === "error" ? K.danger + "30" : K.g700}` }}>
                 <div className="flex items-center justify-between mb-1">
@@ -121,7 +121,7 @@ export default function AIOpsPage() {
           </Card>
 
           <Card accent={K.blue}>
-            <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Experiments <Badge color={K.blue} className="text-[10px]">LIVE</Badge></h3>
+            <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Experiments <Badge color={K.blue} className="text-[10px]">QUEUE</Badge></h3>
             {experiments.map((e, i) => (
               <div key={i} className="mb-[14px]">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
@@ -136,9 +136,6 @@ export default function AIOpsPage() {
               </div>
             ))}
             {experiments.length === 0 && <p className="font-mono text-[10px] text-t4">No experiments running.</p>}
-            <div className="mt-2">
-              <AIThinking label="Auto-scaling inference endpoints based on demand..." />
-            </div>
           </Card>
         </div>
       </div>

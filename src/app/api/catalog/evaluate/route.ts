@@ -13,7 +13,7 @@ import { evaluateCatalog, type ProductSuppressionRule } from "@/lib/asc-override
 export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const enf = await checkEnforcement(user.tenantId);
     if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });

@@ -61,7 +61,7 @@ jobs:
 
       - name: Set environment variables
         run: |
-          BASE_URL="https://$APP.purplesky-3fddb402.$AZURE_REGION.azurecontainerapps.io"
+          BASE_URL="https://$APP.salmonforest-af3a732c.$AZURE_REGION.azurecontainerapps.io"
           ENV_VARS=(
             "SEED_DEMO_DATA=true"
             "NEXT_PUBLIC_BASE_URL=$BASE_URL"

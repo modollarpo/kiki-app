@@ -47,12 +47,12 @@ interface ChatRequest {
 export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!user) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    return NextResponse.json({ ok: false, error: "Authentication required" }, { status: 401 });
   }
 
   const enforcement = await checkEnforcement(user.tenantId);
   if (!enforcement.allowed) {
-    return NextResponse.json({ error: enforcement.reason }, { status: 403 });
+    return NextResponse.json({ ok: false, error: enforcement.reason }, { status: 403 });
   }
 
   // Check monthly token allowance
@@ -80,23 +80,23 @@ export async function POST(req: NextRequest) {
     const { messages, model, taskType = "general", maxTokens, temperature } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "Messages array is required" }, { status: 400 });
     }
 
     // Cap message count and content length to prevent abuse / huge payloads.
     if (messages.length > 50) {
-      return NextResponse.json({ error: "Maximum 50 messages per request" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "Maximum 50 messages per request" }, { status: 400 });
     }
     for (const msg of messages) {
       if (!msg || typeof msg.content !== "string" || msg.content.length > 32_000) {
-        return NextResponse.json({ error: "Each message must have a content string <= 32,000 characters" }, { status: 400 });
+        return NextResponse.json({ ok: false, error: "Each message must have a content string <= 32,000 characters" }, { status: 400 });
       }
     }
     if (maxTokens !== undefined && (maxTokens < 1 || maxTokens > 8192)) {
-      return NextResponse.json({ error: "maxTokens must be between 1 and 8192" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "maxTokens must be between 1 and 8192" }, { status: 400 });
     }
     if (temperature !== undefined && (temperature < 0 || temperature > 2)) {
-      return NextResponse.json({ error: "temperature must be between 0 and 2" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "temperature must be between 0 and 2" }, { status: 400 });
     }
 
     const selectedTier = model || selectModelForTask(taskType);
@@ -194,7 +194,7 @@ export async function POST(req: NextRequest) {
     const choice = data.choices?.[0];
 
     if (!choice) {
-      return NextResponse.json({ error: "No response generated" }, { status: 500 });
+      return NextResponse.json({ ok: false, error: "No response generated" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -208,6 +208,6 @@ export async function POST(req: NextRequest) {
       message: error instanceof Error ? error.message : String(error),
       tenantId: user?.tenantId,
     });
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
   }
 }

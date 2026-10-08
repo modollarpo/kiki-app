@@ -7,8 +7,9 @@ import { Card, Badge, StatCard, ScrollableTable, AIThinking } from "@/components
 import { K } from "@/lib/kdls";
 
 interface Competitor {
-  name: string; platform: string; spend: number; roas: number;
-  cpa: number; marketShare: number; trend: string;
+  name: string; platform: string; marketShare: number | null;
+  avgPrice: number | null; trend: string;
+  spend: number; roas: number; cpa: number;
 }
 
 interface MarketTrend {
@@ -16,14 +17,16 @@ interface MarketTrend {
 }
 
 interface CpmBenchmark {
-  platform: string; yours: number; benchmark: number; industry: number;
+  platform: string; yours: number; benchmark: number | null; industry: number | null;
 }
 
 export default function CompetitiveIntelligencePage() {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [trends, setTrends] = useState<MarketTrend[]>([]);
-  const [sov, setSov] = useState<{ yourShare: number; topCompetitor: number; industryAvg: number } | null>(null);
+  const [sov, setSov] = useState<{ yourShare: number | null; topCompetitor: number | null; industryAvg: number | null }>({ yourShare: null, topCompetitor: null, industryAvg: null });
   const [cpmBenchmarks, setCpmBenchmarks] = useState<CpmBenchmark[]>([]);
+  const [ourPerformance, setOurPerformance] = useState<{ totalSpend: number; avgRoas: number; totalCampaigns: number } | null>(null);
+  const [trackedCount, setTrackedCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { token, loading: authLoading } = useAuth();
@@ -38,11 +41,13 @@ export default function CompetitiveIntelligencePage() {
     fetch("/api/competitive", { headers: { "Authorization": `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => {
-        if (d.success) {
-          setCompetitors(d.data.competitors);
-          setTrends(d.data.marketTrends);
-          setSov(d.data.shareOfVoice);
-          if (d.data.cpmBenchmarks) setCpmBenchmarks(d.data.cpmBenchmarks);
+        if (d.ok) {
+          setCompetitors(d.competitors || []);
+          setTrends(d.marketTrends || []);
+          if (d.shareOfVoice) setSov(d.shareOfVoice);
+          if (d.cpmBenchmarks) setCpmBenchmarks(d.cpmBenchmarks);
+          if (d.ourPerformance) setOurPerformance(d.ourPerformance);
+          if (typeof d.competitorsTracked === "number") setTrackedCount(d.competitorsTracked);
         }
       })
       .catch((err) => { setError(err?.message || "Failed to load competitive data"); setLoading(false); })
@@ -67,50 +72,81 @@ export default function CompetitiveIntelligencePage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Market Share" value={sov ? `${sov.yourShare}%` : "—"} delta={2.3} sub="+2.3% vs last quarter" accent={K.mint} loading={loading} />
-          <StatCard label="Top Competitor" value={sov ? `${sov.topCompetitor}%` : "—"} sub="Share of voice" accent={K.warn} loading={loading} />
-          <StatCard label="Industry Average" value={sov ? `${sov.industryAvg}%` : "—"} sub="Market benchmark" accent={K.t3} loading={loading} />
-          <StatCard label="Competitors Tracked" value={competitors.length > 0 ? String(competitors.length - 1) : "—"} sub="Active monitoring" accent={K.blue} loading={loading} />
+          <StatCard label="Market Share" value={sov.yourShare != null ? `${sov.yourShare}%` : "—"} sub="Requires external market data" accent={K.mint} loading={loading} />
+          <StatCard label="Top Competitor" value={sov.topCompetitor != null ? `${sov.topCompetitor}%` : "—"} sub="Share of voice" accent={K.warn} loading={loading} />
+          <StatCard label="Industry Average" value={sov.industryAvg != null ? `${sov.industryAvg}%` : "—"} sub="Market benchmark" accent={K.t3} loading={loading} />
+          <StatCard label="Competitors Tracked" value={trackedCount > 0 ? String(trackedCount) : "—"} sub="Active monitoring" accent={K.blue} loading={loading} />
         </div>
 
         <div className="mb-4">
           <Card accent={K.mint}>
-            <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Competitor Spend Tracker</h3>
-            <ScrollableTable>
-              <div className="flex flex-col gap-2 min-w-[600px]">
-                {competitors.map((comp, i) => {
-                  const isYou = comp.name === "Your Account";
-                  return (
-                    <div key={i} className={`flex items-center gap-3 px-[14px] py-3 rounded-kdls ${isYou ? "bg-g850 border-l-[3px] border-l-kmint" : "bg-g900"}`}>
+            <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Competitor Monitor</h3>
+            {competitors.length > 0 || ourPerformance ? (
+              <ScrollableTable>
+                <div className="flex flex-col gap-2 min-w-[600px]">
+                  {ourPerformance && (
+                    <div className="flex items-center gap-3 px-[14px] py-3 rounded-kdls bg-g850 border-l-[3px] border-l-kmint">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-mono text-xs font-semibold text-t1">{comp.name}</span>
-                          {isYou && <Badge color={K.mint}>You</Badge>}
-                          <Badge color={comp.platform === "meta" ? "#1877F2" : comp.platform === "google" ? "#4285F4" : comp.platform === "tiktok" ? "#000" : K.t3}>{comp.platform}</Badge>
+                          <span className="font-mono text-xs font-semibold text-t1">Your Account</span>
+                          <Badge color={K.mint}>You</Badge>
+                          <Badge color={K.t3}>All platforms</Badge>
                         </div>
                       </div>
                       <div className="text-right min-w-[80px]">
-                        <p className="font-mono text-xs font-bold text-t1">${(comp.spend / 1000).toFixed(0)}K</p>
+                        <p className="font-mono text-xs font-bold text-t1">${(ourPerformance.totalSpend / 1000).toFixed(0)}K</p>
                         <p className="font-mono text-[10px] text-t4">spend</p>
                       </div>
                       <div className="text-right min-w-[60px]">
-                        <p className={`font-mono text-xs font-bold ${comp.roas >= 4 ? "text-kmint" : comp.roas >= 2.5 ? "text-kwarn" : "text-kdanger"}`}>{comp.roas}×</p>
+                        <p className="font-mono text-xs font-bold text-kmint">{ourPerformance.avgRoas.toFixed(2)}×</p>
                         <p className="font-mono text-[10px] text-t4">ROAS</p>
                       </div>
                       <div className="text-right min-w-[60px]">
-                        <p className="font-mono text-xs font-bold text-t1">${comp.cpa.toFixed(2)}</p>
+                        <p className="font-mono text-xs font-bold text-t1">—</p>
                         <p className="font-mono text-[10px] text-t4">CPA</p>
                       </div>
                       <div className="text-right min-w-[60px]">
-                        <p className="font-mono text-xs font-bold text-kgold">{comp.marketShare}%</p>
+                        <p className="font-mono text-xs font-bold text-kgold">—</p>
+                        <p className="font-mono text-[10px] text-t4">share</p>
+                      </div>
+                    </div>
+                  )}
+                  {competitors.map((comp, i) => (
+                    <div key={i} className="flex items-center gap-3 px-[14px] py-3 rounded-kdls bg-g900">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-mono text-xs font-semibold text-t1">{comp.name}</span>
+                          <Badge color={K.t3}>web</Badge>
+                        </div>
+                        <p className="font-mono text-[10px] text-t4">Price monitored via competitor tracker</p>
+                      </div>
+                      <div className="text-right min-w-[80px]">
+                        <p className="font-mono text-xs font-bold text-t1">{comp.avgPrice != null ? `$${comp.avgPrice.toFixed(2)}` : "—"}</p>
+                        <p className="font-mono text-[10px] text-t4">avg. price</p>
+                      </div>
+                      <div className="text-right min-w-[60px]">
+                        <p className="font-mono text-xs font-bold text-t1">—</p>
+                        <p className="font-mono text-[10px] text-t4">ROAS</p>
+                      </div>
+                      <div className="text-right min-w-[60px]">
+                        <p className="font-mono text-xs font-bold text-t1">—</p>
+                        <p className="font-mono text-[10px] text-t4">CPA</p>
+                      </div>
+                      <div className="text-right min-w-[60px]">
+                        <p className="font-mono text-xs font-bold text-kgold">—</p>
                         <p className="font-mono text-[10px] text-t4">share</p>
                       </div>
                       <span className={`font-mono text-sm ${comp.trend === "up" ? "text-kmint" : "text-kdanger"}`}>{comp.trend === "up" ? "↑" : "↓"}</span>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+              </ScrollableTable>
+            ) : (
+              <div className="py-6 text-center">
+                <p className="font-mono text-[11px] text-t3">No competitors tracked yet</p>
+                <p className="font-mono text-[10px] text-t4 mt-1">Add a competitor domain in the Competitor Tracking page to start monitoring prices</p>
               </div>
-            </ScrollableTable>
+            )}
           </Card>
         </div>
 
@@ -135,7 +171,7 @@ export default function CompetitiveIntelligencePage() {
                 <div key={i} className="px-3 py-[10px] mb-2 bg-g850 rounded-kdls">
                   <div className="flex justify-between items-center mb-[6px]">
                     <span className="font-mono text-[11px] font-semibold text-t1">{b.platform}</span>
-                    {b.benchmark > 0 && (
+                    {b.benchmark != null && (
                       <Badge color={b.yours < b.benchmark ? K.mint : K.warn}>{b.yours < b.benchmark ? "Below" : "Above"} Benchmark</Badge>
                     )}
                   </div>
@@ -146,11 +182,11 @@ export default function CompetitiveIntelligencePage() {
                     </div>
                     <div>
                       <p className="font-mono text-[10px] text-t4">Benchmark</p>
-                      <p className="font-mono text-xs font-bold text-t2">{b.benchmark > 0 ? `$${b.benchmark}` : "—"}</p>
+                      <p className="font-mono text-xs font-bold text-t2">{b.benchmark != null ? `$${b.benchmark}` : "—"}</p>
                     </div>
                     <div>
                       <p className="font-mono text-[10px] text-t4">Industry</p>
-                      <p className="font-mono text-xs font-bold text-t3">{b.industry > 0 ? `$${b.industry}` : "—"}</p>
+                      <p className="font-mono text-xs font-bold text-t3">{b.industry != null ? `$${b.industry}` : "—"}</p>
                     </div>
                   </div>
                 </div>
