@@ -23,47 +23,57 @@ export async function GET(req: NextRequest) {
     const totalConversions = campaigns.reduce((s, c) => s + (c.conversions || 0), 0);
     const currentRoas = totalSpent > 0 ? totalRevenue / totalSpent : 0;
 
-    // Build scenarios from real data with realistic projections
+// Scenarios are illustrative what-if projections built from real campaign
+    // data with explicitly stated assumptions. They are NOT model predictions:
+    // confidence is null until a calibrated planner is wired to platform data.
     const scenarios = [
       {
         id: "baseline",
         name: "Current Trajectory",
         description: "Maintain current spend and optimization levels",
+        budgetChange: 0,
         projectedRevenue: Math.round(totalRevenue),
         projectedRoas: Math.round(currentRoas * 100) / 100,
         projectedConversions: totalConversions,
-        confidence: 85,
+        confidence: null,
         risk: "low",
+        basis: "Current campaign totals, no change applied.",
       },
       {
         id: "scale_up",
         name: "Scale Top Performers",
         description: "Increase budget 30% on campaigns with ROAS > 3×",
+        budgetChange: 30,
         projectedRevenue: Math.round(totalRevenue * 1.35),
-        projectedRoas: Math.round(currentRoas * 0.95 * 100) / 100, // Slight ROAS decrease with scale
+        projectedRoas: Math.round(currentRoas * 0.95 * 100) / 100,
         projectedConversions: Math.round(totalConversions * 1.25),
-        confidence: 72,
+        confidence: null,
         risk: "medium",
+        basis: "Hypothetical +30% budget shift to top performers; assumes +35% revenue, -5% ROAS under scale.",
       },
       {
         id: "optimize",
         name: "Optimize Efficiency",
         description: "Pause underperformers, reallocate to best channels",
+        budgetChange: -15,
         projectedRevenue: Math.round(totalRevenue * 1.15),
         projectedRoas: Math.round(currentRoas * 1.2 * 100) / 100,
         projectedConversions: Math.round(totalConversions * 0.9),
-        confidence: 78,
+        confidence: null,
         risk: "low",
+        basis: "Hypothetical -15% underperformer budget removal; assumes +20% ROAS on remaining spend.",
       },
       {
         id: "expand",
         name: "Multi-Channel Expansion",
         description: "Add budget to underutilized platforms",
+        budgetChange: 25,
         projectedRevenue: Math.round(totalRevenue * 1.5),
         projectedRoas: Math.round(currentRoas * 0.85 * 100) / 100,
         projectedConversions: Math.round(totalConversions * 1.4),
-        confidence: 65,
+        confidence: null,
         risk: "high",
+        basis: "Hypothetical +25% expansion across underutilized platforms; assumes +50% revenue, -15% ROAS.",
       },
     ];
 
@@ -84,7 +94,7 @@ export async function GET(req: NextRequest) {
         },
         scenarios,
         riskFactors,
-        recommendation: scenarios.reduce((best, s) => s.confidence > best.confidence ? s : best, scenarios[0]),
+        recommendation: scenarios.filter(s => s.risk === "low")[0] || scenarios[0],
       },
     });
   } catch (error) {

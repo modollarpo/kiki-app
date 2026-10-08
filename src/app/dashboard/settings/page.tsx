@@ -26,14 +26,14 @@ export default function SettingsPage() {
     fetch("/api/integrations", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => {
-        if (d.success) setIntegrations(d.data || []);
+        if (d.ok) setIntegrations(d.data || []);
       });
       
     // Fetch available supported platforms
     fetch("/api/integrations?action=list", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => {
-        if (d.success) setPlatforms(d.data || []);
+        if (d.ok) setPlatforms(d.data || []);
       });
   }, [token]);
 
@@ -45,7 +45,7 @@ export default function SettingsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.success && data.data?.url) {
+      if (data.ok && data.data?.url) {
         window.location.href = data.data.url;
       }
     } catch (e) {

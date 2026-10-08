@@ -46,15 +46,31 @@ export async function GET(req: Request) {
   const todaySignals = (await (await db.prepare("SELECT COUNT(*) as c FROM signals WHERE tenant_id = ? AND created_at >= date('now')")).get(tid) as { c: number }).c;
   const avgLTV = (await (await db.prepare("SELECT AVG(ltv_predicted) as avg FROM signals WHERE tenant_id = ?")).get(tid) as { avg: number }).avg || 0;
 
+  // LTV delta is derived from real data: avg LTV last 7 days vs the 7 days
+  // before. Other KPI deltas are omitted (null) because campaign spend/roas
+  // are a snapshot without a prior-period source — no fabricated numbers.
+  const ltvWindow = await (await db.prepare(`
+    SELECT AVG(CASE WHEN created_at >= datetime('now', '-7 days') THEN ltv_predicted END) as recent,
+           AVG(CASE WHEN created_at < datetime('now', '-7 days') AND created_at >= datetime('now', '-14 days') THEN ltv_predicted END) as prior
+    FROM signals WHERE tenant_id = ?
+  `)).get(tid) as { recent: number | null; prior: number | null };
+  const ltvDelta =
+    ltvWindow.recent != null && ltvWindow.prior != null && ltvWindow.prior !== 0
+      ? Math.round(((ltvWindow.recent - ltvWindow.prior) / ltvWindow.prior) * 1000) / 10
+      : null;
+
   // Fraud stats
   const fraudBlocked = (await (await db.prepare("SELECT COUNT(*) as c FROM fraud_events WHERE tenant_id = ? AND blocked = 1 AND created_at >= date('now')")).get(tid) as { c: number }).c;
 
+  const systemStatus =
+    agents.filter(a => a.status === "running").length > 0 ? "nominal" : "idle";
+
   return json({
     kpis: {
-      roas: { value: Math.round(avgRoas * 100) / 100, delta: 10.8, label: "Platform ROAS" },
-      spend: { value: totalSpend, delta: 14.2, label: "Total Spend" },
-      conversions: { value: totalConversions, delta: 8.3, label: "Conversions" },
-      ltv: { value: Math.round(avgLTV), delta: 12.1, label: "Avg LTV Signal" },
+      roas: { value: Math.round(avgRoas * 100) / 100, delta: null, label: "Platform ROAS" },
+      spend: { value: totalSpend, delta: null, label: "Total Spend" },
+      conversions: { value: totalConversions, delta: null, label: "Conversions" },
+      ltv: { value: Math.round(avgLTV), delta: ltvDelta, label: "Avg LTV Signal" },
     },
     campaigns: campaigns.slice(0, 5).map(c => ({
       id: c.id, name: c.name, platform: c.platform, status: c.status,
@@ -67,7 +83,7 @@ export async function GET(req: Request) {
     wallet: { balance: wallet?.balance || 0, cards: (cards as unknown[]).length },
     notifications: { unread: notifications.filter(n => !n.read).length, total: notifications.length },
     system: {
-      status: "nominal",
+      status: systemStatus,
       agentsRunning: agents.filter(a => a.status === "running").length,
       eventsToday: todaySignals,
       signalsTotal: signalCount,

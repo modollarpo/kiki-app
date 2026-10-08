@@ -12,7 +12,7 @@ const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const model = await getActiveModel(user.tenantId);
     const history = await getModelHistory(user.tenantId, 10);
@@ -21,14 +21,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ model, history, feedback });
   } catch (e) {
     logger.error("ltv/train/handler", { message: e instanceof Error ? e.message : String(e) });
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const enf = await checkEnforcement(user.tenantId);
     if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
@@ -87,6 +87,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ engine: "heuristic", ...result, feedbackCollected: feedbackResult.newFeedbackCount });
   } catch (e) {
     logger.error("ltv/train/handler", { message: e instanceof Error ? e.message : String(e) });
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
   }
 }

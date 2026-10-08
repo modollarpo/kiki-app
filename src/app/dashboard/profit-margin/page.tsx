@@ -11,6 +11,7 @@ interface Portfolio { summary: { total_skus: number; avg_margin: number; total_c
 export default function ProfitMarginPage() {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
   const [csvInput, setCsvInput] = useState("");
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -25,10 +26,13 @@ export default function ProfitMarginPage() {
     try {
       const res = await fetch("/api/profit-margin", { headers: { "Authorization": `Bearer ${token}` } });
       const data = await res.json();
-      if (data.success) setPortfolio(data.data);
+      if (data.ok) setPortfolio(data.data ?? null);
+      setDemoMode(Boolean(data.demo));
     } catch {}
     setLoading(false);
   }, [token]);
+
+  useEffect(() => { fetchPortfolio(); }, [fetchPortfolio]);
 
   if (authLoading) return <DashboardLayout><div className="flex items-center justify-center p-8"><AIThinking text="Loading..." /></div></DashboardLayout>;
   if (!token) return null;
@@ -52,6 +56,12 @@ export default function ProfitMarginPage() {
           <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Profit & Margin Intelligence</h1>
           <p className="font-mono text-[11px] text-gray-500">COGS-aware bidding — profit ROAS instead of revenue ROAS</p>
         </div>
+
+        {demoMode && !loading && (
+          <div className="mb-4 p-3 rounded-sm font-mono text-[11px]" style={{ background: `${K.warn}12`, border: `1px solid ${K.warn}40`, color: K.warn }}>
+            Profit Margin service not configured — showing connection status only. Set PROFIT_MARGIN_URL to enable live margin analytics.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Total SKUs" value={String(portfolio?.summary?.total_skus || 0)} accent={K.blue} loading={loading} />

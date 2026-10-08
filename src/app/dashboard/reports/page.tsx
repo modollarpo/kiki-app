@@ -106,7 +106,7 @@ export default function ReportsPage() {
           <>
             <Card padding={0}>
               <div className="px-5 py-3.5" style={{ borderBottom: `1px solid ${K.g800}` }}>
-                <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">Scheduled Reports ({scheduledReports.length}) <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h2>
+                <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">Scheduled Reports ({scheduledReports.length})</h2>
               </div>
               {loading ? (
                 <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading reports…</span></div>
@@ -134,7 +134,7 @@ export default function ReportsPage() {
 
             <Card>
               <div className="px-5 py-3.5" style={{ borderBottom: `1px solid ${K.g800}` }}>
-                <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">Recent Exports <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h2>
+                <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">Recent Exports</h2>
               </div>
               {loading ? (
                 <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading exports…</span></div>

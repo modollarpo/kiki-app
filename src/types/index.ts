@@ -254,7 +254,7 @@ export interface PaginatedResponse<T> {
 // ── Dashboard ────────────────────────────────────────────
 export interface DashboardKPI {
   value: number;
-  delta: number;
+  delta: number | null;
   label: string;
 }
 

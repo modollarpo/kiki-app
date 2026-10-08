@@ -38,33 +38,18 @@ export default function DeveloperPage() {
   const totalCost = usage?.totalCost ?? 0;
   const avgLatency = systemMetrics.length > 0
     ? Math.round(systemMetrics.reduce((s, m) => s + m.value, 0) / systemMetrics.length)
-    : 42;
+    : 0;
   const errorCount = recentActions.filter(a => a.status === "error").length;
   const errorRate = recentActions.length > 0 ? ((errorCount / recentActions.length) * 100).toFixed(2) : "0.00";
 
-  const apiKeys = usage?.byType.map((u, i) => ({
-    name: `${u.type.charAt(0).toUpperCase() + u.type.slice(1)} Key`,
-    key: `kiki_${u.type.slice(0, 3)}_sk_${Math.random().toString(36).slice(2, 6)}...${Math.random().toString(36).slice(2, 6)}`,
-    created: "Active",
-    lastUsed: "Recent",
-    status: "active",
-    calls: u.count > 1000 ? `${(u.count / 1000).toFixed(1)}K` : String(u.count),
-  })) ?? [];
+  // No real API-key provisioning backend is wired to the developer console, so
+  // we surface the honest empty state instead of rendering fabricated keys.
+  const apiKeys: Array<{ name: string; key: string; created: string; lastUsed: string; status: string; calls: string }> = [];
 
-  const webhooks = recentActions.length > 0
-    ? recentActions.slice(0, 3).map(a => ({
-        url: `https://keekii.net/api/webhooks/${a.agentType}`,
-        events: [a.actionType],
-        status: a.status === "success" ? "active" : "paused",
-      }))
-    : [];
+  const webhooks: Array<{ url: string; events: string[]; status: string }> = [];
 
-  const rateLimits = usage?.byType.map(u => ({
-    endpoint: `GET /v1/${u.type}`,
-    limit: `${Math.max(u.count * 3, 100)}/min`,
-    used: `${u.count}/min`,
-    pct: Math.min(99, Math.round((u.count / Math.max(u.count * 3, 100)) * 100)),
-  })) ?? [];
+  // No rate-limit policy source exists; limits are not fabricated.
+  const rateLimits: Array<{ endpoint: string; limit: string; used: string; pct: number }> = [];
 
   return (
     <RoleGuard allowedRoles={["admin", "superadmin"]}>
@@ -83,7 +68,7 @@ export default function DeveloperPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {[{ label: "API Calls (24h)", value: loading ? "…" : totalApiCalls > 1000 ? `${(totalApiCalls / 1000).toFixed(1)}K` : String(totalApiCalls), color: K.blue },
-            { label: "Avg Latency", value: loading ? "…" : `${avgLatency}ms`, color: K.mint },
+            { label: "Avg Latency", value: loading ? "…" : avgLatency > 0 ? `${avgLatency}ms` : "—", color: K.mint },
             { label: "Error Rate", value: loading ? "…" : `${errorRate}%`, color: K.teal },
             { label: "Total Cost", value: loading ? "…" : `$${totalCost.toFixed(2)}`, color: K.gold },
           ].map((s, i) => (
@@ -97,13 +82,13 @@ export default function DeveloperPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
           <Card padding={0}>
             <div className="px-5 py-3.5 flex justify-between items-center border-b border-g800">
-              <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">API Keys <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h2>
+              <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">API Keys <Badge color={K.t3} className="text-[10px]">PENDING</Badge></h2>
               <Button variant="secondary" size="sm">+ Generate Key</Button>
             </div>
             {loading ? (
               <div className="flex items-center justify-center py-8"><AIThinking text="Loading..." /></div>
             ) : apiKeys.length === 0 ? (
-              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No API keys generated yet. Click "+ Generate Key" to create one.</span></div>
+              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">API key provisioning is not enabled for this tenant yet.</span></div>
             ) : (
               apiKeys.map((k, i) => (
                 <div key={i} className="px-5 py-3" style={{ borderBottom: i < apiKeys.length - 1 ? `1px solid ${K.g900}` : undefined }}>
@@ -133,7 +118,7 @@ export default function DeveloperPage() {
 
           <Card padding={0}>
             <div className="px-5 py-3.5 flex justify-between items-center border-b border-g800">
-              <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">Webhooks <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h2>
+              <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">Webhooks <Badge color={K.t3} className="text-[10px]">PENDING</Badge></h2>
               <Button variant="secondary" size="sm">+ Add Endpoint</Button>
             </div>
             {loading ? (
@@ -160,9 +145,11 @@ export default function DeveloperPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <Card>
-            <h2 className="font-mono font-bold text-[13px] text-white mb-3.5 flex items-center gap-2">Rate Limits <Badge color={K.mint} className="text-[10px]">LIVE</Badge></h2>
+            <h2 className="font-mono font-bold text-[13px] text-white mb-3.5 flex items-center gap-2">Rate Limits <Badge color={K.t3} className="text-[10px]">N/A</Badge></h2>
             {loading ? (
               <div className="flex items-center justify-center py-4"><AIThinking text="Loading..." /></div>
+            ) : rateLimits.length === 0 ? (
+              <div className="py-4 text-center"><span className="font-mono text-[11px] text-gray-500">No rate-limit policy configured.</span></div>
             ) : (
               rateLimits.map((r, i) => (
                 <div key={i} className="mb-3">

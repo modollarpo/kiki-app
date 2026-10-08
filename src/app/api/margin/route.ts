@@ -53,6 +53,8 @@ export async function GET(req: NextRequest) {
           totalSpend,
           totalRevenue,
           netProfit: totalRevenue - totalSpend,
+          grossProfit: totalRevenue - totalSpend,
+          profitAdjCAC: totalConversions > 0 ? Math.max(0, Math.round(((2 * totalSpend - totalRevenue) / totalConversions) * 100) / 100) : 0,
           avgMargin,
           totalConversions,
           avgCpa: totalConversions > 0 ? Math.round(totalSpend / totalConversions * 100) / 100 : 0,

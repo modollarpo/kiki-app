@@ -67,7 +67,7 @@ export default function OAuthCallbackPage() {
 
         const data = await res.json();
 
-        if (!data.success) {
+        if (!data.ok) {
           throw new Error(data.error || "Connection failed");
         }
 

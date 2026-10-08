@@ -45,15 +45,17 @@ async function evaluateArbitrage(tenantId: string): Promise<ArbitrageDecision[]>
   const db = await getDb();
   const decisions: ArbitrageDecision[] = [];
 
-  // Get latest metrics per platform
+// Get latest metrics per platform (dialect-agnostic: works on both
+  // PostgreSQL and the sqlite fallback)
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const platformMetrics = await db.prepare(`
-    SELECT DISTINCT ON (platform)
+    SELECT
       platform, SUM(spend) as total_spend, SUM(revenue) as total_revenue,
       SUM(conversions) as total_conversions
     FROM campaign_metrics_snapshot
-    WHERE tenant_id = ? AND collected_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+    WHERE tenant_id = ? AND collected_at >= ?
     GROUP BY platform
-  `).all(tenantId) as Array<{
+  `).all(tenantId, cutoff) as Array<{
     platform: string; total_spend: number; total_revenue: number; total_conversions: number;
   }>;
 

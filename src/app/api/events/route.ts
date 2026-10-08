@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized", code: "UNAUTHORIZED" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -18,10 +18,11 @@ export async function GET(req: Request) {
   const stream = new ReadableStream({
     start(controller) {
       // Send initial connection event
-      controller.enqueue(encoder.encode(`event: connected\ndata: ${JSON.stringify({ time: Date.now() })}\n\n`));
+      controller.enqueue(encoder.encode(`event: connected\ndata: ${JSON.stringify({ ok: true, time: Date.now() })}\n\n`));
 
-      // Register as SSE client
-      eventBus.addSSEClient(controller);
+      // Register as SSE client, scoped to the authenticated tenant so we
+      // never broadcast another tenant's events to this session.
+      eventBus.addSSEClient(controller, user.tenantId);
 
       // Send heartbeat every 15 seconds
       const heartbeat = setInterval(() => {

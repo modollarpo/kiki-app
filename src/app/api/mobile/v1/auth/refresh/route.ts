@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { createSession } from '@/lib/auth';
-import { REFRESH_SECRET } from '@/lib/mobile/auth';
-import { SignJWT, jwtVerify } from 'jose';
+import { REFRESH_SECRET, REFRESH_ISSUER, REFRESH_AUDIENCE, signRefreshToken } from '@/lib/mobile/auth';
+import { jwtVerify } from 'jose';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
     }
 
     const { payload } = await jwtVerify(refreshToken, REFRESH_SECRET, {
-      issuer: 'kiki-mobile',
-      audience: 'kiki-api',
+      issuer: REFRESH_ISSUER,
+      audience: REFRESH_AUDIENCE,
     });
 
     // Verify user still exists and is active
@@ -47,17 +47,12 @@ export async function POST(request: NextRequest) {
     };
     const accessToken = createSession(authUser);
 
-    const newRefreshToken = await new SignJWT({
+    const newRefreshToken = await signRefreshToken({
       sub: dbUser.id,
+      email: dbUser.email,
+      role: dbUser.role,
       tenantId: dbUser.tenant_id,
-      type: 'refresh',
-    })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuedAt()
-      .setIssuer('kiki-mobile')
-      .setAudience('kiki-api')
-      .setExpirationTime('30d')
-      .sign(REFRESH_SECRET);
+    });
 
     return NextResponse.json({
       ok: true,

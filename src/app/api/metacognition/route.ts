@@ -8,7 +8,7 @@ import { logger, handleApiError } from "@/lib/logger";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const url = new URL(req.url);
     const view = url.searchParams.get("view") || "dashboard";
@@ -37,14 +37,14 @@ export async function GET(req: NextRequest) {
     }
   } catch (e) {
     logger.error("metacognition/handler", { message: e instanceof Error ? e.message : String(e) });
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const enf = await checkEnforcement(user.tenantId);
     if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
@@ -53,6 +53,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ strategy, applied: !!strategy });
   } catch (e) {
     logger.error("metacognition/handler", { message: e instanceof Error ? e.message : String(e) });
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
   }
 }

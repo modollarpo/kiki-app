@@ -30,7 +30,7 @@ export default function MmmPage() {
     try {
       const res = await fetch("/api/mmm-analysis", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ weeks: 52 }) });
       const data = await res.json();
-      if (data.success) {
+      if (data.ok) {
         setChannels(data.data.channels || []);
         setRecommendations(data.data.recommendations || []);
         setModelFit(data.data.modelFit || null);

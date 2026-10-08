@@ -12,7 +12,7 @@ import { getCatalogStats } from "@/lib/asc-override";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const stats = await getCatalogStats(user.tenantId);
     return NextResponse.json({ ok: true, data: stats });

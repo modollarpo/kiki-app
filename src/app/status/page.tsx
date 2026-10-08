@@ -5,7 +5,7 @@ import { K } from "@/lib/kdls";
 import { Badge } from "@/components/ui";
 import { status as statusApi } from "@/lib/api";
 
-type Service = { name: string; status: string; p99: number; uptime: number };
+type Service = { name: string; status: string; p99: number | null; uptime: number | null };
 
 const STATUS_COLORS: Record<string,string> = { operational:K.mint, degraded:K.warn, outage:K.danger, maintenance:K.blue };
 
@@ -74,8 +74,8 @@ export default function StatusPage() {
                       <span className="animate-kdls-pulse w-[7px] h-[7px] rounded-full inline-block" style={{ background:STATUS_COLORS[svc.status]||K.t3 }}/>
                       <span className="font-mono text-[10px] capitalize" style={{ color:STATUS_COLORS[svc.status]||K.t3 }}>{svc.status}</span>
                     </div>
-                    <span className="font-mono text-[11px] text-t2">{svc.p99}ms</span>
-                    <span className="font-mono font-bold text-[11px] text-kmint">{svc.uptime}%</span>
+                    <span className="font-mono text-[11px] text-t2">{svc.p99 != null ? `${svc.p99}ms` : "—"}</span>
+                    <span className="font-mono font-bold text-[11px] text-kmint">{svc.uptime != null ? `${svc.uptime}%` : "—"}</span>
                   </div>
                 ))}
               </div>

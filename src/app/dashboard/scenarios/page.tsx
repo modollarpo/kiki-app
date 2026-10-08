@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 interface Scenario {
   id: string; name: string; description: string; budgetChange: number;
-  projectedRevenue: number; projectedROAS: number; risk: string; confidence: number;
+  projectedRevenue: number; projectedROAS: number; risk: string; confidence: number | null;
 }
 
 export default function ScenariosPage() {
@@ -24,7 +24,7 @@ export default function ScenariosPage() {
     fetch("/api/scenarios", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => {
-        if (d.success) {
+        if (d.ok && Array.isArray(d.data?.scenarios)) {
           setScenarios(d.data.scenarios);
           if (d.data.scenarios.length > 0) setSelected(d.data.scenarios[1]?.id || d.data.scenarios[0].id);
         }
@@ -52,7 +52,7 @@ export default function ScenariosPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Scenarios" value={scenarios.length > 0 ? String(scenarios.length) : "—"} accent={K.blue} loading={loading} />
           <StatCard label="Best Projected ROAS" value={scenarios.length > 0 ? `${Math.max(...scenarios.map(s => s.projectedROAS))}×` : "—"} accent={K.mint} sub="Highest return" loading={loading} />
-          <StatCard label="Avg Confidence" value={scenarios.length > 0 ? `${Math.round(scenarios.reduce((s, sc) => s + sc.confidence, 0) / scenarios.length)}%` : "—"} accent={K.teal} loading={loading} />
+          <StatCard label="Avg Confidence" value={scenarios.some(s => s.confidence != null) ? `${Math.round(scenarios.reduce((s, sc) => s + (sc.confidence ?? 0), 0) / scenarios.length)}%` : "—"} accent={K.teal} loading={loading} />
           <StatCard label="Total Projected Revenue" value={scenarios.length > 0 ? fmt.currency(scenarios.reduce((s, sc) => s + sc.projectedRevenue, 0)) : "—"} accent={K.gold} loading={loading} />
         </div>
 
@@ -71,7 +71,7 @@ export default function ScenariosPage() {
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="font-mono text-sm font-bold text-white">{sc.name}</span>
                     <Badge color={getRiskColor(sc.risk)}>{sc.risk.toUpperCase()} RISK</Badge>
-                    <Badge color={K.t3}>{sc.confidence}% CONF</Badge>
+                    <Badge color={sc.confidence != null ? K.t3 : K.warn}>{sc.confidence != null ? `${sc.confidence}% CONF` : "NO MODEL"}</Badge>
                   </div>
                   <p className="font-mono text-[11px] text-gray-500 mb-3">{sc.description}</p>
 
@@ -90,7 +90,7 @@ export default function ScenariosPage() {
                     </div>
                     <div>
                       <p className="font-mono text-[10px] text-gray-600 mb-0.5">CONFIDENCE</p>
-                      <p className="font-mono text-[13px] font-bold text-kblue">{sc.confidence}%</p>
+                      <p className="font-mono text-[13px] font-bold text-kblue">{sc.confidence != null ? `${sc.confidence}%` : "—"}</p>
                     </div>
                   </div>
                 </div>

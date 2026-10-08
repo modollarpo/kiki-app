@@ -17,7 +17,7 @@ import { getCrmStats } from "@/lib/crm-sync";
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const stats = await getCrmStats(user.tenantId);
     return NextResponse.json({ ok: true, data: stats });
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const enf = await checkEnforcement(user.tenantId);
     if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     const { platform, accessToken, shopDomain, stripeApiKey, hubspotApiKey } = body;
 
     if (!platform) {
-      return NextResponse.json({ error: "platform required (shopify | stripe | hubspot)" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "platform required (shopify | stripe | hubspot)" }, { status: 400 });
     }
 
     let result: { synced: number; errors: number };
@@ -46,27 +46,27 @@ export async function POST(req: NextRequest) {
     switch (platform) {
       case "shopify": {
         if (!accessToken || !shopDomain) {
-          return NextResponse.json({ error: "accessToken and shopDomain required for Shopify" }, { status: 400 });
+          return NextResponse.json({ ok: false, error: "accessToken and shopDomain required for Shopify" }, { status: 400 });
         }
         result = await syncShopifyCustomers(user.tenantId, accessToken, shopDomain);
         break;
       }
       case "stripe": {
         if (!stripeApiKey) {
-          return NextResponse.json({ error: "stripeApiKey required for Stripe" }, { status: 400 });
+          return NextResponse.json({ ok: false, error: "stripeApiKey required for Stripe" }, { status: 400 });
         }
         result = await syncStripeCustomers(user.tenantId, stripeApiKey);
         break;
       }
       case "hubspot": {
         if (!hubspotApiKey) {
-          return NextResponse.json({ error: "hubspotApiKey required for HubSpot" }, { status: 400 });
+          return NextResponse.json({ ok: false, error: "hubspotApiKey required for HubSpot" }, { status: 400 });
         }
         result = await syncHubspotContacts(user.tenantId, hubspotApiKey);
         break;
       }
       default:
-        return NextResponse.json({ error: `Unknown platform: ${platform}` }, { status: 400 });
+        return NextResponse.json({ ok: false, error: `Unknown platform: ${platform}` }, { status: 400 });
     }
 
     logger.info("CRM sync completed", { tenantId: user.tenantId, platform, ...result });

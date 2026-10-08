@@ -40,10 +40,10 @@ export default function FinancePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Total Revenue" value={loading ? "…" : k(totals.revenue)} delta={8.2} period="last month" accent={K.mint} />
-          <StatCard label="Total Costs" value={loading ? "…" : k(totals.costs)} delta={6.6} accent={K.blue} />
-          <StatCard label="Net Profit" value={loading ? "…" : k(totals.profit)} delta={-21.1} period="last month" accent={K.gold} />
-          <StatCard label="Gross Margin" value={loading ? "…" : `${totals.margin.toFixed(1)}%`} delta={-3.2} accent={K.teal} />
+          <StatCard label="Total Revenue" value={loading ? "…" : k(totals.revenue)} period="last month" accent={K.mint} />
+          <StatCard label="Total Costs" value={loading ? "…" : k(totals.costs)} accent={K.blue} />
+          <StatCard label="Net Profit" value={loading ? "…" : k(totals.profit)} period="last month" accent={K.gold} />
+          <StatCard label="Gross Margin" value={loading ? "…" : `${totals.margin.toFixed(1)}%`} accent={K.teal} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-3 mb-4">

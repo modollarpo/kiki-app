@@ -59,6 +59,28 @@ const YOUR_RIGHTS = [
   { right: "Right to Withdraw Consent", desc: "Withdraw previously given consent at any time.", icon: "↩️" },
 ];
 
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (typeof window === "undefined") return headers;
+  try {
+    const raw = localStorage.getItem("kiki-auth");
+    if (raw) {
+      const parsed = JSON.parse(raw) as { state?: { token?: string | null } };
+      const token = parsed.state?.token;
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+    }
+  } catch { /* ignore */ }
+  return headers;
+}
+
+function post(path: string, body: unknown) {
+  fetch(path, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(body),
+  }).catch(() => {});
+}
+
 export default function ConsentPage() {
   const { consent, updateConsent, reopenBanner } = useCookieConsent();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -194,7 +216,7 @@ export default function ConsentPage() {
               disabled={exportRequested}
               onClick={() => {
                 setExportRequested(true);
-                fetch("/api/gdpr", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "export" }) }).catch(() => {});
+                post("/api/gdpr", { action: "export" });
               }}
             >
               {exportRequested ? "✓ Export Requested" : "📦 Export My Data"}
@@ -205,7 +227,7 @@ export default function ConsentPage() {
               disabled={deleteRequested}
               onClick={() => {
                 setDeleteRequested(true);
-                fetch("/api/gdpr", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete" }) }).catch(() => {});
+                post("/api/gdpr", { action: "delete" });
               }}
             >
               {deleteRequested ? "✓ Deletion Requested" : "🗑️ Delete My Data"}

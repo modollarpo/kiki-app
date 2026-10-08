@@ -41,7 +41,16 @@ export async function proxyToService(req: NextRequest, opts: ServiceProxyOptions
 
   if (LOCALHOST_DEFAULT.test(serviceUrl)) {
     if (opts.fallback !== undefined) {
-      return NextResponse.json({ ok: true, ...opts.fallback as Record<string, unknown> });
+      // The fallback is demo content, never real telemetry — surface that
+      // clearly so consumers cannot mistake it for production data.
+      return NextResponse.json({
+        ok: true,
+        demo: true,
+        mode: "demo",
+        serviceNotConfigured: true,
+        envVar: opts.envVar,
+        ...opts.fallback as Record<string, unknown>,
+      });
     }
     return NextResponse.json(
       {

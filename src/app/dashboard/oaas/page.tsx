@@ -81,11 +81,11 @@ export default function OaasPage() {
                     <p className="font-mono text-[10px] text-gray-500 mb-2">{task.details}</p>
                     <div className="flex flex-wrap items-center gap-4">
                       <span className="font-mono text-[10px] text-gray-600">Agent: <span className="text-gray-400">{task.agent}</span></span>
-                      <span className="font-mono text-[10px] text-gray-600">Impact: <span className="font-bold text-kmint">{task.expectedImpact}</span></span>
-                      <span className="font-mono text-[10px] text-gray-600">Confidence: <span className="text-kblue">{task.confidence}%</span></span>
+                      <span className="font-mono text-[10px] text-gray-600">Impact: <span className="font-bold text-kmint">{task.expectedImpact ?? "—"}</span></span>
+                      <span className="font-mono text-[10px] text-gray-600">Confidence: <span className="text-kblue">{task.confidence != null ? `${task.confidence}%` : "—"}</span></span>
                     </div>
                     <div className="mt-2">
-                      <ProgressBar value={task.confidence} max={100} color={K.blue} height={3} />
+                      <ProgressBar value={task.confidence ?? 0} max={100} color={K.blue} height={3} />
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 flex-shrink-0">
@@ -105,7 +105,7 @@ export default function OaasPage() {
                   <Badge color={K.blue} dot>APPROVED</Badge>
                   <div className="flex-1">
                     <p className="font-mono text-[11px] font-semibold text-white">{task.title}</p>
-                    <p className="font-mono text-[10px] text-gray-500">{task.agent} · {task.expectedImpact}</p>
+                    <p className="font-mono text-[10px] text-gray-500">{task.agent} · {task.expectedImpact ?? "no projected impact"}</p>
                   </div>
                   <span className="font-mono text-[10px] text-gray-600">{task.createdAt}</span>
                 </div>
@@ -119,7 +119,7 @@ export default function OaasPage() {
                   <Badge color={K.mint} dot>DONE</Badge>
                   <div className="flex-1">
                     <p className="font-mono text-[11px] font-semibold text-white">{task.title}</p>
-                    <p className="font-mono text-[10px] text-gray-500">{task.agent} · {task.expectedImpact}</p>
+                    <p className="font-mono text-[10px] text-gray-500">{task.agent} · {task.expectedImpact ?? "no projected impact"}</p>
                   </div>
                   <span className="font-mono text-[10px] text-gray-600">{task.createdAt}</span>
                 </div>

@@ -6,7 +6,7 @@ import { proxyToService } from "@/lib/service-proxy";
 
 export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const enf = await checkEnforcement(user.tenantId);
   if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   return proxyToService(req, {
     path: "/api/recommendations",
     method: "GET",
@@ -32,15 +32,9 @@ export async function GET(req: NextRequest) {
     serviceName: "Media Mix Modelling",
     envVar: "MMM_URL",
     fallback: {
-      recommendations: [
-        { channel: "Meta", currentSpend: 8500, recommendedSpend: 12000, roi: 4.2, change: "+41%" },
-        { channel: "Google", currentSpend: 4200, recommendedSpend: 8000, roi: 3.8, change: "+90%" },
-        { channel: "TikTok", currentSpend: 6500, recommendedSpend: 5000, roi: 2.9, change: "-23%" },
-        { channel: "YouTube", currentSpend: 12000, recommendedSpend: 8000, roi: 2.1, change: "-33%" },
-      ],
-      totalBudget: 50000,
-      projectedRoas: 3.6,
-      confidence: 0.87,
+      channels: [],
+      recommendations: [],
+      modelFit: null,
     },
   });
 }

@@ -26,10 +26,14 @@ function verifySlackSignature(
   timestamp: string,
   signature: string,
 ): boolean {
-  if (!SIGNING_SECRET) return true; // Skip in mock/dev mode
+  // Fail closed: without a configured signing secret we cannot trust any
+  // request, so reject everything instead of accepting unauthenticated
+  // bid approvals.
+  if (!SIGNING_SECRET) return false;
 
   // Reject stale requests (older than 5 minutes)
   const reqTime = parseInt(timestamp, 10);
+  if (!Number.isFinite(reqTime)) return false;
   if (Math.abs(Date.now() / 1000 - reqTime) > 300) return false;
 
   const baseString = `v0:${timestamp}:${rawBody}`;
@@ -38,7 +42,16 @@ function verifySlackSignature(
     .update(baseString)
     .digest("hex");
 
-  return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
+  // timingSafeEqual throws if the buffers differ in length — guard it so a
+  // malformed signature returns false rather than a 500.
+  try {
+    const a = Buffer.from(computed);
+    const b = Buffer.from(signature);
+    if (a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }
 
 // ── Execute approved bid on the ad platform ─────────────────

@@ -74,10 +74,10 @@ export default function AnalyticsPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-              <StatCard label="Blended ROAS" value={totals ? `${totals.blendedRoas.toFixed(2)}×` : "0×"} delta={12.4} period="last month" accent={K.mint} sparkline={weeklyRoas} loading={loading} />
-              <StatCard label="Total Conversions" value={totals ? fmt.compact(totals.totalConversions) : "0"} delta={18.2} accent={K.blue} loading={loading} />
-              <StatCard label="Blended CPA" value={totals ? `$${totals.blendedCpa.toFixed(2)}` : "$0"} delta={-6.3} accent={K.gold} loading={loading} />
-              <StatCard label="Total Spend" value={totals ? fmt.currency(totals.totalSpend) : "$0"} delta={4.1} accent={K.teal} loading={loading} />
+              <StatCard label="Blended ROAS" value={totals ? `${totals.blendedRoas.toFixed(2)}×` : "0×"} period="last month" accent={K.mint} sparkline={weeklyRoas} loading={loading} />
+              <StatCard label="Total Conversions" value={totals ? fmt.compact(totals.totalConversions) : "0"} accent={K.blue} loading={loading} />
+              <StatCard label="Blended CPA" value={totals ? `$${totals.blendedCpa.toFixed(2)}` : "$0"} accent={K.gold} loading={loading} />
+              <StatCard label="Total Spend" value={totals ? fmt.currency(totals.totalSpend) : "$0"} accent={K.teal} loading={loading} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-3 mb-4">

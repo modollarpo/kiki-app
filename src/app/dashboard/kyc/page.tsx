@@ -94,7 +94,7 @@ export default function KycPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
               <StatCard label="Entities Verified" value={`${verified}/${entities.length}`} accent={K.mint} />
               <StatCard label="Documents Uploaded" value={String(documents.filter(d => d.status === "uploaded").length)} accent={K.blue} />
-              <StatCard label="Compliance Score" value={`${totalChecks > 0 ? Math.round(passedChecks / totalChecks * 100) : 0}%`} accent={K.gold} delta={5.2} period="last quarter" />
+              <StatCard label="Compliance Score" value={`${totalChecks > 0 ? Math.round(passedChecks / totalChecks * 100) : 0}%`} accent={K.gold} period="last quarter" />
               <StatCard label="Failed Checks" value={String(checks.filter(c => c.status === "failed").length)} accent={K.danger} />
             </div>
 

@@ -3,6 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
+interface DarkSocialEvent {
+  id?: string | number;
+  tenant_id?: string;
+  campaign_id?: string | null;
+  referrer?: string | null;
+  share_count?: number | null;
+  converted?: number | null;
+  revenue?: number | null;
+  created_at?: string;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
@@ -17,7 +28,7 @@ export async function GET(req: NextRequest) {
     const { getDb } = await import("@/lib/db");
     const db = await getDb();
 
-    let events: any[] = [];
+    let events: DarkSocialEvent[] = [];
     let hasTable = false;
 
     try {
@@ -32,28 +43,23 @@ export async function GET(req: NextRequest) {
         ? "SELECT * FROM dark_social_events WHERE tenant_id = ? AND campaign_id = ? AND created_at >= datetime('now', ?)"
         : "SELECT * FROM dark_social_events WHERE tenant_id = ? AND created_at >= datetime('now', ?)";
       events = campaignId
-        ? (await db.prepare(query).all(user.tenantId, campaignId, `-${days} days`) as any[])
-        : (await db.prepare(query).all(user.tenantId, `-${days} days`) as any[]);
+        ? (await db.prepare(query).all(user.tenantId, campaignId, `-${days} days`) as DarkSocialEvent[])
+        : (await db.prepare(query).all(user.tenantId, `-${days} days`) as DarkSocialEvent[]);
     }
 
     const shareCount = hasTable
-      ? events.reduce((sum: number, e: any) => sum + (e.share_count || 0), 0)
+      ? events.reduce((sum: number, e: DarkSocialEvent) => sum + (e.share_count || 0), 0)
       : 0;
 
-    const darkSocialConversions = hasTable
-      ? events.filter((e: any) => e.converted).length
-      : 0;
+    const converted = hasTable ? events.filter((e: DarkSocialEvent) => e.converted) : [];
 
-    const avgOrderValue = 68.5;
-    const estimatedRevenue = hasTable
-      ? events
-          .filter((e: any) => e.converted)
-          .reduce((sum: number, e: any) => sum + (e.revenue || avgOrderValue), 0)
-      : 0;
+    const estimatedRevenue = converted.reduce((sum: number, e: DarkSocialEvent) => sum + (e.revenue ?? 0), 0);
+
+    const avgOrderValue = converted.length > 0 ? estimatedRevenue / converted.length : null;
 
     const topReferrers = hasTable
       ? Object.entries(
-          events.reduce((acc: Record<string, number>, e: any) => {
+          events.reduce((acc: Record<string, number>, e: DarkSocialEvent) => {
             const referrer = e.referrer || "unknown";
             acc[referrer] = (acc[referrer] || 0) + 1;
             return acc;
@@ -66,7 +72,7 @@ export async function GET(req: NextRequest) {
 
     const dailyBreakdown = hasTable
       ? Object.entries(
-          events.reduce((acc: Record<string, number>, e: any) => {
+          events.reduce((acc: Record<string, number>, e: DarkSocialEvent) => {
             const day = (e.created_at || "").slice(0, 10);
             if (day) acc[day] = (acc[day] || 0) + 1;
             return acc;
@@ -80,8 +86,8 @@ export async function GET(req: NextRequest) {
       ok: true,
       data: {
         shareCount,
-        darkSocialConversions,
-        conversionRate: shareCount > 0 ? +(darkSocialConversions / shareCount * 100).toFixed(2) : 0,
+        darkSocialConversions: converted.length,
+        conversionRate: shareCount > 0 ? +(converted.length / shareCount * 100).toFixed(2) : 0,
         estimatedRevenue: +estimatedRevenue.toFixed(2),
         avgOrderValue,
         topReferrers,
