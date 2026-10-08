@@ -12,10 +12,80 @@ import { getUserFromRequest } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
 import { logger, handleApiError } from "@/lib/logger";
 
+// ── Public demo mode ───────────────────────────────────────
+// The marketing /demo page may POST a sample event without a JWT.
+// The real enrichment pipeline runs against the isolated "demo"
+// tenant (no ad-account integrations => no live platform delivery).
+// Rate-limited per IP; payload strictly sanitized.
+
+const DEMO_TENANT_ID = "demo";
+const DEMO_PLATFORMS = new Set(["meta", "google", "tiktok", "snap", "pinterest", "linkedin"]);
+const demoRate = new Map<string, { count: number; resetAt: number }>();
+
+function demoRateLimited(key: string): boolean {
+  const now = Date.now();
+  const entry = demoRate.get(key);
+  if (!entry || now > entry.resetAt) {
+    demoRate.set(key, { count: 1, resetAt: now + 60_000 });
+    return false;
+  }
+  entry.count += 1;
+  if (demoRate.size > 1000) demoRate.clear();
+  return entry.count > 12;
+}
+
+function sanitizeDemoEvent(raw: unknown): ConversionEvent | null {
+  if (!raw || typeof raw !== "object") return null;
+  const e = raw as Record<string, unknown>;
+  const platform = String(e.platform || "");
+  if (!DEMO_PLATFORMS.has(platform)) return null;
+
+  const customData = (e.customData || {}) as Record<string, unknown>;
+  const value = Number(customData.value);
+  if (!Number.isFinite(value) || value <= 0 || value > 50000) return null;
+
+  const userData = (e.userData || {}) as Record<string, unknown>;
+  const str = (v: unknown, max: number) => (typeof v === "string" && v.length <= max ? v : undefined);
+
+  return {
+    platform: platform as ConversionEvent["platform"],
+    eventName: str(e.eventName, 64) || "Purchase",
+    eventTime: Number.isFinite(Number(e.eventTime)) ? Math.floor(Number(e.eventTime)) : Math.floor(Date.now() / 1000),
+    userData: {
+      email: str(userData.email, 120),
+      externalId: str(userData.externalId, 64),
+      ipAddress: str(userData.ipAddress, 45),
+      userAgent: str(userData.userAgent, 256),
+    },
+    customData: {
+      currency: str(customData.currency, 8) || "USD",
+      value,
+      orderId: str(customData.orderId, 64),
+      productCategory: str(customData.productCategory, 64),
+      contentName: str(customData.contentName, 120),
+    },
+    consent: { gdpr: true, ccpa: true },
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
-const user = getUserFromRequest(req);
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const user = getUserFromRequest(req);
+
     if (!user) {
+      if (body?.demo === true) {
+        const ip = (req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "local").split(",")[0].trim();
+        if (demoRateLimited(ip)) {
+          return NextResponse.json({ ok: false, error: "Demo rate limit exceeded — try again in a minute." }, { status: 429 });
+        }
+        const event = sanitizeDemoEvent(body.event);
+        if (!event) {
+          return NextResponse.json({ ok: false, error: "Invalid demo event" }, { status: 400 });
+        }
+        const result = await enrichConversionEvent(DEMO_TENANT_ID, event);
+        return NextResponse.json({ ok: true, demo: true, data: result, latencyMs: result.latencyMs });
+      }
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
@@ -24,7 +94,6 @@ const user = getUserFromRequest(req);
       return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
     }
 
-    const body = await req.json();
     const { events, event } = body;
 
     // Single event enrichment

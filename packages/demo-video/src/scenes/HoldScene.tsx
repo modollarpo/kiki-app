@@ -16,7 +16,7 @@ export const HoldScene: React.FC = () => {
       <div style={{ textAlign: "center", zIndex: 1 }}>
         <div style={{ fontFamily: "monospace", fontSize: 80, fontWeight: 900, color: K.t1, letterSpacing: 8, textShadow: `0 0 40px ${K.blue}40`, opacity: 0.9 }}>KIKI</div>
         <div style={{ fontFamily: "monospace", fontSize: 14, color: K.blue, letterSpacing: 6, marginTop: -4, opacity: 0.7 }}>AGENT™</div>
-        <div style={{ fontFamily: "monospace", color: K.t3, fontSize: 14, marginTop: 32, opacity: 0.5, letterSpacing: 2 }}>kikiagent.net</div>
+        <div style={{ fontFamily: "monospace", color: K.t3, fontSize: 14, marginTop: 32, opacity: 0.5, letterSpacing: 2 }}>keekii.net</div>
       </div>
     </AbsoluteFill>
   );

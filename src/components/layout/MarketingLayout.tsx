@@ -153,7 +153,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
               </div>
               <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3, lineHeight:1.7, marginBottom:14 }}>Autonomous LTV campaign execution. Your ad platforms learn from real customer value.</p>
               <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                {["SOC2","GDPR","CCPA","PCI DSS"].map(b => (
+                {["SOC 2 in progress","GDPR","CCPA"].map(b => (
                   <span key={b} style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:"0.1em", color:K.t3, background:K.g850, border:`1px solid ${K.g700}`, borderRadius:2, padding:"2px 6px" }}>{b}</span>
                 ))}
               </div>

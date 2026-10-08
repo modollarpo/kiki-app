@@ -36,7 +36,7 @@ export const CTAScene: React.FC = () => {
           boxShadow: `0 0 40px ${K.blue}25`,
         }}>
           <div style={{ width: 12, height: 12, borderRadius: "50%", background: K.mint, boxShadow: `0 0 10px ${K.mint}` }} />
-          <div style={{ fontFamily: "monospace", color: K.t1, fontSize: 32, fontWeight: 700, letterSpacing: 1 }}>kikiagent.net</div>
+          <div style={{ fontFamily: "monospace", color: K.t1, fontSize: 32, fontWeight: 700, letterSpacing: 1 }}>keekii.net</div>
         </div>
         <div style={{ opacity: interpolate(frame, [120, 150], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }), marginTop: 32, fontFamily: "sans-serif", color: K.t3, fontSize: 18 }}>
           Free tier available · No credit card required · Launch in 5 minutes

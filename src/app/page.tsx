@@ -15,67 +15,61 @@ const TICKER = [
   { label:"AI-POWERED OPTIMIZATION",    value:"ENGAGED",     color:K.gold  },
   { label:"ADAPTIVE BID MANAGEMENT",    value:"ACTIVE",      color:K.blue  },
   { label:"SUB-SECOND RESPONSES",       value:"TARGET",      color:K.blue  },
-  { label:"99.9% UPTIME SLA",           value:"GUARANTEED",  color:K.mint  },
+  { label:"SERVER-SIDE CONSENT CONTROLS", value:"ON",        color:K.mint  },
   { label:"SMART DATA ENRICHMENT",      value:"ONLINE",      color:K.teal  },
 ];
 
 const TERMINAL = [
-  { ts:"09:41:07.001", svc:"capi-gateway",   lvl:"INFO",   color:K.blue,  txt:"POST /v1/events  tenant=acme-corp  platform=meta  ip=157.240.x.x" },
+  { ts:"09:41:07.001", svc:"capi-gateway",   lvl:"INFO",   color:K.blue,  txt:"POST /v1/events  event=purchase  platform=meta  ip=157.240.x.x" },
   { ts:"09:41:07.019", svc:"fraud-detect",   lvl:"PASS",   color:K.mint,  txt:"score=0.04  verdict=CLEAN  signals=[ip,fingerprint,velocity]" },
   { ts:"09:41:07.022", svc:"consent-svc",    lvl:"INFO",   color:K.t3,    txt:"advertising=true  jurisdiction=GDPR  lawful_basis=consent" },
-  { ts:"09:41:07.038", svc:"ltv-model-v5",   lvl:"PRED",   color:K.gold,  txt:"order=$149.00  →  ltv_90d=$639.20  r2=0.91  confidence=0.94" },
+  { ts:"09:41:07.038", svc:"ltv-model-v5",   lvl:"PRED",   color:K.gold,  txt:"order=$149.00  →  ltv_90d=$639.20  confidence=0.94" },
   { ts:"09:41:07.041", svc:"enrichment-svc", lvl:"ENRICH", color:K.mint,  special:true },
-  { ts:"09:41:07.382", svc:"capi-router",    lvl:"SEND",   color:K.mint,  txt:"meta=✓(341ms)  google=✓(289ms)  tiktok=✓(412ms)  linkedin=✓(298ms)" },
+  { ts:"09:41:07.382", svc:"capi-router",    lvl:"SEND",   color:K.mint,  txt:"meta=✓(41ms)  google=✓(38ms)  tiktok=✓(52ms)  linkedin=✓(44ms)" },
   { ts:"09:41:07.390", svc:"attribution",    lvl:"ATTR",   color:K.oaas,  txt:"campaign=Q4-Fitness  revenue=$639.20  signal_id=sig_a3x9" },
   { ts:"09:41:07.391", svc:"syncbrain",      lvl:"ROUTE",  color:K.green, txt:"bid_adjust: model=gpt-4o  confidence=0.94  latency=12ms" },
 ];
 
 const PLATFORMS = [
-  "Meta","Google","TikTok","LinkedIn","YouTube","Snapchat","Pinterest","Amazon DSP","Reddit","DV360","X Ads","TradeDesk","Criteo","AppNexus",
+  "Meta","Google","TikTok","LinkedIn","Snapchat","Pinterest","Amazon","CTV",
 ];
 const PLATFORM_COLORS: Record<string,string> = {
-  Meta:"#1877F2",Google:"#4285F4",TikTok:"#FF0050",LinkedIn:"#0A66C2",YouTube:"#FF0000",
-  Snapchat:"#FFFC00",Pinterest:"#E60023","Amazon DSP":"#FF9900",Reddit:"#FF4500",
-  DV360:"#4285F4","X Ads":"#1DA1F2",TradeDesk:"#007AFF",Criteo:"#F96A0A",AppNexus:"#00B2FF",
+  Meta:"#1877F2",Google:"#4285F4",TikTok:"#FF0050",LinkedIn:"#0A66C2",
+  Snapchat:"#FFFC00",Pinterest:"#E60023",Amazon:"#FF9900",CTV:"#007AFF",
 };
 
 const FEATURES = [
   { n:"01",tag:"ENRICHMENT ENGINE",icon:"◎",accent:K.mint,
     title:"Your $149 order\nbecomes a $640 signal.",
-    body:"Every conversion intercepted server-side. ML predicts 90-day LTV in 38ms. All 14 platforms receive the enriched value — not the raw order.",
-    proof:[{v:"4.29×",l:"avg LTV uplift"},{v:"38ms",l:"median latency"},{v:"R²=0.91",l:"model accuracy"}], href:"/features/ltv-enrichment" },
+    body:"Every conversion intercepted server-side. ML predicts 90-day LTV in under 50ms. All connected platforms receive the enriched value — not the raw order.",
+    proof:[{v:"28",l:"signal features"},{v:"<50ms",l:"prediction"},{v:"<100ms",l:"delivery P99"}], href:"/features/ltv-enrichment" },
   { n:"02",tag:"SYNCBRAIN™",icon:"⬡",accent:K.green,
-    title:"Seven AI models.\nOne routing brain.",
-    body:"GPT-4o for decisions. Claude for reasoning. Gemini Flash for speed. LLaMA for cost. SyncBrain selects in 12ms, budget-aware, quality-first.",
-    proof:[{v:"7",l:"AI models"},{v:"12ms",l:"routing latency"},{v:"45%",l:"cost reduction"}], href:"/features/syncbrain" },
+    title:"Four AI models.\nOne routing brain.",
+    body:"GPT-4o for decisions. GPT-4o-mini for classification. Llama 3.1 via Groq for speed. SyncBrain picks the cheapest model that meets the quality bar, in 12ms.",
+    proof:[{v:"4",l:"AI models"},{v:"12ms",l:"routing latency"},{v:"cost-aware",l:"model selection"}], href:"/features/syncbrain" },
   { n:"03",tag:"AUTONOMOUS AGENTS",icon:"⚡",accent:K.blue,
     title:"Bidding decisions.\nAll day. Every day.",
     body:"Six specialized agents — Bidding, Creative, Smart Pacing, Signals, OaaS, SyncBrain — execute within your guardrails and log every action.",
-    proof:[{v:"6",l:"AI agents"},{v:"847",l:"decisions/day"},{v:"0h",l:"manual bidding"}], href:"/features/ai-agents" },
+    proof:[{v:"6",l:"AI agents"},{v:"24/7",l:"autonomous"},{v:"0h",l:"manual bidding"}], href:"/features/ai-agents" },
   { n:"04",tag:"FRAUD & IVT",icon:"⬗",accent:K.danger,
     title:"Bot traffic poisons\nyour LTV model.",
-    body:"IVT contaminates your training data — your model learns to find bots. KIKI blocks fraud before enrichment using IP, fingerprint, and velocity.",
-    proof:[{v:"99.2%",l:"detection rate"},{v:"0.03%",l:"false positives"},{v:"18ms",l:"score latency"}], href:"/features/fraud-ivt" },
+    body:"IVT contaminates your training data — your model learns to find bots. KIKI blocks fraud before enrichment using IP reputation, fingerprint, and velocity rules.",
+    proof:[{v:"3",l:"detection layers"},{v:"IPQS",l:"reputation feed"},{v:"pre-ingest",l:"blocking"}], href:"/features/fraud-ivt" },
 ];
 
 const HOW = [
   {s:"01",t:"Connect",  c:K.teal,  b:"15-minute CAPI or pixel integration with any stack."},
   {s:"02",t:"Intercept",c:K.blue,  b:"Every conversion caught server-side before platform delivery."},
-  {s:"03",t:"Enrich",   c:K.gold,  b:"ML model predicts 90-day LTV in 38ms. Fraud checked. Consent validated."},
-  {s:"04",t:"Deliver",  c:K.mint,  b:"Enriched signal sent to all 14 platforms simultaneously."},
+  {s:"03",t:"Enrich",   c:K.gold,  b:"ML model predicts 90-day LTV in under 50ms. Fraud checked. Consent validated."},
+  {s:"04",t:"Deliver",  c:K.mint,  b:"Enriched signal sent to all connected platforms simultaneously."},
   {s:"05",t:"Optimize", c:K.oaas,  b:"AI agents adjust bids, budgets, and creatives — autonomously."},
 ];
 
 const PROOF = [
-  {co:"LTV ENRICHMENT",  stat:"4.3×",  sub:"Avg LTV vs raw order value when enriched",      accent:K.mint },
-  {co:"CROSS-PLATFORM",   stat:"8",     sub:"Ad platforms with native OAuth + CAPI",        accent:K.blue },
-  {co:"SIGNAL FEATURES",  stat:"28",    sub:"Feature vector per conversion event",          accent:K.gold },
-  {co:"AI AGENTS",        stat:"5",     sub:"Autonomous agents optimizing 24/7",            accent:K.oaas },
-];
-
-const TESTIMONIALS = [
-  { q:"KIKI sends predicted LTV to Meta instead of raw conversion value. That alone changed what the algorithm optimizes for — and our acquisition quality improved measurably.", who:"Platform Capability", at:"LTV Enrichment" },
-  { q:"Instead of teaching platforms to find our worst customers, KIKI enriches every signal with predicted lifetime value before delivery. The math is transparent and the agents are auditable.", who:"Architecture", at:"Signal Pipeline" },
+  {co:"LTV PREDICTION",   stat:"90d",   sub:"Predicted customer lifetime value horizon",       accent:K.mint },
+  {co:"CROSS-PLATFORM",   stat:"8",     sub:"Ad platforms with native OAuth + CAPI",           accent:K.blue },
+  {co:"SIGNAL FEATURES",  stat:"28",    sub:"Feature vector per conversion event",             accent:K.gold },
+  {co:"AI AGENTS",        stat:"6",     sub:"Autonomous agents optimizing 24/7",               accent:K.oaas },
 ];
 
 const COMPARE = [
@@ -86,7 +80,7 @@ const COMPARE = [
   {f:"Data-driven attribution modeling",                k:true,  m:true,  b:"partial"},
   {f:"Marketing Mix Modelling (MMM)",                   k:true,  m:false, b:false},
   {f:"Virtual card per-campaign spend control",         k:true,  m:false, b:false},
-  {f:"Immutable SOC2-compliant audit log",              k:true,  m:false, b:false},
+  {f:"Immutable tamper-evident audit log",                k:true,  m:false, b:false},
 ];
 
 const PLANS = [
@@ -98,17 +92,12 @@ const PLANS = [
 export default function HomePage() {
   const router = useRouter();
   const [termIdx, setTermIdx]     = useState(0);
-  const [activeQ, setActiveQ]     = useState(0);
   const [annual, setAnnual]       = useState(true);
   const [visible, setVisible]     = useState(false);
 
   useEffect(() => { setTimeout(()=>setVisible(true),60); }, []);
   useEffect(() => {
     const iv = setInterval(()=>setTermIdx(i=>i<TERMINAL.length?i+1:i), 430);
-    return ()=>clearInterval(iv);
-  }, []);
-  useEffect(() => {
-    const iv = setInterval(()=>setActiveQ(i=>(i+1)%TESTIMONIALS.length), 6000);
     return ()=>clearInterval(iv);
   }, []);
 
@@ -156,7 +145,7 @@ export default function HomePage() {
           {/* Eyebrow */}
           <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-kdls px-3 sm:px-4 py-[7px] mb-8 md:mb-10 max-w-full" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
             <span className="animate-kdls-pulse shrink-0" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-            <span className="text-center" style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.12em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · SOC2 TYPE II</span>
+            <span className="text-center" style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.12em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · GDPR &amp; CCPA</span>
           </div>
 
           {/* Headline */}
@@ -170,7 +159,7 @@ export default function HomePage() {
 
           {/* Sub */}
           <p className="max-w-[580px] mx-auto mb-[36px] md:mb-[46px] font-[300] leading-[1.8] tracking-[-0.01em] text-[#666688]" style={{fontFamily:"Inter,system-ui,sans-serif",fontSize:"clamp(14px,2.5vw,18px)"}}>
-            KIKI intercepts every conversion, predicts 90-day customer LTV with ML, and feeds enriched signals to Meta, Google, TikTok, and 11 other platforms —{" "}
+            KIKI intercepts every conversion, predicts 90-day customer LTV with ML, and feeds enriched signals to Meta, Google, TikTok, and 5 other ad platforms —{" "}
             <span style={{color:"#8888aa"}}>before they see the raw order value.</span>
           </p>
 
@@ -180,7 +169,7 @@ export default function HomePage() {
             <Button variant="secondary" size="xl" onClick={()=>router.push("/demo")}>WATCH 3-MIN DEMO ▸</Button>
           </div>
           <p className="font-mono text-[9px] tracking-[0.12em] text-t4">
-            NO CREDIT CARD &nbsp;·&nbsp; 14-DAY TRIAL &nbsp;·&nbsp; SOC2 TYPE II &nbsp;·&nbsp; GDPR &amp; CCPA
+            NO CREDIT CARD &nbsp;·&nbsp; 14-DAY TRIAL &nbsp;·&nbsp; SOC 2 IN PROGRESS &nbsp;·&nbsp; GDPR &amp; CCPA
           </p>
         </div>
 
@@ -191,10 +180,10 @@ export default function HomePage() {
             <div className="flex gap-1.5">
               {[K.danger,K.warn,K.pos].map((c,i)=><div key={i} style={{width:11,height:11,borderRadius:"50%",background:c,opacity:0.75}}/>)}
             </div>
-            <span className="flex-1 text-center font-mono text-[10px] text-t4 truncate">kiki-capi-gateway<span className="hidden sm:inline"> &nbsp;·&nbsp; production &nbsp;·&nbsp; tenant: acme-corp</span></span>
+            <span className="flex-1 text-center font-mono text-[10px] text-t4 truncate">kiki-capi-gateway<span className="hidden sm:inline"> &nbsp;·&nbsp; sample event stream</span></span>
             <div className="flex items-center gap-[5px]">
               <span className="animate-kdls-pulse" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-              <span className="font-mono text-[9px] text-kmint">1.2M events/day</span>
+              <span className="font-mono text-[9px] text-kmint">illustrative</span>
             </div>
           </div>
           {/* Column headers */}
@@ -216,8 +205,6 @@ export default function HomePage() {
                     <span style={{color:K.t4}}> → </span>
                     <span style={{color:K.mint,fontWeight:700}}>ltv_signal=639.20</span>
                     <span style={{color:K.t4}}>{"  "}</span>
-                    <span style={{color:K.mint}}>uplift=</span><span style={{color:K.mint,fontWeight:700}}>4.29×</span>
-                    <span style={{color:K.t4}}>{"  "}</span>
                     <span style={{color:K.gold}}>confidence=0.94</span>
                   </span>
                 ):(
@@ -231,7 +218,7 @@ export default function HomePage() {
 
         {/* Stats bar */}
         <div className="relative z-[1] w-full max-w-[900px] flex flex-wrap overflow-hidden" style={{background:"#050510",border:`1px solid ${K.g800}`,borderTop:`1px solid ${K.g700}`}}>
-          {[["8","PLATFORMS"],["28","SIGNAL FEATURES"],["5","AI AGENTS"],["4","LTV TIERS"],["<100ms","ENRICHMENT P99"]].map(([v,l],i,arr)=>(
+          {[["8","PLATFORMS"],["28","SIGNAL FEATURES"],["6","AI AGENTS"],["4","LTV TIERS"],["<100ms","ENRICHMENT P99"]].map(([v,l],i,arr)=>(
             <div key={l} className="stats-bar-item flex-1 min-w-[calc(33%-1px)] sm:min-w-[140px] py-4 px-[18px] text-center" style={{borderRight:i<arr.length-1?`1px solid ${K.g800}`:"none",borderBottom:`1px solid ${K.g800}`}}>
               <div className="font-mono font-bold text-[clamp(16px,3vw,20px)] text-t1 tracking-[-0.02em]">{v}</div>
               <div className="font-mono text-[8px] tracking-[0.14em] text-t4 mt-[5px]">{l}</div>
@@ -241,7 +228,7 @@ export default function HomePage() {
 
         {/* Platform logos */}
         <div className="relative z-[1] mt-[clamp(20px,4vw,44px)] w-full max-w-[900px] text-center px-2">
-          <p className="font-mono text-[8px] tracking-[0.18em] text-t4 mb-4.5 break-words">ENRICHES SIGNALS ACROSS 14 AD PLATFORMS</p>
+          <p className="font-mono text-[8px] tracking-[0.18em] text-t4 mb-4.5 break-words">ENRICHES SIGNALS ACROSS 8 AD PLATFORMS</p>
           <div className="flex gap-2 flex-wrap justify-center">
             {PLATFORMS.map(p=>{
               const c=PLATFORM_COLORS[p]||K.t3;
@@ -264,7 +251,7 @@ export default function HomePage() {
           <div className="text-center mb-14">
             <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5 break-words">HOW IT WORKS</p>
             <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em] break-words">
-              From conversion to enriched signal in 341ms.
+              From conversion to enriched signal in under 100ms.
             </h2>
           </div>
           <div className="flex flex-col md:flex-row relative gap-8 md:gap-0">
@@ -343,30 +330,6 @@ export default function HomePage() {
                 <p className="font-sans text-[12px] text-t4 leading-[1.5]">{p.sub}</p>
               </div>
             ))}
-          </div>
-          {/* Testimonial rotator */}
-          <div className="p-[44px] bg-g900 rounded-kdls relative overflow-hidden" style={{border:`1px solid ${K.g800}`}}>
-            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,transparent,${K.blue}50,transparent)`}}/>
-            <div className="max-w-[660px] mx-auto text-center">
-              <div className="text-[28px] text-t4 mb-4.5 font-['Georgia,serif'] leading-none">"</div>
-              {TESTIMONIALS.map((t,i)=>(
-                <div key={i} style={{display:i===activeQ?"block":"none"}}>
-                  <p className="font-sans text-[15px] text-t2 leading-[1.82] italic mb-6">"{t.q}"</p>
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center font-mono font-bold text-[11px]" style={{background:K.blueD,color:K.blue4}}>{t.at.split(" ").map(w=>w[0]).join("")}</div>
-                    <div className="text-left">
-                      <p className="font-mono text-[11px] font-bold text-t1">{t.who}</p>
-                      <p className="font-mono text-[10px] text-t4">{t.at}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div className="flex gap-1.5 justify-center mt-5">
-                {TESTIMONIALS.map((_,i)=>(
-                  <button key={i} onClick={()=>setActiveQ(i)} style={{width:i===activeQ?20:6,height:6,borderRadius:3,background:i===activeQ?K.blue:K.g700,border:"none",cursor:"pointer",transition:"all 0.3s"}}/>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -469,7 +432,7 @@ export default function HomePage() {
             <Button variant="secondary" size="xl" onClick={()=>router.push("/contact")}>BOOK ENTERPRISE DEMO</Button>
           </div>
           <div className="flex gap-6 justify-center flex-wrap">
-            {["SOC2 Type II","GDPR & CCPA","14-day free trial","No credit card"].map(t=>(
+            {["SOC 2 in progress","GDPR & CCPA","14-day free trial","No credit card"].map(t=>(
               <div key={t} className="flex items-center gap-1.5">
                 <span className="text-kmint font-mono text-xs">✓</span>
                 <span className="font-mono text-[10px] text-t3 tracking-[0.04em]">{t}</span>

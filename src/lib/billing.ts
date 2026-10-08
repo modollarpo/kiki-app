@@ -483,7 +483,7 @@ export async function handlePaymentFailure(
   const userEmail = user?.email;
   const userName = user?.name || "there";
 
-  const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://kiki.ai"}/dashboard/billing`;
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://keekii.net"}/dashboard/billing`;
 
   switch (attemptCount) {
     case 1:

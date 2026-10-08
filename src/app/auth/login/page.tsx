@@ -102,7 +102,7 @@ export default function LoginPage() {
         <div className="relative w-full max-w-[380px]">
           <Card accent={K.blue}>
             <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">Sign in to your account</p>
-            <p className="font-sans text-[13px] text-t3 mb-[22px]">Enterprise-grade ad platform. SOC2 certified.</p>
+            <p className="font-sans text-[13px] text-t3 mb-[22px]">Enterprise-grade ad platform. GDPR & CCPA compliant.</p>
 
             {authError && (
               <div className="px-3.5 py-2.5 rounded-sm mb-4" style={{ background:K.dangerT, border:`1px solid ${K.danger}40` }}>
@@ -126,7 +126,7 @@ export default function LoginPage() {
             </div>
             <Button full size="lg" loading={authLoading} onClick={handleLogin}>Sign In →</Button>
             <div className="my-3 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
-            <Button full variant="ghost" size="sm" onClick={() => { setEmail("alex@acmecorp.com"); setPassword("password123"); setTimeout(() => handleLogin(), 100); }} style={{ marginBottom: 6 }}>🚀 Demo Login (alex@acmecorp.com)</Button>
+            <Button full variant="ghost" size="sm" onClick={() => { setEmail("demo@keekii.net"); setPassword("password123"); setTimeout(() => handleLogin(), 100); }} style={{ marginBottom: 6 }}>🚀 Demo Login (demo@keekii.net)</Button>
             <div className="my-3 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
             <Button full variant="secondary" size="md" onClick={() => setScreen("sso")} icon={<span>⬡</span>}>Sign in with SSO</Button>
             <p className="font-mono text-[10px] text-t4 text-center mt-4">
@@ -167,7 +167,7 @@ export default function LoginPage() {
           <Card accent={K.oaas}>
             <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">Single Sign-On</p>
             <p className="font-sans text-[13px] text-t3 mb-[22px]">Enter your organization&apos;s SSO domain</p>
-            <Input placeholder="acmecorp" suffix=".kiki.ai/sso" mono hint="Your IT admin can provide the SSO subdomain" className="mb-4" />
+            <Input placeholder="yourbrand" suffix=".keekii.net/sso" mono hint="Your IT admin can provide the SSO subdomain" className="mb-4" />
             <Button full variant="violet" size="lg" onClick={handleSsoLogin}>Continue with SSO →</Button>
             <div className="my-4 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
             <div className="flex gap-2.5">

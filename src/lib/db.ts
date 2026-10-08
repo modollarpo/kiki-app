@@ -1205,8 +1205,8 @@ async function seedIfEmpty(db: PgDb) {
     INSERT INTO users (id, email, name, password, role, tenant_id, tenant_name, plan, avatar_initials, trial_ends_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  await insertUser.run("u1", "alex@acmecorp.com", "Alex Chen", hashPassword("password123"), "advertiser", "t1", "Acme Corp", "growth", "AC", trialEnd);
-  await insertUser.run("u2", "admin@kiki.ai", "Admin User", hashPassword("admin123"), "superadmin", "t2", "KIKI Inc.", "enterprise", "AU", trialEnd);
+  await insertUser.run("u1", "demo@keekii.net", "Demo User", hashPassword("password123"), "advertiser", "t1", "Demo Workspace", "growth", "DU", trialEnd);
+  await insertUser.run("u2", "admin@keekii.net", "Admin User", hashPassword("admin123"), "superadmin", "t2", "KIKI Inc.", "enterprise", "AU", trialEnd);
 
   const insertCampaign = db.prepare(`
     INSERT INTO campaigns (id, tenant_id, name, platform, status, roas, spend, budget, impressions, clicks, conversions, cpa, ltv_predicted)

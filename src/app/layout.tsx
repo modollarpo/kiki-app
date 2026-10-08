@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export const metadata: Metadata = {
   ...homeMetadata,
-  metadataBase: new URL("https://kiki.ai"),
+  metadataBase: new URL("https://keekii.net"),
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -55,8 +55,8 @@ const JSONLD = JSON.stringify({
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web, iOS, Android",
   description:
-    "Autonomous LTV Campaign Execution Platform. Enriches ad conversion signals with 90-day predicted customer LTV before delivery to Meta, Google, TikTok, and 12 other platforms.",
-  url: "https://kiki.ai",
+    "Autonomous LTV Campaign Execution Platform. Enriches ad conversion signals with 90-day predicted customer LTV before delivery to Meta, Google, TikTok, and 5 other ad platforms.",
+  url: "https://keekii.net",
   offers: {
     "@type": "AggregateOffer",
     lowPrice: "690",
@@ -64,19 +64,14 @@ const JSONLD = JSON.stringify({
     priceCurrency: "USD",
     offerCount: 3,
   },
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.9",
-    reviewCount: "847",
-  },
   publisher: {
     "@type": "Organization",
     name: "KIKI Agent",
     alternateName: "STOREGRILL INC LTD (Company No. 14581073)",
-    url: "https://kiki.ai",
+    url: "https://keekii.net",
     logo: {
       "@type": "ImageObject",
-      url: "https://kiki.ai/icons/icon-192.png",
+      url: "https://keekii.net/icons/icon-192.png",
       width: 192,
       height: 192,
     },

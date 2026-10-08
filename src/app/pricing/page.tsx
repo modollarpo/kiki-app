@@ -10,8 +10,8 @@ const FAQ = [
   { q:"Is there a free trial?", a:"Yes — all plans start with a 14-day free trial, no credit card required. You get full access to all Growth plan features." },
   { q:"What counts as a signal event?", a:"Any conversion event processed through the KIKI CAPI pipeline: purchases, leads, form fills, trial signups, and custom events." },
   { q:"Can I change plans later?", a:"Yes, upgrade or downgrade anytime. Upgrades are prorated immediately; downgrades take effect at the next billing cycle." },
-  { q:"Is my data secure?", a:"KIKI is SOC2 Type II certified and GDPR/CCPA compliant. Data encrypted at rest and in transit. We never share your data with third parties." },
-  { q:"How does OaaS pricing work?", a:"OaaS is performance-based: a 1.2–1.5% management fee on the ad spend we optimize, plus a 5% bonus on incremental ROAS uplift above your baseline. No uplift, no bonus." },
+  { q:"Is my data secure?", a:"KIKI is GDPR/CCPA compliant, with a SOC 2 Type II audit programme in progress. Data encrypted at rest and in transit. We never share your data with third parties." },
+  { q:"How does OaaS pricing work?", a:"OaaS is performance-based: a 1.35% management fee on the ad spend we optimize, plus a 5% bonus on incremental ROAS uplift above your baseline. No uplift, no bonus." },
 ];
 
 function priceLabel(plan: PlanDisplay): string {

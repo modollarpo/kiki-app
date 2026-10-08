@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://kiki.ai";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://keekii.net";
 
 // Public, indexable marketing & legal routes (dashboard/auth routes are
 // excluded — they are gated and set to noindex in their layout metadata).

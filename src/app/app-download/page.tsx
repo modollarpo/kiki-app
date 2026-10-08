@@ -45,27 +45,29 @@ export default function AppDownloadPage() {
 
             {platform === "ios" && (
               <div>
-                <div className="flex gap-3 mb-4 flex-wrap">
-                  <Button size="lg" onClick={() => window.open("https://apps.apple.com/app/id6478912345", "_blank")}>📱 Download on App Store</Button>
+                <div className="p-4 rounded-sm mb-4" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
+                  <p className="font-mono font-bold text-[12px] mb-1.5" style={{ color:K.blue4 }}>iOS app — coming soon</p>
+                  <p className="font-sans text-[13px] text-t2">Until it ships, add the web app to your Home Screen: open <span style={{color:K.blue4}}>keekii.net</span> in Safari, tap Share, then &quot;Add to Home Screen&quot;.</p>
                 </div>
-                <p className="font-mono text-[10px] text-t4">iOS 16+ · iPhone & iPad · 28MB · Free</p>
+                <Button size="lg" onClick={() => { window.location.href = "/dashboard"; }}>Open Web App →</Button>
               </div>
             )}
             {platform === "android" && (
               <div>
-                <div className="flex gap-3 mb-4 flex-wrap">
-                  <Button size="lg" onClick={() => window.open("https://play.google.com/store/apps/details?id=com.kiki.agent", "_blank")}>▶ Get on Google Play</Button>
+                <div className="p-4 rounded-sm mb-4" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
+                  <p className="font-mono font-bold text-[12px] mb-1.5" style={{ color:K.blue4 }}>Android app — coming soon</p>
+                  <p className="font-sans text-[13px] text-t2">Until it ships, use the web app in Chrome and tap &quot;Install app&quot; from the menu.</p>
                 </div>
-                <p className="font-mono text-[10px] text-t4">Android 11+ · 22MB · Free</p>
+                <Button size="lg" onClick={() => { window.location.href = "/dashboard"; }}>Open Web App →</Button>
               </div>
             )}
             {platform === "pwa" && (
               <div>
                 <div className="p-4 rounded-sm mb-4" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
                   <p className="font-mono font-bold text-[12px] mb-1.5" style={{ color:K.blue4 }}>Install as Progressive Web App</p>
-                  <p className="font-sans text-[13px] text-t2">Visit <span style={{color:K.blue4}}>app.kiki.ai</span> in your browser, then tap &quot;Add to Home Screen&quot; to install. Works offline with background sync.</p>
+                  <p className="font-sans text-[13px] text-t2">Visit <span style={{color:K.blue4}}>keekii.net/dashboard</span> in your browser, then tap &quot;Add to Home Screen&quot; to install. Works offline with background sync.</p>
                 </div>
-                <Button size="lg" onClick={() => window.open("https://app.kiki.ai", "_blank")}>Open Web App →</Button>
+                <Button size="lg" onClick={() => { window.location.href = "/dashboard"; }}>Open Web App →</Button>
               </div>
             )}
           </div>

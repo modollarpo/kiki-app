@@ -8,13 +8,13 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 # Scene scripts matched to timing (seconds available for each scene)
 SCENES = [
-    ("problem", 7, "Sixty-five percent of ad spend is wasted. Manual bidding, scattered data, zero visibility. Your competitors are already using AI. Are you?"),
+    ("problem", 7, "Manual bidding. Scattered data. Zero visibility. Wasted spend, missed conversions. Your competitors are already using AI. Are you?"),
     ("logo", 4, "Introducing KIKI Agent."),
     ("dashboard", 15, "KIKI Agent unifies your entire ad pipeline into one intelligent dashboard. Real-time signals from Meta, Google, TikTok, LinkedIn, Snapchat, and Pinterest. One view. One system. Total control."),
-    ("agents", 10, "Six autonomous AI agents work around the clock. Bid Optimizer. Creative Analyst. Budget Guardian. Signal Scanner. LTV Predictor. Fraud Detector. Each one specialized. All one team."),
-    ("results", 10, "The results speak for themselves. Three point two X return on ad spend. Forty-one percent lower cost per acquisition. Two point eight X customer lifetime value. From day one."),
-    ("cta", 6, "Start your free trial today. No credit card required. KIKI Agent. Built in England. Built for performance."),
-    ("hold", 8, "KIKI Agent dot net. Your autonomous growth platform."),
+    ("agents", 10, "Six autonomous AI agents work around the clock. Bidding. Creative. Smart Pacing. Signals. OaaS. SyncBrain. Each one specialized. All one team."),
+    ("results", 10, "Every conversion enriched in under fifty milliseconds. Twenty-eight signal features. A ninety-day lifetime value prediction, delivered to every connected platform."),
+    ("cta", 6, "Start your free trial today. No credit card required. KIKI Agent. Built for performance."),
+    ("hold", 8, "KIKI dot net. Your autonomous growth platform."),
 ]
 
 async def generate_scene(name, text):

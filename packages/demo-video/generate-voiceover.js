@@ -8,13 +8,13 @@ const API_VERSION = "2024-10-21";
 
 // Voiceover lines matched to scene timing (seconds)
 const SCENES = [
-  { name: "problem",  seconds: 7,  text: "Sixty-five percent of ad spend is wasted. Manual bidding, scattered data, zero visibility. Your competitors are already using AI. Are you?" },
+  { name: "problem",  seconds: 7,  text: "Manual bidding. Scattered data. Zero visibility. Wasted spend, missed conversions. Your competitors are already using AI. Are you?" },
   { name: "logo",     seconds: 4,  text: "Introducing KIKI Agent." },
   { name: "dashboard", seconds: 15, text: "KIKI Agent unifies your entire ad pipeline into one intelligent dashboard. Real-time signals from Meta, Google, TikTok, LinkedIn, Snapchat, and Pinterest. One view. One system. Total control." },
-  { name: "agents",   seconds: 10, text: "Six autonomous AI agents work around the clock. Bid Optimizer. Creative Analyst. Budget Guardian. Signal Scanner. LTV Predictor. Fraud Detector. Each one specialized. All one team." },
-  { name: "results",  seconds: 10, text: "The results speak for themselves. Three point two X return on ad spend. Forty-one percent lower cost per acquisition. Two point eight X customer lifetime value. From day one." },
-  { name: "cta",      seconds: 6,  text: "Start your free trial today. No credit card required. KIKI Agent. Built in England. Built for performance." },
-  { name: "hold",     seconds: 8,  text: "KIKI Agent dot net. Your autonomous growth platform." },
+  { name: "agents",   seconds: 10, text: "Six autonomous AI agents work around the clock. Bidding. Creative. Smart Pacing. Signals. OaaS. SyncBrain. Each one specialized. All one team." },
+  { name: "results",  seconds: 10, text: "Every conversion enriched in under fifty milliseconds. Twenty-eight signal features. A ninety-day lifetime value prediction, delivered to every connected platform." },
+  { name: "cta",      seconds: 6,  text: "Start your free trial today. No credit card required. KIKI Agent. Built for performance." },
+  { name: "hold",     seconds: 8,  text: "KIKI dot net. Your autonomous growth platform." },
 ];
 
 function ttsRequest(text, voice = "onyx") {

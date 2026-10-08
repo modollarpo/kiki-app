@@ -53,7 +53,7 @@ export default function DeveloperPage() {
 
   const webhooks = recentActions.length > 0
     ? recentActions.slice(0, 3).map(a => ({
-        url: `https://app.kiki.ai/api/webhooks/${a.agentType}`,
+        url: `https://keekii.net/api/webhooks/${a.agentType}`,
         events: [a.actionType],
         status: a.status === "success" ? "active" : "paused",
       }))

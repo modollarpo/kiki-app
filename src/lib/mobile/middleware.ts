@@ -8,8 +8,8 @@ const ALLOWED_ORIGINS = [
   'http://localhost',
   'http://localhost:3000',
   'http://localhost:8080',
-  'https://kiki.ai',
-  'https://app.kiki.ai',
+  'https://keekii.net',
+  'https://www.keekii.net',
 ];
 
 // Rate limiting store (in production, use Redis)

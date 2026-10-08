@@ -31,8 +31,8 @@ const DOCS = [
     category: "Compliance & Security",
     color: K.mint,
     items: [
-      { name:"SOC 2 Type II Report",               desc:"Annual audit by Big 4 firm — NDA required",             pages:84, updated:"Dec 2025",     href:"/contact"           },
-      { name:"Sub-Processor List",                 desc:"Complete list of all data sub-processors",              pages:3,  updated:"Mar 20, 2026", href:"/docs"              },
+      { name:"SOC 2 Type II Status",             desc:"Audit programme in progress — report under NDA once issued", pages:8, updated:"Mar 20, 2026", href:"/contact"           },
+      { name:"Sub-Processor List",                 desc:"Complete list of all data sub-processors",              pages:3,  updated:"Mar 20, 2026", href:"/contact"           },
       { name:"Penetration Test Summary 2026",      desc:"Q1 2026 third-party pen test executive summary",        pages:8,  updated:"Feb 28, 2026", href:"/security"          },
       { name:"GDPR Article 30 RoPA Template",      desc:"Records of Processing Activities template",             pages:10, updated:"Jan 10, 2026", href:"/privacy"           },
     ],
@@ -43,22 +43,19 @@ const DOCS = [
     items: [
       { name:"API Reference v2.4",                 desc:"Full REST API OpenAPI 3.1 specification (YAML/JSON)",   pages:0,  updated:"Mar 20, 2026", href:"/docs"              },
       { name:"SDK Integration Guide",              desc:"JS, Python, Go, PHP SDK installation and usage",        pages:48, updated:"Mar 15, 2026", href:"/docs"              },
-      { name:"CAPI Setup Walkthrough",             desc:"Step-by-step CAPI integration for all 14 platforms",   pages:36, updated:"Mar 10, 2026", href:"/docs"              },
+      { name:"CAPI Setup Walkthrough",             desc:"Step-by-step CAPI integration for all 8 platforms",    pages:36, updated:"Mar 10, 2026", href:"/docs"              },
       { name:"Security Architecture Whitepaper",  desc:"Zero-trust, mTLS, encryption, and audit architecture",  pages:22, updated:"Feb 1, 2026",  href:"/security"          },
     ],
   },
 ];
 
 const SUB_PROCESSORS = [
-  { name:"Microsoft Azure",   purpose:"Cloud infrastructure, compute, storage",                      region:"EU (Frankfurt), US (Virginia), APAC (Singapore)", cert:"ISO 27001, SOC2" },
+  { name:"Microsoft Azure",   purpose:"Cloud infrastructure, compute, storage, database",          region:"EU (Frankfurt), US (Virginia), APAC (Singapore)", cert:"ISO 27001, SOC2" },
   { name:"Stripe",            purpose:"Payment processing, virtual card issuance",                   region:"US, EU",                                          cert:"PCI DSS L1"      },
-  { name:"OpenAI",            purpose:"AI model inference (GPT-4o) — no data retained per DPA",      region:"US",                                              cert:"SOC2 Type II"    },
-  { name:"Anthropic",         purpose:"AI model inference (Claude) — no data retained per DPA",      region:"US",                                              cert:"SOC2 Type II"    },
-  { name:"Google (Vertex AI)",purpose:"AI model inference (Gemini) — no data retained per DPA",      region:"US, EU",                                          cert:"ISO 27001, SOC2" },
-  { name:"Meta (Llama)",      purpose:"On-premise LLaMA model inference — data stays in our infra",  region:"Azure VMs",                                       cert:"N/A (on-prem)"   },
-  { name:"SendGrid",          purpose:"Transactional email delivery",                                 region:"US, EU",                                          cert:"SOC2 Type II"    },
-  { name:"DataDog",           purpose:"Infrastructure monitoring — no customer data",                 region:"EU",                                              cert:"SOC2 Type II"    },
-  { name:"PostHog",           purpose:"Privacy-preserving product analytics",                         region:"EU (self-hosted)",                                 cert:"SOC2 Type II"    },
+  { name:"Azure OpenAI",      purpose:"AI model inference (GPT-4o, GPT-4o-mini) — no data retained per DPA", region:"US",                                       cert:"SOC2 Type II"    },
+  { name:"Groq",              purpose:"AI model inference (Llama 3.1 fast tier) — no data retained per DPA",  region:"US",                                        cert:"—"               },
+  { name:"IPQualityScore",    purpose:"IP and device reputation signals for fraud/IVT scoring",     region:"US",                                              cert:"—"               },
+  { name:"SMTP provider",     purpose:"Transactional email delivery",                                region:"Per provider config",                             cert:"—"               },
 ];
 
 export default function ContractsPage() {
@@ -181,7 +178,7 @@ export default function ContractsPage() {
               </div>
             </div>
             <div className="mt-5 p-4 bg-g900 rounded-kdls" style={{ border: `1px solid ${K.g800}` }}>
-              <p className="font-mono text-[11px] text-t3">To object to a new sub-processor or request the full DPA, email <span className="text-kblue4">privacy@kiki.ai</span></p>
+              <p className="font-mono text-[11px] text-t3">To object to a new sub-processor or request the full DPA, email <span className="text-kblue4">privacy@keekii.net</span></p>
             </div>
           </div>
         )}

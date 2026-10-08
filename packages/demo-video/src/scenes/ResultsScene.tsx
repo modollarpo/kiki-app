@@ -8,18 +8,18 @@ export const ResultsScene: React.FC = () => {
   const { fps } = useVideoConfig();
 
   const metrics = [
-    { label: "ROAS", value: 4.2, from: 1.0, suffix: "×", color: K.mint },
-    { label: "Revenue Lift", value: 187, from: 0, suffix: "%", color: K.blue },
-    { label: "CPA Reduction", value: -42, from: 0, suffix: "%", color: K.mint },
-    { label: "LTV Increase", value: 3.2, from: 1.0, suffix: "×", color: K.oaas },
+    { label: "AI AGENTS", value: 6, from: 0, suffix: "", color: K.blue },
+    { label: "SIGNAL FEATURES", value: 28, from: 0, suffix: "", color: K.mint },
+    { label: "AD PLATFORMS", value: 8, from: 0, suffix: "", color: K.teal },
+    { label: "LTV HORIZON", value: 90, from: 0, suffix: "d", color: K.oaas },
   ];
 
   return (
     <AbsoluteFill style={{ background: K.g950, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center", zIndex: 1, width: 1600 }}>
         <div style={{ opacity: interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" }), marginBottom: 60 }}>
-          <div style={{ fontFamily: "monospace", color: K.mint, fontSize: 14, letterSpacing: 4, marginBottom: 12 }}>THE RESULTS</div>
-          <div style={{ fontFamily: "sans-serif", color: K.t1, fontSize: 52, fontWeight: 800 }}>Metrics that <span style={{ color: K.mint }}>speak for themselves.</span></div>
+          <div style={{ fontFamily: "monospace", color: K.mint, fontSize: 14, letterSpacing: 4, marginBottom: 12 }}>THE ENRICHMENT</div>
+          <div style={{ fontFamily: "sans-serif", color: K.t1, fontSize: 52, fontWeight: 800 }}>A raw order becomes an <span style={{ color: K.mint }}>LTV signal.</span></div>
         </div>
 
         <div style={{ display: "flex", gap: 32, justifyContent: "center", marginBottom: 60 }}>
@@ -37,7 +37,7 @@ export const ResultsScene: React.FC = () => {
               }}>
                 <div style={{ fontFamily: "sans-serif", color: K.t3, fontSize: 14, marginBottom: 12, letterSpacing: 2 }}>{m.label}</div>
                 <div style={{ fontFamily: "monospace", color: m.color, fontSize: 56, fontWeight: 900 }}>
-                  {currentValue > 0 && m.value > 0 ? "+" : ""}{currentValue.toFixed(m.value % 1 === 0 ? 0 : 1)}{m.suffix}
+                  {currentValue.toFixed(0)}{m.suffix}
                 </div>
               </div>
             );
@@ -46,15 +46,15 @@ export const ResultsScene: React.FC = () => {
 
         <div style={{ opacity: interpolate(frame, [200, 240], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }), display: "flex", gap: 40, justifyContent: "center", alignItems: "center" }}>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontFamily: "monospace", color: K.t3, fontSize: 13, marginBottom: 8 }}>BEFORE KIKI</div>
-            <div style={{ fontFamily: "monospace", color: K.danger, fontSize: 36, fontWeight: 800 }}>1.2× ROAS</div>
+            <div style={{ fontFamily: "monospace", color: K.t3, fontSize: 13, marginBottom: 8 }}>RAW ORDER</div>
+            <div style={{ fontFamily: "monospace", color: K.danger, fontSize: 36, fontWeight: 800 }}>$149</div>
           </div>
           <div style={{ width: 80, height: 80, borderRadius: "50%", background: `${K.mint}20`, display: "flex", alignItems: "center", justifyContent: "center", border: `2px solid ${K.mint}40` }}>
             <div style={{ fontFamily: "sans-serif", color: K.mint, fontSize: 32 }}>→</div>
           </div>
           <div>
-            <div style={{ fontFamily: "monospace", color: K.t3, fontSize: 13, marginBottom: 8 }}>AFTER KIKI</div>
-            <div style={{ fontFamily: "monospace", color: K.mint, fontSize: 36, fontWeight: 800 }}>4.2× ROAS</div>
+            <div style={{ fontFamily: "monospace", color: K.t3, fontSize: 13, marginBottom: 8 }}>ENRICHED SIGNAL</div>
+            <div style={{ fontFamily: "monospace", color: K.mint, fontSize: 36, fontWeight: 800 }}>$639 LTV</div>
           </div>
         </div>
       </div>

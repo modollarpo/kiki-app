@@ -5,7 +5,7 @@ import { Badge, Button, Card } from "@/components/ui";
 import { downloadSimplePDF } from "@/lib/pdf";
 
 const CONTROLS = [
-  {icon:"🔐",title:"SOC 2 Type II",desc:"Independently audited annually. Full report available under NDA.",color:K.mint},
+  {icon:"🔐",title:"SOC 2 Type II",desc:"Audit programme in progress. Report available under NDA once issued.",color:K.mint},
   {icon:"🔒",title:"End-to-end Encryption",desc:"TLS 1.3 in transit. AES-256 at rest. Secrets in Azure Key Vault.",color:K.blue},
   {icon:"⚡",title:"Zero-Trust Architecture",desc:"mTLS between microservices. RBAC everywhere. Least-privilege service accounts.",color:K.oaas},
   {icon:"🌍",title:"GDPR & CCPA Compliant",desc:"Data residency in EU, US, APAC. Right-to-deletion within 72 hours.",color:K.teal},
@@ -42,7 +42,7 @@ export default function SecurityPage() {
               <Button variant="secondary" size="md" onClick={() => downloadSimplePDF("kiki-security-whitepaper.pdf", "Security Whitepaper", [
   "KIKI Agent (STOREGRILL INC LTD) — Security Architecture Whitepaper",
   "Version 1.0 · Effective March 2026 · Classification: Confidential",
-  "1. SOC 2 Type II: Independently audited annually by a Big 4 accounting firm. Full report available under NDA upon request.",
+  "1. SOC 2 Type II: Audit programme in progress — the report will be available under NDA once issued. Interim control documentation available on request.",
   "2. End-to-End Encryption: TLS 1.3 for data in transit. AES-256-GCM for data at rest. All secrets managed via Azure Key Vault with HSM backing.",
   "3. Zero-Trust Architecture: mTLS between all microservices. Role-based access control (RBAC) enforced at every layer. Least-privilege service accounts with automatic credential rotation.",
   "4. GDPR & CCPA Compliant: Data residency options in EU (Frankfurt), US (Virginia), and APAC (Singapore). Right-to-deletion honored within 72 hours. Data Processing Addendum available for all customers.",
@@ -50,7 +50,7 @@ export default function SecurityPage() {
   "6. Immutable Audit Logs: Every system action is logged with a cryptographic hash chain. Tamper-evident design ensures log integrity. Logs retained for 7 years.",
   "7. Incident Response: Documented incident response plan with <15 minute P0 response time. 24/7 on-call security team. Post-incident reviews published within 48 hours.",
 ].join("\n\n"))}>Download PDF</Button>
-              <Button variant="mint" size="md" onClick={() => window.open("mailto:security@kiki.ai?subject=SOC2%20Report%20Request", "_blank")}>Request SOC2 Report</Button>
+              <Button variant="mint" size="md" onClick={() => window.open("mailto:security@keekii.net?subject=SOC%202%20Programme%20Status%20Request", "_blank")}>Request SOC 2 Status</Button>
             </div>
           </div>
         </Card>
