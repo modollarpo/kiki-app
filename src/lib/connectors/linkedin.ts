@@ -334,6 +334,102 @@ export class LinkedInConnector extends BaseConnector {
     };
   }
 
+  // ── Campaign Write Operations ──────────────────────────
+
+  private normalizeStatus(status: string): string {
+    const s = status.toLowerCase();
+    return s === "paused" || s === "stopped" ? "PAUSED" : "ACTIVE";
+  }
+
+  async updateCampaign(
+    accessToken: string,
+    campaignId: string,
+    updates: { dailyBudget?: number; status?: string; name?: string }
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    try {
+      // Resolve the account currency from the existing campaign so budget/bid
+      // patches can include a valid currencyCode.
+      const current = await this.get<{
+        id: string;
+        currency?: string;
+        dailyBudget?: { amount: string; currencyCode: string };
+      }>(`/adCampaignsV2:${campaignId}`, accessToken);
+      if (!current.success || !current.data?.id) {
+        return { success: false, error: current.error || "Campaign not found", latencyMs: current.latencyMs };
+      }
+
+      const patch: Record<string, unknown> = {};
+      if (updates.status !== undefined) {
+        patch.status = this.normalizeStatus(updates.status);
+      }
+      if (updates.name !== undefined) {
+        patch.name = updates.name;
+      }
+      if (updates.dailyBudget !== undefined) {
+        patch.dailyBudget = {
+          amount: updates.dailyBudget.toFixed(2),
+          currencyCode: current.data.dailyBudget?.currencyCode || current.data.currency || "",
+        };
+      }
+
+      if (Object.keys(patch).length === 0) {
+        return { success: true, data: { id: campaignId }, latencyMs: 0 };
+      }
+
+      const result = await this.post<{ id: string }>(
+        `/adCampaignsV2/${campaignId}`,
+        accessToken,
+        { patch: { $set: patch } }
+      );
+      return { success: result.success, data: result.data || { id: campaignId }, latencyMs: result.latencyMs, error: result.error, httpStatus: result.httpStatus };
+    } catch (error) {
+      return { success: false, error: String(error), latencyMs: 0 };
+    }
+  }
+
+  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { status: "PAUSED" });
+  }
+
+  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { status: "ACTIVE" });
+  }
+
+  async setBid(
+    accessToken: string,
+    campaignId: string,
+    bidAmount: number
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    try {
+      const current = await this.get<{
+        id: string;
+        currency?: string;
+        dailyBudget?: { amount: string; currencyCode: string };
+      }>(`/adCampaignsV2:${campaignId}`, accessToken);
+      if (!current.success || !current.data?.id) {
+        return { success: false, error: current.error || "Campaign not found", latencyMs: current.latencyMs };
+      }
+
+      const result = await this.post<{ id: string }>(
+        `/adCampaignsV2/${campaignId}`,
+        accessToken,
+        {
+          patch: {
+            $set: {
+              unitCost: {
+                amount: bidAmount.toFixed(2),
+                currencyCode: current.data.dailyBudget?.currencyCode || current.data.currency || "",
+              },
+            },
+          },
+        }
+      );
+      return { success: result.success, data: result.data || { id: campaignId }, latencyMs: result.latencyMs, error: result.error, httpStatus: result.httpStatus };
+    } catch (error) {
+      return { success: false, error: String(error), latencyMs: 0 };
+    }
+  }
+
   // ── CAPI (Pixel-only) ──────────────────────────────────
 
   async sendConversion(

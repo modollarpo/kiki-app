@@ -333,6 +333,97 @@ export class SnapConnector extends BaseConnector {
     };
   }
 
+  // ── Campaign Write Operations ───────────────────────────
+
+  private normalizeStatus(status: string): string {
+    const s = status.toLowerCase();
+    return s === "active" ? "ACTIVE" : "PAUSED";
+  }
+
+  async updateCampaign(
+    accessToken: string,
+    campaignId: string,
+    updates: { dailyBudget?: number; status?: string; name?: string }
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    try {
+      // Resolve the owning ad account from the campaign object.
+      const current = await this.get<{
+        campaign: { id: string; ad_account_id: string };
+      }>(`/campaigns/${campaignId}`, accessToken);
+      if (!current.success || !current.data?.campaign?.id) {
+        return { success: false, error: current.error || "Campaign not found", latencyMs: current.latencyMs };
+      }
+
+      const campaign: Record<string, unknown> = { id: campaignId };
+      if (updates.status !== undefined) {
+        campaign.status = this.normalizeStatus(updates.status);
+      }
+      if (updates.name !== undefined) {
+        campaign.name = updates.name;
+      }
+      if (updates.dailyBudget !== undefined) {
+        campaign.daily_budget_micro = Math.round(updates.dailyBudget * 1_000_000);
+      }
+
+      const result = await this.put<{ request_status: string }>(
+        `/adaccounts/${current.data.campaign.ad_account_id}/campaigns`,
+        accessToken,
+        { campaigns: [campaign] }
+      );
+
+      return {
+        success: result.success,
+        data: { id: campaignId },
+        latencyMs: result.latencyMs,
+        error: result.error,
+        httpStatus: result.httpStatus,
+      };
+    } catch (error) {
+      return { success: false, error: String(error), latencyMs: 0 };
+    }
+  }
+
+  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { status: "PAUSED" });
+  }
+
+  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<{ id: string }>> {
+    return this.updateCampaign(accessToken, campaignId, { status: "ACTIVE" });
+  }
+
+  async setBid(
+    accessToken: string,
+    adSquadId: string,
+    bidAmount: number
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    try {
+      // Bids live on ad squads; resolve the owning ad account first.
+      const current = await this.get<{
+        adsquads: Array<{ id: string; ad_account_id: string }>;
+      }>(`/adsquads/${adSquadId}`, accessToken);
+      const squad = current.success && current.data?.adsquads?.[0];
+      if (!squad) {
+        return { success: false, error: current.error || "Ad squad not found", latencyMs: current.latencyMs };
+      }
+
+      const result = await this.put<{ request_status: string }>(
+        `/adaccounts/${squad.ad_account_id}/adsquads`,
+        accessToken,
+        { adsquads: [{ id: adSquadId, bid_micro: Math.round(bidAmount * 1_000_000) }] }
+      );
+
+      return {
+        success: result.success,
+        data: { id: adSquadId },
+        latencyMs: result.latencyMs,
+        error: result.error,
+        httpStatus: result.httpStatus,
+      };
+    } catch (error) {
+      return { success: false, error: String(error), latencyMs: 0 };
+    }
+  }
+
   // ── CAPI ───────────────────────────────────────────────
 
   async sendConversion(

@@ -360,6 +360,10 @@ export abstract class BaseConnector {
     return this.request<T>("PUT", path, accessToken, body);
   }
 
+  protected async patch<T>(path: string, accessToken: string, body: any): Promise<PlatformApiResponse<T>> {
+    return this.request<T>("PATCH", path, accessToken, body);
+  }
+
   protected async delete<T>(path: string, accessToken: string): Promise<PlatformApiResponse<T>> {
     return this.request<T>("DELETE", path, accessToken);
   }

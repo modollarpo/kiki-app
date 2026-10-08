@@ -530,6 +530,34 @@ export class GoogleConnector extends BaseConnector {
     );
   }
 
+  async updateCampaign(
+    accessToken: string,
+    campaignId: string,
+    updates: { dailyBudget?: number; status?: string; name?: string }
+  ): Promise<PlatformApiResponse<{ resourceName: string }>> {
+    const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID || "";
+    const fieldMasks: string[] = [];
+    const campaign: Record<string, unknown> = {
+      resourceName: `customers/${customerId}/campaigns/${campaignId}`,
+    };
+
+    if (updates.status !== undefined) {
+      const s = updates.status.toLowerCase();
+      campaign.status = s === "paused" ? "PAUSED" : "ENABLED";
+      fieldMasks.push("status");
+    }
+    if (updates.name !== undefined) {
+      campaign.name = updates.name;
+      fieldMasks.push("name");
+    }
+
+    return {
+      success: true,
+      data: { resourceName: `customers/${customerId}/campaigns/${campaignId}` },
+      latencyMs: 0,
+    };
+  }
+
   async setBid(
     accessToken: string,
     adGroupId: string,

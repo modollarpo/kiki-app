@@ -26,6 +26,12 @@
       "@/*": [
         "./src/*"
       ],
+      "kafkajs": [
+        "./packages/shared/node_modules/kafkajs/types/index.d.ts"
+      ],
+      "kafkajs/*": [
+        "./packages/shared/node_modules/kafkajs/types/*"
+      ],
       "next": [
         "./types/next-shims.d.ts"
       ],
