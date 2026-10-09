@@ -1,0 +1,1 @@
+declare module 'kafkajs' { export class Kafka { constructor(opts:any); producer(opts?:any):any; consumer(opts:any):any } export interface KafkaConfig { clientId:string; brokers:string[]; retry?:any } }
