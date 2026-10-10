@@ -19,6 +19,16 @@ param opencodeSecret string = ''
 @secure()
 param databaseUrl string = ''
 
+@description('If true, provision an Azure Database for PostgreSQL Flexible Server and derive DATABASE_URL from it (ignored when databaseUrl is set).')
+param provisionPostgres bool = false
+
+@description('PostgreSQL admin login (used when provisionPostgres is true)')
+param pgAdminUser string = 'kikiadmin'
+
+@description('PostgreSQL admin password (required when provisionPostgres is true). Use URL-safe characters only.')
+@secure()
+param pgAdminPassword string = ''
+
 @description('Azure Speech Services API key (leave empty to use Groq-only STT)')
 @secure()
 param azureSpeechKey string = ''
@@ -65,6 +75,11 @@ var storageName = replace('${baseName}store${uniqueSuffix}', '-', '')
 var fileShareName = 'kikidata'
 var openAiName = replace('${baseName}openai${uniqueSuffix}', '-', '')
 var containerAppEnvStorageName = 'kikidata'
+var pgName = '${baseName}-pg-${uniqueSuffix}'
+var pgUrl = 'postgresql://${pgAdminUser}:${pgAdminPassword}@${pgName}.postgres.database.azure.com:5432/kiki?sslmode=require'
+// Prefer an explicit connection string; otherwise derive one from a provisioned
+// PostgreSQL server; otherwise leave empty (app falls back to local SQLite).
+var databaseUrlResolved = !empty(databaseUrl) ? databaseUrl : (provisionPostgres ? pgUrl : '')
 
 // Deterministic, sufficiently-long secrets derived from baseName so a redeploy
 // without explicit params does not fall back to the 4-char "kiki" default.
@@ -139,6 +154,47 @@ resource envStorage 'Microsoft.App/managedEnvironments/storages@2024-10-02-previ
   }
 }
 
+// -- PostgreSQL Flexible Server (durable production database) ----
+// SQLite on the Azure Files share is NOT reliable (SMB lock semantics), so
+// production should use a managed PostgreSQL. Opt in with provisionPostgres.
+resource pgServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = if (provisionPostgres) {
+  name: pgName
+  location: location
+  sku: {
+    name: 'Standard_B1ms'
+    tier: 'Burstable'
+  }
+  properties: {
+    version: '16'
+    administratorLogin: pgAdminUser
+    administratorLoginPassword: pgAdminPassword
+    storage: {
+      storageSizeGB: 32
+    }
+    authConfig: {
+      activeDirectoryAuth: 'Disabled'
+      passwordAuth: 'Enabled'
+    }
+    network: {
+      publicNetworkAccess: 'Enabled'
+    }
+  }
+}
+
+resource pgFirewall 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = if (provisionPostgres) {
+  parent: pgServer
+  name: 'AllowAzureServices'
+  properties: {
+    startIpAddress: '0.0.0.0'
+    endIpAddress: '0.0.0.0'
+  }
+}
+
+resource pgDatabase 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-08-01' = if (provisionPostgres) {
+  parent: pgServer
+  name: 'kiki'
+}
+
 // -- Azure OpenAI ------------------------------------------
 resource openAi 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   name: openAiName
@@ -178,7 +234,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
           { name: 'opencode-secret', value: opencodeSecretResolved }
         ],
         empty(groqApiKey) ? [] : [{ name: 'groq-api-key', value: groqApiKey }],
-        empty(databaseUrl) ? [] : [{ name: 'db-url', value: databaseUrl }],
+        empty(databaseUrlResolved) ? [] : [{ name: 'db-url', value: databaseUrlResolved }],
         empty(azureSpeechKey) ? [] : [{ name: 'azure-speech-key', value: azureSpeechKey }],
         empty(azureTranslatorKey) ? [] : [{ name: 'azure-translator-key', value: azureTranslatorKey }],
         empty(googleOAuthClientId) ? [] : [{ name: 'google-oauth-client-id', value: googleOAuthClientId }],
@@ -231,7 +287,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
               { name: 'SMTP_FROM_NAME', value: smtpFromName }
             ],
             empty(groqApiKey) ? [] : [{ name: 'GROQ_API_KEY', secretRef: 'groq-api-key' }],
-            empty(databaseUrl) ? [] : [{ name: 'DATABASE_URL', secretRef: 'db-url' }],
+            empty(databaseUrlResolved) ? [] : [{ name: 'DATABASE_URL', secretRef: 'db-url' }],
             empty(azureSpeechKey) ? [] : [{ name: 'AZURE_SPEECH_KEY', secretRef: 'azure-speech-key' }],
             empty(azureTranslatorKey) ? [] : [{ name: 'AZURE_TRANSLATOR_KEY', secretRef: 'azure-translator-key' }],
             empty(googleOAuthClientId) ? [] : [{ name: 'GOOGLE_OAUTH_CLIENT_ID', secretRef: 'google-oauth-client-id' }],
