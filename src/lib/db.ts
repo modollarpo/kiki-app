@@ -188,11 +188,13 @@ async function createSqliteDb(): Promise<SqliteDb | MemoryDb> {
     );
     return createMemoryDb();
   }
-  // `timeout` sets the SQLite busy timeout so concurrent writes on the Azure
-  // Files (SMB) share wait for the lock instead of failing with
-  // "database is locked". WAL is unsafe on SMB, so prefer a rollback journal.
+  // Azure Files (SMB) does not implement POSIX advisory locks correctly, so
+  // SQLite's default per-transaction locking fails with "database is locked".
+  // EXCLUSIVE locking mode acquires the lock once and holds it for the whole
+  // connection lifetime, which works on SMB (requires a single replica/writer).
   const raw = new DatabaseSync(file, { timeout: 15000 } as never);
   for (const pragma of [
+    "PRAGMA locking_mode = EXCLUSIVE;",
     "PRAGMA busy_timeout = 15000;",
     "PRAGMA journal_mode = DELETE;",
     "PRAGMA synchronous = NORMAL;",
