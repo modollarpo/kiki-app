@@ -90,7 +90,7 @@ export default function OAuthCallbackPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: "'JetBrains Mono',monospace",
+        fontFamily: "'Inter',system-ui,sans-serif",
         padding: 24,
       }}
     >
@@ -108,7 +108,7 @@ export default function OAuthCallbackPage() {
         {/* Platform label */}
         <p
           style={{
-            fontFamily: "'JetBrains Mono',monospace",
+            fontFamily: "'Inter',system-ui,sans-serif",
             fontSize: 11,
             letterSpacing: "0.14em",
             color: K.t3,
