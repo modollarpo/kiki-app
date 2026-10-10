@@ -44,7 +44,7 @@ const config: Config = {
         kcardhover:  "var(--card-hover)",
       },
       fontFamily: {
-        mono:    ["JetBrains Mono", "Courier New", "monospace"],
+        mono:    ["Inter", "JetBrains Mono", "monospace"],
         sans:    ["Inter", "system-ui", "sans-serif"],
       },
       borderRadius: {
