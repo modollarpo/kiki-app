@@ -189,7 +189,13 @@ async function createSqliteDb(): Promise<SqliteDb | MemoryDb> {
     return createMemoryDb();
   }
   const raw = new DatabaseSync(file);
-  raw.exec("PRAGMA journal_mode = WAL;");
+  // WAL is unsafe on network filesystems (Azure Files / SMB); use a rollback
+  // journal so the file share stays consistent across container revisions.
+  try {
+    raw.exec("PRAGMA journal_mode = DELETE;");
+  } catch {
+    raw.exec("PRAGMA journal_mode = WAL;");
+  }
   raw.exec("PRAGMA foreign_keys = OFF;");
   return new SqliteDb(raw);
 }
