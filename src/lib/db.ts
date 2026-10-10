@@ -103,8 +103,11 @@ class PgDb {
   async exec(sql: string): Promise<void> {
     const statements = sql
       .split(";")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !/^--/.test(s));
+      // Strip whole-line `--` comments instead of dropping the entire chunk:
+      // a comment immediately before a statement (e.g. the impression_log
+      // table) must not cause the following CREATE TABLE to be skipped.
+      .map((s) => s.replace(/^[ \t]*--.*$/gm, "").trim())
+      .filter((s) => s.length > 0);
     for (const s of statements) {
       await pool.query(s);
     }
