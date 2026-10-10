@@ -188,15 +188,22 @@ async function createSqliteDb(): Promise<SqliteDb | MemoryDb> {
     );
     return createMemoryDb();
   }
-  const raw = new DatabaseSync(file);
-  // WAL is unsafe on network filesystems (Azure Files / SMB); use a rollback
-  // journal so the file share stays consistent across container revisions.
-  try {
-    raw.exec("PRAGMA journal_mode = DELETE;");
-  } catch {
-    raw.exec("PRAGMA journal_mode = WAL;");
+  // `timeout` sets the SQLite busy timeout so concurrent writes on the Azure
+  // Files (SMB) share wait for the lock instead of failing with
+  // "database is locked". WAL is unsafe on SMB, so prefer a rollback journal.
+  const raw = new DatabaseSync(file, { timeout: 15000 } as never);
+  for (const pragma of [
+    "PRAGMA busy_timeout = 15000;",
+    "PRAGMA journal_mode = DELETE;",
+    "PRAGMA synchronous = NORMAL;",
+    "PRAGMA foreign_keys = OFF;",
+  ]) {
+    try {
+      raw.exec(pragma);
+    } catch (e) {
+      logger.warn("[DB] PRAGMA failed (" + pragma + "): " + (e as Error).message.split("\n")[0]);
+    }
   }
-  raw.exec("PRAGMA foreign_keys = OFF;");
   return new SqliteDb(raw);
 }
 
