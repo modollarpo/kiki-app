@@ -59,6 +59,8 @@ jobs:
             -r ${{ env.ACR_NAME }} \
             -t "${{ env.IMAGE }}:latest" \
             -t "${{ env.IMAGE }}:${{ github.sha }}" \
+            --build-arg NEXT_PUBLIC_API_URL=https://keekii.net \
+            --build-arg NEXT_PUBLIC_SITE_URL=https://keekii.net \
             -f Dockerfile .
 
       - name: Deploy to Container App
