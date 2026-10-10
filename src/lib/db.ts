@@ -1358,16 +1358,34 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
     }
 
     if (useSqlite) {
-      const db = await createSqliteDb();
-      db.exec(SQLITE_SCHEMA);
-      await runMigrations(db as unknown as PgDb);
-      if (process.env.SEED_DEMO_DATA === "true") {
-        await seedIfEmpty(db as unknown as PgDb);
-        await seedBillingIfEmpty(db as unknown as PgDb);
+      try {
+        const db = await createSqliteDb();
+        db.exec(SQLITE_SCHEMA);
+        await runMigrations(db as unknown as PgDb);
+        if (process.env.SEED_DEMO_DATA === "true") {
+          await seedIfEmpty(db as unknown as PgDb);
+          await seedBillingIfEmpty(db as unknown as PgDb);
+        }
+        logger.info("[DB] Using local SQLite fallback at ./data/kiki-local.sqlite");
+        globalForDb.__kikiDb = db as unknown as PgDb;
+        return globalForDb.__kikiDb;
+      } catch (e) {
+        // File-backed SQLite fails on network filesystems (Azure Files / SMB)
+        // with "database is locked". Fall back to memory so the app stays
+        // functional. Set DATABASE_URL for durable persistence.
+        logger.warn(
+          "[DB] SQLite file backend failed (" + (e as Error).message.split("\n")[0] +
+          ") — using in-memory DB. Set DATABASE_URL for durable persistence."
+        );
+        const mem = createMemoryDb();
+        mem.exec(SQLITE_SCHEMA);
+        if (process.env.SEED_DEMO_DATA === "true") {
+          await seedIfEmpty(mem as unknown as PgDb);
+          await seedBillingIfEmpty(mem as unknown as PgDb);
+        }
+        globalForDb.__kikiDb = mem as unknown as PgDb;
+        return globalForDb.__kikiDb;
       }
-      logger.info("[DB] Using local SQLite fallback at ./data/kiki-local.sqlite");
-      globalForDb.__kikiDb = db as unknown as PgDb;
-      return globalForDb.__kikiDb;
     }
 
     const db = new PgDb();
