@@ -8,7 +8,7 @@
 #   ./scripts/deploy-prod.sh my-tag          # explicit tag
 set -euo pipefail
 
-ACR="kikiagentacr"
+ACR="kikiagentacrchrdtvff"
 RG="kiki-agent-rg"
 APP="kiki-app"
 
@@ -20,7 +20,7 @@ if ! az account show >/dev/null 2>&1; then
 fi
 
 echo "Building image kiki-app:${TAG} in ACR (remote build)..."
-az acr build -r "${ACR}" -t "kiki-app:latest" -t "kiki-app:${TAG}" -f Dockerfile .
+az acr build -r "${ACR}" -t "kiki-app:latest" -t "kiki-app:${TAG}" -f Dockerfile --build-arg NEXT_PUBLIC_API_URL=https://keekii.net --build-arg NEXT_PUBLIC_SITE_URL=https://keekii.net .
 
 echo "Deploying kiki-app:${TAG} to production Container App..."
 az containerapp update -g "${RG}" -n "${APP}" --image "${ACR}.azurecr.io/kiki-app:${TAG}"

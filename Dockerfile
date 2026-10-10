@@ -22,8 +22,11 @@ COPY . /app
 # NEXT_PUBLIC_* are inlined into the client bundle at build time, so they must
 # be set here (not just as Container App runtime env vars). Override per env via
 # `az acr build --build-arg NEXT_PUBLIC_API_URL=https://<app>.<region>.azurecontainerapps.io --build-arg NEXT_PUBLIC_SITE_URL=https://<app>.<region>.azurecontainerapps.io`
-ARG NEXT_PUBLIC_API_URL="http://localhost:3000"
-ARG NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+# Default to empty so the browser calls the SAME origin it was served from
+# (relative /api/... requests). Baking a hostname here means a stale/incorrect
+# value (e.g. localhost:3000) causes browser "NetworkError" on every API call.
+ARG NEXT_PUBLIC_API_URL=""
+ARG NEXT_PUBLIC_SITE_URL=""
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 # Allow build even if strict type/lint errors exist in the project

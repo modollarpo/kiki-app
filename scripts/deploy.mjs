@@ -24,8 +24,8 @@ import { spawnSync } from "node:child_process";
 const PROD = {
   resourceGroup: "kiki-agent-rg",
   containerApp: "kiki-app",
-  acr: "kikiagentacr",
-  acrServer: "kikiagentacr.azurecr.io",
+  acr: "kikiagentacrchrdtvff",
+  acrServer: "kikiagentacrchrdtvff.azurecr.io",
   imageName: "kiki-app",
 };
 
@@ -77,6 +77,8 @@ if (which("az")) {
         "--resource-group", PROD.resourceGroup,
         "--image", `${PROD.imageName}:${tag}`,
         "--image", `${PROD.imageName}:latest`,
+        "--build-arg", "NEXT_PUBLIC_API_URL=https://keekii.net",
+        "--build-arg", "NEXT_PUBLIC_SITE_URL=https://keekii.net",
         ".",
       ], { shell: true }) !== 0
     ) {

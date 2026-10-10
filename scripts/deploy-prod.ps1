@@ -14,7 +14,7 @@ param(
 
 $ErrorActionPreference = "Continue"
 
-$ACR = "kikiagentacr"
+$ACR = "kikiagentacrchrdtvff"
 $RG  = "kiki-agent-rg"
 $APP = "kiki-app"
 
@@ -30,7 +30,7 @@ if (-not $acct) {
 }
 
 Write-Host "Building image kiki-app:$Tag in ACR (remote build)..."
-az acr build -r $ACR -t "kiki-app:latest" -t "kiki-app:$Tag" -f Dockerfile .
+az acr build -r $ACR -t "kiki-app:latest" -t "kiki-app:$Tag" -f Dockerfile --build-arg NEXT_PUBLIC_API_URL=https://keekii.net --build-arg NEXT_PUBLIC_SITE_URL=https://keekii.net .
 if ($LASTEXITCODE -ne 0) { throw "ACR build failed (exit $LASTEXITCODE)" }
 
 Write-Host "Building ml-service:$Tag in ACR (remote build)..."
