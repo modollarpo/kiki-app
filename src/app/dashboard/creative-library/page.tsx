@@ -73,8 +73,8 @@ export default function CreativeLibraryPage() {
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Creative Library</h1>
-          <p className="font-mono text-[11px] text-gray-500">Manage and analyze your creative assets across all platforms</p>
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Creative Library</h1>
+          <p className="font-mono text-[11px] text-t3">Manage and analyze your creative assets across all platforms</p>
         </div>
 
         {loading ? (
@@ -96,7 +96,7 @@ export default function CreativeLibraryPage() {
             {filtered.length === 0 ? (
               <Card>
                 <div className="p-10 text-center">
-                  <p className="font-mono text-xs text-gray-600">No creative assets found. Create campaigns to populate this library.</p>
+                  <p className="font-mono text-xs text-t4">No creative assets found. Create campaigns to populate this library.</p>
                 </div>
               </Card>
             ) : (
@@ -107,21 +107,21 @@ export default function CreativeLibraryPage() {
                       <span className="font-mono text-[11px]" style={{ color: platformColors[asset.platform] || K.t3 }}>{asset.name}</span>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                      <span className="font-mono text-[11px] font-semibold text-white truncate max-w-full">{asset.name}</span>
+                      <span className="font-mono text-[11px] font-semibold text-t1 truncate max-w-full">{asset.name}</span>
                       <Badge color={K.t3}>{asset.type}</Badge>
                     </div>
                     <Badge color={platformColors[asset.platform] || K.t3}>{asset.platform}</Badge>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
                       <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
-                        <div className="font-mono text-[10px] text-gray-600">CTR</div>
+                        <div className="font-mono text-[10px] text-t4">CTR</div>
                         <div className="font-mono text-xs font-bold text-kmint">{asset.ctr}%</div>
                       </div>
                       <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
-                        <div className="font-mono text-[10px] text-gray-600">Conv.</div>
+                        <div className="font-mono text-[10px] text-t4">Conv.</div>
                         <div className="font-mono text-xs font-bold text-kblue">{asset.conversions.toLocaleString()}</div>
                       </div>
                       <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
-                        <div className="font-mono text-[10px] text-gray-600">ROAS</div>
+                        <div className="font-mono text-[10px] text-t4">ROAS</div>
                         <div className="font-mono text-xs font-bold text-kgold">{asset.roas}x</div>
                       </div>
                     </div>
@@ -133,7 +133,7 @@ export default function CreativeLibraryPage() {
 
             {summary && (
               <Card>
-                <h3 className="font-mono font-bold text-xs text-white mb-3">Performance Summary</h3>
+                <h3 className="font-mono font-bold text-xs text-t1 mb-3">Performance Summary</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <StatCard label="Total Assets" value={String(summary.totalAssets)} accent={K.mint} />
                   <StatCard label="Avg CTR" value={`${summary.avgCtr}%`} accent={K.mint} />

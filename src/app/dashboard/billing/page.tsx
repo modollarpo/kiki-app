@@ -85,8 +85,8 @@ export default function BillingPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
-            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Billing & Plans</h1>
-            <p className="font-mono text-[11px] text-gray-500">Current plan · Usage meters · Invoice history</p>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Billing & Plans</h1>
+            <p className="font-mono text-[11px] text-t3">Current plan · Usage meters · Invoice history</p>
           </div>
           <div className="flex gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
             {(["overview", "invoices"] as const).map(t => (
@@ -107,28 +107,28 @@ export default function BillingPage() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               <Card accent={K.gold} glow={K.gold}>
-                <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-2">CURRENT PLAN</p>
+                <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-2">CURRENT PLAN</p>
                 <div className="flex items-center gap-2.5 mb-3">
                   <span className="font-mono text-[22px] font-bold text-kgold">{plan?.plan?.toUpperCase() || "FREE"}</span>
                   <Badge color={plan?.status === "active" ? K.mint : K.warn}>{plan?.status?.toUpperCase() || "NONE"}</Badge>
                 </div>
-                <p className="font-mono text-[10px] text-gray-500 mt-1">
+                <p className="font-mono text-[10px] text-t3 mt-1">
                   {plan?.currentPeriodEnd ? `Renews ${new Date(plan.currentPeriodEnd).toLocaleDateString()}` : "No active subscription"}
                 </p>
               </Card>
 
               <Card>
-                <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-2">TOTAL MANAGED SPEND</p>
-                <p className="font-mono text-[28px] font-bold text-white mb-1">${fmt.compact(totalSpend)}</p>
-                <p className="font-mono text-[10px] text-gray-500 mb-3">Across all campaigns</p>
+                <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-2">TOTAL MANAGED SPEND</p>
+                <p className="font-mono text-[28px] font-bold text-t1 mb-1">${fmt.compact(totalSpend)}</p>
+                <p className="font-mono text-[10px] text-t3 mb-3">Across all campaigns</p>
               </Card>
 
               <Card>
-                <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-2">OaaS FEES</p>
+                <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-2">OaaS FEES</p>
                 <p className="font-mono text-[28px] font-bold mb-1 text-kmint">
                   {oaas ? `$${oaas.totalFees.toFixed(2)}` : "N/A"}
                 </p>
-                <p className="font-mono text-[10px] text-gray-500 mb-3">
+                <p className="font-mono text-[10px] text-t3 mb-3">
                   {oaas ? `${(oaas.platformFeeRate * 100).toFixed(1)}% platform fee` : "Not on OaaS plan"}
                 </p>
               </Card>
@@ -136,7 +136,7 @@ export default function BillingPage() {
 
             <Card>
               <div className="px-5 py-3.5 border-b border-g800">
-                <h2 className="font-mono font-bold text-[13px] text-white">Usage Meters</h2>
+                <h2 className="font-mono font-bold text-[13px] text-t1">Usage Meters</h2>
               </div>
               {meters.map((m, i) => {
                 const pct = m.limit > 0 ? (m.used / m.limit) * 100 : 0;
@@ -144,7 +144,7 @@ export default function BillingPage() {
                 return (
                   <div key={i} className="px-5 py-3" style={{ borderBottom: i < meters.length - 1 ? `1px solid ${K.g900}` : undefined }}>
                     <div className="flex justify-between mb-1.5">
-                      <span className="font-mono text-[11px] font-semibold text-white">{m.name}</span>
+                      <span className="font-mono text-[11px] font-semibold text-t1">{m.name}</span>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[11px]" style={{ color: warn ? K.warn : K.t2 }}>
                           {m.used >= 1000 ? fmt.compact(m.used) : m.used} / {m.limit >= 1000 ? fmt.compact(m.limit) : m.limit} {m.unit}
@@ -161,11 +161,11 @@ export default function BillingPage() {
         ) : (
           <Card padding={0}>
             <div className="px-5 py-3.5 border-b border-g800">
-              <h2 className="font-mono font-bold text-[13px] text-white">Invoice History</h2>
+              <h2 className="font-mono font-bold text-[13px] text-t1">Invoice History</h2>
             </div>
             {invoices.length === 0 ? (
               <div className="p-10 text-center">
-                <p className="font-mono text-xs text-gray-600">No invoices yet. Invoices are generated monthly based on your usage.</p>
+                <p className="font-mono text-xs text-t4">No invoices yet. Invoices are generated monthly based on your usage.</p>
               </div>
             ) : (
               <ScrollableTable>
@@ -173,14 +173,14 @@ export default function BillingPage() {
                   <div key={inv.id} className="grid grid-cols-[1fr_120px_120px_100px_90px] gap-3 px-5 py-3.5 items-center hover:bg-[var(--card-hover)] min-w-[600px]"
                     style={{ borderBottom: i < invoices.length - 1 ? `1px solid ${K.g900}` : undefined }}>
                     <div>
-                      <p className="font-mono text-[11px] font-semibold text-white mb-0.5">{inv.id}</p>
-                      <p className="font-mono text-[10px] text-gray-600">
+                      <p className="font-mono text-[11px] font-semibold text-t1 mb-0.5">{inv.id}</p>
+                      <p className="font-mono text-[10px] text-t4">
                         {new Date(inv.periodStart).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} – {new Date(inv.periodEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </p>
                     </div>
-                    <span className="font-mono text-[11px] font-semibold text-white">{fmt.currency(inv.amount)}</span>
+                    <span className="font-mono text-[11px] font-semibold text-t1">{fmt.currency(inv.amount)}</span>
                     <Badge color={inv.status === "paid" ? K.mint : inv.status === "open" ? K.gold : K.danger}>{inv.status.toUpperCase()}</Badge>
-                    <span className="font-mono text-[10px] text-gray-600">{inv.currency.toUpperCase()}</span>
+                    <span className="font-mono text-[10px] text-t4">{inv.currency.toUpperCase()}</span>
                     <Button variant="ghost" size="xs" onClick={() => downloadInvoice(inv.id)}>Download ↓</Button>
                   </div>
                 ))}

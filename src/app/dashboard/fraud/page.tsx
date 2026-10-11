@@ -49,8 +49,8 @@ export default function FraudIVTPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Fraud & IVT Detection</h1>
-            <p className="font-mono text-[11px] text-gray-500">
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Fraud & IVT Detection</h1>
+            <p className="font-mono text-[11px] text-t3">
               {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `Real-time invalid traffic monitoring · ${stats?.totalDetected || 0} events detected today`}
             </p>
           </div>
@@ -66,34 +66,34 @@ export default function FraudIVTPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
           <Card accent={K.danger}>
-            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">IVT Types Detected</h3>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">IVT Types Detected</h3>
             {ivtTypes.map((ivt, i) => (
               <div key={i} className="flex flex-wrap items-center justify-between gap-2 p-2.5 px-3 mb-2 rounded-sm bg-g850 border border-g700">
                 <div className="flex-1 min-w-[120px]">
                   <div className="flex flex-wrap items-center gap-2 mb-[3px]">
                     <Badge color={ivt.severity === "high" ? K.danger : K.warn} dot>{ivt.severity}</Badge>
-                    <span className="font-mono text-xs font-bold text-white">{ivt.type}</span>
+                    <span className="font-mono text-xs font-bold text-t1">{ivt.type}</span>
                   </div>
-                  <p className="font-mono text-[10px] text-gray-600">{ivt.desc}</p>
+                  <p className="font-mono text-[10px] text-t4">{ivt.desc}</p>
                 </div>
                 <div className="text-right">
-                  <span className="font-mono text-sm font-bold text-white">{ivt.count}</span>
-                  <p className="font-mono text-[10px] text-gray-600">events</p>
+                  <span className="font-mono text-sm font-bold text-t1">{ivt.count}</span>
+                  <p className="font-mono text-[10px] text-t4">events</p>
                 </div>
               </div>
             ))}
           </Card>
 
           <Card accent={K.mint}>
-            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Protection Rules</h3>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Protection Rules</h3>
             {protectionRules.map((rule, i) => (
               <div key={i} className="flex items-center justify-between py-2.5 border-b border-g800">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full" style={{ background: rule.color }} />
-                  <span className="font-mono text-[11px] text-white">{rule.name}</span>
+                  <span className="font-mono text-[11px] text-t1">{rule.name}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <span className="font-mono text-[10px] text-gray-500">{rule.blocked} blocked</span>
+                  <span className="font-mono text-[10px] text-t3">{rule.blocked} blocked</span>
                   <Badge color={rule.color}>Active</Badge>
                 </div>
               </div>
@@ -102,14 +102,14 @@ export default function FraudIVTPage() {
         </div>
 
         <Card accent={K.gold}>
-          <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Threat Summary</h3>
+          <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Threat Summary</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-2">DETECTION BREAKDOWN</p>
+              <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-2">DETECTION BREAKDOWN</p>
               {Object.entries(stats?.bySeverity || {}).length > 0 ? (
                 Object.entries(stats?.bySeverity || {}).map(([sev, count]) => (
                   <div key={sev} className="flex justify-between py-1.5 border-b border-g800">
-                    <span className="font-mono text-[11px] text-gray-400 capitalize">{sev} severity</span>
+                    <span className="font-mono text-[11px] text-t2 capitalize">{sev} severity</span>
                     <span className="font-mono text-[11px] font-bold" style={{ color: sev === "high" ? K.danger : sev === "medium" ? K.warn : K.mint }}>{count}</span>
                   </div>
                 ))
@@ -118,7 +118,7 @@ export default function FraudIVTPage() {
               )}
             </div>
             <div>
-              <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-2">DETECTION BY SEVERITY</p>
+              <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-2">DETECTION BY SEVERITY</p>
               {Object.entries(stats?.bySeverity || {}).length > 0 ? (
                 Object.entries(stats?.bySeverity || {}).map(([sev, count]) => {
                   const total = Object.values(stats?.bySeverity || {}).reduce((a, b) => a + b, 0) || 1;
@@ -126,8 +126,8 @@ export default function FraudIVTPage() {
                   return (
                     <div key={sev} className="mb-2">
                       <div className="flex justify-between mb-[3px]">
-                        <span className="font-mono text-[10px] text-gray-400 capitalize">{sev} severity</span>
-                        <span className="font-mono text-[10px] font-bold text-white">{pct}%</span>
+                        <span className="font-mono text-[10px] text-t2 capitalize">{sev} severity</span>
+                        <span className="font-mono text-[10px] font-bold text-t1">{pct}%</span>
                       </div>
                       <ProgressBar value={pct} color={sev === "high" ? K.danger : sev === "medium" ? K.warn : K.mint} height={3} />
                     </div>
@@ -138,14 +138,14 @@ export default function FraudIVTPage() {
               )}
             </div>
             <div>
-              <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-2">IMPACT</p>
+              <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-2">IMPACT</p>
               <div className="p-4 rounded-sm mb-2.5 bg-g850">
                 <p className="font-mono text-2xl font-bold text-kgold">${(stats?.estimatedSavings || 0).toLocaleString()}</p>
-                <p className="font-mono text-[10px] text-gray-500 mt-1">Estimated savings today</p>
+                <p className="font-mono text-[10px] text-t3 mt-1">Estimated savings today</p>
               </div>
               <div className="p-4 rounded-sm bg-g850">
                 <p className="font-mono text-2xl font-bold text-kmint">{stats?.dataQualityScore || 0}%</p>
-                <p className="font-mono text-[10px] text-gray-500 mt-1">Data quality score</p>
+                <p className="font-mono text-[10px] text-t3 mt-1">Data quality score</p>
               </div>
             </div>
           </div>

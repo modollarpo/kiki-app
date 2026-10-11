@@ -39,8 +39,8 @@ export default function ScenariosPage() {
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Scenario Planner</h1>
-          <p className="font-mono text-[11px] text-gray-500">Budget allocation scenarios · Projected ROAS · Risk assessment</p>
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Scenario Planner</h1>
+          <p className="font-mono text-[11px] text-t3">Budget allocation scenarios · Projected ROAS · Risk assessment</p>
         </div>
 
         {error && (
@@ -69,27 +69,27 @@ export default function ScenariosPage() {
               <div className="flex items-start gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="font-mono text-sm font-bold text-white">{sc.name}</span>
+                    <span className="font-mono text-sm font-bold text-t1">{sc.name}</span>
                     <Badge color={getRiskColor(sc.risk)}>{sc.risk.toUpperCase()} RISK</Badge>
                     <Badge color={sc.confidence != null ? K.t3 : K.warn}>{sc.confidence != null ? `${sc.confidence}% CONF` : "NO MODEL"}</Badge>
                   </div>
-                  <p className="font-mono text-[11px] text-gray-500 mb-3">{sc.description}</p>
+                  <p className="font-mono text-[11px] text-t3 mb-3">{sc.description}</p>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
                     <div>
-                      <p className="font-mono text-[10px] text-gray-600 mb-0.5">BUDGET CHANGE</p>
+                      <p className="font-mono text-[10px] text-t4 mb-0.5">BUDGET CHANGE</p>
                       <p className="font-mono text-[13px] font-bold" style={{ color: sc.budgetChange > 0 ? K.mint : sc.budgetChange < 0 ? K.danger : K.t2 }}>{sc.budgetChange > 0 ? "+" : ""}{sc.budgetChange}%</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-gray-600 mb-0.5">PROJECTED ROAS</p>
+                      <p className="font-mono text-[10px] text-t4 mb-0.5">PROJECTED ROAS</p>
                       <p className="font-mono text-[13px] font-bold text-kmint">{sc.projectedROAS}×</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-gray-600 mb-0.5">PROJECTED REVENUE</p>
-                      <p className="font-mono text-[13px] font-bold text-white">{fmt.currency(sc.projectedRevenue)}</p>
+                      <p className="font-mono text-[10px] text-t4 mb-0.5">PROJECTED REVENUE</p>
+                      <p className="font-mono text-[13px] font-bold text-t1">{fmt.currency(sc.projectedRevenue)}</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-gray-600 mb-0.5">CONFIDENCE</p>
+                      <p className="font-mono text-[10px] text-t4 mb-0.5">CONFIDENCE</p>
                       <p className="font-mono text-[13px] font-bold text-kblue">{sc.confidence != null ? `${sc.confidence}%` : "—"}</p>
                     </div>
                   </div>

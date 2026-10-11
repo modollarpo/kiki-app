@@ -95,8 +95,8 @@ export default function WorkflowPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
-            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Automation Builder</h1>
-            <p className="font-mono text-[11px] text-gray-500">Workflow rules · Trigger conditions · Automated actions · {workflows.length} action types</p>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Automation Builder</h1>
+            <p className="font-mono text-[11px] text-t3">Workflow rules · Trigger conditions · Automated actions · {workflows.length} action types</p>
           </div>
           <div className="flex gap-2">
             <div className="flex gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
@@ -125,7 +125,7 @@ export default function WorkflowPage() {
             { label: "Avg Response Time", value: isLoading ? "…" : allActions.length > 0 ? `${Math.round(allActions.reduce((s, a) => s + (a.durationMs || 0), 0) / allActions.length)}ms` : "< 1 min", color: K.teal },
           ].map((s, i) => (
             <Card key={i} accent={s.color}>
-              <p className="font-mono text-[10px] tracking-[0.14em] text-gray-600 mb-1.5">{s.label}</p>
+              <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-1.5">{s.label}</p>
               <p className="font-mono text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
             </Card>
           ))}
@@ -133,28 +133,28 @@ export default function WorkflowPage() {
 
         <div className="flex flex-col gap-3">
           {isLoading ? (
-            <Card><div className="py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading workflows…</span></div></Card>
+            <Card><div className="py-8 text-center"><span className="font-mono text-[11px] text-t3">Loading workflows…</span></div></Card>
           ) : filtered.length === 0 ? (
-            <Card><div className="py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No workflows found. Agent actions will appear here once agents start running.</span></div></Card>
+            <Card><div className="py-8 text-center"><span className="font-mono text-[11px] text-t3">No workflows found. Agent actions will appear here once agents start running.</span></div></Card>
           ) : (
             filtered.map((wf, i) => (
               <Card key={i} accent={wf.color}>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2.5 mb-1">
-                      <h3 className="font-mono font-bold text-[13px] text-white">{wf.name}</h3>
+                      <h3 className="font-mono font-bold text-[13px] text-t1">{wf.name}</h3>
                     </div>
-                    <p className="font-sans text-[11px] text-gray-500 leading-relaxed max-w-[600px]">{wf.description}</p>
+                    <p className="font-sans text-[11px] text-t3 leading-relaxed max-w-[600px]">{wf.description}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3 sm:flex-shrink-0">
                     <div className="text-right">
-                      <p className="font-mono text-[10px] text-gray-600">Last fired</p>
-                      <p className="font-mono text-[11px] font-semibold text-gray-400">
+                      <p className="font-mono text-[10px] text-t4">Last fired</p>
+                      <p className="font-mono text-[11px] font-semibold text-t2">
                         {wf.lastFired !== "Never" ? new Date(wf.lastFired).toLocaleString() : "Never"}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-mono text-[10px] text-gray-600">Total fires</p>
+                      <p className="font-mono text-[10px] text-t4">Total fires</p>
                       <p className="font-mono text-[11px] font-bold" style={{ color: wf.color }}>{wf.firesCount}</p>
                     </div>
                   </div>
@@ -162,15 +162,15 @@ export default function WorkflowPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <div className="p-2.5 px-3 rounded-sm bg-g850">
-                    <p className="font-mono text-[10px] tracking-[0.1em] text-gray-600 mb-1">AGENT</p>
+                    <p className="font-mono text-[10px] tracking-[0.1em] text-t4 mb-1">AGENT</p>
                     <p className="font-mono text-[10px] text-kblue">{wf.agent}</p>
                   </div>
                   <div className="p-2.5 px-3 rounded-sm bg-g850">
-                    <p className="font-mono text-[10px] tracking-[0.1em] text-gray-600 mb-1">SUCCESS</p>
+                    <p className="font-mono text-[10px] tracking-[0.1em] text-t4 mb-1">SUCCESS</p>
                     <p className="font-mono text-[10px] text-kmint">{wf.successCount} of {wf.firesCount}</p>
                   </div>
                   <div className="p-2.5 px-3 rounded-sm bg-g850">
-                    <p className="font-mono text-[10px] tracking-[0.1em] text-gray-600 mb-1">ERRORS</p>
+                    <p className="font-mono text-[10px] tracking-[0.1em] text-t4 mb-1">ERRORS</p>
                     <p className="font-mono text-[10px]" style={{ color: wf.errorCount > 0 ? K.danger : K.t4 }}>{wf.errorCount}</p>
                   </div>
                 </div>

@@ -80,34 +80,34 @@ export default function SettingsPage() {
     <DashboardLayout>
       <div className="max-w-[1000px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Settings</h1>
-          <p className="font-mono text-[11px] text-gray-500">Account · security · preferences</p>
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Settings</h1>
+          <p className="font-mono text-[11px] text-t3">Account · security · preferences</p>
         </div>
 
         <Card className="mb-3">
-          <h3 className="font-mono font-bold text-[13px] text-white mb-4">Account</h3>
+          <h3 className="font-mono font-bold text-[13px] text-t1 mb-4">Account</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <Input label="Name" value={name} onChange={setName} />
             <Input label="Email" value={email} onChange={setEmail} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
-              <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-gray-500 mb-1.5">Role</p>
+              <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-t3 mb-1.5">Role</p>
               <Badge color={K.blue}>{user?.role?.toUpperCase() || "ADVERTISER"}</Badge>
             </div>
             <div>
-              <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-gray-500 mb-1.5">Plan</p>
+              <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-t3 mb-1.5">Plan</p>
               <Badge color={K.gold}>{user?.plan?.toUpperCase() || "GROWTH"}</Badge>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
-              <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-gray-500 mb-1.5">Tenant</p>
-              <p className="font-mono text-xs text-white">{user?.tenantName || "—"}</p>
+              <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-t3 mb-1.5">Tenant</p>
+              <p className="font-mono text-xs text-t1">{user?.tenantName || "—"}</p>
             </div>
             <div>
-              <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-gray-500 mb-1.5">User ID</p>
-              <p className="font-mono text-[11px] text-gray-600">{user?.id || "—"}</p>
+              <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-t3 mb-1.5">User ID</p>
+              <p className="font-mono text-[11px] text-t4">{user?.id || "—"}</p>
             </div>
           </div>
           {saveError && (
@@ -119,8 +119,8 @@ export default function SettingsPage() {
         </Card>
 
         <Card className="mb-3">
-          <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Integrations</h3>
-          <p className="font-mono text-[11px] text-gray-500 mb-4">Connect your ad accounts, CMS, and CRM to enable autonomous execution.</p>
+          <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Integrations</h3>
+          <p className="font-mono text-[11px] text-t3 mb-4">Connect your ad accounts, CMS, and CRM to enable autonomous execution.</p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {(platforms.length > 0 ? platforms : [
@@ -135,8 +135,8 @@ export default function SettingsPage() {
                 return (
                   <div key={p.platformId ?? p.id ?? p.name} className="flex items-center justify-between p-3 rounded-sm bg-g850 border border-g800">
                     <div>
-                      <p className="font-mono text-[12px] font-bold text-white capitalize">{p.name || p.platformId}</p>
-                      <p className="font-mono text-[10px] text-gray-500 mt-1">
+                      <p className="font-mono text-[12px] font-bold text-t1 capitalize">{p.name || p.platformId}</p>
+                      <p className="font-mono text-[10px] text-t3 mt-1">
                         {connected ? (connected.accountName ?? "Connected") : "Not connected"}
                     </p>
                   </div>
@@ -159,18 +159,18 @@ export default function SettingsPage() {
         </Card>
 
         <Card className="mb-3">
-          <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Security</h3>
+          <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Security</h3>
           {[{l:"Two-factor auth",v:"Enabled",c:K.mint},{l:"Session timeout",v:"24 hours",c:K.t2},{l:"API keys",v:"2 active",c:K.t2}].map(r => (
             <div key={r.l} className="flex flex-wrap items-center justify-between gap-2 py-2.5 border-b border-g800">
-              <span className="font-mono text-[11px] text-gray-400">{r.l}</span>
+              <span className="font-mono text-[11px] text-t2">{r.l}</span>
               <span className="font-mono text-[11px] font-bold" style={{ color: r.c }}>{r.v}</span>
             </div>
           ))}
         </Card>
 
         <Card>
-          <h3 className="font-mono font-bold text-[13px] text-white mb-3">Danger Zone</h3>
-          <p className="font-mono text-[11px] text-gray-500 mb-3">Sign out of your account on this device.</p>
+          <h3 className="font-mono font-bold text-[13px] text-t1 mb-3">Danger Zone</h3>
+          <p className="font-mono text-[11px] text-t3 mb-3">Sign out of your account on this device.</p>
           <Button variant="danger" size="sm" onClick={logout}>Sign Out</Button>
         </Card>
       </div>

@@ -84,8 +84,8 @@ export default function AdminPage() {
       <DashboardLayout>
         <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Admin Health</h1>
-          <p className="font-mono text-[11px] text-gray-500">Platform service status · Uptime · Latency · Region health</p>
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Admin Health</h1>
+          <p className="font-mono text-[11px] text-t3">Platform service status · Uptime · Latency · Region health</p>
         </div>
 
         {error && (
@@ -103,27 +103,27 @@ export default function AdminPage() {
 
         <Card padding={0}>
           <div className="px-5 py-3.5 border-b border-g800">
-            <h2 className="font-mono font-bold text-[13px] text-white">Service Status</h2>
+            <h2 className="font-mono font-bold text-[13px] text-t1">Service Status</h2>
           </div>
           {services.length === 0 && !loading ? (
             <div className="px-5 py-10 text-center">
-              <p className="font-mono text-[11px] text-gray-500">No services monitored. Connect platforms to start monitoring.</p>
+              <p className="font-mono text-[11px] text-t3">No services monitored. Connect platforms to start monitoring.</p>
             </div>
           ) : (
             <ScrollableTable>
               <div className="min-w-[700px]">
                 <div className="grid grid-cols-[180px_120px_80px_100px_120px_100px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
                   {["SERVICE", "CATEGORY", "STATUS", "UPTIME", "p99 LATENCY", "REGION"].map(h => (
-                    <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
+                    <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-t4">{h}</span>
                   ))}
                 </div>
                 {services.map((svc, i) => (
                   <div key={i} className="grid grid-cols-[180px_120px_80px_100px_120px_100px] gap-3 px-5 py-3 items-center hover:bg-[var(--card-hover)] border-b border-g900">
                     <div className="flex items-center gap-2">
                       <StatusDot status={svc.status} />
-                      <span className="font-mono text-[11px] font-semibold text-white">{svc.name}</span>
+                      <span className="font-mono text-[11px] font-semibold text-t1">{svc.name}</span>
                     </div>
-                    <span className="font-mono text-[10px] text-gray-500">{svc.category}</span>
+                    <span className="font-mono text-[10px] text-t3">{svc.category}</span>
                     <Badge color={svc.status === "healthy" ? K.mint : svc.status === "degraded" ? K.warn : K.danger} dot pulse={svc.status === "healthy"}>
                       {svc.status === "healthy" ? "OK" : svc.status === "degraded" ? "WARN" : "ERR"}
                     </Badge>
@@ -137,7 +137,7 @@ export default function AdminPage() {
                         {svc.p99 > 0 ? `${svc.p99}ms` : "—"}
                       </span>
                     </div>
-                    <span className="font-mono text-[10px] text-gray-600">{svc.region}</span>
+                    <span className="font-mono text-[10px] text-t4">{svc.region}</span>
                   </div>
                 ))}
               </div>
@@ -147,35 +147,35 @@ export default function AdminPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">
           <Card>
-            <h2 className="font-mono font-bold text-[13px] text-white mb-3.5">Capacity Utilization</h2>
+            <h2 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Capacity Utilization</h2>
             {hasCapacityData ? capacityMetrics.map((r, i) => (
               r.value !== null && (
                 <div key={i} className="mb-3">
                   <div className="flex justify-between mb-1">
-                    <span className="font-mono text-[10px] text-gray-500">{r.name}</span>
+                    <span className="font-mono text-[10px] text-t3">{r.name}</span>
                     <span className="font-mono text-[11px] font-bold" style={{ color: r.color }}>{r.value}%</span>
                   </div>
                   <ProgressBar value={r.value} color={r.color} height={5} glow />
                 </div>
               )
             )) : (
-              <p className="font-mono text-[11px] text-gray-500">No infrastructure metrics available</p>
+              <p className="font-mono text-[11px] text-t3">No infrastructure metrics available</p>
             )}
           </Card>
 
           <Card>
-            <h2 className="font-mono font-bold text-[13px] text-white mb-3.5">Agent Status Overview</h2>
+            <h2 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Agent Status Overview</h2>
             {Object.entries(agentStatuses).length > 0 ? (
               Object.entries(agentStatuses).map(([status, count], i) => (
                 <div key={i} className="p-2.5 px-3 mb-2 rounded-sm bg-g850" style={{ borderLeft: `3px solid ${status === "running" ? K.mint : status === "error" ? K.danger : K.warn}` }}>
                   <div className="flex justify-between items-center">
-                    <span className="font-mono text-[11px] font-semibold text-white capitalize">{status}</span>
+                    <span className="font-mono text-[11px] font-semibold text-t1 capitalize">{status}</span>
                     <Badge color={status === "running" ? K.mint : status === "error" ? K.danger : K.warn}>{count} agents</Badge>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="font-mono text-[11px] text-gray-500">No agents configured yet.</p>
+              <p className="font-mono text-[11px] text-t3">No agents configured yet.</p>
             )}
           </Card>
         </div>

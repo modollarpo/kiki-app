@@ -25,8 +25,8 @@ export default function FinancePage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
-            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Finance Operations</h1>
-            <p className="font-mono text-[11px] text-gray-500">P&L summary · Revenue streams · Cost breakdown · Profitability</p>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Finance Operations</h1>
+            <p className="font-mono text-[11px] text-t3">P&L summary · Revenue streams · Cost breakdown · Profitability</p>
           </div>
           <div className="flex gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
             {(["monthly", "quarterly", "annual"] as const).map(p => (
@@ -49,25 +49,25 @@ export default function FinancePage() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-3 mb-4">
           <Card padding={0}>
             <div className="px-5 py-3.5 border-b border-g800">
-              <h2 className="font-mono font-bold text-[13px] text-white">P&L Trend ($K)</h2>
+              <h2 className="font-mono font-bold text-[13px] text-t1">P&L Trend ($K)</h2>
             </div>
             <ScrollableTable>
               <div className="min-w-[600px]">
                 <div className="grid grid-cols-[80px_100px_100px_100px_120px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
                   {["MONTH", "REVENUE", "COSTS", "PROFIT", "MARGIN"].map(h => (
-                    <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
+                    <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-t4">{h}</span>
                   ))}
                 </div>
                 {(MONTHLY_PNL.length ? MONTHLY_PNL : [{ month: "Jul", revenue: 0, costs: 0, profit: 0 }]).map((m: { month: string; revenue: number; costs: number; profit: number }, i: number) => {
                   const margin = m.revenue > 0 ? ((m.profit / m.revenue) * 100).toFixed(1) : "0.0";
                   return (
                     <div key={i} className="grid grid-cols-[80px_100px_100px_100px_120px] gap-3 px-5 py-2.5 items-center hover:bg-[var(--card-hover)] border-b border-g900">
-                      <span className="font-mono text-[11px] font-semibold text-white">{m.month}</span>
+                      <span className="font-mono text-[11px] font-semibold text-t1">{m.month}</span>
                       <span className="font-mono text-[11px] text-kmint">${m.revenue}K</span>
-                      <span className="font-mono text-[11px] text-gray-400">${m.costs}K</span>
+                      <span className="font-mono text-[11px] text-t2">${m.costs}K</span>
                       <span className="font-mono text-[11px] font-bold" style={{ color: m.profit >= 80 ? K.mint : K.warn }}>${m.profit}K</span>
                       <div>
-                        <span className="font-mono text-[10px] text-gray-500 mr-1.5">{margin}%</span>
+                        <span className="font-mono text-[10px] text-t3 mr-1.5">{margin}%</span>
                         <ProgressBar value={parseFloat(margin as string)} color={parseFloat(margin as string) >= 20 ? K.mint : K.warn} height={3} />
                       </div>
                     </div>
@@ -78,31 +78,31 @@ export default function FinancePage() {
           </Card>
 
           <Card>
-            <h2 className="font-mono font-bold text-[13px] text-white mb-3.5">Revenue Streams</h2>
+            <h2 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Revenue Streams</h2>
             {REVENUE_STREAMS.map((s: { name: string; amount: number; share: number; color: string }, i: number) => (
               <div key={i} className="mb-3.5">
                 <div className="flex justify-between mb-1">
-                  <span className="font-mono text-[10px] text-gray-400">{s.name}</span>
+                  <span className="font-mono text-[10px] text-t2">{s.name}</span>
                   <span className="font-mono text-[11px] font-bold" style={{ color: COLOR_MAP[s.color] ?? K.t1 }}>{fmt.currency(s.amount, "USD")}</span>
                 </div>
                 <ProgressBar value={s.share} color={COLOR_MAP[s.color] ?? K.blue} height={4} />
-                <span className="font-mono text-[10px] text-gray-600">{s.share?.toFixed(1)}% of total</span>
+                <span className="font-mono text-[10px] text-t4">{s.share?.toFixed(1)}% of total</span>
               </div>
             ))}
-            {REVENUE_STREAMS.length === 0 && <p className="font-mono text-[10px] text-gray-600">No revenue streams yet.</p>}
+            {REVENUE_STREAMS.length === 0 && <p className="font-mono text-[10px] text-t4">No revenue streams yet.</p>}
           </Card>
         </div>
 
         <Card>
           <div className="px-5 py-3.5 border-b border-g800">
-            <h2 className="font-mono font-bold text-[13px] text-white">Cost Breakdown by Category</h2>
+            <h2 className="font-mono font-bold text-[13px] text-t1">Cost Breakdown by Category</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 px-5 py-3.5">
             {COST_CATEGORIES.map((c: { name: string; amount: number; pct: number; color: string }, i: number) => (
               <div key={i} className="p-3 px-3.5 rounded-sm" style={{ background: K.g850, border: `1px solid ${K.g800}`, borderLeft: `3px solid ${COLOR_MAP[c.color] ?? K.t3}` }}>
-                <p className="font-mono text-[10px] text-gray-600 mb-1">{c.name}</p>
+                <p className="font-mono text-[10px] text-t4 mb-1">{c.name}</p>
                 <p className="font-mono text-base font-bold" style={{ color: COLOR_MAP[c.color] ?? K.t1 }}>${(c.amount / 1000).toFixed(1)}K</p>
-                <p className="font-mono text-[10px] text-gray-500 mt-0.5">{c.pct?.toFixed(1)}% of total costs</p>
+                <p className="font-mono text-[10px] text-t3 mt-0.5">{c.pct?.toFixed(1)}% of total costs</p>
               </div>
             ))}
           </div>
