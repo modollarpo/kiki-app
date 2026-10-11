@@ -18,7 +18,7 @@ export interface MetacognitionEvent {
   confidenceAfter?: number;
   actionTaken?: string;
   factorsAffected: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -46,11 +46,36 @@ export interface AdaptiveStrategy {
   triggerEvent: string;
   adjustments: Array<{
     parameter: string;
-    oldValue: any;
-    newValue: any;
+    oldValue: unknown;
+    newValue: unknown;
     reason: string;
   }>;
   appliedAt: string;
+}
+
+interface FeedbackRow {
+  predicted_ltv: number;
+  actual_ltv: number;
+  error_pct: number;
+  segment_predicted: string | null;
+  factors_at_prediction: string | null;
+  created_at: string;
+}
+
+interface McLogRow {
+  event_type: string;
+  insight: string;
+  metadata: string;
+  created_at: string;
+}
+
+interface LtvModelRow {
+  id: string | number;
+  weights: string;
+}
+
+interface ErrorPctRow {
+  error_pct: number;
 }
 
 // ── Confidence Calibration Analysis ────────────────────────
@@ -111,7 +136,7 @@ export async function analyzeFactorAttribution(tenantId: string): Promise<Factor
     WHERE tenant_id = ?
     ORDER BY created_at DESC
     LIMIT 500
-  `).all(tenantId) as any[];
+  `).all<FeedbackRow>(tenantId);
 
   if (feedback.length < 10) return [];
 
@@ -127,7 +152,7 @@ export async function analyzeFactorAttribution(tenantId: string): Promise<Factor
 
   for (const fb of feedback) {
     try {
-      const factors = JSON.parse(fb.factorsof_prediction || "[]");
+      const factors = JSON.parse(fb.factors_at_prediction || "[]");
       for (const factor of factors) {
         const fname = String(factor).split(":")[0] || String(factor);
         if (!factorStats[fname]) factorStats[fname] = { errors: [], appearances: 0, recentAppearances: 0, recentErrors: [] };
@@ -194,7 +219,7 @@ export async function runSelfReflection(tenantId: string): Promise<{
     WHERE tenant_id = ?
     ORDER BY created_at DESC
     LIMIT 100
-  `).all(tenantId) as any[];
+  `).all<McLogRow>(tenantId);
 
   // Get recent feedback
   const feedback = await db.prepare(`
@@ -203,7 +228,7 @@ export async function runSelfReflection(tenantId: string): Promise<{
     WHERE tenant_id = ?
     ORDER BY created_at DESC
     LIMIT 200
-  `).all(tenantId) as any[];
+  `).all<FeedbackRow>(tenantId);
 
   const patterns: Array<{ pattern: string; frequency: number; impact: string; recommendation: string }> = [];
 
@@ -312,11 +337,11 @@ export async function adaptStrategy(tenantId: string): Promise<AdaptiveStrategy 
   const adjustments: AdaptiveStrategy["adjustments"] = [];
   const activeModel = await db.prepare(`
     SELECT * FROM ltv_models WHERE tenant_id = ? AND status = 'active' LIMIT 1
-  `).get(tenantId) as any;
+  `).get<LtvModelRow>(tenantId);
 
   if (!activeModel) return null;
 
-  const weights = JSON.parse(activeModel.weights);
+  const weights = JSON.parse(activeModel.weights) as Record<string, number>;
 
   // Adjust based on patterns
   for (const pattern of reflection.patterns) {
@@ -384,7 +409,7 @@ export async function getMetacognitionDashboard(tenantId: string): Promise<{
   overallHealth: number;
   confidenceScore: number;
   adaptationNeeded: boolean;
-  patterns: any[];
+  patterns: Array<{ pattern: string; frequency: number; impact: string; recommendation: string }>;
   calibration: ConfidenceCalibration[];
   factorAttributions: FactorAttribution[];
   recentEvents: MetacognitionEvent[];
@@ -403,15 +428,15 @@ export async function getMetacognitionDashboard(tenantId: string): Promise<{
     WHERE tenant_id = ?
     ORDER BY created_at DESC
     LIMIT 20
-  `).all(tenantId) as any[];
+  `).all<MetacognitionEvent>(tenantId);
 
   const feedback = await db.prepare(`
     SELECT error_pct FROM prediction_feedback WHERE tenant_id = ?
-  `).all(tenantId) as any[];
+  `).all<ErrorPctRow>(tenantId);
 
   const totalFeedback = feedback.length;
-  const avgError = totalFeedback > 0 ? feedback.reduce((s: number, f: any) => s + f.error_pct, 0) / totalFeedback : 0;
-  const sorted = [...feedback].sort((a: any, b: any) => a.error_pct - b.error_pct);
+  const avgError = totalFeedback > 0 ? feedback.reduce((s: number, f: ErrorPctRow) => s + f.error_pct, 0) / totalFeedback : 0;
+  const sorted = [...feedback].sort((a: ErrorPctRow, b: ErrorPctRow) => a.error_pct - b.error_pct);
   const medianError = sorted.length > 0 ? sorted[Math.floor(sorted.length / 2)].error_pct : 0;
 
   return {

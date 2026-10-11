@@ -33,7 +33,7 @@ export interface UsageRecord {
   unitCost: number;
   totalCost: number;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Invoice {
@@ -53,6 +53,26 @@ export interface InvoiceLineItem {
   amount: number;
   quantity: number;
   unitPrice: number;
+}
+
+// ── Row types (mirror the DB columns) ──────────────────────
+
+interface TenantPlanRow { plan: string }
+interface UsageSumRow { total: number }
+interface UsageCostRow { total: number; cost: number }
+interface UsageGroupRow { type: string; total_quantity: number; total_cost: number }
+interface SubItemRow { stripe_subscription_item_id: string }
+interface SubCustomerRow { stripe_customer_id: string; stripe_subscription_id: string }
+interface SpendRow { total_spend: number | null; total_revenue: number | null }
+interface BaselineRow { baseline_roas: number | null }
+interface TotalRow { total: number | null }
+interface SubscriptionDbRow {
+  id: string; tenant_id: string; plan: string; status: string;
+  current_period_end: string; created_at: string;
+}
+interface InvoiceRow {
+  id: string; amount: number; status: string;
+  period_start: string; period_end: string; currency: string;
 }
 
 // ── Plan Pricing ───────────────────────────────────────────
@@ -105,7 +125,7 @@ export async function createSubscription(
           expand: ["items.data.id"],
         });
         stripeSubscriptionId = subscription.id;
-        const item = (subscription as any).items?.data?.[0];
+        const item = subscription.items?.data?.[0];
         stripeSubscriptionItemId = item?.id;
       }
     } catch (err) {
@@ -145,7 +165,7 @@ export async function createSubscription(
     tenantId,
     stripeCustomerId,
     stripeSubscriptionId,
-    plan: plan as any,
+    plan: plan as Subscription["plan"],
     status: "active",
     currentPeriodStart: now.toISOString(),
     currentPeriodEnd: periodEnd.toISOString(),
@@ -171,12 +191,12 @@ export async function recordUsage(
   tenantId: string,
   type: UsageRecord["type"],
   quantity: number,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<UsageRecord> {
   const db = await getDb();
 
   // Get tenant plan
-  const tenant =   await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get(tenantId) as any;
+  const tenant =   await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get<TenantPlanRow>(tenantId);
   const plan = tenant?.plan || "starter";
   const pricing = PLAN_PRICING[plan];
 
@@ -188,11 +208,11 @@ export async function recordUsage(
     case "ai_tokens":
       unitCost = pricing.tokenOverageRate;
       // Check against included amount
-      const tokenUsage =   await db.prepare(`
+      const tokenUsage = (await db.prepare(`
         SELECT COALESCE(SUM(quantity), 0) as total FROM usage_records
         WHERE tenant_id = ? AND type = 'ai_tokens'
         AND timestamp >= datetime('now', 'start of month')
-      `).get(tenantId) as any;
+      `).get<UsageSumRow>(tenantId)) ?? { total: 0 };
 
       const includedTokens = pricing.includedTokens;
       const overageTokens = Math.max(0, (tokenUsage.total + quantity) - includedTokens);
@@ -201,11 +221,11 @@ export async function recordUsage(
 
     case "signals_sent":
       unitCost = pricing.signalOverageRate;
-      const signalUsage =   await db.prepare(`
+      const signalUsage = (await db.prepare(`
         SELECT COALESCE(SUM(quantity), 0) as total FROM usage_records
         WHERE tenant_id = ? AND type = 'signals_sent'
         AND timestamp >= datetime('now', 'start of month')
-      `).get(tenantId) as any;
+      `).get<UsageSumRow>(tenantId)) ?? { total: 0 };
 
       const includedSignals = pricing.includedSignals;
       const overageSignals = Math.max(0, (signalUsage.total + quantity) - includedSignals);
@@ -238,7 +258,7 @@ export async function recordUsage(
         SELECT stripe_subscription_item_id FROM subscriptions
         WHERE tenant_id = ? AND status IN ('active', 'past_due')
         ORDER BY created_at DESC LIMIT 1
-      `).get(tenantId) as any;
+      `).get<SubItemRow>(tenantId);
       if (sub?.stripe_subscription_item_id) {
         await stripe.subscriptionItems.createUsageRecord(sub.stripe_subscription_item_id, {
           quantity,
@@ -297,7 +317,7 @@ export async function calculateOaasFees(
     FROM campaigns
     WHERE tenant_id = ? AND status = 'active'
     AND updated_at BETWEEN ? AND ?
-  `).get(tenantId, periodStart, periodEnd) as any;
+  `).get<SpendRow>(tenantId, periodStart, periodEnd);
 
   const totalSpend = spendData?.total_spend || 0;
   const totalRevenue = spendData?.total_revenue || 0;
@@ -312,7 +332,7 @@ export async function calculateOaasFees(
     WHERE tenant_id = ? AND status = 'active'
     AND updated_at < ?
     AND updated_at >= datetime(?, '-30 days')
-  `).get(tenantId, periodStart, periodStart) as any;
+  `).get<BaselineRow>(tenantId, periodStart, periodStart);
 
   const baselineRoas = baselineData?.baseline_roas || 4.0;
   const actualRoas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
@@ -341,7 +361,7 @@ export async function generateInvoice(
   periodEnd: string
 ): Promise<Invoice> {
   const db = await getDb();
-  const tenant =   await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get(tenantId) as any;
+  const tenant =   await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get<TenantPlanRow>(tenantId);
   const plan = tenant?.plan || "starter";
   const pricing = PLAN_PRICING[plan];
 
@@ -358,12 +378,12 @@ export async function generateInvoice(
   }
 
   // AI token overage
-  const tokenUsage =   await db.prepare(`
+  const tokenUsage = (await db.prepare(`
     SELECT COALESCE(SUM(quantity), 0) as total, COALESCE(SUM(total_cost), 0) as cost
     FROM usage_records
     WHERE tenant_id = ? AND type = 'ai_tokens'
     AND timestamp BETWEEN ? AND ?
-  `).get(tenantId, periodStart, periodEnd) as any;
+  `).get<UsageCostRow>(tenantId, periodStart, periodEnd)) ?? { total: 0, cost: 0 };
 
   if (tokenUsage.cost > 0) {
     lineItems.push({
@@ -375,12 +395,12 @@ export async function generateInvoice(
   }
 
   // Signal overage
-  const signalUsage =   await db.prepare(`
+  const signalUsage = (await db.prepare(`
     SELECT COALESCE(SUM(quantity), 0) as total, COALESCE(SUM(total_cost), 0) as cost
     FROM usage_records
     WHERE tenant_id = ? AND type = 'signals_sent'
     AND timestamp BETWEEN ? AND ?
-  `).get(tenantId, periodStart, periodEnd) as any;
+  `).get<UsageCostRow>(tenantId, periodStart, periodEnd)) ?? { total: 0, cost: 0 };
 
   if (signalUsage.cost > 0) {
     lineItems.push({
@@ -424,7 +444,7 @@ export async function generateInvoice(
         SELECT stripe_customer_id, stripe_subscription_id FROM subscriptions
         WHERE tenant_id = ? AND status IN ('active', 'past_due')
         ORDER BY created_at DESC LIMIT 1
-      `).get(tenantId) as any;
+      `).get<SubCustomerRow>(tenantId);
       if (sub?.stripe_customer_id) {
         const customer = sub.stripe_customer_id;
         for (const item of lineItems) {
@@ -626,24 +646,24 @@ export async function getBillingStats(tenantId: string) {
   const subscription =   await db.prepare(`
     SELECT * FROM subscriptions WHERE tenant_id = ? AND status IN ('active', 'past_due')
     ORDER BY created_at DESC LIMIT 1
-  `).get(tenantId) as any;
+  `).get<SubscriptionDbRow>(tenantId);
 
   const currentUsage =   await db.prepare(`
     SELECT type, SUM(quantity) as total_quantity, SUM(total_cost) as total_cost
     FROM usage_records
     WHERE tenant_id = ? AND timestamp >= datetime('now', 'start of month')
     GROUP BY type
-  `).all(tenantId) as any[];
+  `).all<UsageGroupRow>(tenantId);
 
   const totalSpend =   await db.prepare(`
     SELECT SUM(spend) as total FROM campaigns WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<TotalRow>(tenantId);
 
   const invoices =   await db.prepare(`
     SELECT id, amount, status, period_start, period_end, currency
     FROM invoices WHERE tenant_id = ?
     ORDER BY created_at DESC LIMIT 50
-  `).all(tenantId) as any[];
+  `).all<InvoiceRow>(tenantId);
 
   return {
     subscription: subscription ? {
@@ -651,12 +671,12 @@ export async function getBillingStats(tenantId: string) {
       status: subscription.status,
       currentPeriodEnd: subscription.current_period_end,
     } : null,
-    usage: currentUsage.reduce((acc: Record<string, any>, row: any) => {
+    usage: currentUsage.reduce((acc: Record<string, unknown>, row: UsageGroupRow) => {
       acc[row.type] = { quantity: row.total_quantity, cost: row.total_cost };
       return acc;
     }, {}),
     totalManagedSpend: totalSpend?.total || 0,
-    invoices: invoices.map((inv: any) => ({
+    invoices: invoices.map((inv) => ({
       id: inv.id,
       amount: inv.amount,
       status: inv.status,

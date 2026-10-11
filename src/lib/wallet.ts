@@ -36,6 +36,39 @@ export interface FreezeResult {
   frozenAt: string;
 }
 
+// ── Row types (mirror the DB columns) ──────────────────────
+
+interface WalletCardRow {
+  id: string;
+  wallet_id: string;
+  last4: string;
+  brand: string;
+  limit: number;
+  spent: number;
+  campaign: string;
+  status: string;
+  issuer: string | null;
+  issuer_card_id: string | null;
+  created_at: string;
+}
+interface CampaignSpendRow { conversions: number; spend: number }
+interface CampaignTargetRow { target_cpa: number }
+interface TodaySpendRow { total: number }
+interface WalletRow { id: string; balance: number }
+interface WalletTopupRow {
+  id: string;
+  tenant_id: string;
+  amount: number;
+  method: "card" | "bank_transfer" | "invoice";
+  description: string;
+  status: string;
+}
+interface TxRow {
+  id: string; type: string; amount: number; description: string;
+  campaign: string | null; status: string; created_at: string;
+}
+interface CardCampaignInfo { campaignId?: string; campaignName?: string; dailyLimit?: number }
+
 // ── Card Limits & Thresholds ───────────────────────────────
 
 const CAC_THRESHOLD_MULTIPLIER = 2.5; // Freeze if actualCAC > targetCAC × 2.5
@@ -98,19 +131,20 @@ export async function checkAndFreezeOnCAC(
   targetCac: number
 ): Promise<FreezeResult | null> {
   const db = await getDb();
-  const card =   await db.prepare(`
+  const card = await db.prepare(`
     SELECT * FROM wallet_cards WHERE id = ? AND status = 'active'
-  `).get(cardId) as any;
+  `).get<WalletCardRow>(cardId);
 
   if (!card) return null;
 
-  const campaignInfo = JSON.parse(card.campaign || "{}");
+  const campaignInfo = JSON.parse(card.campaign || "{}") as CardCampaignInfo;
   const campaignId = campaignInfo.campaignId;
+  if (!campaignId) return null;
 
   // Get actual CAC for this campaign
-  const campaign =   await db.prepare(`
+  const campaign = await db.prepare(`
     SELECT conversions, spend FROM campaigns WHERE id = ?
-  `).get(campaignId) as any;
+  `).get<CampaignSpendRow>(campaignId);
 
   if (!campaign || campaign.conversions === 0) return null;
 
@@ -149,15 +183,15 @@ export async function checkAndFreezeOnCAC(
 
 export async function checkAndFreezeOnDailyLimit(cardId: string): Promise<FreezeResult | null> {
   const db = await getDb();
-  const card =   await db.prepare(`
+  const card = await db.prepare(`
     SELECT * FROM wallet_cards WHERE id = ? AND status = 'active'
-  `).get(cardId) as any;
+  `).get<WalletCardRow>(cardId);
 
   if (!card) return null;
 
-  let campaignInfo: any = {};
+  let campaignInfo: CardCampaignInfo = {};
   try {
-    campaignInfo = JSON.parse(card.campaign || "{}");
+    campaignInfo = JSON.parse(card.campaign || "{}") as CardCampaignInfo;
   } catch {
     campaignInfo = {};
   }
@@ -166,11 +200,13 @@ export async function checkAndFreezeOnDailyLimit(cardId: string): Promise<Freeze
   if (dailyLimit <= 0) return null;
 
   // Get today's spend for this card
-  const todaySpend =   await db.prepare(`
+  const todaySpend = await db.prepare(`
     SELECT COALESCE(SUM(amount), 0) as total FROM wallet_transactions
     WHERE wallet_id = ? AND campaign = ? AND type = 'debit'
     AND created_at >= date('now')
-  `).get(card.wallet_id, card.campaignName) as any;
+  `).get<TodaySpendRow>(card.wallet_id, card.campaign);
+
+  if (!todaySpend) return null;
 
   if (todaySpend.total >= dailyLimit) {
     await db.prepare(`
@@ -201,15 +237,15 @@ export async function checkAndFreezeOnDailyLimit(cardId: string): Promise<Freeze
 
 export async function checkAndFreezeOnBalance(cardId: string): Promise<FreezeResult | null> {
   const db = await getDb();
-  const card =   await db.prepare(`
+  const card = await db.prepare(`
     SELECT * FROM wallet_cards WHERE id = ? AND status = 'active'
-  `).get(cardId) as any;
+  `).get<WalletCardRow>(cardId);
 
   if (!card) return null;
 
-  const wallet =   await db.prepare(`
+  const wallet = await db.prepare(`
     SELECT balance FROM wallets WHERE id = ?
-  `).get(card.wallet_id) as any;
+  `).get<WalletRow>(card.wallet_id);
 
   if (!wallet || wallet.balance <= 0) {
     await db.prepare(`
@@ -240,9 +276,9 @@ export async function unfreezeCard(
 ): Promise<{ success: boolean; error?: string; requiresBiometric?: boolean }> {
   const { requiresBiometric = false, biometricToken } = opts;
   const db = await getDb();
-  const card =   await db.prepare(`
+  const card = await db.prepare(`
     SELECT * FROM wallet_cards WHERE id = ? AND status = 'frozen'
-  `).get(cardId) as any;
+  `).get<WalletCardRow>(cardId);
 
   if (!card) {
     return { success: false, error: "Card not found or not frozen" };
@@ -282,18 +318,18 @@ export async function recordCardTransaction(
   description: string
 ): Promise<{ success: boolean; error?: string }> {
   const db = await getDb();
-  const card =   await db.prepare(`
+  const card = await db.prepare(`
     SELECT * FROM wallet_cards WHERE id = ? AND status = 'active'
-  `).get(cardId) as any;
+  `).get<WalletCardRow>(cardId);
 
   if (!card) {
     return { success: false, error: "Card not found or frozen" };
   }
 
   // Check wallet balance
-  const wallet =   await db.prepare(`
+  const wallet = await db.prepare(`
     SELECT balance FROM wallets WHERE id = ?
-  `).get(card.wallet_id) as any;
+  `).get<WalletRow>(card.wallet_id);
 
   if (!wallet || wallet.balance < amount) {
     return { success: false, error: "Insufficient wallet balance" };
@@ -335,32 +371,34 @@ export async function recordCardTransaction(
 
 export async function getCampaignCards(tenantId: string): Promise<VirtualCard[]> {
   const db = await getDb();
-  const wallet =   await db.prepare(`
+  const wallet = await db.prepare(`
     SELECT id FROM wallets WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<{ id: string }>(tenantId);
 
   if (!wallet) return [];
 
-  const cards =   await db.prepare(`
+  const cards = await db.prepare(`
     SELECT * FROM wallet_cards WHERE wallet_id = ?
-  `).all(wallet.id) as any[];
+  `).all<WalletCardRow>(wallet.id);
 
-  return cards.map(card => {
-    let info: any = {};
+  const todaySpends = await Promise.all(
+    cards.map((card) =>
+      db.prepare(`
+        SELECT COALESCE(SUM(amount), 0) as total FROM wallet_transactions
+        WHERE wallet_id = ? AND campaign = ? AND type = 'debit'
+        AND created_at >= date('now')
+      `).get<TodaySpendRow>(card.wallet_id, card.campaign)
+    )
+  );
+
+  return cards.map((card, i) => {
+    let info: CardCampaignInfo = {};
     try {
-      info = JSON.parse(card.campaign || "{}");
+      info = JSON.parse(card.campaign || "{}") as CardCampaignInfo;
     } catch {
       // Legacy/seed cards store a plain campaign name in this column.
       info = { campaignName: card.campaign };
     }
-    // Compute today's spend for this card (used by daily-limit enforcement).
-    const today =   (db as any).prepare
-      ? (db.prepare(`
-          SELECT COALESCE(SUM(amount), 0) as total FROM wallet_transactions
-          WHERE wallet_id = ? AND campaign = ? AND type = 'debit'
-          AND created_at >= date('now')
-        `).get(card.wallet_id, card.campaign) as any)
-      : { total: 0 };
     return {
       id: card.id,
       walletId: card.wallet_id,
@@ -369,12 +407,12 @@ export async function getCampaignCards(tenantId: string): Promise<VirtualCard[]>
       limit: card.limit,
       spent: card.spent,
       dailyLimit: info.dailyLimit || 0,
-      dailySpent: today?.total || 0,
+      dailySpent: todaySpends[i]?.total || 0,
       campaignId: info.campaignId || "",
       campaignName: info.campaignName || card.campaign,
-      status: card.status,
-      issuer: (card as any).issuer,
-      issuerCardId: (card as any).issuer_card_id,
+      status: card.status as VirtualCard["status"],
+      issuer: (card.issuer as VirtualCard["issuer"]) ?? undefined,
+      issuerCardId: card.issuer_card_id ?? undefined,
       createdAt: card.created_at,
     };
   });
@@ -386,19 +424,19 @@ export function startAutoFreezeMonitor(): void {
   setInterval(async () => {
     try {
       const db = await getDb();
-      const activeCards =   await db.prepare(`
+      const activeCards = await db.prepare(`
         SELECT id, campaign FROM wallet_cards WHERE status = 'active'
-      `).all() as Array<{ id: string; campaign: string }>;
+      `).all<{ id: string; campaign: string }>();
 
       for (const card of activeCards) {
-        const info = JSON.parse(card.campaign || "{}");
+        const info = JSON.parse(card.campaign || "{}") as CardCampaignInfo;
         if (info.campaignId) {
           // Check CAC threshold
-          const campaign =   await db.prepare(`
+          const campaign = await db.prepare(`
             SELECT target_cpa FROM campaigns WHERE id = ?
-          `).get(info.campaignId) as any;
+          `).get<CampaignTargetRow>(info.campaignId);
 
-          if (campaign?.target_cpa > 0) {
+          if (campaign && campaign.target_cpa > 0) {
             await checkAndFreezeOnCAC(card.id, campaign.target_cpa);
           }
         }
@@ -485,7 +523,7 @@ async function creditTopUp(
   // Get or create wallet
   let wallet =   await db.prepare(`
     SELECT id, balance FROM wallets WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<WalletRow>(tenantId);
 
   if (!wallet) {
     const walletId = `wlt_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
@@ -533,10 +571,10 @@ async function creditTopUp(
  */
 export async function confirmTopUp(paymentIntentId: string): Promise<{ success: boolean; error?: string }> {
   const db = await getDb();
-  const pending =   await db.prepare(`
+  const pending = await db.prepare(`
     SELECT id, tenant_id, amount, method, description, status
     FROM wallet_topups WHERE payment_intent_id = ?
-  `).get(paymentIntentId) as any;
+  `).get<WalletTopupRow>(paymentIntentId);
 
   if (!pending) {
     return { success: false, error: "Unknown payment intent" };
@@ -560,7 +598,7 @@ export async function getWalletBalance(tenantId: string): Promise<{ balance: num
   const db = await getDb();
   const wallet =   await db.prepare(`
     SELECT id, balance FROM wallets WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<WalletRow>(tenantId);
 
   return { balance: wallet?.balance || 0, walletId: wallet?.id || "" };
 }
@@ -576,7 +614,7 @@ export async function deductAdSpend(
   const db = await getDb();
   const wallet =   await db.prepare(`
     SELECT id, balance FROM wallets WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<WalletRow>(tenantId);
 
   if (!wallet || wallet.balance < amount) {
     return { success: false, error: "Insufficient wallet balance" };
@@ -614,13 +652,13 @@ export async function checkAllWalletCards(tenantId: string): Promise<void> {
   const db = await getDb();
   const wallet =   await db.prepare(`
     SELECT id FROM wallets WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<WalletRow>(tenantId);
 
   if (!wallet) return;
 
-  const cards =   await db.prepare(`
+  const cards = await db.prepare(`
     SELECT id FROM wallet_cards WHERE wallet_id = ? AND status = 'active'
-  `).all(wallet.id) as Array<{ id: string }>;
+  `).all<{ id: string }>(wallet.id);
 
   for (const card of cards) {
     await checkAndFreezeOnDailyLimit(card.id);
@@ -645,15 +683,25 @@ export async function getWalletTransactions(
   const db = await getDb();
   const wallet =   await db.prepare(`
     SELECT id FROM wallets WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<WalletRow>(tenantId);
 
   if (!wallet) return [];
 
-  return   await db.prepare(`
+  const rows = await db.prepare(`
     SELECT id, type, amount, description, campaign, status, created_at
     FROM wallet_transactions
     WHERE wallet_id = ?
     ORDER BY created_at DESC
     LIMIT ?
-  `).all(wallet.id, limit) as any[];
+  `).all<TxRow>(wallet.id, limit);
+
+  return rows.map((r) => ({
+    id: r.id,
+    type: r.type,
+    amount: r.amount,
+    description: r.description,
+    campaign: r.campaign ?? undefined,
+    status: r.status,
+    createdAt: r.created_at,
+  }));
 }

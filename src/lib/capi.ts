@@ -9,6 +9,7 @@ import { getDb } from "./db";
 import { predictLTV, type LTVPrediction } from "./ltv-engine";
 import { checkFraud } from "./fraud";
 import { eventBus, EVENTS } from "./events";
+import type { PlatformId } from "./connectors/types";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -99,6 +100,68 @@ interface CustomerHistory {
   previousLtvPredictions: number[];
 }
 
+interface SignalValueRow {
+  value: number | null;
+  event_type: string;
+  created_at: string;
+  user_id: string | null;
+}
+
+interface PredictedLtvRow {
+  predicted_ltv: number;
+}
+
+interface CapiSignalData {
+  session_engagement?: number;
+  session_duration?: number;
+  page_views?: number;
+  bounce_rate?: number;
+  email_engagement?: number;
+  utm_source?: string;
+  click_through_rate?: number;
+  conversion_rate?: number;
+}
+
+interface IntegrationRow {
+  access_token: string;
+  refresh_token: string | null;
+  config: {
+    customerId?: string;
+    conversionActionId?: string;
+    pixelCode?: string;
+    pixelId?: string;
+  } | null;
+}
+
+interface SignalIdRow {
+  id: string;
+}
+
+interface CachedPredictionRow {
+  predicted_ltv: number | null;
+  confidence: number | null;
+  segment: "high" | "mid" | "low" | "churn_risk" | null;
+}
+
+interface TenantIntegrationRow {
+  platform: string;
+  access_token: string;
+  config: string;
+}
+
+interface CountRow {
+  count: number | null;
+}
+
+interface AvgRow {
+  avg: number | null;
+}
+
+interface SegmentRow {
+  segment: string;
+  count: number;
+}
+
 async function getCustomerHistory(tenantId: string, email?: string, externalId?: string): Promise<CustomerHistory> {
   const db = await getDb();
 
@@ -112,7 +175,7 @@ async function getCustomerHistory(tenantId: string, email?: string, externalId?:
     AND (user_id = ? OR user_id = ?)
     ORDER BY created_at DESC
     LIMIT 100
-  `).all(tenantId, hash || "", externalId || "") as any[];
+  `).all<SignalValueRow>(tenantId, hash || "", externalId || "");
 
   const predictions = await db.prepare(`
     SELECT predicted_ltv
@@ -121,7 +184,7 @@ async function getCustomerHistory(tenantId: string, email?: string, externalId?:
     AND user_id = ?
     ORDER BY created_at DESC
     LIMIT 20
-  `).all(tenantId, hash || externalId || "") as any[];
+  `).all<PredictedLtvRow>(tenantId, hash || externalId || "");
 
   if (signals.length === 0) {
     return {
@@ -206,7 +269,7 @@ interface FeatureVector {
 function extractFeatures(
   signal: ConversionEvent,
   history: CustomerHistory,
-  signalData: any
+  signalData: CapiSignalData | null
 ): FeatureVector {
   const now = Date.now();
   const eventDate = new Date(signal.eventTime * 1000);
@@ -357,7 +420,7 @@ async function deliverToPlatform(
       SELECT access_token, refresh_token, config
       FROM tenant_integrations
       WHERE tenant_id = ? AND platform = ? AND status = 'active'
-    `).get(tenantId, platform) as any;
+    `).get<IntegrationRow>(tenantId, platform);
 
     if (!integration) {
       return { platform, success: false, latencyMs: Date.now() - start, error: "No active integration" };
@@ -371,7 +434,7 @@ async function deliverToPlatform(
       return { platform, success: false, latencyMs: Date.now() - start, error: `Platform '${platform}' not supported` };
     }
 
-    const connector = await getConnector(platform as any);
+    const connector = await getConnector(platform as PlatformId);
     const accessToken = await decryptToken(integration.access_token);
 
     // Build conversion event for connector
@@ -410,7 +473,7 @@ async function deliverToPlatform(
 function buildPlatformPayload(
   platform: string,
   enriched: EnrichedConversion,
-  integration: any
+  integration: IntegrationRow
 ): Record<string, unknown> {
   const { original, enriched: enrich, dedupId } = enriched;
 
@@ -529,13 +592,13 @@ export async function enrichConversionEvent(
   const db = await getDb();
   const existing = await db.prepare(`
     SELECT id FROM signals WHERE tenant_id = ? AND dedup_id = ?
-  `).get(tenantId, dedupId) as any;
+  `).get<SignalIdRow>(tenantId, dedupId);
 
   if (existing) {
     // Return cached result
     const cached = await db.prepare(`
       SELECT * FROM ltv_predictions WHERE signal_id = ?
-    `).get(existing.id) as any;
+    `).get<CachedPredictionRow>(existing.id);
 
     return {
       id: existing.id,
@@ -692,13 +755,13 @@ export async function enrichConversionEvent(
   const integrations = await db.prepare(`
     SELECT platform, access_token, config FROM tenant_integrations
     WHERE tenant_id = ? AND status = 'active'
-  `).all(tenantId) as Array<{ platform: string; access_token: string; config: string }>;
+  `).all<TenantIntegrationRow>(tenantId);
 
   const deliveryPromises = integrations
     .filter(integ => isPlatformSupported(integ.platform))
     .map(async (integ) => {
       try {
-        const connector = await getConnector(integ.platform as any);
+        const connector = await getConnector(integ.platform as PlatformId);
         const accessToken = await decryptToken(integ.access_token);
         const result = await connector.sendConversion(accessToken, {
           eventName: event.eventName,
@@ -721,7 +784,7 @@ export async function enrichConversionEvent(
         return result;
       } catch (error) {
         return {
-          platform: integ.platform as any,
+          platform: integ.platform,
           success: false,
           latencyMs: 0,
           error: String(error),
@@ -813,37 +876,37 @@ export async function getEnrichmentStats(tenantId: string) {
 
   const totalSignals = await db.prepare(`
     SELECT COUNT(*) as count FROM signals WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<CountRow>(tenantId);
 
   const todaySignals = await db.prepare(`
     SELECT COUNT(*) as count FROM signals
     WHERE tenant_id = ? AND created_at >= date('now')
-  `).get(tenantId) as any;
+  `).get<CountRow>(tenantId);
 
   const avgLtv = await db.prepare(`
     SELECT AVG(predicted_ltv) as avg FROM ltv_predictions WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<AvgRow>(tenantId);
 
   const segmentBreakdown = await db.prepare(`
     SELECT segment, COUNT(*) as count FROM ltv_predictions
     WHERE tenant_id = ? GROUP BY segment
-  `).all(tenantId) as any[];
+  `).all<SegmentRow>(tenantId);
 
   const avgLatency = await db.prepare(`
     SELECT AVG(CAST(metric_value AS REAL)) as avg FROM system_metrics
     WHERE tenant_id = ? AND metric_name = 'capi.enrichment'
     AND created_at >= datetime('now', '-1 hour')
-  `).get(tenantId) as any;
+  `).get<AvgRow>(tenantId);
 
   return {
     totalSignals: totalSignals?.count || 0,
     todaySignals: todaySignals?.count || 0,
     avgPredictedLtv: avgLtv?.avg || 0,
-    segments: segmentBreakdown.reduce((acc: Record<string, number>, row: any) => {
+    segments: segmentBreakdown.reduce((acc: Record<string, number>, row: SegmentRow) => {
       acc[row.segment] = row.count;
       return acc;
     }, {}),
     avgLatencyMs: avgLatency?.avg || 0,
-    enrichmentRate: totalSignals?.count > 0 ? 1.0 : 0,
+    enrichmentRate: (totalSignals?.count || 0) > 0 ? 1.0 : 0,
   };
 }

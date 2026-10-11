@@ -3,8 +3,20 @@
 // Right to deletion, data export, data retention, consent management
 // ============================================================
 
-import { getDb } from "./db";
+import { getDb, type SqlRow } from "./db";
 import { eventBus } from "./events";
+
+interface CountRow {
+  c: number;
+}
+
+interface IdRow {
+  id: string;
+}
+
+interface TagsRow {
+  tags: string;
+}
 
 // ── Data Export (Right to Portability) ─────────────────────
 
@@ -13,14 +25,14 @@ export async function exportUserData(tenantId: string, userId: string): Promise<
   tenantId: string;
   userId: string;
   data: {
-    profile: any;
-    campaigns: any[];
-    signals: any[];
-    ltvPredictions: any[];
-    walletTransactions: any[];
-    agentActions: any[];
-    feedback: any[];
-    metacognitionEvents: any[];
+    profile: SqlRow | undefined;
+    campaigns: SqlRow[];
+    signals: SqlRow[];
+    ltvPredictions: SqlRow[];
+    walletTransactions: SqlRow[];
+    agentActions: SqlRow[];
+    feedback: SqlRow[];
+    metacognitionEvents: SqlRow[];
   };
 }> {
   const db = await getDb();
@@ -28,43 +40,43 @@ export async function exportUserData(tenantId: string, userId: string): Promise<
   const profile = await db.prepare(`
     SELECT id, email, name, role, tenant_id, tenant_name, plan, created_at
     FROM users WHERE id = ? AND tenant_id = ?
-  `).get(userId, tenantId);
+  `).get<SqlRow>(userId, tenantId);
 
   const campaigns = await db.prepare(`
     SELECT * FROM campaigns WHERE tenant_id = ?
-  `).all(tenantId);
+  `).all<SqlRow>(tenantId);
 
   const signals = await db.prepare(`
     SELECT id, tenant_id, platform, event_type, value, created_at
     FROM signals WHERE tenant_id = ?
-  `).all(tenantId);
+  `).all<SqlRow>(tenantId);
 
   const ltvPredictions = await db.prepare(`
     SELECT id, tenant_id, predicted_ltv, confidence, segment, created_at
     FROM ltv_predictions WHERE tenant_id = ?
-  `).all(tenantId);
+  `).all<SqlRow>(tenantId);
 
   const walletTransactions = await db.prepare(`
     SELECT wt.id, wt.type, wt.amount, wt.description, wt.created_at
     FROM wallet_transactions wt
     JOIN wallets w ON wt.wallet_id = w.id
     WHERE w.tenant_id = ?
-  `).all(tenantId);
+  `).all<SqlRow>(tenantId);
 
   const agentActions = await db.prepare(`
     SELECT id, agent_type, action_type, created_at
     FROM agent_actions WHERE tenant_id = ?
-  `).all(tenantId);
+  `).all<SqlRow>(tenantId);
 
   const feedback = await db.prepare(`
     SELECT id, predicted_ltv, actual_ltv, error_pct, created_at
     FROM prediction_feedback WHERE tenant_id = ?
-  `).all(tenantId);
+  `).all<SqlRow>(tenantId);
 
   const metacognitionEvents = await db.prepare(`
     SELECT id, event_type, insight, created_at
     FROM metacognition_log WHERE tenant_id = ?
-  `).all(tenantId);
+  `).all<SqlRow>(tenantId);
 
   // Log the export
   await db.prepare(`
@@ -140,7 +152,7 @@ export async function deleteUserData(tenantId: string, userId: string, options: 
         UPDATE signals SET user_id = 'ANONYMIZED', raw_data = '{}'
         WHERE tenant_id = ?
       `).run(tenantId);
-      const count = await db.prepare(`SELECT changes() as c`).get() as any;
+      const count = await db.prepare(`SELECT changes() as c`).get<CountRow>();
       anonymizedRecords.signals = count?.c || 0;
     }
 
@@ -149,7 +161,7 @@ export async function deleteUserData(tenantId: string, userId: string, options: 
         UPDATE ltv_predictions SET user_id = 'ANONYMIZED', factors = '[]'
         WHERE tenant_id = ?
       `).run(tenantId);
-      const count = await db.prepare(`SELECT changes() as c`).get() as any;
+      const count = await db.prepare(`SELECT changes() as c`).get<CountRow>();
       anonymizedRecords.predictions = count?.c || 0;
     }
   } else {
@@ -185,7 +197,7 @@ export async function deleteUserData(tenantId: string, userId: string, options: 
     }
 
     if (deleteWallet) {
-      const wallets = await db.prepare(`SELECT id FROM wallets WHERE tenant_id = ?`).all(tenantId) as any[];
+      const wallets = await db.prepare(`SELECT id FROM wallets WHERE tenant_id = ?`).all<IdRow>(tenantId);
       for (const w of wallets) {
         await db.prepare(`DELETE FROM wallet_transactions WHERE wallet_id = ?`).run(w.id);
         await db.prepare(`DELETE FROM wallet_cards WHERE wallet_id = ?`).run(w.id);
@@ -210,7 +222,7 @@ export async function deleteUserData(tenantId: string, userId: string, options: 
     JSON.stringify({ userId, options, deletedRecords, anonymizedRecords })
   );
 
-  eventBus.emit("gdpr.data_deleted" as any, {
+  eventBus.emit("gdpr.data_deleted", {
     tenantId,
     userId,
     anonymizeOnly,
@@ -340,7 +352,7 @@ export async function getConsentStatus(tenantId: string, userId: string): Promis
     SELECT tags FROM system_metrics
     WHERE tenant_id = ? AND metric_name = 'gdpr.consent_recorded'
     ORDER BY created_at DESC LIMIT 10
-  `).all(tenantId) as any[];
+  `).all<TagsRow>(tenantId);
 
   const consents: Record<string, boolean> = {};
   for (const record of records) {
