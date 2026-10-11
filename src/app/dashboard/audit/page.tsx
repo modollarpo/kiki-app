@@ -46,8 +46,8 @@ export default function AuditPage() {
         <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="flex flex-wrap justify-between items-start gap-3 mb-5">
           <div>
-            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Audit Log</h1>
-            <p className="font-mono text-[11px] text-gray-500">All system events · User actions · Security events · {loading ? "…" : `${EVENTS.length} events`}</p>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Audit Log</h1>
+            <p className="font-mono text-[11px] text-t3">All system events · User actions · Security events · {loading ? "…" : `${EVENTS.length} events`}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <div className="flex flex-wrap gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
@@ -68,19 +68,19 @@ export default function AuditPage() {
             <div className="min-w-[800px]">
               <div className="grid grid-cols-[80px_140px_100px_200px_1fr_80px] gap-3 px-5 py-2 border-b border-g800 bg-g950">
                 {["TIME", "ACTOR", "ACTION", "RESOURCE", "DETAIL", "LEVEL"].map(h => (
-                  <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-gray-600">{h}</span>
+                  <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-t4">{h}</span>
                 ))}
               </div>
               {filtered.map((e, i) => (
                 <div key={i} className="grid grid-cols-[80px_140px_100px_200px_1fr_80px] gap-3 px-5 py-2.5 items-center hover:bg-[var(--card-hover)] border-b border-g900">
-              <span className="font-mono text-[10px] text-gray-600">{e.time}</span>
+              <span className="font-mono text-[10px] text-t4">{e.time}</span>
               <div>
-                <span className="font-mono text-[10px] font-semibold text-white">{e.actor}</span>
-                {e.role !== "agent" && <span className="font-mono text-[10px] text-gray-600 ml-1">({e.role})</span>}
+                <span className="font-mono text-[10px] font-semibold text-t1">{e.actor}</span>
+                {e.role !== "agent" && <span className="font-mono text-[10px] text-t4 ml-1">({e.role})</span>}
               </div>
               <Badge color={ACTION_COLORS[e.action] || K.t3}>{e.action}</Badge>
-              <span className="font-mono text-[10px] text-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">{e.resource}</span>
-              <span className="font-mono text-[10px] text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">{e.detail}</span>
+              <span className="font-mono text-[10px] text-t2 overflow-hidden text-ellipsis whitespace-nowrap">{e.resource}</span>
+              <span className="font-mono text-[10px] text-t3 overflow-hidden text-ellipsis whitespace-nowrap">{e.detail}</span>
               <Badge color={e.severity === "critical" ? K.danger : e.severity === "warn" ? K.warn : K.t3} dot pulse={e.severity === "critical"}>
                 {e.severity.toUpperCase()}
               </Badge>

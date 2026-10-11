@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button, StatCard, ProgressBar, AIThinking } from "@/components/ui";
@@ -213,8 +213,8 @@ export default function SyncBrainPage() {
         {/* Chat Panel */}
         <div className="flex flex-col overflow-hidden">
           <div className="mb-4">
-            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">SyncBrain™</h1>
-            <p className="font-mono text-[11px] text-gray-500">AI-powered campaign intelligence · Voice input via Groq Whisper · Translation via LibreTranslate + Azure AI Translator</p>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">SyncBrain™</h1>
+            <p className="font-mono text-[11px] text-t3">AI-powered campaign intelligence · Voice input via Groq Whisper · Translation via LibreTranslate + Azure AI Translator</p>
           </div>
 
           <Card accent={K.green} className="flex flex-col overflow-hidden flex-1">
@@ -234,7 +234,7 @@ export default function SyncBrainPage() {
                       {m.model && (
                         <>
                           <Badge color={m.model.includes("4o") && !m.model.includes("mini") ? K.gold : K.mint} dot>{m.model}</Badge>
-                          {m.tokens && <span className="font-mono text-[10px] text-gray-600">{m.tokens} tokens</span>}
+                          {m.tokens && <span className="font-mono text-[10px] text-t4">{m.tokens} tokens</span>}
                         </>
                       )}
                       {m.role === "assistant" && (
@@ -332,11 +332,11 @@ export default function SyncBrainPage() {
           <StatCard label="Wallet Balance" value={`$${(stats?.walletBalance || 0).toLocaleString()}`} accent={K.teal} sub={`$${(stats?.totalSpend || 0).toLocaleString()} managed spend`} />
 
           <Card accent={K.blue}>
-            <h3 className="font-mono font-bold text-xs text-white mb-3">Model Routing</h3>
+            <h3 className="font-mono font-bold text-xs text-t1 mb-3">Model Routing</h3>
             {(() => {
               const total = stats?.agentTypes?.reduce((s, a) => s + a.count, 0) || 0;
               if (total === 0) {
-                return <p className="font-mono text-[10px] text-gray-500">No routing data available</p>;
+                return <p className="font-mono text-[10px] text-t3">No routing data available</p>;
               }
               // Map agent types to model tiers
               const miniTypes = ["bidding", "pacing", "signals"];
@@ -351,34 +351,34 @@ export default function SyncBrainPage() {
               ].map(m => (
                 <div key={m.label} className="mb-3">
                   <div className="flex justify-between mb-[3px]">
-                    <span className="font-mono text-[10px] text-gray-400">{m.label}</span>
-                    <span className="font-mono text-[10px] font-bold text-white">{m.pct}%</span>
+                    <span className="font-mono text-[10px] text-t2">{m.label}</span>
+                    <span className="font-mono text-[10px] font-bold text-t1">{m.pct}%</span>
                   </div>
                   <ProgressBar value={m.pct} max={100} color={m.color} height={3} glow />
-                  <p className="font-mono text-[10px] text-gray-600 mt-0.5">{m.desc}</p>
+                  <p className="font-mono text-[10px] text-t4 mt-0.5">{m.desc}</p>
                 </div>
               ));
             })()}
           </Card>
 
           <Card accent={K.teal}>
-            <h3 className="font-mono font-bold text-xs text-white mb-3">Recent Agent Actions</h3>
+            <h3 className="font-mono font-bold text-xs text-t1 mb-3">Recent Agent Actions</h3>
             {stats?.recentActions && stats.recentActions.length > 0 ? (
               stats.recentActions.slice(0, 5).map((action, i) => (
                 <div key={i} className="flex items-center gap-2 py-2" style={{ borderBottom: `1px solid ${K.g800}` }}>
                   <Badge color={K.teal} dot>{action.type}</Badge>
-                  <span className="font-mono text-[10px] text-gray-400 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{action.details}</span>
+                  <span className="font-mono text-[10px] text-t2 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{action.details}</span>
                 </div>
               ))
             ) : (
               <div className="py-3 text-center">
-                <span className="font-mono text-[10px] text-gray-600">No recent actions</span>
+                <span className="font-mono text-[10px] text-t4">No recent actions</span>
               </div>
             )}
           </Card>
 
           <Card>
-            <h3 className="font-mono font-bold text-xs text-white mb-3">System Capabilities</h3>
+            <h3 className="font-mono font-bold text-xs text-t1 mb-3">System Capabilities</h3>
             {[
               "Campaign performance analysis",
               "Budget optimization recommendations",
@@ -389,7 +389,7 @@ export default function SyncBrainPage() {
             ].map((cap, i) => (
               <div key={i} className="flex items-center gap-2 py-1.5">
                 <span className="text-emerald-400 text-[10px]">✓</span>
-                <span className="font-mono text-[10px] text-gray-400">{cap}</span>
+                <span className="font-mono text-[10px] text-t2">{cap}</span>
               </div>
             ))}
           </Card>

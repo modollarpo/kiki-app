@@ -55,8 +55,8 @@ export default function OaasPage() {
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">OaaS Tasks</h1>
-          <p className="font-mono text-[11px] text-gray-500">Optimization-as-a-Service · Agent-generated tasks · Approval workflow</p>
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">OaaS Tasks</h1>
+          <p className="font-mono text-[11px] text-t3">Optimization-as-a-Service · Agent-generated tasks · Approval workflow</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
@@ -68,7 +68,7 @@ export default function OaasPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div className="flex flex-col gap-2.5">
-            <h3 className="font-mono text-[11px] tracking-[0.12em] uppercase text-gray-600 mb-1">Pending Review ({pending.length})</h3>
+            <h3 className="font-mono text-[11px] tracking-[0.12em] uppercase text-t4 mb-1">Pending Review ({pending.length})</h3>
             {pending.map(task => (
               <Card key={task.id} accent={TASK_TYPE_COLORS[task.type]}>
                 <div className="flex items-start gap-3">
@@ -77,12 +77,12 @@ export default function OaasPage() {
                       <Badge color={TASK_TYPE_COLORS[task.type]}>{task.type.toUpperCase()}</Badge>
                       <Badge color={K.warn} dot>PENDING</Badge>
                     </div>
-                    <p className="font-mono text-xs font-bold text-white mb-1">{task.title}</p>
-                    <p className="font-mono text-[10px] text-gray-500 mb-2">{task.details}</p>
+                    <p className="font-mono text-xs font-bold text-t1 mb-1">{task.title}</p>
+                    <p className="font-mono text-[10px] text-t3 mb-2">{task.details}</p>
                     <div className="flex flex-wrap items-center gap-4">
-                      <span className="font-mono text-[10px] text-gray-600">Agent: <span className="text-gray-400">{task.agent}</span></span>
-                      <span className="font-mono text-[10px] text-gray-600">Impact: <span className="font-bold text-kmint">{task.expectedImpact ?? "—"}</span></span>
-                      <span className="font-mono text-[10px] text-gray-600">Confidence: <span className="text-kblue">{task.confidence != null ? `${task.confidence}%` : "—"}</span></span>
+                      <span className="font-mono text-[10px] text-t4">Agent: <span className="text-t2">{task.agent}</span></span>
+                      <span className="font-mono text-[10px] text-t4">Impact: <span className="font-bold text-kmint">{task.expectedImpact ?? "—"}</span></span>
+                      <span className="font-mono text-[10px] text-t4">Confidence: <span className="text-kblue">{task.confidence != null ? `${task.confidence}%` : "—"}</span></span>
                     </div>
                     <div className="mt-2">
                       <ProgressBar value={task.confidence ?? 0} max={100} color={K.blue} height={3} />
@@ -98,30 +98,30 @@ export default function OaasPage() {
           </div>
 
           <div className="flex flex-col gap-2.5">
-            <h3 className="font-mono text-[11px] tracking-[0.12em] uppercase text-gray-600 mb-1">In Progress ({approved.length})</h3>
+            <h3 className="font-mono text-[11px] tracking-[0.12em] uppercase text-t4 mb-1">In Progress ({approved.length})</h3>
             {approved.map(task => (
               <Card key={task.id}>
                 <div className="flex items-center gap-2.5">
                   <Badge color={K.blue} dot>APPROVED</Badge>
                   <div className="flex-1">
-                    <p className="font-mono text-[11px] font-semibold text-white">{task.title}</p>
-                    <p className="font-mono text-[10px] text-gray-500">{task.agent} · {task.expectedImpact ?? "no projected impact"}</p>
+                    <p className="font-mono text-[11px] font-semibold text-t1">{task.title}</p>
+                    <p className="font-mono text-[10px] text-t3">{task.agent} · {task.expectedImpact ?? "no projected impact"}</p>
                   </div>
-                  <span className="font-mono text-[10px] text-gray-600">{task.createdAt}</span>
+                  <span className="font-mono text-[10px] text-t4">{task.createdAt}</span>
                 </div>
               </Card>
             ))}
 
-            <h3 className="font-mono text-[11px] tracking-[0.12em] uppercase text-gray-600 mt-2 mb-1">Completed ({completed.length})</h3>
+            <h3 className="font-mono text-[11px] tracking-[0.12em] uppercase text-t4 mt-2 mb-1">Completed ({completed.length})</h3>
             {completed.map(task => (
               <Card key={task.id}>
                 <div className="flex items-center gap-2.5">
                   <Badge color={K.mint} dot>DONE</Badge>
                   <div className="flex-1">
-                    <p className="font-mono text-[11px] font-semibold text-white">{task.title}</p>
-                    <p className="font-mono text-[10px] text-gray-500">{task.agent} · {task.expectedImpact ?? "no projected impact"}</p>
+                    <p className="font-mono text-[11px] font-semibold text-t1">{task.title}</p>
+                    <p className="font-mono text-[10px] text-t3">{task.agent} · {task.expectedImpact ?? "no projected impact"}</p>
                   </div>
-                  <span className="font-mono text-[10px] text-gray-600">{task.createdAt}</span>
+                  <span className="font-mono text-[10px] text-t4">{task.createdAt}</span>
                 </div>
               </Card>
             ))}

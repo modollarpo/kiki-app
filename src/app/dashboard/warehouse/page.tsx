@@ -16,8 +16,8 @@ export default function WarehousePage() {
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Feature Store & Data Warehouse</h1>
-          <p className="font-mono text-[11px] text-gray-500">Feature snapshots · Model training data · Sync status</p>
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Feature Store & Data Warehouse</h1>
+          <p className="font-mono text-[11px] text-t3">Feature snapshots · Model training data · Sync status</p>
         </div>
 
         {loading ? (
@@ -36,13 +36,13 @@ export default function WarehousePage() {
             {features.length === 0 ? (
               <Card>
                 <div className="p-10 text-center">
-                  <p className="font-mono text-xs text-gray-600 mb-3">No feature snapshots yet. Run the LTV training engine to populate the feature store.</p>
+                  <p className="font-mono text-xs text-t4 mb-3">No feature snapshots yet. Run the LTV training engine to populate the feature store.</p>
                   <Button variant="primary" size="sm" onClick={() => { fetch("/api/ltv/training", { method: "POST", headers: { "Content-Type": "application/json", ...(token && { Authorization: `Bearer ${token}` }) } }).then(() => location.reload()); }}>Train Model →</Button>
                 </div>
               </Card>
             ) : (
               <Card accent={K.teal}>
-                <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Feature Store ({features.length})</h3>
+                <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Feature Store ({features.length})</h3>
                 <ScrollableTable>
                   <table className="w-full border-collapse min-w-[600px]">
                     <thead>
@@ -55,12 +55,12 @@ export default function WarehousePage() {
                     <tbody>
                       {features.map((f: { name: string; value: string; samples: number; mean: number | null; stddev: number | null; updated: string }, i: number) => (
                         <tr key={i}>
-                          <td className="font-mono text-[11px] font-semibold text-white py-2.5 px-3 border-b border-g800">{f.name}</td>
-                          <td className="font-mono text-[11px] text-gray-400 py-2.5 px-3 border-b border-g800">{f.value ?? "—"}</td>
-                          <td className="font-mono text-[11px] text-gray-400 py-2.5 px-3 border-b border-g800">{fmt.compact(f.samples)}</td>
-                          <td className="font-mono text-[11px] text-gray-400 py-2.5 px-3 border-b border-g800">{f.mean?.toFixed?.(2) ?? "—"}</td>
-                          <td className="font-mono text-[11px] text-gray-400 py-2.5 px-3 border-b border-g800">{f.stddev?.toFixed?.(2) ?? "—"}</td>
-                          <td className="font-mono text-[11px] text-gray-500 py-2.5 px-3 border-b border-g800">{new Date(f.updated).toLocaleDateString()}</td>
+                          <td className="font-mono text-[11px] font-semibold text-t1 py-2.5 px-3 border-b border-g800">{f.name}</td>
+                          <td className="font-mono text-[11px] text-t2 py-2.5 px-3 border-b border-g800">{f.value ?? "—"}</td>
+                          <td className="font-mono text-[11px] text-t2 py-2.5 px-3 border-b border-g800">{fmt.compact(f.samples)}</td>
+                          <td className="font-mono text-[11px] text-t2 py-2.5 px-3 border-b border-g800">{f.mean?.toFixed?.(2) ?? "—"}</td>
+                          <td className="font-mono text-[11px] text-t2 py-2.5 px-3 border-b border-g800">{f.stddev?.toFixed?.(2) ?? "—"}</td>
+                          <td className="font-mono text-[11px] text-t3 py-2.5 px-3 border-b border-g800">{new Date(f.updated).toLocaleDateString()}</td>
                         </tr>
                       ))}
                     </tbody>

@@ -52,7 +52,7 @@ export function WelcomeOverlay() {
       >
         <div className="text-center mb-6">
           <div className="text-[32px] mb-2">🚀</div>
-          <h2 className="font-mono font-bold text-[16px] text-white mb-1">Welcome to KIKI Agent</h2>
+          <h2 className="font-mono font-bold text-[16px] text-t1 mb-1">Welcome to KIKI Agent</h2>
           <p className="font-mono text-[11px]" style={{ color: K.t3 }}>Here are 3 quick steps to get started:</p>
         </div>
 
@@ -71,7 +71,7 @@ export function WelcomeOverlay() {
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-[10px] font-bold" style={{ color: K.blue4 }}>STEP {i + 1}</span>
                   <span className="font-mono text-[10px]" style={{ color: K.t3 }}>—</span>
-                  <span className="font-mono text-[11px] text-white font-semibold">{s.title}</span>
+                  <span className="font-mono text-[11px] text-t1 font-semibold">{s.title}</span>
                 </div>
                 <p className="font-mono text-[10px] mt-0.5" style={{ color: K.t3 }}>{s.desc}</p>
               </div>

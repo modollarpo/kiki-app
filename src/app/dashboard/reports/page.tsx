@@ -79,8 +79,8 @@ export default function ReportsPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
-            <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Reports</h1>
-            <p className="font-mono text-[11px] text-gray-500">Scheduled reports · Recent exports · Report builder</p>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Reports</h1>
+            <p className="font-mono text-[11px] text-t3">Scheduled reports · Recent exports · Report builder</p>
           </div>
           <div className="flex gap-2">
             <div className="flex gap-1 p-[3px] rounded-sm" style={{ background: K.g900, border: `1px solid ${K.g800}` }}>
@@ -106,25 +106,25 @@ export default function ReportsPage() {
           <>
             <Card padding={0}>
               <div className="px-5 py-3.5" style={{ borderBottom: `1px solid ${K.g800}` }}>
-                <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">Scheduled Reports ({scheduledReports.length})</h2>
+                <h2 className="font-mono font-bold text-[13px] text-t1 flex items-center gap-2">Scheduled Reports ({scheduledReports.length})</h2>
               </div>
               {loading ? (
-                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading reports…</span></div>
+                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">Loading reports…</span></div>
               ) : scheduledReports.length === 0 ? (
-                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No scheduled reports. Create one to automate your reporting.</span></div>
+                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">No scheduled reports. Create one to automate your reporting.</span></div>
               ) : (
                 <ScrollableTable>
                 {scheduledReports.map((r, i) => (
                   <div key={i} className="grid grid-cols-[1fr_160px_140px_80px_100px_80px] gap-3 px-5 py-3.5 items-center hover:bg-[var(--card-hover)] min-w-[600px]"
                     style={{ borderBottom: i < scheduledReports.length - 1 ? `1px solid ${K.g900}` : undefined }}>
                     <div>
-                      <p className="font-mono text-[11px] font-semibold text-white mb-0.5">{r.name}</p>
-                      <p className="font-mono text-[10px] text-gray-600">{r.schedule}</p>
+                      <p className="font-mono text-[11px] font-semibold text-t1 mb-0.5">{r.name}</p>
+                      <p className="font-mono text-[10px] text-t4">{r.schedule}</p>
                     </div>
-                    <span className="font-mono text-[10px] text-gray-500">{r.recipients}</span>
+                    <span className="font-mono text-[10px] text-t3">{r.recipients}</span>
                     <Badge color={K.blue}>{r.format}</Badge>
-                    <span className="font-mono text-[10px] text-gray-600">Last: {r.lastSent}</span>
-                    <span className="font-mono text-[10px] text-gray-500">Next: {r.nextSend}</span>
+                    <span className="font-mono text-[10px] text-t4">Last: {r.lastSent}</span>
+                    <span className="font-mono text-[10px] text-t3">Next: {r.nextSend}</span>
                     <Badge color={K.mint} dot pulse>ACTIVE</Badge>
                   </div>
                 ))}
@@ -134,23 +134,23 @@ export default function ReportsPage() {
 
             <Card>
               <div className="px-5 py-3.5" style={{ borderBottom: `1px solid ${K.g800}` }}>
-                <h2 className="font-mono font-bold text-[13px] text-white flex items-center gap-2">Recent Exports</h2>
+                <h2 className="font-mono font-bold text-[13px] text-t1 flex items-center gap-2">Recent Exports</h2>
               </div>
               {loading ? (
-                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">Loading exports…</span></div>
+                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">Loading exports…</span></div>
               ) : recentExports.length === 0 ? (
-                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-gray-500">No exports yet. Generate a report to see it here.</span></div>
+                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">No exports yet. Generate a report to see it here.</span></div>
               ) : (
                 recentExports.map((e, i) => (
                   <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3 hover:bg-[var(--card-hover)]"
                     style={{ borderBottom: i < recentExports.length - 1 ? `1px solid ${K.g900}` : undefined }}>
                     <div className="page-header-actions">
                       <Badge color={e.format === "PDF" ? K.danger : e.format === "Excel" ? K.mint : e.format === "CSV" ? K.blue : K.teal}>{e.format}</Badge>
-                      <span className="font-mono text-[11px] font-semibold text-white">{e.name}</span>
+                      <span className="font-mono text-[11px] font-semibold text-t1">{e.name}</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-4">
-                      <span className="font-mono text-[10px] text-gray-600">{e.date}</span>
-                      <span className="font-mono text-[10px] text-gray-500">{e.size}</span>
+                      <span className="font-mono text-[10px] text-t4">{e.date}</span>
+                      <span className="font-mono text-[10px] text-t3">{e.size}</span>
                       <Badge color={K.mint}>DONE</Badge>
                       <Button variant="ghost" size="xs" onClick={() => downloadSimplePDF(`${e.name.replace(/\s+/g, "-").toLowerCase()}.pdf`, e.name, e.name + "\n\nGenerated: " + e.date + "\nFormat: " + e.format + "\n\nThis report was generated by the KIKI Agent reporting engine.")}>Download ↓</Button>
                     </div>
@@ -163,15 +163,15 @@ export default function ReportsPage() {
 
         {tab === "templates" && (
           <div>
-            <p className="font-mono text-[11px] text-gray-500 mb-4">Choose a template to build a new report</p>
+            <p className="font-mono text-[11px] text-t3 mb-4">Choose a template to build a new report</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {templates.map((t, i) => (
                 <Card key={i} accent={t.color} hover onClick={() => buildReport(t.name, t.desc)} className="cursor-pointer">
                   <div className="flex items-center gap-2.5 mb-2.5">
                     <span className="text-xl" style={{ color: t.color }}>{t.icon}</span>
-                    <h3 className="font-mono font-bold text-xs text-white">{t.name}</h3>
+                    <h3 className="font-mono font-bold text-xs text-t1">{t.name}</h3>
                   </div>
-                  <p className="font-sans text-[11px] text-gray-500 leading-relaxed">{t.desc}</p>
+                  <p className="font-sans text-[11px] text-t3 leading-relaxed">{t.desc}</p>
                   <div className="mt-3">
                     <Button variant="secondary" size="xs" onClick={(e) => { e.stopPropagation(); buildReport(t.name, t.desc); }}>Use Template →</Button>
                   </div>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -51,10 +51,10 @@ export default function ProfitMarginPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-white">
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-t1">
         <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Profit & Margin Intelligence</h1>
-          <p className="font-mono text-[11px] text-gray-500">COGS-aware bidding — profit ROAS instead of revenue ROAS</p>
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Profit & Margin Intelligence</h1>
+          <p className="font-mono text-[11px] text-t3">COGS-aware bidding — profit ROAS instead of revenue ROAS</p>
         </div>
 
         {demoMode && !loading && (
@@ -72,21 +72,21 @@ export default function ProfitMarginPage() {
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-3">
           <Card accent={K.mint}>
-            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Margin Distribution</h3>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Margin Distribution</h3>
             {portfolio?.distribution?.map((d, i) => (
               <div key={i} className="flex items-center gap-3 py-2 px-3 mb-1 rounded-sm bg-g850">
-                <span className="font-mono text-[11px] text-white min-w-[70px] flex-shrink-0">{d.bucket}</span>
+                <span className="font-mono text-[11px] text-t1 min-w-[70px] flex-shrink-0">{d.bucket}</span>
                 <div className="flex-1 h-1.5 rounded-[3px] bg-g800">
                   <div className="h-full rounded-[3px]" style={{ width: `${Math.min(100, (d.count / Math.max(...portfolio.distribution.map(x => x.count))) * 100)}%`, background: K.mint }} />
                 </div>
-                <span className="font-mono text-[11px] text-gray-500 flex-shrink-0">{d.count} SKUs</span>
+                <span className="font-mono text-[11px] text-t3 flex-shrink-0">{d.count} SKUs</span>
               </div>
-            )) || <p className="font-mono text-xs text-gray-500">Upload product margins to see distribution.</p>}
+            )) || <p className="font-mono text-xs text-t3">Upload product margins to see distribution.</p>}
           </Card>
 
           <Card accent={K.gold}>
-            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Upload Margins (CSV)</h3>
-            <p className="font-mono text-[11px] text-gray-500 mb-2">Format: SKU, Product Name, COGS, Price</p>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Upload Margins (CSV)</h3>
+            <p className="font-mono text-[11px] text-t3 mb-2">Format: SKU, Product Name, COGS, Price</p>
             <textarea value={csvInput} onChange={e => setCsvInput(e.target.value)} placeholder={"SKU-001, Widget Pro, 12.50, 49.99\nSKU-002, Basic Widget, 3.20, 19.99"}
               className="w-full h-[120px] p-2 font-mono text-xs rounded-sm resize-vertical"
               style={{ background: K.inputBg, border: `1px solid ${K.inputBorder}`, color: K.t1 }} />

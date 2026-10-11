@@ -42,10 +42,10 @@ export default function CRMPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-white">
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-t1">
         <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">CRM</h1>
-          <p className="font-mono text-[11px] text-gray-500">Manage contacts, pipeline, and customer relationships</p>
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">CRM</h1>
+          <p className="font-mono text-[11px] text-t3">Manage contacts, pipeline, and customer relationships</p>
         </div>
 
         {error && (
@@ -63,23 +63,23 @@ export default function CRMPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
           <Card accent={K.mint}>
-            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Segments</h3>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Segments</h3>
             {segments.map((seg, i) => (
               <div key={i} className="p-2.5 px-3 mb-2 rounded-sm bg-g850">
                 <div className="flex justify-between mb-1">
-                  <span className="font-mono text-[11px] font-semibold text-white">{seg.name}</span>
+                  <span className="font-mono text-[11px] font-semibold text-t1">{seg.name}</span>
                   <span className="font-mono text-[11px] font-bold text-kmint">${(seg.value / 1000).toFixed(0)}K</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-mono text-[10px] text-gray-500">{seg.count} contacts</span>
-                  <span className="font-mono text-[10px] text-gray-500">{seg.conversion}% conversion</span>
+                  <span className="font-mono text-[10px] text-t3">{seg.count} contacts</span>
+                  <span className="font-mono text-[10px] text-t3">{seg.conversion}% conversion</span>
                 </div>
               </div>
             ))}
           </Card>
 
           <Card accent={K.blue}>
-            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Lead Scoring</h3>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Lead Scoring</h3>
             {leads.map((lead, i) => (
               <div key={i} className="flex flex-wrap items-center gap-2.5 py-2.5" style={{ borderBottom: i < leads.length - 1 ? `1px solid ${K.g800}` : undefined }}>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center font-mono text-[10px] font-bold flex-shrink-0 bg-g800 text-t2">
@@ -87,14 +87,14 @@ export default function CRMPage() {
                 </div>
                 <div className="flex-1 min-w-[120px]">
                   <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-                    <span className="font-mono text-[11px] font-semibold text-white">{lead.name}</span>
+                    <span className="font-mono text-[11px] font-semibold text-t1">{lead.name}</span>
                     <Badge color={lead.status === "qualified" ? K.mint : lead.status === "contacted" ? K.gold : K.blue}>{lead.status}</Badge>
                   </div>
-                  <span className="font-mono text-[10px] text-gray-500">{lead.company} · {lead.source}</span>
+                  <span className="font-mono text-[10px] text-t3">{lead.company} · {lead.source}</span>
                 </div>
                 <div className="text-right">
                   <div className="font-mono text-sm font-bold" style={{ color: lead.score >= 80 ? K.mint : lead.score >= 60 ? K.gold : K.danger }}>{lead.score}</div>
-                  <div className="font-mono text-[10px] text-gray-600">score</div>
+                  <div className="font-mono text-[10px] text-t4">score</div>
                 </div>
               </div>
             ))}

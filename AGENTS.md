@@ -83,7 +83,7 @@ src/
 
 ---
 
-## 3. Dashboard Pages (41 routes)
+## 3. Dashboard Pages (39 routes + 3 guide sub-pages)
 
 Every page lives under `src/app/dashboard/[slug]/page.tsx`. All use `"use client"` and wrap content in `<DashboardLayout>`.
 
@@ -131,7 +131,7 @@ Every page lives under `src/app/dashboard/[slug]/page.tsx`. All use `"use client
 
 ---
 
-## 4. API Routes (75+ routes)
+## 4. API Routes (101 routes)
 
 All routes live under `src/app/api/[slug]/route.ts`. Auth via `Authorization: Bearer <jwt>` header. Response format: `{ ok: boolean, ...data }` or `{ ok: false, error: string }`.
 
@@ -180,7 +180,7 @@ All routes live under `src/app/api/[slug]/route.ts`. Auth via `Authorization: Be
 | `/api/contacts` | GET/POST | Contact management |
 | `/api/creative-library` | GET/POST | Creative assets |
 | `/api/creative/generate` | GET/POST | Creative AI generation |
-| `/api/creative-attribution` | GET | Creative attribution |
+| `/api/attribution` | GET/POST/PUT | Attribution (proxy to Creative Attribution service) |
 | `/api/aiops` | GET | AI ops status |
 | `/api/admin` | GET | Admin health |
 | `/api/developer` | GET | Developer tools |
@@ -209,8 +209,12 @@ All routes live under `src/app/api/[slug]/route.ts`. Auth via `Authorization: Be
 | `/api/catalog/stats` | GET | Catalog stats |
 | `/api/catalog/evaluate` | POST | Catalog evaluation |
 | `/api/capi/enrich` | POST | CAPI signal enrichment |
-| `/api/attribution` | GET | Attribution analysis |
+| `/api/billing/change-plan` | POST | Change subscription plan |
 | `/api/gdpr` | POST | GDPR requests |
+| `/api/health` | GET | Liveness/readiness probe |
+| `/api/commerce/ltv-accuracy` | GET | LTV prediction accuracy |
+| `/api/influencer/dark-social` | GET/POST | Dark-social influencer signals |
+| `/api/mobile/v1/*` | GET/POST | Mobile app API (auth, agents, campaigns, wallet, analytics, notifications) |
 | `/api/webhooks/meta` | POST | Meta CAPI webhook |
 | `/api/webhooks/google` | POST | Google Ads webhook |
 | `/api/webhooks/tiktok` | POST | TikTok webhook |

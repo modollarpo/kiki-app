@@ -41,10 +41,10 @@ export default function AnomalyDetectionPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-white">
+      <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-t1">
         <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-white tracking-tight mb-1">Anomaly Detection</h1>
-          <p className="font-mono text-[11px] text-gray-500">AI-powered monitoring of campaign performance anomalies</p>
+          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Anomaly Detection</h1>
+          <p className="font-mono text-[11px] text-t3">AI-powered monitoring of campaign performance anomalies</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
@@ -55,21 +55,21 @@ export default function AnomalyDetectionPage() {
         </div>
 
         <Card accent={K.warn} className="mb-4">
-          <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Recent Anomalies</h3>
+          <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Recent Anomalies</h3>
           <div className="flex flex-col gap-2">
             {anomalies.map((anomaly, i) => (
               <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-3 p-3 px-3.5 rounded-sm bg-g900" style={{ borderLeft: `3px solid ${getSeverityColor(anomaly.severity)}` }}>
                 <div className="flex-1 min-w-[120px]">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <Badge color={getSeverityColor(anomaly.severity)} dot>{anomaly.severity}</Badge>
-                    <span className="font-mono text-xs font-bold text-white">{anomaly.type}</span>
-                    <span className="font-mono text-[10px] text-gray-600">#{anomaly.id}</span>
+                    <span className="font-mono text-xs font-bold text-t1">{anomaly.type}</span>
+                    <span className="font-mono text-[10px] text-t4">#{anomaly.id}</span>
                   </div>
-                  <p className="font-mono text-[10px] text-gray-500">{anomaly.campaign}</p>
+                  <p className="font-mono text-[10px] text-t3">{anomaly.campaign}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-mono text-[13px] font-bold" style={{ color: getSeverityColor(anomaly.severity) }}>{anomaly.change}</p>
-                  <p className="font-mono text-[10px] text-gray-600">{anomaly.timestamp}</p>
+                  <p className="font-mono text-[10px] text-t4">{anomaly.timestamp}</p>
                 </div>
                 <Badge color={anomaly.status === "investigating" ? K.warn : K.mint}>{anomaly.status}</Badge>
               </div>
@@ -79,9 +79,9 @@ export default function AnomalyDetectionPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <Card accent={K.blue}>
-            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Detection Rules</h3>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Detection Rules</h3>
             {anomalies.length === 0 ? (
-              <p className="font-mono text-[10px] text-gray-500 py-4 text-center">No detection rules triggered yet.</p>
+              <p className="font-mono text-[10px] text-t3 py-4 text-center">No detection rules triggered yet.</p>
             ) : (
               (() => {
                 const typeCounts = new Map<string, number>();
@@ -90,10 +90,10 @@ export default function AnomalyDetectionPage() {
                   <div key={i} className="flex items-center justify-between py-2.5 border-b border-g800">
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-kmint" />
-                      <span className="font-mono text-[11px] text-white">{type}</span>
+                      <span className="font-mono text-[11px] text-t1">{type}</span>
                     </div>
                     <div className="flex items-center gap-2.5">
-                      <span className="font-mono text-[10px] text-gray-500">{count} detections</span>
+                      <span className="font-mono text-[10px] text-t3">{count} detections</span>
                       <Badge color={K.mint}>Active</Badge>
                     </div>
                   </div>
@@ -103,7 +103,7 @@ export default function AnomalyDetectionPage() {
           </Card>
 
           <Card accent={K.teal}>
-            <h3 className="font-mono font-bold text-[13px] text-white mb-3.5">Severity Distribution</h3>
+            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Severity Distribution</h3>
             {[
               { label: "Critical", count: anomalies.filter(a => a.severity === "critical").length, pct: anomalies.length ? Math.round((anomalies.filter(a => a.severity === "critical").length / anomalies.length) * 100) : 0, color: K.danger },
               { label: "High", count: anomalies.filter(a => a.severity === "high").length, pct: anomalies.length ? Math.round((anomalies.filter(a => a.severity === "high").length / anomalies.length) * 100) : 0, color: K.warn },
@@ -113,8 +113,8 @@ export default function AnomalyDetectionPage() {
             ].map(s => (
               <div key={s.label} className="mb-2.5">
                 <div className="flex justify-between mb-[3px]">
-                  <span className="font-mono text-[10px] text-gray-400">{s.label}</span>
-                  <span className="font-mono text-[10px] font-bold text-white">{s.count}</span>
+                  <span className="font-mono text-[10px] text-t2">{s.label}</span>
+                  <span className="font-mono text-[10px] font-bold text-t1">{s.count}</span>
                 </div>
                 <ProgressBar value={s.pct} color={s.color} height={3} />
               </div>
