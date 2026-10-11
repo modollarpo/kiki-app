@@ -43,7 +43,7 @@ async function run() {
   
   // Now, since the prediction feedback table is likely empty, we need to seed it so the model can train on "actual" LTV
   console.log("Seeding feedback ground truth...");
-  const predictions = await db.prepare("SELECT * FROM ltv_predictions WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 100").all(tenantId);
+  const predictions = await db.prepare("SELECT * FROM ltv_predictions WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 100").all<{ id: string; predicted_ltv: number; segment: string; factors: string }>(tenantId);
   
   const insertFeedback = db.prepare(`
     INSERT INTO prediction_feedback (id, tenant_id, prediction_id, predicted_ltv, actual_ltv, error_pct, segment_predicted, segment_actual, factors_at_prediction)

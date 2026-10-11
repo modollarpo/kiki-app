@@ -5,6 +5,12 @@ import { createSession } from '@/lib/auth';
 import { REFRESH_SECRET, REFRESH_ISSUER, REFRESH_AUDIENCE, signRefreshToken } from '@/lib/mobile/auth';
 import { jwtVerify } from 'jose';
 
+interface UserRow {
+  id: string; email: string; password: string; first_name: string; last_name: string;
+  role: string; tenant_id: string;
+}
+interface TenantRow { id: string; name: string; plan: string }
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -24,8 +30,8 @@ export async function POST(request: NextRequest) {
 
     // Verify user still exists and is active
     const db = await getDb();
-    const tenant = await db.prepare('SELECT * FROM tenants WHERE id = ?').get(payload.tenantId);
-    const dbUser = await db.prepare('SELECT * FROM users WHERE id = ? AND tenant_id = ? AND status = ?').get(payload.sub, payload.tenantId, 'active');
+    const tenant = await db.prepare('SELECT * FROM tenants WHERE id = ?').get<TenantRow>(String(payload.tenantId));
+    const dbUser = await db.prepare('SELECT * FROM users WHERE id = ? AND tenant_id = ? AND status = ?').get<UserRow>(String(payload.sub), String(payload.tenantId), 'active');
     
     if (!dbUser || !tenant) {
       return NextResponse.json(

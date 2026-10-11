@@ -5,6 +5,12 @@ import { verifyPassword, createSession } from '@/lib/auth';
 import type { AuthUser } from '@/types';
 import { signRefreshToken } from '@/lib/mobile/auth';
 
+interface UserRow {
+  id: string; email: string; password: string; first_name: string; last_name: string;
+  role: string; tenant_id: string;
+}
+interface TenantRow { id: string; name: string; plan: string }
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -20,7 +26,7 @@ export async function POST(request: NextRequest) {
     const db = await getDb();
 
     // Get tenant
-    const tenant = await db.prepare('SELECT * FROM tenants WHERE id = ? AND status = ?').get(tenantId, 'active');
+    const tenant = await db.prepare('SELECT * FROM tenants WHERE id = ? AND status = ?').get<TenantRow>(tenantId, 'active');
     if (!tenant) {
       return NextResponse.json(
         { ok: false, error: 'Invalid tenant', code: 'INVALID_TENANT' },
@@ -29,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user
-    const user = await db.prepare('SELECT * FROM users WHERE email = ? AND tenant_id = ? AND status = ?').get(email, tenantId, 'active');
+    const user = await db.prepare('SELECT * FROM users WHERE email = ? AND tenant_id = ? AND status = ?').get<UserRow>(email, tenantId, 'active');
     if (!user) {
       return NextResponse.json(
         { ok: false, error: 'Invalid credentials', code: 'INVALID_CREDENTIALS' },

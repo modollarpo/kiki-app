@@ -27,7 +27,7 @@ export async function GET(req: Request) {
         SELECT action_type, COUNT(*) as count, AVG(duration_ms) as avg_duration
         FROM agent_actions WHERE tenant_id = ?
         GROUP BY action_type ORDER BY count DESC
-      `).all(tid),
+      `).all<ActionSummary>(tid),
       db.prepare(`
         SELECT
           COUNT(*) as total,
@@ -36,17 +36,17 @@ export async function GET(req: Request) {
           COALESCE(SUM(revenue), 0) as total_revenue,
           COALESCE(AVG(roas), 0) as avg_roas
         FROM campaigns WHERE tenant_id = ?
-      `).get(tid),
+      `).get<CampaignStats>(tid),
       db.prepare(`
         SELECT type, SUM(quantity) as total_quantity, SUM(total_cost) as total_cost
         FROM usage_records WHERE tenant_id = ?
         GROUP BY type ORDER BY total_cost DESC
-      `).all(tid),
+      `).all<UsageSummary>(tid),
     ]);
 
-    const actions = actionSummary as ActionSummary[];
+    const actions = actionSummary;
     const cs = campaignStats as CampaignStats;
-    const usage = usageSummary as UsageSummary[];
+    const usage = usageSummary;
 
     const totalActions = actions.reduce((s, a) => s + a.count, 0);
     const totalUsageCost = usage.reduce((s, u) => s + u.total_cost, 0);

@@ -22,17 +22,17 @@ export async function GET(req: Request) {
       db.prepare(`
         SELECT plan, COUNT(*) as count FROM users
         WHERE tenant_id = ? GROUP BY plan ORDER BY count DESC
-      `).all(tid),
-      db.prepare("SELECT COUNT(*) as count FROM users WHERE tenant_id = ?").get(tid),
-      db.prepare("SELECT action_type, created_at FROM agent_actions WHERE tenant_id = ? AND agent_type = 'consent' ORDER BY created_at DESC LIMIT 1").get(tid),
+      `).all<PlanCount>(tid),
+      db.prepare("SELECT COUNT(*) as count FROM users WHERE tenant_id = ?").get<CountRow>(tid),
+      db.prepare("SELECT action_type, created_at FROM agent_actions WHERE tenant_id = ? AND agent_type = 'consent' ORDER BY created_at DESC LIMIT 1").get<{ action_type: string; created_at: string }>(tid),
     ]);
 
-    const lastConsentAction = consentLog as { action_type: string; created_at: string } | undefined;
+    const lastConsentAction = consentLog;
 
     return json({
       data: {
         totalUsers: (totalUsers as CountRow).count,
-        byPlan: (planCounts as PlanCount[]).map((r) => ({
+        byPlan: planCounts.map((r) => ({
           plan: r.plan,
           count: r.count,
         })),

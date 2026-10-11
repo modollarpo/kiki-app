@@ -57,7 +57,7 @@ export async function GET(req: Request) {
 
       user = { id: userId, email, name, role: "advertiser", tenant_id: tenantId, tenant_name: tenantName, plan: "growth", avatar_initials: initials };
     } else {
-      await (await db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")).run(user.id);
+      await (await db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")).run(String(user.id));
     }
 
     const sessionToken = createSession({

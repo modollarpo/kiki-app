@@ -27,11 +27,11 @@ export async function GET(req: Request) {
                mean, stddev, min_val, max_val, updated_at
         FROM feature_store WHERE tenant_id = ?
         ORDER BY updated_at DESC LIMIT ? OFFSET ?
-      `).all(tid, limit, offset),
-      db.prepare("SELECT COUNT(*) as count FROM feature_store WHERE tenant_id = ?").get(tid),
+      `).all<FeatureRow>(tid, limit, offset),
+      db.prepare("SELECT COUNT(*) as count FROM feature_store WHERE tenant_id = ?").get<CountRow>(tid),
     ]);
 
-    const features = rows as FeatureRow[];
+    const features = rows;
     const total = (totalRow as CountRow).count;
 
     return json({

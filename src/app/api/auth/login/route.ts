@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       avatarInitials: String(user.avatar_initials || ""),
     });
 
-    await (await db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?")).run(user.id);
+    await (await db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?")).run(String(user.id));
 
     return json({
       token,

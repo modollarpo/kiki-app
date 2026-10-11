@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { getDb, genId } from "@/lib/db";
+import { getDb, genId, type SqlParam } from "@/lib/db";
 import { getUserFromRequest, json, jsonError, sanitizeString } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
 import { logger, handleApiError } from "@/lib/logger";
@@ -73,7 +73,7 @@ export async function PUT(
     if (!existing) return jsonError("Campaign not found", 404);
 
     const updates: string[] = [];
-    const values: unknown[] = [];
+    const values: SqlParam[] = [];
 
     if (body.name !== undefined) {
       const name = sanitizeString(String(body.name), 200);
@@ -138,7 +138,7 @@ export async function PATCH(
     if (!existing) return jsonError("Campaign not found", 404);
 
     const updates: string[] = [];
-    const values: unknown[] = [];
+    const values: SqlParam[] = [];
 
     if (body.name !== undefined) {
       const name = sanitizeString(String(body.name), 200);

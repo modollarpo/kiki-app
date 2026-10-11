@@ -28,21 +28,21 @@ export async function GET(req: Request) {
         FROM fraud_events
         WHERE tenant_id = ? AND severity IN ('high', 'medium')
         ORDER BY created_at DESC LIMIT ? OFFSET ?
-      `).all(tid, limit, offset),
+      `).all<FraudRow>(tid, limit, offset),
       db.prepare(`
         SELECT COUNT(*) as count FROM fraud_events
         WHERE tenant_id = ? AND severity IN ('high', 'medium')
-      `).get(tid),
+      `).get<CountRow>(tid),
       db.prepare(`
         SELECT severity, COUNT(*) as count FROM fraud_events
         WHERE tenant_id = ? AND severity IN ('high', 'medium')
         GROUP BY severity
-      `).all(tid),
+      `).all<SeverityCount>(tid),
     ]);
 
-    const anomalies = rows as FraudRow[];
+    const anomalies = rows;
     const total = (totalRow as CountRow).count;
-    const sevCounts = severityCounts as SeverityCount[];
+    const sevCounts = severityCounts;
 
     return json({
       data: {

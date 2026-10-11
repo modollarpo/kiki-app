@@ -28,23 +28,23 @@ export async function GET(req: Request) {
       db.prepare(`
         SELECT id, name, type, status, task, metric, last_action, action_count, created_at
         FROM agents WHERE tenant_id = ? ORDER BY created_at DESC
-      `).all(tid),
+      `).all<AgentRow>(tid),
       db.prepare(`
         SELECT metric_name, metric_value, tags, created_at
         FROM system_metrics
         WHERE (tenant_id = ? OR tenant_id IS NULL)
         ORDER BY created_at DESC LIMIT 25
-      `).all(tid),
+      `).all<MetricRow>(tid),
       db.prepare(`
         SELECT id, agent_id, agent_type, action_type, output, status, duration_ms, created_at
         FROM agent_actions WHERE tenant_id = ?
         ORDER BY created_at DESC LIMIT 30
-      `).all(tid),
+      `).all<ActionRow>(tid),
     ]);
 
-    const agents = agentStatuses as AgentRow[];
-    const metrics = systemMetrics as MetricRow[];
-    const actions = recentActions as ActionRow[];
+    const agents = agentStatuses;
+    const metrics = systemMetrics;
+    const actions = recentActions;
 
     const statusCounts = agents.reduce<Record<string, number>>((acc, a) => {
       acc[a.status] = (acc[a.status] || 0) + 1;

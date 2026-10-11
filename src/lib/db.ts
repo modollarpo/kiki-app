@@ -9,6 +9,22 @@ import { logger } from "./logger";
 import { Pool } from "pg";
 import { hashPassword } from "./auth";
 
+// Shared SQL value/row types. Kept loose enough to cover every backend
+// (pg, node:sqlite, in-memory) while still removing `any` from the layer.
+export type SqlParam = string | number | bigint | boolean | null | Uint8Array;
+export type SqlValue = SqlParam;
+export type SqlRow = Record<string, SqlValue>;
+
+// Minimal structural type for the node:sqlite handle used by the fallback.
+interface SqliteHandle {
+  prepare(sql: string): {
+    run(...params: SqlParam[]): { changes?: number; lastInsertRowid?: number | bigint };
+    get(...params: SqlParam[]): unknown;
+    all(...params: SqlParam[]): unknown[];
+  };
+  exec(sql: string): void;
+}
+
 // Local fallback database (Node 24+ built-in SQLite). Used automatically when
 // PostgreSQL is unreachable so `npm run dev` works with zero external setup.
 // The `node:sqlite` module is imported dynamically (inside createSqliteDb) so
@@ -58,7 +74,7 @@ class PgStatement {
     return null;
   }
 
-  async run(...params: any[]): Promise<{ lastInsertRowid: string | number; changes: number }> {
+  async run(...params: SqlParam[]): Promise<{ lastInsertRowid: string | number; changes: number }> {
     const trimmed = this.sql.trim();
     let q = translate(this.sql);
     let lastInsertRowid: string | number = 0;
@@ -77,14 +93,14 @@ class PgStatement {
     return { lastInsertRowid, changes };
   }
 
-  async get<T = Record<string, unknown>>(...params: any[]): Promise<T | undefined> {
+  async get<T = Record<string, unknown>>(...params: SqlParam[]): Promise<T | undefined> {
     const synthetic = this.interceptSynthetic();
     if (synthetic !== null) return synthetic as T;
     const res = await pool.query(translate(this.sql), params);
     return (res.rows[0] ?? undefined) as T | undefined;
   }
 
-  async all<T = Record<string, unknown>>(...params: any[]): Promise<T[]> {
+  async all<T = Record<string, unknown>>(...params: SqlParam[]): Promise<T[]> {
     const synthetic = this.interceptSynthetic();
     if (synthetic !== null) return [synthetic as T];
     const res = await pool.query(translate(this.sql), params);
@@ -113,7 +129,7 @@ class PgDb {
     }
   }
 
-  async pragma(_name: string): Promise<any> {
+  async pragma(_name: string): Promise<unknown> {
     return undefined;
   }
 }
@@ -121,33 +137,32 @@ class PgDb {
 // ─── SQLite fallback (node:sqlite) ───────────────────────
 // Implements the same prepare/exec surface as PgDb so call sites are unaware
 // which backend is active. Activated when PostgreSQL is unavailable.
-type SqliteRow = Record<string, any>;
 
 class SqliteStatement {
   constructor(private db: SqliteDb, private sql: string) {}
 
-  run(...params: any[]): { lastInsertRowid: number; changes: number } {
+  run(...params: SqlParam[]): { lastInsertRowid: number; changes: number } {
     const info = this.db.raw.prepare(this.sql).run(...params);
     this.db.lastRowCount = info.changes ?? 0;
     this.db.lastInsertRowid = Number(info.lastInsertRowid ?? 0);
     return { lastInsertRowid: this.db.lastInsertRowid, changes: this.db.lastRowCount };
   }
 
-  get(...params: any[]): any {
-    return this.db.raw.prepare(this.sql).get(...params) as SqliteRow | undefined;
+  get<T = SqlRow>(...params: SqlParam[]): T | undefined {
+    return this.db.raw.prepare(this.sql).get(...params) as T | undefined;
   }
 
-  all(...params: any[]): any[] {
-    return this.db.raw.prepare(this.sql).all(...params) as SqliteRow[];
+  all<T = SqlRow>(...params: SqlParam[]): T[] {
+    return this.db.raw.prepare(this.sql).all(...params) as T[];
   }
 }
 
 class SqliteDb {
-  raw: any;
+  raw: SqliteHandle;
   lastRowCount = 0;
   lastInsertRowid: number = 0;
 
-  constructor(raw: any) {
+  constructor(raw: SqliteHandle) {
     this.raw = raw;
   }
 
@@ -169,7 +184,7 @@ class SqliteDb {
     }
   }
 
-  async pragma(_name: string): Promise<any> {
+  async pragma(_name: string): Promise<unknown> {
     return undefined;
   }
 }
@@ -180,7 +195,7 @@ async function createSqliteDb(): Promise<SqliteDb | MemoryDb> {
   const dataDir = path.resolve(process.cwd(), "data");
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   const file = path.join(dataDir, "kiki-local.sqlite");
-  let DatabaseSync: any;
+  let DatabaseSync: (new (file: string, opts?: Record<string, unknown>) => SqliteHandle) | undefined;
   try {
     const sqliteModule = await import(/* @vite-ignore */ /* webpackIgnore: true */ "node:sqlite");
     DatabaseSync = sqliteModule.DatabaseSync;
@@ -217,26 +232,26 @@ async function createSqliteDb(): Promise<SqliteDb | MemoryDb> {
 // restart, but the app remains functional (auth, campaigns, etc. work in-session).
 class MemoryStatement {
   constructor(private db: MemoryDb, private sql: string) {}
-  private match(rows: Record<string, any>[]): Record<string, any>[] {
+  private match(rows: Record<string, SqlValue>[]): Record<string, SqlValue>[] {
     return rows;
   }
-  run(...params: any[]): { lastInsertRowid: number; changes: number } {
-    return this.db.execStatement(this.sql, params, "run");
+  run(...params: SqlParam[]): { lastInsertRowid: number; changes: number } {
+    return this.db.execStatement(this.sql, params, "run") as { lastInsertRowid: number; changes: number };
   }
-  get(...params: any[]): any {
+  get<T = SqlRow>(...params: SqlParam[]): T | undefined {
     const r = this.db.execStatement(this.sql, params, "get");
-    return Array.isArray(r) ? r[0] : r;
+    return (Array.isArray(r) ? r[0] : r) as T | undefined;
   }
-  all(...params: any[]): any[] {
+  all<T = SqlRow>(...params: SqlParam[]): T[] {
     const r = this.db.execStatement(this.sql, params, "all");
-    return Array.isArray(r) ? r : [r];
+    return (Array.isArray(r) ? r : [r]) as T[];
   }
 }
 
 class MemoryDb {
   lastRowCount = 0;
   lastInsertRowid: number = 0;
-  tables: Record<string, Record<string, any>[]> = {};
+  tables: Record<string, Record<string, SqlValue>[]> = {};
   private seq = 0;
 
   prepare(sql: string): MemoryStatement {
@@ -267,7 +282,7 @@ class MemoryDb {
         const t = mm[1].replace(/"/g, "");
         const cols = mm[2].split(",").map((c) => c.trim().replace(/"/g, ""));
         const vals = this.splitValues(mm[3]);
-        const row: Record<string, any> = {};
+        const row: Record<string, SqlValue> = {};
         cols.forEach((c, i) => (row[c] = this.coerce(vals[i])));
         if (row.id === undefined) row.id = "mem_" + ++this.seq;
         (this.tables[t] ||= []).push(row);
@@ -277,7 +292,7 @@ class MemoryDb {
     // Non-DDL statements are no-ops for the in-memory fallback (safe).
   }
 
-  execStatement(sql: string, params: any[], mode: "run" | "get" | "all"): any {
+  execStatement(sql: string, params: SqlParam[], mode: "run" | "get" | "all"): SqlRow | SqlRow[] | { lastInsertRowid: number; changes: number } | undefined {
     const trimmed = sql.trim().replace(/\s+/g, " ");
     const lower = trimmed.toLowerCase();
 
@@ -307,7 +322,7 @@ class MemoryDb {
             const col = opMatch[1].replace(/"/g, "");
             const op = opMatch[2];
             const pv = String(params.shift() ?? "");
-            rows = rows.filter((r: any) => {
+            rows = rows.filter((r: SqlRow) => {
               const rv = String(r[col] ?? "");
               switch (op) {
                 case "=": return rv === pv;
@@ -353,18 +368,18 @@ class MemoryDb {
 
       // If there are aggregate functions, compute them
       if (aggExprs.length > 0) {
-        const result: Record<string, any> = {};
+        const result: Record<string, SqlValue> = {};
         for (const agg of aggExprs) {
           let values: number[];
           if (agg.caseWhen) {
-            values = rows.map((r: any) => {
+            values = rows.map((r: SqlRow) => {
               const rv = String(r[agg.caseWhen!.col] ?? "");
               return rv === agg.caseWhen!.val ? agg.caseWhen!.thenVal : agg.caseWhen!.elseVal;
             });
           } else if (agg.field === "*") {
             values = rows.map(() => 1);
           } else {
-            values = rows.map((r: any) => Number(r[agg.field]) || 0);
+            values = rows.map((r: SqlRow) => Number(r[agg.field]) || 0);
           }
           if (agg.fn === "count") {
             result[agg.alias] = values.length;
@@ -393,7 +408,7 @@ class MemoryDb {
         const t = mm[1].replace(/"/g, "");
         const cols = mm[2].split(",").map((c) => c.trim().replace(/"/g, ""));
         const vals = this.splitValues(mm[3]);
-        const row: Record<string, any> = {};
+        const row: Record<string, SqlValue> = {};
         let pIdx = 0;
         cols.forEach((c, i) => {
           const raw = vals[i];
@@ -432,7 +447,7 @@ class MemoryDb {
             }
           }
         }
-        affected = (this.tables[t] || []).filter((r: any) => String(r[wc]) === wv).length;
+        affected = (this.tables[t] || []).filter((r: SqlRow) => String(r[wc]) === wv).length;
       } else {
         let pIdx = 0;
         for (const row of (this.tables[t] || [])) {
@@ -454,7 +469,7 @@ class MemoryDb {
           const wc = whereCol[1].replace(/"/g, "");
           const wv = String(params[0]);
           const before = (this.tables[t] || []).length;
-          this.tables[t] = (this.tables[t] || []).filter((r: any) => String(r[wc]) !== wv);
+          this.tables[t] = (this.tables[t] || []).filter((r: SqlRow) => String(r[wc]) !== wv);
           this.lastRowCount = before - (this.tables[t] || []).length;
           return { lastInsertRowid: 0, changes: this.lastRowCount };
         }
@@ -467,7 +482,7 @@ class MemoryDb {
     return mode === "all" ? [] : mode === "get" ? undefined : { lastInsertRowid: 0, changes: 0 };
   }
 
-  async pragma(_name: string): Promise<any> {
+  async pragma(_name: string): Promise<unknown> {
     return undefined;
   }
 
@@ -488,7 +503,7 @@ class MemoryDb {
     return out;
   }
 
-  private coerce(v: string): any {
+  private coerce(v: string): SqlValue {
     if (v === undefined) return null;
     const t = v.trim();
     if (t === "NULL" || t === "") return t === "" ? "" : null;
