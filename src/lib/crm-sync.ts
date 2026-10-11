@@ -230,21 +230,21 @@ async function upsertCustomer(tenantId: string, customer: CrmCustomer): Promise<
 
   if (existing) {
     await db.prepare(sql).run(
-      customer.email, customer.phone, customer.firstName, customer.lastName,
+      customer.email ?? null, customer.phone ?? null, customer.firstName ?? null, customer.lastName ?? null,
       customer.totalOrders, customer.totalSpent, customer.totalSpent,
       ltvSegment, repeatProbability,
-      customer.averageOrderValue, daysSinceLastOrder,
-      churnRisk, customer.lastOrderAt, id
+      customer.averageOrderValue, daysSinceLastOrder ?? null,
+      churnRisk, customer.lastOrderAt ?? null, id
     );
   } else {
     await db.prepare(sql).run(
-      id, tenantId, customer.externalId, customer.email, customer.phone,
-      customer.firstName, customer.lastName,
+      id, tenantId, customer.externalId, customer.email ?? null, customer.phone ?? null,
+      customer.firstName ?? null, customer.lastName ?? null,
       customer.totalOrders, customer.totalSpent, customer.totalSpent,
       ltvSegment, repeatProbability,
-      customer.averageOrderValue, daysSinceLastOrder,
-      churnRisk, customer.firstOrderAt, customer.lastOrderAt,
-      customer.acquisitionSource, customer.acquisitionCampaign
+      customer.averageOrderValue, daysSinceLastOrder ?? null,
+      churnRisk, customer.firstOrderAt ?? null, customer.lastOrderAt ?? null,
+      customer.acquisitionSource ?? null, customer.acquisitionCampaign ?? null
     );
   }
 }

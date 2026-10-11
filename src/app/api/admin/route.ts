@@ -26,16 +26,16 @@ export async function GET(req: Request) {
 
     const [userCount, agentCount, campaignCount, walletBalance, recentMetrics, campaignStats, agentStatuses] =
       await Promise.all([
-        db.prepare("SELECT COUNT(*) as count FROM users WHERE tenant_id = ?").get(tid),
-        db.prepare("SELECT COUNT(*) as count FROM agents WHERE tenant_id = ?").get(tid),
-        db.prepare("SELECT COUNT(*) as count FROM campaigns WHERE tenant_id = ?").get(tid),
-        db.prepare("SELECT COALESCE(balance, 0) as balance FROM wallets WHERE tenant_id = ?").get(tid),
+        db.prepare("SELECT COUNT(*) as count FROM users WHERE tenant_id = ?").get<CountRow>(tid),
+        db.prepare("SELECT COUNT(*) as count FROM agents WHERE tenant_id = ?").get<CountRow>(tid),
+        db.prepare("SELECT COUNT(*) as count FROM campaigns WHERE tenant_id = ?").get<CountRow>(tid),
+        db.prepare("SELECT COALESCE(balance, 0) as balance FROM wallets WHERE tenant_id = ?").get<BalanceRow>(tid),
         db.prepare(`
           SELECT metric_name, metric_value, tags, created_at
           FROM system_metrics
           WHERE tenant_id = ? OR tenant_id IS NULL
           ORDER BY created_at DESC LIMIT 20
-        `).all(tid),
+        `).all<MetricRow>(tid),
         db.prepare(`
           SELECT
             SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
@@ -44,17 +44,17 @@ export async function GET(req: Request) {
             COALESCE(SUM(spend), 0) as total_spend,
             COALESCE(SUM(revenue), 0) as total_revenue
           FROM campaigns WHERE tenant_id = ?
-        `).get(tid),
-        db.prepare("SELECT status, COUNT(*) as count FROM agents WHERE tenant_id = ? GROUP BY status").all(tid),
+        `).get<CampaignStatRow>(tid),
+        db.prepare("SELECT status, COUNT(*) as count FROM agents WHERE tenant_id = ? GROUP BY status").all<StatusCount>(tid),
       ]);
 
     const u = userCount as CountRow;
     const a = agentCount as CountRow;
     const c = campaignCount as CountRow;
     const w = walletBalance as BalanceRow | undefined;
-    const metrics = recentMetrics as MetricRow[];
+    const metrics = recentMetrics;
     const cs = campaignStats as CampaignStatRow;
-    const statuses = agentStatuses as StatusCount[];
+    const statuses = agentStatuses;
 
     return json({
       data: {

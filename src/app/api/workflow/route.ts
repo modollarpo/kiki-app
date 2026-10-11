@@ -27,11 +27,11 @@ export async function GET(req: Request) {
                status, duration_ms, created_at
         FROM agent_actions WHERE tenant_id = ?
         ORDER BY created_at DESC LIMIT ? OFFSET ?
-      `).all(tid, limit, offset),
-      db.prepare("SELECT COUNT(*) as count FROM agent_actions WHERE tenant_id = ?").get(tid),
+      `).all<ActionRow>(tid, limit, offset),
+      db.prepare("SELECT COUNT(*) as count FROM agent_actions WHERE tenant_id = ?").get<CountRow>(tid),
     ]);
 
-    const events = rows as ActionRow[];
+    const events = rows;
     const total = (totalRow as CountRow).count;
 
     return json({

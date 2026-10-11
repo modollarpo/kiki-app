@@ -30,24 +30,24 @@ export async function GET(req: Request) {
         WHERE tenant_id = ?
         GROUP BY type
         ORDER BY total_cost DESC
-      `).all(tid),
+      `).all<UsageRow>(tid),
       db.prepare(`
         SELECT metric_name, metric_value, tags, created_at
         FROM system_metrics
         WHERE (tenant_id = ? OR tenant_id IS NULL)
         ORDER BY created_at DESC LIMIT 30
-      `).all(tid),
+      `).all<MetricRow>(tid),
       db.prepare(`
         SELECT id, agent_type, action_type, status, duration_ms, created_at
         FROM agent_actions
         WHERE tenant_id = ?
         ORDER BY created_at DESC LIMIT 50
-      `).all(tid),
+      `).all<ActionRow>(tid),
     ]);
 
-    const usage = usageRecords as UsageRow[];
-    const metrics = systemMetrics as MetricRow[];
-    const actions = recentActions as ActionRow[];
+    const usage = usageRecords;
+    const metrics = systemMetrics;
+    const actions = recentActions;
 
     const totalApiCalls = usage.reduce((s, r) => s + r.count, 0);
     const totalCost = usage.reduce((s, r) => s + r.total_cost, 0);

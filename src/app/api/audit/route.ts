@@ -49,17 +49,17 @@ export async function GET(req: Request) {
         ) combined
         ORDER BY created_at DESC
         LIMIT ? OFFSET ?
-      `).all(tid, tid, limit, offset),
+      `).all<AuditEntry>(tid, tid, limit, offset),
       db.prepare(`
         SELECT COUNT(*) as count FROM (
           SELECT id FROM agent_actions WHERE tenant_id = ?
           UNION ALL
           SELECT id FROM notifications WHERE tenant_id = ?
         ) combined
-      `).get(tid, tid),
+      `).get<CountRow>(tid, tid),
     ]);
 
-    const entries = rows as AuditEntry[];
+    const entries = rows;
     const total = (totalRow as CountRow).count;
 
     return json({
