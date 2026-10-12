@@ -1,4 +1,5 @@
 import { getDb } from "./db";
+import { type PlatformId } from "./connectors/types";
 import { logger } from "./logger";
 
 export interface FrequencyConfig {
@@ -108,7 +109,7 @@ export async function checkFrequencyGovernor(
         `).get(tenantId) as { platform: string; access_token: string } | undefined;
 
         if (integration) {
-          const connector = await getConnector(integration.platform as any);
+          const connector = await getConnector(integration.platform as PlatformId);
           if (connector?.pauseCampaign) {
             await connector.pauseCampaign(integration.access_token, row.campaign_id);
             pausedCampaigns.push(row.campaign_id);

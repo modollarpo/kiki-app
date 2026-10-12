@@ -1,4 +1,5 @@
 import { getDb } from "./db";
+import { type PlatformId } from "./connectors/types";
 import { logger } from "./logger";
 
 export async function collectCampaignMetrics(): Promise<number> {
@@ -17,7 +18,7 @@ export async function collectCampaignMetrics(): Promise<number> {
     try {
       const { getConnector } = await import("./connectors");
       const { decryptToken } = await import("./connectors/base");
-      const connector = await getConnector(integ.platform as any);
+      const connector = await getConnector(integ.platform as PlatformId);
       if (!connector) continue;
 
       const accessToken = integ.access_token;
@@ -79,19 +80,19 @@ export async function collectCampaignMetrics(): Promise<number> {
 export async function getLatestMetrics(
   tenantId: string,
   campaignId?: string
-): Promise<Array<Record<string, any>>> {
+): Promise<Array<Record<string, unknown>>> {
   const db = await getDb();
   if (campaignId) {
     return await db.prepare(`
       SELECT * FROM campaign_metrics_snapshot
       WHERE tenant_id = ? AND campaign_id = ?
       ORDER BY collected_at DESC LIMIT 1
-    `).all(tenantId, campaignId) as any[];
+    `).all<Record<string, unknown>>(tenantId, campaignId);
   }
   return await db.prepare(`
     SELECT DISTINCT ON (campaign_id) *
     FROM campaign_metrics_snapshot
     WHERE tenant_id = ?
     ORDER BY campaign_id, collected_at DESC
-  `).all(tenantId) as any[];
+  `).all<Record<string, unknown>>(tenantId);
 }

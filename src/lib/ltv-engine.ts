@@ -227,8 +227,20 @@ export interface LTVTrainingResult {
   trainedAt: string;
 }
 
+interface HistoricalPredictionRow {
+  predicted_ltv: number;
+  segment: string;
+  factors: string | null;
+  created_at: string;
+}
+
+interface ModelMetricRow {
+  metric_value: number;
+  tags: string | null;
+  created_at: string;
+}
+
 export async function trainTenantLTVModel(tenantId: string): Promise<LTVTrainingResult> {
-  const { getDb } = require("./db");
   const db = await getDb();
 
   // Get historical predictions with actual values
@@ -242,7 +254,7 @@ export async function trainTenantLTVModel(tenantId: string): Promise<LTVTraining
     WHERE tenant_id = ?
     ORDER BY created_at DESC
     LIMIT 1000
-  `).all(tenantId) as any[];
+  `).all<HistoricalPredictionRow>(tenantId);
 
   if (historicalData.length < 10) {
     return {
@@ -260,7 +272,7 @@ export async function trainTenantLTVModel(tenantId: string): Promise<LTVTraining
   // Calculate actual LTV from wallet transactions (ground truth)
   const wallet = await db.prepare(`
     SELECT id FROM wallets WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<{ id: string }>(tenantId);
 
   let actualRevenue = 0;
   if (wallet) {
@@ -268,7 +280,7 @@ export async function trainTenantLTVModel(tenantId: string): Promise<LTVTraining
       SELECT COALESCE(SUM(amount), 0) as total_revenue
       FROM wallet_transactions
       WHERE wallet_id = ? AND type = 'credit'
-    `).get(wallet.id) as any;
+    `).get<{ total_revenue: number }>(wallet.id);
     actualRevenue = txData?.total_revenue || 0;
   }
 
@@ -337,7 +349,6 @@ export async function getModelPerformance(tenantId: string): Promise<Array<{
   mape: number;
   sampleCount: number;
 }>> {
-  const { getDb } = require("./db");
   const db = await getDb();
 
   const metrics = await db.prepare(`
@@ -346,7 +357,7 @@ export async function getModelPerformance(tenantId: string): Promise<Array<{
     WHERE tenant_id = ? AND metric_name = 'ltv.model_trained'
     ORDER BY created_at DESC
     LIMIT 10
-  `).all(tenantId) as any[];
+  `).all<ModelMetricRow>(tenantId);
 
   return metrics.map(m => {
     const tags = JSON.parse(m.tags || "{}");

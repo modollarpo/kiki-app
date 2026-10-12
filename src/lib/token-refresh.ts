@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { getDb } from "./db";
+import { type PlatformId } from "./connectors/types";
 import { logger } from "./logger";
 
 export async function refreshTokenForIntegration(
@@ -61,7 +62,7 @@ export async function checkAndRefreshExpiringTokens(): Promise<number> {
   for (const integ of expiring) {
     try {
       const { getConnector } = await import("./connectors");
-      const connector = await getConnector(integ.platform as any);
+      const connector = await getConnector(integ.platform as PlatformId);
       if (!connector) continue;
 
       const { decryptToken, encryptToken } = await import("./connectors/base");

@@ -26,7 +26,7 @@ export async function syncPlatformCampaigns(tenantId: string, platform: string):
   const integration = await db.prepare(`
     SELECT * FROM tenant_integrations
     WHERE tenant_id = ? AND platform = ? AND status = 'active'
-  `).get(tenantId, platform) as any;
+  `).get<{ id: string; access_token: string; config: string | null }>(tenantId, platform);
 
   if (!integration) {
     return { synced: 0, error: `No active integration for ${platform}` };
@@ -54,7 +54,7 @@ export async function syncPlatformCampaigns(tenantId: string, platform: string):
       // Check if we already track this campaign
       const existing = await db.prepare(`
         SELECT id FROM campaigns WHERE tenant_id = ? AND platform = ? AND name = ?
-      `).get(tenantId, platform, pc.name) as any;
+      `).get<{ id: string }>(tenantId, platform, pc.name);
 
       if (existing) {
         // Update existing campaign with latest metrics
@@ -156,7 +156,7 @@ export async function getSyncStatus(tenantId: string): Promise<Array<{
   const integrations = await db.prepare(`
     SELECT platform, status, config, updated_at FROM tenant_integrations
     WHERE tenant_id = ?
-  `).all(tenantId) as any[];
+  `).all<{ platform: string; status: string; config: string | null; updated_at: string | null }>(tenantId);
 
   return integrations.map(integ => {
     const config = JSON.parse(integ.config || "{}");

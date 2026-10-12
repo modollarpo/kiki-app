@@ -245,6 +245,27 @@ export async function runPacingAgent(agentId: string): Promise<AgentTaskResult> 
 }
 
 // ── Signals Agent ─────────────────────────────────────────
+interface SignalRow {
+  id: string;
+  platform: string;
+  event_type: string;
+  value: number;
+  user_id: string | null;
+  session_id: string | null;
+  raw_data: string | null;
+}
+
+interface EnrichedSignalRow {
+  id: string;
+  tenant_id: string;
+  user_id: string | null;
+  platform: string;
+  event_type: string;
+  value: number;
+  ltv_predicted: number;
+  ltv_confidence: number;
+}
+
 export async function runSignalsAgent(agentId: string): Promise<AgentTaskResult> {
   const start = Date.now();
   const db = await getDb();
@@ -261,7 +282,7 @@ export async function runSignalsAgent(agentId: string): Promise<AgentTaskResult>
     WHERE tenant_id = ? AND enriched = 0
     ORDER BY created_at ASC
     LIMIT 100
-  `).all(tenantId) as any[];
+  `).all<SignalRow>(tenantId);
 
   let enriched = 0;
   for (const signal of unprocessedSignals) {
@@ -288,7 +309,7 @@ export async function runSignalsAgent(agentId: string): Promise<AgentTaskResult>
       SELECT id, tenant_id, user_id, platform, event_type, value, ltv_predicted, ltv_confidence
       FROM signals WHERE tenant_id = ? AND enriched = 1 AND ltv_predicted > 0
       ORDER BY created_at DESC LIMIT ?
-    `).all(tenantId, enriched) as any[];
+    `).all<EnrichedSignalRow>(tenantId, enriched);
 
     for (const sig of enrichedSignals) {
       const segment = sig.ltv_predicted > 500 ? "high" : sig.ltv_predicted > 200 ? "mid" : sig.ltv_predicted > 80 ? "low" : "churn_risk";
