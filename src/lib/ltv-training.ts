@@ -76,6 +76,87 @@ export interface TrainingResult {
   metacognitionEvents: string[];
 }
 
+type Database = Awaited<ReturnType<typeof getDb>>;
+
+interface TrainingSignal {
+  platform?: string;
+  eventType?: string;
+  device?: string;
+  sessionDuration?: number;
+  pagesViewed?: number;
+  previousPurchases?: number;
+  accountAge?: number;
+  emailDomain?: string;
+  value?: number;
+}
+
+interface PredictionLtvRow {
+  predicted_ltv: number;
+  confidence: number;
+  segment: string;
+  factors: string;
+  features: string;
+  created_at: string;
+}
+
+interface TrainingFeedbackRow {
+  predicted_ltv: number;
+  actual_ltv: number;
+  error_pct: number;
+  segment_predicted: string;
+  segment_actual: string;
+  factors_at_prediction: string;
+}
+
+interface ModelRow {
+  id: string;
+  tenant_id: string;
+  version: string;
+  status: "staging" | "active" | "archived";
+  weights: string;
+  factors: string;
+  feature_importance: string;
+  sample_count: number;
+  rmse: number;
+  mape: number;
+  r2: number;
+  segment_accuracy: string;
+  confidence_calibration: number;
+  drift_score: number;
+  trained_at: string;
+  promoted_at: string | null;
+}
+
+interface FeatureStoreRow {
+  tenant_id: string;
+  feature_name: string;
+  feature_value: number;
+  sample_count: number;
+  mean: number;
+  stddev: number;
+  min_val: number;
+  max_val: number;
+}
+
+interface MetacognitionLogRow {
+  id: number;
+  tenant_id: string;
+  model_id: string | null;
+  event_type: string;
+  insight: string;
+  confidence_before: number | null;
+  confidence_after: number | null;
+  action_taken: string | null;
+  metadata: string;
+  created_at: string;
+}
+
+interface FeedbackSummaryRow {
+  error_pct: number;
+  segment_predicted: string | null;
+  created_at: string;
+}
+
 // ── Default Model Weights ──────────────────────────────────
 
 function getDefaultWeights(): ModelWeights {
@@ -111,7 +192,7 @@ function getDefaultWeights(): ModelWeights {
 
 // ── Extract Features from Signal ───────────────────────────
 
-function extractFeatures(signal: any): Record<string, number> {
+function extractFeatures(signal: TrainingSignal): Record<string, number> {
   return {
     platform: hashString(signal.platform || "unknown"),
     eventType: hashString(signal.eventType || "unknown"),
@@ -120,7 +201,7 @@ function extractFeatures(signal: any): Record<string, number> {
     pagesViewed: signal.pagesViewed || 0,
     previousPurchases: signal.previousPurchases || 0,
     accountAge: signal.accountAge || 0,
-    isB2B: signal.emailDomain && ["corp", "inc", "com", "org", "edu"].some(d => signal.emailDomain.includes(d)) ? 1 : 0,
+    isB2B: signal.emailDomain && ["corp", "inc", "com", "org", "edu"].some(d => signal.emailDomain?.includes(d)) ? 1 : 0,
     value: signal.value || 0,
     hour: new Date().getHours(),
     dayOfWeek: new Date().getDay(),
@@ -137,12 +218,12 @@ function hashString(s: string): number {
 
 // ── Compute Feature Statistics ─────────────────────────────
 
-async function computeFeatureStats(db: any, tenantId: string): Promise<Record<string, { mean: number; stddev: number; min: number; max: number; count: number }>> {
+async function computeFeatureStats(db: Database, tenantId: string): Promise<Record<string, { mean: number; stddev: number; min: number; max: number; count: number }>> {
   const features = await db.prepare(`
     SELECT features FROM ltv_predictions
     WHERE tenant_id = ? AND features != '{}'
     ORDER BY created_at DESC LIMIT 500
-  `).all(tenantId) as Array<{ features: string }>;
+  `).all<{ features: string }>(tenantId);
 
   if (features.length === 0) return {};
 
@@ -180,13 +261,13 @@ async function computeFeatureStats(db: any, tenantId: string): Promise<Record<st
 
 // ── Compute Feature Importance ─────────────────────────────
 
-async function computeFeatureImportance(db: any, tenantId: string): Promise<Record<string, number>> {
+async function computeFeatureImportance(db: Database, tenantId: string): Promise<Record<string, number>> {
   const feedback = await db.prepare(`
     SELECT factors_at_prediction, error_pct
     FROM prediction_feedback
     WHERE tenant_id = ?
     ORDER BY created_at DESC LIMIT 200
-  `).all(tenantId) as Array<{ factors_at_prediction: string; error_pct: number }>;
+  `).all<{ factors_at_prediction: string; error_pct: number }>(tenantId);
 
   if (feedback.length < 5) return {};
 
@@ -228,7 +309,7 @@ export async function trainModel(tenantId: string): Promise<TrainingResult> {
     WHERE tenant_id = ?
     ORDER BY created_at DESC
     LIMIT 2000
-  `).all(tenantId) as any[];
+  `).all<PredictionLtvRow>(tenantId);
 
   // Get feedback (actual LTV values)
   const feedback = await db.prepare(`
@@ -237,14 +318,14 @@ export async function trainModel(tenantId: string): Promise<TrainingResult> {
     WHERE tenant_id = ?
     ORDER BY created_at DESC
     LIMIT 2000
-  `).all(tenantId) as any[];
+  `).all<TrainingFeedbackRow>(tenantId);
 
   // Get current active model
   const currentModel = await db.prepare(`
     SELECT * FROM ltv_models
     WHERE tenant_id = ? AND status = 'active'
     ORDER BY trained_at DESC LIMIT 1
-  `).get(tenantId) as any;
+  `).get<ModelRow>(tenantId);
 
   const previousR2 = currentModel?.r2 || 0;
   const previousWeights: ModelWeights = currentModel ? JSON.parse(currentModel.weights) : getDefaultWeights();
@@ -252,7 +333,7 @@ export async function trainModel(tenantId: string): Promise<TrainingResult> {
   // ── Gradient Descent Training ────────────────────────────
   // Simple online learning: adjust weights based on prediction errors
 
-  const newWeights = JSON.parse(JSON.stringify(previousWeights));
+  const newWeights: ModelWeights = JSON.parse(JSON.stringify(previousWeights));
   const learningRate = 0.01;
   const regularization = 0.001;
 
@@ -538,7 +619,7 @@ export async function getActiveModel(tenantId: string): Promise<TrainedModel | n
     SELECT * FROM ltv_models
     WHERE tenant_id = ? AND status = 'active'
     ORDER BY trained_at DESC LIMIT 1
-  `).get(tenantId) as any;
+  `).get<ModelRow>(tenantId);
 
   if (!row) return null;
 
@@ -558,7 +639,7 @@ export async function getActiveModel(tenantId: string): Promise<TrainedModel | n
     confidenceCalibration: row.confidence_calibration,
     driftScore: row.drift_score,
     trainedAt: row.trained_at,
-    promotedAt: row.promoted_at,
+    promotedAt: row.promoted_at ?? undefined,
   };
 }
 
@@ -571,7 +652,7 @@ export async function getModelHistory(tenantId: string, limit: number = 20): Pro
     WHERE tenant_id = ?
     ORDER BY trained_at DESC
     LIMIT ?
-  `).all(tenantId, limit) as any[];
+  `).all<ModelRow>(tenantId, limit);
 
   return rows.map(row => ({
     id: row.id,
@@ -589,20 +670,20 @@ export async function getModelHistory(tenantId: string, limit: number = 20): Pro
     confidenceCalibration: row.confidence_calibration,
     driftScore: row.drift_score,
     trainedAt: row.trained_at,
-    promotedAt: row.promoted_at,
+    promotedAt: row.promoted_at ?? undefined,
   }));
 }
 
 // ── Get Metacognition Events ───────────────────────────────
 
-export async function getMetacognitionLog(tenantId: string, limit: number = 50): Promise<any[]> {
+export async function getMetacognitionLog(tenantId: string, limit: number = 50): Promise<MetacognitionLogRow[]> {
   const db = await getDb();
   return await db.prepare(`
     SELECT * FROM metacognition_log
     WHERE tenant_id = ?
     ORDER BY created_at DESC
     LIMIT ?
-  `).all(tenantId, limit);
+  `).all<MetacognitionLogRow>(tenantId, limit);
 }
 
 // ── Get Feature Store ──────────────────────────────────────
@@ -613,7 +694,7 @@ export async function getFeatureStore(tenantId: string): Promise<FeatureSnapshot
     SELECT * FROM feature_store
     WHERE tenant_id = ?
     ORDER BY feature_name
-  `).all(tenantId) as any[];
+  `).all<FeatureStoreRow>(tenantId);
 
   return rows.map(row => ({
     tenantId: row.tenant_id,
@@ -643,7 +724,7 @@ export async function getFeedbackSummary(tenantId: string): Promise<{
     FROM prediction_feedback
     WHERE tenant_id = ?
     ORDER BY created_at DESC
-  `).all(tenantId) as any[];
+  `).all<FeedbackSummaryRow>(tenantId);
 
   if (allFeedback.length === 0) {
     return { totalFeedback: 0, avgError: 0, medianError: 0, bySegment: {}, recentTrend: [] };
