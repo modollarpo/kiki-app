@@ -60,6 +60,40 @@ export interface CampaignMetrics {
   status: string;
 }
 
+interface CampaignRow {
+  id: string;
+  tenant_id: string;
+  platform: string | null;
+  budget: number;
+  spend: number | null;
+  conversions: number | null;
+  revenue: number | null;
+  target_cpa: number | null;
+  target_roas: number | null;
+  bid: number | null;
+  status: string;
+}
+
+interface AvgLtvRow {
+  avg_ltv: number | null;
+}
+
+interface AvgRow {
+  avg: number | null;
+}
+
+interface IntegrationRow {
+  platform: string;
+  access_token: string;
+  config: string;
+}
+
+interface AgentActionRow {
+  action_type: string;
+  details: string;
+  created_at: string;
+}
+
 // ── Day-Parting Weights ────────────────────────────────────
 // 24 hourly weights × 7 daily weights = 168 weight values
 
@@ -267,7 +301,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
   // 1. Get all active campaigns for this tenant
   const campaigns = await db.prepare(`
     SELECT * FROM campaigns WHERE tenant_id = ? AND status = 'active'
-  `).all(tenantId) as any[];
+  `).all<CampaignRow>(tenantId);
 
   // 2. Get LTV predictions for each campaign's audience
   const campaignMetrics: CampaignMetrics[] = [];
@@ -278,7 +312,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
       SELECT AVG(predicted_ltv) as avg_ltv, COUNT(*) as count
       FROM ltv_predictions
       WHERE tenant_id = ? AND created_at >= datetime('now', '-7 days')
-    `).get(tenantId) as any;
+    `).get<AvgLtvRow>(tenantId);
 
     const avgLtv = ltvData?.avg_ltv || 100;
     const spend = campaign.spend || 0;
@@ -315,7 +349,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
     const ltvData = await db.prepare(`
       SELECT AVG(predicted_ltv) as avg FROM ltv_predictions
       WHERE tenant_id = ? AND created_at >= datetime('now', '-7 days')
-    `).get(tenantId) as any;
+    `).get<AvgRow>(tenantId);
     const avgLtv = ltvData?.avg || 100;
 
     const groqInput: GroqBidInput[] = campaignMetrics.map(m => ({
@@ -382,7 +416,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
       const ltvData = await db.prepare(`
         SELECT AVG(predicted_ltv) as avg FROM ltv_predictions
         WHERE tenant_id = ? AND created_at >= datetime('now', '-7 days')
-      `).get(tenantId) as any;
+      `).get<AvgRow>(tenantId);
 
       const result = heuristicScoreBid(metrics, ltvData?.avg || 100, dayPartWeight, now);
 
@@ -418,7 +452,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
   const integrations = await db.prepare(`
     SELECT platform, access_token, config FROM tenant_integrations
     WHERE tenant_id = ? AND status = 'active'
-  `).all(tenantId) as Array<{ platform: string; access_token: string; config: string }>;
+  `).all<IntegrationRow>(tenantId);
 
   for (const decision of decisions) {
     // ── Circuit breaker: hold high-impact decisions for human review ──
@@ -470,7 +504,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
     const platformInteg = integrations.find(i => i.platform === decision.platform);
     if (platformInteg && isPlatformSupported(decision.platform)) {
       try {
-        const connector = getConnector(decision.platform as any);
+        const connector = getConnector(decision.platform);
         const accessToken = decryptToken(platformInteg.access_token);
         if (typeof connector.updateCampaign === "function") {
           const result = await connector.updateCampaign(accessToken, decision.campaignId, {
@@ -568,7 +602,7 @@ export async function getBiddingStats(tenantId: string) {
     SELECT * FROM agent_actions
     WHERE tenant_id = ? AND agent_type = 'bidding'
     ORDER BY created_at DESC LIMIT 50
-  `).all(tenantId) as any[];
+  `).all<AgentActionRow>(tenantId);
 
   const stopLosses = recentDecisions.filter(d => d.action_type === "stop_loss");
   const adjustments = recentDecisions.filter(d => d.action_type === "bid_adjustment");
@@ -579,7 +613,7 @@ export async function getBiddingStats(tenantId: string) {
     adjustments: adjustments.length,
     lastCycleAt: recentDecisions[0]?.created_at || null,
     avgConfidence: adjustments.length > 0
-      ? adjustments.reduce((s: number, d: any) => {
+      ? adjustments.reduce((s: number, d: AgentActionRow) => {
           const details = JSON.parse(d.details || "{}");
           return s + (details.confidence || 0);
         }, 0) / adjustments.length
@@ -606,7 +640,8 @@ export function getDayPartingWeights(): { hour: number; dayOfWeek: number; weigh
 // ── Event Wiring (Phase 2 & 3 Loop) ────────────────────────
 
 export function initBiddingEventWiring() {
-  eventBus.on("competitor.price_drop", async (payload: any) => {
+  eventBus.on("competitor.price_drop", async (_event: string, data: unknown) => {
+    const payload = data as { dropPercent: number; tenantId: string };
     logger.info(`[BiddingEngine] Competitor price drop detected (${payload.dropPercent}%). Triggering aggressive arbitrage cycle...`);
     try {
       await runBiddingCycle(payload.tenantId);
@@ -615,7 +650,8 @@ export function initBiddingEventWiring() {
     }
   });
 
-  eventBus.on("creative.fatigue_detected", async (payload: any) => {
+  eventBus.on("creative.fatigue_detected", async (_event: string, data: unknown) => {
+    const payload = data as { platform: string; tenantId: string; creativeId: string };
     logger.info(`[BiddingEngine] Creative fatigue detected on ${payload.platform}. Triggering GenAI creative replacement...`);
     try {
       const db = await getDb();
