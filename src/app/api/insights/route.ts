@@ -121,15 +121,15 @@ export async function GET(req: Request) {
     { name: "Platform Hosting", amount: totalUsageCost, pct: costs > 0 ? (totalUsageCost / costs) * 100 : 0, color: "teal" },
   ];
 
-// Monthly P&L derived from real campaign data aggregated by month
+  // Monthly P&L derived from real campaign data aggregated by month
   const monthlyRows = await db.prepare(`
     SELECT strftime('%m', created_at) as mon, strftime('%Y', created_at) as yr, SUM(spend) as spend, SUM(revenue) as revenue
     FROM campaigns WHERE tenant_id = ? AND created_at >= datetime('now', '-7 months')
     GROUP BY yr, mon ORDER BY yr, mon
-  `).all(tenantId) as any[];
+  `).all<{ mon: string; yr: string; spend: number; revenue: number }>(tenantId);
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const monthlyPnl = monthlyRows.length > 0
-    ? monthlyRows.map((r: any) => ({
+    ? monthlyRows.map((r) => ({
         month: `${monthNames[parseInt(r.mon) - 1] || `M${r.mon}`} ${String(r.yr).slice(2)}`,
         revenue: Number(((r.revenue || 0) / 1000).toFixed(1)),
         costs: Number(((r.spend || 0) / 1000).toFixed(1)),
