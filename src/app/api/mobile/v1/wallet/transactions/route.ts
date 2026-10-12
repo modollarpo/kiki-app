@@ -1,7 +1,15 @@
-// POST /api/mobile/v1/wallet/transactions - Add funds or withdraw
-import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
-import { requireMobileAuth } from '@/lib/mobile/auth';
+interface WalletRow {
+  id: string;
+  tenant_id: string;
+  balance: number;
+  currency: string;
+}
+
+interface PaymentMethodRow {
+  id: string;
+  tenant_id: string;
+  status: string;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +37,7 @@ export async function POST(request: NextRequest) {
     const db = await getDb();
 
     // Get wallet
-    const wallet = await db.prepare('SELECT * FROM wallets WHERE tenant_id = ?').get(auth.tenantId) as any;
+    const wallet = await db.prepare('SELECT * FROM wallets WHERE tenant_id = ?').get<WalletRow>(auth.tenantId);
     if (!wallet) {
       return NextResponse.json(
         { ok: false, error: 'Wallet not found', code: 'NOT_FOUND' },
@@ -50,7 +58,7 @@ export async function POST(request: NextRequest) {
     // Verify payment method
     const paymentMethod = await db.prepare(`
       SELECT * FROM payment_methods WHERE id = ? AND tenant_id = ? AND status = 'active'
-    `).get(paymentMethodId, auth.tenantId) as any;
+    `).get<PaymentMethodRow>(paymentMethodId, auth.tenantId);
 
     if (!paymentMethod) {
       return NextResponse.json(
