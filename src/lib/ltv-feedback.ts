@@ -6,6 +6,49 @@
 import { getDb } from "./db";
 import { eventBus } from "./events";
 
+interface WalletIdRow {
+  id: string;
+}
+
+interface WalletTxGroupRow {
+  campaign: string;
+  total_revenue: number;
+  first_transaction: string;
+  last_transaction: string;
+  transaction_count: number;
+}
+
+interface PredictionRow {
+  id: string;
+  predicted_ltv: number;
+  confidence: number;
+  segment: string;
+  factors: string;
+  created_at?: string;
+}
+
+interface IdRow {
+  id: string;
+}
+
+interface CampaignRevenueRow {
+  id: string;
+  platform: string;
+  revenue: number;
+  conversions: number;
+  spend: number;
+}
+
+interface FeedbackSourceStatRow {
+  total: number;
+  feedback_source: string;
+  avg_error: number;
+}
+
+interface CountRow {
+  c: number;
+}
+
 // ── Collect Feedback from Wallet Transactions ──────────────
 
 export async function collectWalletFeedback(tenantId: string): Promise<{
@@ -18,7 +61,7 @@ export async function collectWalletFeedback(tenantId: string): Promise<{
   // Get wallet transactions (ground truth for LTV)
   const wallet = await db.prepare(`
     SELECT id FROM wallets WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<WalletIdRow>(tenantId);
 
   if (!wallet) return { newFeedbackCount: 0, updatedPredictions: 0, avgActualLtv: 0 };
 
@@ -33,7 +76,7 @@ export async function collectWalletFeedback(tenantId: string): Promise<{
     FROM wallet_transactions
     WHERE wallet_id = ? AND type = 'credit'
     GROUP BY campaign
-  `).all(wallet.id) as any[];
+  `).all<WalletTxGroupRow>(wallet.id);
 
   let newFeedbackCount = 0;
   let updatedPredictions = 0;
@@ -50,18 +93,18 @@ export async function collectWalletFeedback(tenantId: string): Promise<{
       WHERE tenant_id = ?
       AND created_at BETWEEN ? AND ?
       AND actual_ltv IS NULL
-    `).all(
+    `).all<PredictionRow>(
       tenantId,
       tx.first_transaction,
       tx.last_transaction
-    ) as any[];
+    );
 
     for (const pred of predictions) {
       // Check if feedback already exists
       const existingFeedback = await db.prepare(`
         SELECT id FROM prediction_feedback
         WHERE prediction_id = ?
-      `).get(pred.id) as any;
+      `).get<IdRow>(pred.id);
 
       if (existingFeedback) continue;
 
@@ -144,7 +187,7 @@ export async function collectPlatformFeedback(tenantId: string): Promise<{
       SELECT id, platform, revenue, conversions, spend
     FROM campaigns
     WHERE tenant_id = ? AND revenue > 0
-  `).all(tenantId) as any[];
+  `).all<CampaignRevenueRow>(tenantId);
 
   let newFeedbackCount = 0;
   let updatedPredictions = 0;
@@ -160,12 +203,12 @@ export async function collectPlatformFeedback(tenantId: string): Promise<{
       WHERE tenant_id = ?
       AND actual_ltv IS NULL
       AND created_at >= datetime('now', '-30 days')
-    `).all(tenantId) as any[];
+    `).all<PredictionRow>(tenantId);
 
     for (const pred of predictions) {
       const existingFeedback = await db.prepare(`
         SELECT id FROM prediction_feedback WHERE prediction_id = ?
-      `).get(pred.id) as any;
+      `).get<IdRow>(pred.id);
 
       if (existingFeedback) continue;
 
@@ -342,7 +385,7 @@ export async function getFeedbackStats(tenantId: string): Promise<{
     FROM prediction_feedback
     WHERE tenant_id = ?
     GROUP BY feedback_source
-  `).all(tenantId) as any[];
+  `).all<FeedbackSourceStatRow>(tenantId);
 
   const totalFeedback = stats.reduce((s, r) => s + r.total, 0);
   const bySource: Record<string, number> = {};
@@ -357,21 +400,21 @@ export async function getFeedbackStats(tenantId: string): Promise<{
   const recentFeedback = await db.prepare(`
     SELECT COUNT(*) as c FROM prediction_feedback
     WHERE tenant_id = ? AND created_at >= datetime('now', '-7 days')
-  `).get(tenantId) as any;
+  `).get<CountRow>(tenantId);
 
   const totalPredictions = await db.prepare(`
     SELECT COUNT(*) as c FROM ltv_predictions WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<CountRow>(tenantId);
 
   const feedbackCount = await db.prepare(`
     SELECT COUNT(*) as c FROM prediction_feedback WHERE tenant_id = ?
-  `).get(tenantId) as any;
+  `).get<CountRow>(tenantId);
 
   return {
     totalFeedback,
     bySource,
     avgError: Math.round(avgError * 100) / 100,
     recentFeedback: recentFeedback?.c || 0,
-    predictionCoverage: totalPredictions?.c > 0 ? feedbackCount?.c / totalPredictions.c : 0,
+    predictionCoverage: (totalPredictions?.c || 0) > 0 ? (feedbackCount?.c || 0) / (totalPredictions?.c || 0) : 0,
   };
 }
