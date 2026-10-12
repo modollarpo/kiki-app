@@ -4,6 +4,16 @@ import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
 import { logger, handleApiError } from "@/lib/logger";
 
+interface ContactRow {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  company: string;
+  status: string;
+  created_at: string;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user = getUserFromRequest(req);
@@ -15,7 +25,7 @@ export async function GET(req: NextRequest) {
     const contacts = await (await db.prepare(`
       SELECT id, first_name, last_name, email, company, status, created_at
       FROM contacts WHERE tenant_id = ? ORDER BY created_at DESC
-    `)).all(tenantId) as any[];
+    `)).all<ContactRow>(tenantId);
 
     const totalContacts = contacts.length;
     const recentLeads = contacts
@@ -33,16 +43,16 @@ export async function GET(req: NextRequest) {
     // Get campaign pipeline value as pipeline proxy
     const pipelineValue = await (await db.prepare(`
       SELECT COALESCE(SUM(budget), 0) as total FROM campaigns WHERE tenant_id = ?
-    `)).get(tenantId) as any;
+    `)).get<{ total: number }>(tenantId);
 
     const activeDeals = await (await db.prepare(`
       SELECT COUNT(*) as count FROM campaigns WHERE tenant_id = ? AND status = 'active'
-    `)).get(tenantId) as any;
+    `)).get<{ count: number }>(tenantId);
 
     // Get contact status distribution
       const statusDistribution = await (await db.prepare(`
       SELECT status, COUNT(*) as count FROM contacts WHERE tenant_id = ? GROUP BY status
-    `)).all(tenantId) as any[];
+`)).all<{ status: string; count: number }>(tenantId);
 
     return Response.json({
       ok: true,

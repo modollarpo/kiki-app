@@ -30,8 +30,8 @@ export async function POST(req: Request) {
   const todaySignals =   await db.prepare(`
     SELECT COUNT(*) as count FROM signals
     WHERE tenant_id = ? AND date(created_at) = date('now')
-  `).get(user.tenantId) as any;
-  const limitCheck = await checkPlanLimit(user.tenantId, "signals", todaySignals.count);
+  `).get<{ count: number }>(user.tenantId);
+  const limitCheck = await checkPlanLimit(user.tenantId, "signals", todaySignals?.count ?? 0);
   if (!limitCheck.allowed) {
     return jsonError(`Daily signal limit reached (${limitCheck.limit}). Upgrade your plan for higher limits.`, 403);
   }

@@ -2,6 +2,33 @@ export const dynamic = "force-dynamic";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 
+interface KycEntity {
+  id: string;
+  name: string;
+  entity_type: string;
+  jurisdiction: string;
+  verification_status: string;
+  documents_uploaded: number;
+  documents_required: number;
+  checks_passed: number;
+  checks_failed: number;
+  next_review: string | null;
+  compliance_score: number;
+}
+
+interface KycDocument {
+  name: string;
+  status: string;
+  entity_id: string | null;
+}
+
+interface KycCheck {
+  check_name: string;
+  status: string;
+  check_date: string | null;
+  entity_id: string | null;
+}
+
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
@@ -10,15 +37,15 @@ export async function GET(req: Request) {
 
   const entities = await db.prepare(`
     SELECT * FROM kyc_entities WHERE tenant_id = ? ORDER BY compliance_score DESC
-  `).all(user.tenantId) as any[];
+  `).all<KycEntity>(user.tenantId);
 
   const documents = await db.prepare(`
     SELECT * FROM kyc_documents WHERE tenant_id = ? ORDER BY created_at DESC
-  `).all(user.tenantId) as any[];
+  `).all<KycDocument>(user.tenantId);
 
   const checks = await db.prepare(`
     SELECT * FROM kyc_checks WHERE tenant_id = ? ORDER BY created_at DESC
-  `).all(user.tenantId) as any[];
+  `).all<KycCheck>(user.tenantId);
 
   const formattedEntities = entities.map(e => ({
     name: e.name,
