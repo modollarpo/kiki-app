@@ -4,6 +4,32 @@ import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
 import { handleApiError } from "@/lib/logger";
 
+interface CampaignRow {
+  id: string;
+  tenant_id: string;
+  name: string;
+  platform: string;
+  status: string;
+  budget: number;
+  roas: number;
+  target_roas: number;
+}
+
+interface OaasTaskRow {
+  id: string;
+  tenant_id: string;
+  campaign_id: string;
+  campaign_name: string;
+  title: string;
+  agent: string;
+  type: string;
+  status: string;
+  expected_impact: number | null;
+  confidence: number | null;
+  details: string | null;
+  created_at: string;
+}
+
 // Generate OaaS tasks from live underperforming campaigns when none are stored.
 // Titles/descriptions are derived from real campaign data. Impact and
 // confidence are reported as null — no model has evaluated projected ROAS,
@@ -12,13 +38,13 @@ async function generateTasks(tenantId: string) {
   const db = await getDb();
   const campaigns = await db.prepare(`
     SELECT * FROM campaigns WHERE tenant_id = ? AND status = 'active'
-  `).all(tenantId) as any[];
+  `).all<CampaignRow>(tenantId);
 
   const underperformers = campaigns.filter(
-    (c: any) => (c.roas || 0) < (c.target_roas || 4)
+    (c: CampaignRow) => (c.roas || 0) < (c.target_roas || 4)
   );
 
-  const tasks = await Promise.all(underperformers.slice(0, 6).map(async (c: any, i: number) => {
+  const tasks = await Promise.all(underperformers.slice(0, 6).map(async (c: CampaignRow, i: number) => {
     const id = genId("oaas");
     const title = `Review underperforming ${c.name}`;
     const details = `${c.name} on ${c.platform} is at ROAS ${(c.roas || 0).toFixed(1)}× vs target ${(c.target_roas || 4).toFixed(1)}×. Pause, reallocate, or refresh creative before the next bid cycle.`;
@@ -41,14 +67,14 @@ export async function GET(req: Request) {
   if (!user) return jsonError("Unauthorized", 401);
 
   const db = await getDb();
-  let tasks = await db.prepare("SELECT * FROM oaas_tasks WHERE tenant_id = ? ORDER BY created_at DESC").all(user.tenantId) as any[];
+  let tasks = await db.prepare("SELECT * FROM oaas_tasks WHERE tenant_id = ? ORDER BY created_at DESC").all<OaasTaskRow>(user.tenantId);
 
   if (tasks.length === 0) {
     tasks = await generateTasks(user.tenantId);
   }
 
   return json({
-    tasks: tasks.map((t: any) => ({
+    tasks: tasks.map((t: OaasTaskRow) => ({
       id: t.id,
       title: t.title,
       agent: t.agent,
