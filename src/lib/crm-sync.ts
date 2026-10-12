@@ -8,12 +8,22 @@ export interface CrmCustomer {
   firstName?: string;
   lastName?: string;
   totalOrders: number;
-  totalSpent: number;
-  firstOrderAt?: string;
-  lastOrderAt?: string;
-  averageOrderValue: number;
-  acquisitionSource?: string;
-  acquisitionCampaign?: string;
+interface ShopifyCustomer {
+  id: string | number;
+  email?: string;
+  phone?: string;
+  first_name?: string;
+  last_name?: string;
+  orders_count?: number;
+  total_spent?: number | string;
+  created_at?: string;
+  updated_at?: string;
+  last_order_id?: string | number;
+  note?: string;
+}
+
+interface ShopifyCustomersResponse {
+  customers: ShopifyCustomer[];
 }
 
 export async function syncShopifyCustomers(
@@ -36,7 +46,7 @@ export async function syncShopifyCustomers(
       });
 
       if (!response.ok) break;
-      const data = await response.json() as { customers: any[] };
+      const data = await response.json() as ShopifyCustomersResponse;
       if (!data.customers || data.customers.length === 0) break;
 
       for (const customer of data.customers) {
@@ -90,7 +100,7 @@ export async function syncStripeCustomers(
       });
 
       if (!response.ok) break;
-      const data = await response.json() as { data: any[]; has_more: boolean };
+      const data = await response.json() as StripeList<StripeCustomer>;
       if (!data.data || data.data.length === 0) break;
 
       for (const customer of data.data) {
@@ -100,12 +110,11 @@ export async function syncStripeCustomers(
             `https://api.stripe.com/v1/invoices?customer=${customer.id}&limit=100`,
             { headers: { Authorization: `Bearer ${secretKey}` } }
           );
-          const invoices = invoicesResponse.ok ? (await invoicesResponse.json()).data : [];
+          const invoices = invoicesResponse.ok ? ((await invoicesResponse.json()) as StripeList<StripeInvoice>).data : [];
 
-          const totalSpent = invoices
-            .filter((i: any) => i.status === "paid")
-            .reduce((sum: number, i: any) => sum + (i.amount_paid || 0) / 100, 0);
-          const orderCount = invoices.filter((i: any) => i.status === "paid").length;
+          const paid = invoices.filter((i: StripeInvoice) => i.status === "paid");
+          const totalSpent = paid.reduce((sum: number, i: StripeInvoice) => sum + (i.amount_paid || 0) / 100, 0);
+          const orderCount = paid.length;
 
           await upsertCustomer(tenantId, {
             externalId: `stripe_${customer.id}`,
@@ -141,17 +150,15 @@ export async function syncHubspotContacts(
 ): Promise<{ synced: number; errors: number }> {
   let synced = 0;
   let errors = 0;
-  let after: string | undefined;
+interface HubspotContact {
+  id: string;
+  properties?: Record<string, string>;
+}
 
-  do {
-    try {
-      const url = `https://api.hubapi.com/crm/v3/objects/contacts?limit=100${after ? `&after=${after}` : ""}`;
-      const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) break;
-      const data = await response.json() as { results: any[]; paging?: { next?: { after: string } } };
+interface HubspotContactsResponse {
+  results: HubspotContact[];
+  paging?: { next?: { after: string } };
+}
 
       for (const contact of data.results) {
         try {
