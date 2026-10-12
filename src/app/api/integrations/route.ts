@@ -1,12 +1,25 @@
 export const dynamic = "force-dynamic";
-// ============================================================
-// KIKI Agent Platform — Platform Integrations API Route
-// GET    /api/integrations          — List connected platforms
-// POST   /api/integrations          — Connect/disconnect
-// GET    /api/integrations/campaigns — Fetch campaigns from platforms
-// GET    /api/integrations/oauth     — Generate OAuth URL
-// POST   /api/integrations/callback  — Handle OAuth callback
-// ============================================================
+export interface IntegrationRow {
+  id: string;
+  tenant_id: string;
+  platform: string;
+  access_token: string;
+  refresh_token: string | null;
+  token_expiry: string | null;
+  config: string | null;
+  connected_at: string | null;
+  status: string;
+  last_sync_at: string | null;
+}
+
+export interface OAuthStateRow {
+  state: string;
+  tenant_id: string;
+  platform: string;
+  code_verifier: string | null;
+  created_at: string;
+  expires_at: string;
+}
 
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
@@ -62,9 +75,9 @@ export async function GET(req: NextRequest) {
         }
 
         const db = await getDb();
-        const integration = await db.prepare(`
+const integration = await db.prepare(`
           SELECT * FROM tenant_integrations WHERE id = ? AND tenant_id = ? AND status = 'active'
-        `).get(integrationId, user.tenantId) as any;
+        `).get<IntegrationRow>(integrationId, user.tenantId);
 
         if (!integration) {
           return NextResponse.json(
@@ -111,9 +124,9 @@ export async function GET(req: NextRequest) {
         }
 
         const db = await getDb();
-        const integrations = await db.prepare(`
+const integrations = await db.prepare(`
           SELECT * FROM tenant_integrations WHERE tenant_id = ? AND status = 'active'
-        `).all(user.tenantId) as any[];
+        `).all<IntegrationRow>(user.tenantId);
 
         const results = [];
         for (const integration of integrations) {
@@ -146,13 +159,13 @@ delivered: results.filter(r => r.success).length,
         });
       }
 
-      // ── Default: list connected platforms ─────────────
+// ── Default: list connected platforms ─────────────
       default: {
         const db = await getDb();
         const rows = await db.prepare(`
           SELECT * FROM tenant_integrations WHERE tenant_id = ? AND status = 'active'
           ORDER BY connected_at DESC
-        `).all(user.tenantId) as any[];
+        `).all<IntegrationRow>(user.tenantId);
 
         const platforms = rows.map(row => {
           const config = JSON.parse(row.config || "{}");
@@ -213,10 +226,10 @@ export async function POST(req: NextRequest) {
 
         // Verify state
         const db = await getDb();
-        const stateRecord = await db.prepare(`
+const stateRecord = await db.prepare(`
           SELECT * FROM oauth_states WHERE state = ? AND tenant_id = ? AND platform = ?
           AND expires_at > datetime('now')
-        `).get(state, user.tenantId, platform) as any;
+        `).get<OAuthStateRow>(state, user.tenantId, platform);
 
         if (!stateRecord) {
           return NextResponse.json(
@@ -259,8 +272,8 @@ export async function POST(req: NextRequest) {
           })
         );
 
-        // Emit event
-        eventBus.emit("integration.connected" as any, {
+// Emit event
+        eventBus.emit("integration.connected", {
           tenantId: user.tenantId,
           platform,
           integrationId,
@@ -286,7 +299,7 @@ export async function POST(req: NextRequest) {
           WHERE tenant_id = ? AND platform = ?
         `).run(user.tenantId, platform);
 
-        eventBus.emit("integration.disconnected" as any, {
+eventBus.emit("integration.disconnected", {
           tenantId: user.tenantId,
           platform,
         });
@@ -307,9 +320,9 @@ export async function POST(req: NextRequest) {
         }
 
         const db = await getDb();
-        const integration = await db.prepare(`
+const integration = await db.prepare(`
           SELECT * FROM tenant_integrations WHERE id = ? AND tenant_id = ?
-        `).get(integrationId, user.tenantId) as any;
+        `).get<IntegrationRow>(integrationId, user.tenantId);
 
         if (!integration) {
           return NextResponse.json(
@@ -318,7 +331,7 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        const refreshToken = decryptToken(integration.refresh_token);
+        const refreshToken = integration.refresh_token ? decryptToken(integration.refresh_token) : '';
         const tokens = await connector.refreshToken(refreshToken);
 
         // Update stored tokens
