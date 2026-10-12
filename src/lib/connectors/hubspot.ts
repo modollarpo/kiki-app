@@ -22,6 +22,25 @@ import {
   type PlatformWebhook,
 } from "./types";
 
+interface HubspotTokenResponse {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  error?: string;
+  error_description?: string;
+}
+
+interface HubspotQueryList<T = Record<string, unknown>> {
+  results?: T[];
+}
+
+interface HubspotDeal {
+  id: string;
+  properties?: Record<string, string>;
+}
+
 const HUBSPOT_CONFIG: PlatformConfig = {
   id: "hubspot",
   name: "HubSpot",
@@ -96,7 +115,7 @@ export class HubspotConnector extends BaseConnector {
       const text = await result.text();
       throw new Error(`HubSpot OAuth failed: ${text}`);
     }
-    const data = (await result.json()) as any;
+    const data = (await result.json()) as HubspotTokenResponse;
     if (data.error) throw new Error(`HubSpot OAuth error: ${data.error_description || data.error}`);
     return {
       accessToken: data.access_token,
@@ -120,7 +139,7 @@ export class HubspotConnector extends BaseConnector {
       body: body.toString(),
     });
     if (!result.ok) throw new Error(`HubSpot token refresh failed (HTTP ${result.status})`);
-    const data = (await result.json()) as any;
+    const data = (await result.json()) as HubspotTokenResponse;
     if (data.error) throw new Error(`HubSpot refresh error: ${data.error_description || data.error}`);
     return {
       accessToken: data.access_token,
@@ -146,8 +165,8 @@ export class HubspotConnector extends BaseConnector {
     });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
 
-    const data = (await res.json()) as any;
-    const portalId = data?.portalId || data?.hub_id || "";
+    const data = (await res.json()) as Record<string, unknown>;
+    const portalId = (data.portalId as string) || (data.hub_id as string) || "";
     return {
       success: true,
       latencyMs: 0,
@@ -163,13 +182,13 @@ export class HubspotConnector extends BaseConnector {
   // ── Campaigns / Deals (CRM source) ─────────────────────
 
   async listCampaigns(accessToken: string, accountId: string): Promise<PlatformApiResponse<PlatformCampaign[]>> {
-    const result = await this.get<{ results?: Array<Record<string, any>> }>("/crm/v3/objects/deals", accessToken, {
+    const result = await this.get<HubspotQueryList<HubspotDeal>>("/crm/v3/objects/deals", accessToken, {
       limit: "100",
       properties: "dealname,amount,hs_lastmodifieddate,createdate,dealstage",
     });
     if (!result.success || !result.data?.results) return { ...result, data: undefined };
 
-    const campaigns: PlatformCampaign[] = result.data.results.map((d: any) => {
+    const campaigns: PlatformCampaign[] = result.data.results.map((d: HubspotDeal) => {
       const props = d.properties || {};
       return {
         id: `hubspot_deal_${d.id}`,
@@ -247,7 +266,7 @@ export class HubspotConnector extends BaseConnector {
   async sendConversion(accessToken: string, event: ConversionEvent): Promise<ConversionDeliveryResult> {
     const start = Date.now();
     const { eventBus } = await import("../events");
-    eventBus.emit("crm.contact" as any, {
+    eventBus.emit("crm.contact", {
       platform: "hubspot",
       tenantId: event.userData.externalId || "",
       email: event.userData.email || "",
@@ -268,14 +287,15 @@ export class HubspotConnector extends BaseConnector {
     return expected === signature;
   }
 
-  parseWebhookPayload(body: any): PlatformWebhook {
+  parseWebhookPayload(body: unknown): PlatformWebhook {
     const event = Array.isArray(body) ? body[0] : body;
+    const ev = event && typeof event === "object" ? (event as Record<string, unknown>) : {};
     return {
       platform: "hubspot",
-      eventType: event?.subscriptionType || "contact",
-      eventId: (event?.eventId ?? crypto.randomBytes(16).toString("hex")).toString(),
-      timestamp: event?.occurredAt || Date.now(),
-      data: body,
+      eventType: (ev.subscriptionType as string) || "contact",
+      eventId: (ev.eventId as string | number) ? String(ev.eventId) : crypto.randomBytes(16).toString("hex"),
+      timestamp: Number((ev.occurredAt as string | number | undefined) ?? Date.now()),
+      data: body as Record<string, unknown>,
     };
   }
 }
