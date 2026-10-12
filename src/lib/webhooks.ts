@@ -6,7 +6,7 @@ import { logger } from "./logger";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { enrichConversionEvent } from "@/lib/capi";
+import { enrichConversionEvent, type ConversionEvent } from "@/lib/capi";
 import { eventBus } from "@/lib/events";
 
 export interface WebhookPayload {
@@ -37,9 +37,105 @@ export interface WebhookPayload {
   };
 }
 
+interface WebhookContent {
+  id: string;
+  quantity: number;
+  price: number;
+}
+
+interface MetaWebhookBody {
+  event_name?: string;
+  event?: string;
+  event_time?: number;
+  value?: number;
+  currency?: string;
+  user_data?: {
+    external_id?: string;
+    email?: string;
+    phone?: string;
+    client_ip_address?: string;
+    client_user_agent?: string;
+    fbc?: string;
+    fbp?: string;
+  };
+  custom_data?: {
+    value?: number;
+    currency?: string;
+    contents?: WebhookContent[];
+    content_name?: string;
+    content_type?: string;
+  };
+}
+
+interface GoogleWebhookBody {
+  conversions?: Array<{
+    type?: string;
+    conversionDateTime?: number;
+    conversionValue?: { monetaryValue?: number; currencyCode?: string };
+    userIdentifiers?: Array<{
+      externalId?: string;
+      addressInfo?: { hashedEmail?: string };
+      gclidInfo?: { gbraid?: string; wbraid?: string };
+    }>;
+  }>;
+}
+
+interface TikTokWebhookBody {
+  event?: string;
+  timestamp?: number;
+  external_id?: string;
+  email?: string;
+  ttclid?: string;
+  value?: number;
+  currency?: string;
+  contents?: WebhookContent[];
+}
+
+interface LinkedInWebhookBody {
+  eventType?: string;
+  timestamp?: number;
+  externalId?: string;
+  hashedEmail?: string;
+  lapid?: string;
+  conversionValue?: number;
+  currency?: string;
+}
+
+interface SnapWebhookBody {
+  event?: {
+    event_name?: string;
+    timestamp?: number;
+    value?: number;
+    currency?: string;
+    user?: {
+      external_id?: string;
+      email?: string;
+      snap_click_id?: string;
+    };
+  };
+}
+
+interface PinterestWebhookBody {
+  event_name?: string;
+  event_time?: number;
+  user_data?: {
+    external_id?: string;
+    email?: string;
+    pinterest_click_id?: string;
+  };
+  custom_data?: {
+    value?: number;
+    currency?: string;
+  };
+}
+
+interface TenantIntegrationIdRow {
+  tenant_id: string;
+}
+
 // ── Parse Meta Webhook ─────────────────────────────────────
 
-function parseMetaWebhook(body: any): WebhookPayload {
+function parseMetaWebhook(body: MetaWebhookBody): WebhookPayload {
   return {
     platform: "meta",
     eventName: body.event_name || body.event || "Unknown",
@@ -65,7 +161,7 @@ function parseMetaWebhook(body: any): WebhookPayload {
 
 // ── Parse Google Webhook ───────────────────────────────────
 
-function parseGoogleWebhook(body: any): WebhookPayload {
+function parseGoogleWebhook(body: GoogleWebhookBody): WebhookPayload {
   return {
     platform: "google",
     eventName: body.conversions?.[0]?.type || "conversion",
@@ -85,7 +181,7 @@ function parseGoogleWebhook(body: any): WebhookPayload {
 
 // ── Parse TikTok Webhook ───────────────────────────────────
 
-function parseTikTokWebhook(body: any): WebhookPayload {
+function parseTikTokWebhook(body: TikTokWebhookBody): WebhookPayload {
   return {
     platform: "tiktok",
     eventName: body.event || "ViewContent",
@@ -105,7 +201,7 @@ function parseTikTokWebhook(body: any): WebhookPayload {
 
 // ── Parse LinkedIn Webhook ─────────────────────────────────
 
-function parseLinkedInWebhook(body: any): WebhookPayload {
+function parseLinkedInWebhook(body: LinkedInWebhookBody): WebhookPayload {
   return {
     platform: "linkedin",
     eventName: body.eventType || "conversion",
@@ -124,7 +220,7 @@ function parseLinkedInWebhook(body: any): WebhookPayload {
 
 // ── Parse Snapchat Webhook ─────────────────────────────────
 
-function parseSnapWebhook(body: any): WebhookPayload {
+function parseSnapWebhook(body: SnapWebhookBody): WebhookPayload {
   return {
     platform: "snap",
     eventName: body.event?.event_name || "conversion",
@@ -143,7 +239,7 @@ function parseSnapWebhook(body: any): WebhookPayload {
 
 // ── Parse Pinterest Webhook ─────────────────────────────────
 
-function parsePinterestWebhook(body: any): WebhookPayload {
+function parsePinterestWebhook(body: PinterestWebhookBody): WebhookPayload {
   return {
     platform: "pinterest",
     eventName: body.event_name || "conversion",
@@ -257,7 +353,7 @@ export async function handleWebhook(
       SELECT tenant_id FROM tenant_integrations
       WHERE platform = ? AND status = 'active'
       LIMIT 1
-    `).get(platform) as any;
+    `).get<TenantIntegrationIdRow>(platform);
 
     if (!integration) {
       return NextResponse.json({ error: `No active integration for ${platform}` }, { status: 404 });
@@ -265,7 +361,7 @@ export async function handleWebhook(
 
     // Process through CAPI enrichment pipeline
     const result = await enrichConversionEvent(integration.tenant_id, {
-      platform: platform as any,
+      platform: platform as ConversionEvent["platform"],
       eventName: payload.eventName,
       eventTime: payload.eventTime * 1000,
       userData: payload.userData,

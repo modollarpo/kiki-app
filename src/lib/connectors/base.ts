@@ -180,7 +180,7 @@ export async function httpClient<T>(
   config: HttpClientConfig,
   method: string,
   path: string,
-  body?: any,
+  body?: unknown,
   params?: Record<string, string>
 ): Promise<PlatformApiResponse<T>> {
   const start = Date.now();
@@ -261,10 +261,10 @@ export async function httpClient<T>(
         rateLimitReset: rateLimitReset ? parseInt(rateLimitReset) : undefined,
         requestId: requestId || undefined,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const latencyMs = Date.now() - start;
 
-      if (error.name === "AbortError") {
+      if (error instanceof Error && error.name === "AbortError") {
         return { success: false, error: "Request timeout", latencyMs };
       }
 
@@ -299,7 +299,7 @@ export abstract class BaseConnector {
     method: string,
     path: string,
     accessToken: string,
-    body?: any,
+    body?: unknown,
     params?: Record<string, string>
   ): Promise<PlatformApiResponse<T>> {
     // Check circuit breaker
@@ -352,15 +352,15 @@ export abstract class BaseConnector {
     return this.request<T>("GET", path, accessToken, undefined, params);
   }
 
-  protected async post<T>(path: string, accessToken: string, body: any): Promise<PlatformApiResponse<T>> {
+  protected async post<T>(path: string, accessToken: string, body: unknown): Promise<PlatformApiResponse<T>> {
     return this.request<T>("POST", path, accessToken, body);
   }
 
-  protected async put<T>(path: string, accessToken: string, body: any): Promise<PlatformApiResponse<T>> {
+  protected async put<T>(path: string, accessToken: string, body: unknown): Promise<PlatformApiResponse<T>> {
     return this.request<T>("PUT", path, accessToken, body);
   }
 
-  protected async patch<T>(path: string, accessToken: string, body: any): Promise<PlatformApiResponse<T>> {
+  protected async patch<T>(path: string, accessToken: string, body: unknown): Promise<PlatformApiResponse<T>> {
     return this.request<T>("PATCH", path, accessToken, body);
   }
 

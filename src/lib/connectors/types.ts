@@ -78,7 +78,7 @@ export interface PlatformCampaign {
   dailyBudget: number;
   lifetimeBudget?: number;
   bidStrategy?: string;
-  targeting?: Record<string, any>;
+  targeting?: Record<string, unknown>;
   creative?: PlatformCreative[];
   startTime?: string;
   endTime?: string;
@@ -195,7 +195,7 @@ export interface PlatformWebhook {
   eventType: string;
   eventId: string;
   timestamp: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   signature?: string;
 }
 
@@ -237,18 +237,18 @@ export interface IPlatformConnector {
   sendConversionBatch?(accessToken: string, events: ConversionEvent[]): Promise<ConversionDeliveryResult[]>;
 
   // Campaign Write Operations
-  pauseCampaign?(accessToken: string, campaignId: string): Promise<PlatformApiResponse<any>>;
-  resumeCampaign?(accessToken: string, campaignId: string): Promise<PlatformApiResponse<any>>;
-  setBid?(accessToken: string, adGroupId: string, bidAmount: number): Promise<PlatformApiResponse<any>>;
-  updateCampaign?(accessToken: string, campaignId: string, updates: { dailyBudget?: number; status?: string; name?: string }): Promise<PlatformApiResponse<any>>;
+  pauseCampaign?(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>>;
+  resumeCampaign?(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>>;
+  setBid?(accessToken: string, adGroupId: string, bidAmount: number): Promise<PlatformApiResponse<unknown>>;
+  updateCampaign?(accessToken: string, campaignId: string, updates: { dailyBudget?: number; status?: string; name?: string }): Promise<PlatformApiResponse<unknown>>;
 
   // Audience Operations
-  createCustomAudience?(accessToken: string, params: { name: string; users?: any }): Promise<PlatformApiResponse<any>>;
-  addToCustomAudience?(accessToken: string, audienceId: string, users: any): Promise<PlatformApiResponse<any>>;
+  createCustomAudience?(accessToken: string, params: { name: string; users?: unknown }): Promise<PlatformApiResponse<unknown>>;
+  addToCustomAudience?(accessToken: string, audienceId: string, users: unknown): Promise<PlatformApiResponse<unknown>>;
 
   // Webhooks
   verifyWebhookSignature?(payload: string, signature: string, secret: string): boolean;
-  parseWebhookPayload?(body: any): PlatformWebhook;
+  parseWebhookPayload?(body: unknown): PlatformWebhook;
 }
 
 export interface AccountInfo {
@@ -259,5 +259,5 @@ export interface AccountInfo {
   timezone?: string;
   businessId?: string;
   pixelId?: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }

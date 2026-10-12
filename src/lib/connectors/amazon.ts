@@ -14,6 +14,37 @@ interface AmazonConfig {
   region?: "NA" | "EU" | "FE";
 }
 
+interface AmazonTokenResponse {
+  access_token: string;
+  refresh_token?: string;
+  expires_in: number;
+}
+
+interface AmazonProfile {
+  profileId: string;
+  accountInfo?: { name?: string };
+}
+
+interface AmazonCampaign {
+  campaignId: string;
+  name: string;
+  state?: string;
+  campaignType?: string;
+  budget?: { dailyBudget?: number };
+  creationDate?: string;
+  lastUpdatedDate?: string;
+}
+
+interface AmazonMetrics {
+  impressions?: string | number;
+  clicks?: string | number;
+  conversions?: string | number;
+  conversionValue?: string | number;
+  spend?: string | number;
+  frequency?: string | number;
+  reach?: string | number;
+}
+
 export class AmazonConnector extends BaseConnector implements IPlatformConnector {
   readonly platformId = "amazon" as const;
   private profileId: string;
@@ -23,7 +54,7 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
 
   constructor(config: AmazonConfig) {
     super({
-      id: "amazon" as any,
+      id: "amazon",
       name: "Amazon Ads",
       apiVersion: "v3",
       apiBaseUrl: "https://advertising-api.amazon.com",
@@ -88,7 +119,7 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
     });
-    const data = await res.json() as any;
+    const data = await res.json() as AmazonTokenResponse;
     return { accessToken: data.access_token, refreshToken: data.refresh_token, expiresAt: Date.now() + data.expires_in * 1000, tokenType: "bearer", scope: ["advertising::campaign_management"] };
   }
 
@@ -98,7 +129,7 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: this.clientId, client_secret: this.clientSecret }),
     });
-    const data = await res.json() as any;
+    const data = await res.json() as AmazonTokenResponse;
     return { accessToken: data.access_token, expiresAt: Date.now() + data.expires_in * 1000, tokenType: "bearer", scope: [] };
   }
 
@@ -112,7 +143,7 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
   async getAccountInfo(accessToken: string): Promise<PlatformApiResponse<AccountInfo>> {
     try {
       const res = await fetch(`${this.getBaseUrl()}/v2/profiles`, { headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
-      const profiles = await res.json() as any[];
+      const profiles = await res.json() as AmazonProfile[];
       const p = profiles[0];
       return { success: true, data: { id: p.profileId, name: p.accountInfo?.name || "Amazon Ads", currency: "USD", timezone: "America/New_York", config: {} }, latencyMs: 0 };
     } catch (e) { return { success: false, error: String(e), latencyMs: 0 }; }
@@ -121,16 +152,16 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
   async listCampaigns(accessToken: string, _accountId: string): Promise<PlatformApiResponse<PlatformCampaign[]>> {
     try {
       const res = await fetch(`${this.getBaseUrl()}/v2/campaigns?stateFilter=enabled`, { headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
-      const data = await res.json() as any[];
-      return { success: true, latencyMs: 0, data: data.map((c: any) => ({ id: c.campaignId, platformId: "amazon" as any, name: c.name, status: c.state === "enabled" ? "active" : "paused", objective: c.campaignType || "CONVERSIONS", dailyBudget: c.budget?.dailyBudget || 0, createdAt: c.creationDate || new Date().toISOString(), updatedAt: c.lastUpdatedDate || new Date().toISOString() })) };
+      const data = await res.json() as AmazonCampaign[];
+      return { success: true, latencyMs: 0, data: data.map((c: AmazonCampaign) => ({ id: c.campaignId, platformId: "amazon", name: c.name, status: c.state === "enabled" ? "active" : "paused", objective: c.campaignType || "CONVERSIONS", dailyBudget: c.budget?.dailyBudget || 0, createdAt: c.creationDate || new Date().toISOString(), updatedAt: c.lastUpdatedDate || new Date().toISOString() })) };
     } catch (e) { return { success: false, error: String(e), latencyMs: 0 }; }
   }
 
   async getCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<PlatformCampaign>> {
     try {
       const res = await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
-      const c = await res.json() as any;
-      return { success: true, latencyMs: 0, data: { id: c.campaignId, platformId: "amazon" as any, name: c.name, status: c.state === "enabled" ? "active" : "paused", objective: c.campaignType || "CONVERSIONS", dailyBudget: c.budget?.dailyBudget || 0, createdAt: c.creationDate || new Date().toISOString(), updatedAt: c.lastUpdatedDate || new Date().toISOString() } };
+      const c = await res.json() as AmazonCampaign;
+      return { success: true, latencyMs: 0, data: { id: c.campaignId, platformId: "amazon", name: c.name, status: c.state === "enabled" ? "active" : "paused", objective: c.campaignType || "CONVERSIONS", dailyBudget: c.budget?.dailyBudget || 0, createdAt: c.creationDate || new Date().toISOString(), updatedAt: c.lastUpdatedDate || new Date().toISOString() } };
     } catch (e) { return { success: false, error: String(e), latencyMs: 0 }; }
   }
 
@@ -141,37 +172,37 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
         headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" },
         body: JSON.stringify({ campaignIdFilter: [campaignId], period: { startDate: dateRange.start, endDate: dateRange.end }, metrics: "impressions,clicks,conversions,conversionValue,spend" }),
       });
-      const data = await res.json() as any;
-      const m = data[0] || {};
-      const spend = parseFloat(m.spend || "0");
-      const revenue = parseFloat(m.conversionValue || "0");
-      const conversions = parseInt(m.conversions || "0");
-      return { success: true, latencyMs: 0, data: { campaignId, platformId: "amazon" as any, impressions: parseInt(m.impressions || "0"), clicks: parseInt(m.clicks || "0"), conversions, conversionValue: revenue, spend, revenue, roas: spend > 0 ? revenue / spend : 0, cpc: parseInt(m.clicks || "0") > 0 ? spend / parseInt(m.clicks || "0") : 0, cpm: parseInt(m.impressions || "0") > 0 ? (spend / parseInt(m.impressions || "0")) * 1000 : 0, ctr: parseInt(m.impressions || "0") > 0 ? (parseInt(m.clicks || "0") / parseInt(m.impressions || "0")) * 100 : 0, conversionRate: parseInt(m.clicks || "0") > 0 ? (conversions / parseInt(m.clicks || "0")) * 100 : 0, frequency: parseFloat(m.frequency || "1"), reach: parseInt(m.reach || "0"), period: dateRange } };
+      const data = await res.json() as AmazonMetrics[];
+      const m: AmazonMetrics = data[0] || {};
+      const spend = parseFloat(String(m.spend || "0"));
+      const revenue = parseFloat(String(m.conversionValue || "0"));
+      const conversions = parseInt(String(m.conversions || "0"));
+      return { success: true, latencyMs: 0, data: { campaignId, platformId: "amazon", impressions: parseInt(String(m.impressions || "0")), clicks: parseInt(String(m.clicks || "0")), conversions, conversionValue: revenue, spend, revenue, roas: spend > 0 ? revenue / spend : 0, cpc: parseInt(String(m.clicks || "0")) > 0 ? spend / parseInt(String(m.clicks || "0")) : 0, cpm: parseInt(String(m.impressions || "0")) > 0 ? (spend / parseInt(String(m.impressions || "0"))) * 1000 : 0, ctr: parseInt(String(m.impressions || "0")) > 0 ? (parseInt(String(m.clicks || "0")) / parseInt(String(m.impressions || "0"))) * 100 : 0, conversionRate: parseInt(String(m.clicks || "0")) > 0 ? (conversions / parseInt(String(m.clicks || "0"))) * 100 : 0, frequency: parseFloat(String(m.frequency || "1")), reach: parseInt(String(m.reach || "0")), period: dateRange } };
     } catch (e) { return { success: false, error: String(e), latencyMs: 0 }; }
   }
 
   async sendConversion(_accessToken: string, event: ConversionEvent): Promise<ConversionDeliveryResult> {
-    return { platform: "amazon" as any, success: false, eventId: event.eventName, error: "Amazon does not support direct CAPI", latencyMs: 0 };
+    return { platform: "amazon", success: false, eventId: event.eventName, error: "Amazon does not support direct CAPI", latencyMs: 0 };
   }
 
   async listCreativeAssets(): Promise<PlatformCreative[]> { return []; }
 
-  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<any>> {
+  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>> {
     await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ state: "paused" }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
-  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<any>> {
+  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>> {
     await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ state: "enabled" }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
-  async setBid(accessToken: string, adGroupId: string, bidAmount: number): Promise<PlatformApiResponse<any>> {
+  async setBid(accessToken: string, adGroupId: string, bidAmount: number): Promise<PlatformApiResponse<unknown>> {
     await fetch(`${this.getBaseUrl()}/v2/adGroups/${adGroupId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ defaultBid: bidAmount }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
-  async updateCampaign(accessToken: string, campaignId: string, updates: { dailyBudget?: number }): Promise<PlatformApiResponse<any>> {
+  async updateCampaign(accessToken: string, campaignId: string, updates: { dailyBudget?: number }): Promise<PlatformApiResponse<unknown>> {
     if (updates.dailyBudget) {
       await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ budget: { dailyBudget: Math.max(updates.dailyBudget, 1) } }) });
     }

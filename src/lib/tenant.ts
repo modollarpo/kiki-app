@@ -3,7 +3,7 @@
 // Every database query, Redis key, and event is scoped by tenant.
 // ============================================================
 
-import { getDb } from "./db";
+import { getDb, type SqlParam } from "./db";
 import { eventBus, EVENTS } from "./events";
 
 // ── Tenant Context ─────────────────────────────────────────
@@ -14,6 +14,24 @@ export interface TenantContext {
   role: "advertiser" | "agency" | "admin" | "developer" | "finance" | "aiops" | "superadmin";
   plan: "starter" | "growth" | "enterprise" | "oaas";
   permissions: string[];
+}
+
+interface PlanRow {
+  plan: string;
+}
+
+interface PlanStatusRow {
+  plan: string;
+  status: string;
+}
+
+interface PlanTrialRow {
+  plan: string;
+  trial_ends_at: string | null;
+}
+
+interface TenantIdRow {
+  tenant_id: string;
 }
 
 // ── AsyncLocalStorage for request-scoped tenant context ─────
@@ -42,7 +60,7 @@ export function requireTenantContext(): TenantContext {
  * Wraps a SQL query to automatically inject tenant_id filter.
  * Usage: const [scopedQuery, params] = tenantScope("SELECT * FROM campaigns WHERE status = ?", tenantId, ["active"]);
  */
-export function tenantScope(baseQuery: string, tenantId: string, existingParams: any[] = []): { query: string; params: any[] } {
+export function tenantScope(baseQuery: string, tenantId: string, existingParams: SqlParam[] = []): { query: string; params: SqlParam[] } {
   // Add tenant_id filter if not already present
   if (!baseQuery.includes("tenant_id")) {
     // Insert WHERE clause or AND condition
@@ -76,9 +94,9 @@ export function tenantScope(baseQuery: string, tenantId: string, existingParams:
  * Execute a tenant-scoped query.
  * Automatically injects tenant_id and parameterizes it safely.
  */
-export async function tenantQuery<T = any>(
+export async function tenantQuery<T = Record<string, unknown>>(
   query: string,
-  params: any[] = [],
+  params: SqlParam[] = [],
   tenantId?: string
 ): Promise<T[]> {
   const db = await getDb();
@@ -115,10 +133,10 @@ export async function tenantQuery<T = any>(
       modifiedQuery = `${modifiedQuery} WHERE tenant_id = ?`;
     }
 
-    return   await db.prepare(modifiedQuery).all(tid, ...params) as T[];
+    return   await db.prepare(modifiedQuery).all<T>(tid, ...params);
   }
 
-  return   await db.prepare(query).all(...params) as T[];
+  return   await db.prepare(query).all<T>(...params);
 }
 
 /**
@@ -126,7 +144,7 @@ export async function tenantQuery<T = any>(
  */
 export async function tenantInsert(
   table: string,
-  data: Record<string, any>,
+  data: Record<string, SqlParam>,
   tenantId?: string
 ): Promise<void> {
   const db = await getDb();
@@ -144,9 +162,9 @@ export async function tenantInsert(
  */
 export async function tenantUpdate(
   table: string,
-  data: Record<string, any>,
+  data: Record<string, SqlParam>,
   whereClause: string,
-  whereParams: any[] = [],
+  whereParams: SqlParam[] = [],
   tenantId?: string
 ): Promise<void> {
   const db = await getDb();
@@ -164,7 +182,7 @@ export async function tenantUpdate(
 export async function tenantDelete(
   table: string,
   whereClause: string,
-  whereParams: any[] = [],
+  whereParams: SqlParam[] = [],
   tenantId?: string
 ): Promise<void> {
   const db = await getDb();
@@ -234,7 +252,7 @@ export async function checkPlanLimit(
   currentUsage: number
 ): Promise<{ allowed: boolean; limit: number; usage: number }> {
   const db = await getDb();
-  const tenant =   await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get(tenantId) as any;
+  const tenant =   await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get<PlanRow>(tenantId);
   const limits = getPlanLimits(tenant?.plan || "starter");
 
   const limitMap = {
@@ -267,7 +285,7 @@ export interface EnforcementResult {
  */
 export async function checkTenantSuspended(tenantId: string): Promise<EnforcementResult> {
   const db = await getDb();
-  const row =   await db.prepare("SELECT plan, status FROM users WHERE tenant_id = ? LIMIT 1").get(tenantId) as any;
+  const row =   await db.prepare("SELECT plan, status FROM users WHERE tenant_id = ? LIMIT 1").get<PlanStatusRow>(tenantId);
   if (!row) return { allowed: false, reason: "Tenant not found" };
   if (row.status === "suspended") {
     return { allowed: false, reason: "Account is suspended. Please contact support." };
@@ -283,7 +301,7 @@ export async function checkFeatureAccess(
   feature: string
 ): Promise<EnforcementResult> {
   const db = await getDb();
-  const row =   await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get(tenantId) as any;
+  const row =   await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get<PlanRow>(tenantId);
   const plan = row?.plan || "starter";
   const limits = getPlanLimits(plan);
   if (limits.features.includes("all")) return { allowed: true };
@@ -305,7 +323,7 @@ export async function checkTrialExpired(tenantId: string): Promise<EnforcementRe
   const db = await getDb();
   const row =   await db.prepare(
     "SELECT plan, trial_ends_at FROM users WHERE tenant_id = ? LIMIT 1"
-  ).get(tenantId) as any;
+  ).get<PlanTrialRow>(tenantId);
   if (!row) return { allowed: true };
   if (!row.trial_ends_at) return { allowed: true };
 
@@ -357,7 +375,7 @@ export async function expireTrials(): Promise<number> {
     SELECT tenant_id FROM users
     WHERE trial_ends_at IS NOT NULL
     AND trial_ends_at < datetime('now')
-  `).all() as any[];
+  `).all<TenantIdRow>();
   for (const row of expired) {
     await db.prepare(
       "UPDATE users SET updated_at = datetime('now') WHERE tenant_id = ?"
