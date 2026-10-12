@@ -3,6 +3,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { requireMobileAuth } from '@/lib/mobile/auth';
 
+interface CampaignMobileRow {
+  id: string;
+  tenant_id: string;
+  name: string;
+  platform: string;
+  status: string;
+  budget: number;
+  spend: number;
+  revenue: number;
+  roas: number;
+  conversions: number;
+  clicks: number;
+  impressions: number;
+  cpa: number;
+  start_date: string | null;
+  end_date: string | null;
+  auto_pause: number;
+  smart_bidding: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireMobileAuth(request);
@@ -87,7 +109,7 @@ export async function POST(request: NextRequest) {
     `).run(crypto.randomUUID(), auth.tenantId, JSON.stringify({ campaignId: id, name }));
 
     // Return created campaign
-    const campaign = await db.prepare('SELECT * FROM campaigns WHERE id = ?').get(id) as any;
+    const campaign = await db.prepare('SELECT * FROM campaigns WHERE id = ?').get<CampaignMobileRow>(id);
 
     return NextResponse.json({
       ok: true,
