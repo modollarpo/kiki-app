@@ -27,6 +27,51 @@ type InMemorySubscription = {
   handler: KafkaConsumerHandler;
 };
 
+interface KafkaEachMessagePayload {
+  topic: string;
+  partition: number;
+  message: {
+    key?: Buffer | null;
+    value: Buffer | null;
+    timestamp?: string;
+  };
+}
+
+interface KafkaProducerHandle {
+  connect(): Promise<void>;
+  send(record: {
+    topic: string;
+    messages: Array<{
+      key?: string;
+      value: string | Buffer;
+      headers?: Record<string, string | Buffer>;
+    }>;
+  }): Promise<unknown>;
+  disconnect(): Promise<void>;
+}
+
+interface KafkaConsumerHandle {
+  connect(): Promise<void>;
+  subscribe(config: { topic: string; fromBeginning: boolean }): Promise<void>;
+  run(config: {
+    eachMessage: (payload: KafkaEachMessagePayload) => Promise<void>;
+  }): Promise<void>;
+  disconnect(): Promise<void>;
+}
+
+interface KafkaInstance {
+  producer(config: { allowAutoTopicCreation: boolean }): KafkaProducerHandle;
+  consumer(config: { groupId: string }): KafkaConsumerHandle;
+}
+
+interface KafkaConstructor {
+  new (config: {
+    clientId: string;
+    brokers: string[];
+    retry: { initialRetryTime: number; retries: number };
+  }): KafkaInstance;
+}
+
 const KAFKA_ENABLED = process.env.KAFKA_ENABLED === "true";
 const KAFKA_BROKERS = (process.env.KAFKA_BROKERS || "")
   .split(",")
@@ -36,8 +81,8 @@ const KAFKA_BROKERS = (process.env.KAFKA_BROKERS || "")
 const KAFKA_CLIENT_ID = process.env.KAFKA_CLIENT_ID || "kiki-agent";
 const KAFKA_GROUP_ID = process.env.KAFKA_GROUP_ID || "kiki-agent-group";
 
-let kafkaLib: any = null;
-let producer: any = null;
+let kafkaLib: KafkaConstructor | null = null;
+let producer: KafkaProducerHandle | null = null;
 let consumers: Array<{ disconnect: () => Promise<void> }> = [];
 let connecting = false;
 let connected = false;
@@ -50,11 +95,11 @@ function isKafkaActuallyEnabled(): boolean {
   return KAFKA_ENABLED && KAFKA_BROKERS.length > 0;
 }
 
-async function loadKafka(): Promise<any> {
+async function loadKafka(): Promise<KafkaConstructor | null> {
   if (kafkaLib) return kafkaLib;
   try {
     const mod = await import("kafkajs");
-    kafkaLib = (mod as any).Kafka;
+    kafkaLib = (mod as { Kafka: KafkaConstructor }).Kafka;
     return kafkaLib;
   } catch (e) {
     logger.warn("[Kafka] kafkajs not available; using in-memory fallback", {
@@ -156,16 +201,16 @@ export async function publishEvent(
   event: Record<string, unknown>
 ): Promise<void> {
   const eventId =
-    (event as any).eventId ||
-    (event as any).id ||
+    (event.eventId as string) ||
+    (event.id as string) ||
     `${topic}-${Date.now()}-${randomUUID().slice(0, 8)}`;
   const envelope = {
     eventId,
-    eventType: (event as any).eventType || topic,
+    eventType: (event.eventType as string) || topic,
     topic,
-    tenantId: (event as any).tenantId || null,
-    timestamp: (event as any).timestamp || Date.now(),
-    version: (event as any).version || "1.0.0",
+    tenantId: (event.tenantId as string) || null,
+    timestamp: (event.timestamp as number) || Date.now(),
+    version: (event.version as string) || "1.0.0",
     payload: event,
   };
 
@@ -207,7 +252,7 @@ export async function subscribe(
         await consumer.connect();
         await consumer.subscribe({ topic, fromBeginning: false });
         await consumer.run({
-          eachMessage: async ({ topic: t, partition, message }: any) => {
+          eachMessage: async ({ topic: t, partition, message }: KafkaEachMessagePayload) => {
             try {
               await handler({
                 topic: t,
