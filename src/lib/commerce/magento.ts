@@ -29,11 +29,54 @@ function buildCustomersUrl(shopDomain: string | undefined, limit: number): strin
   return `${base}/rest/V1/customers/search?${params.toString()}`;
 }
 
-function mapOrder(raw: any): CommerceOrder {
+interface MagentoOrderItem {
+  sku?: string;
+  product_id?: number | string;
+  item_id?: number | string;
+  name?: string;
+  qty_ordered?: number | string;
+  qty?: number | string;
+  price?: number | string;
+}
+
+interface MagentoAddress {
+  telephone?: string;
+}
+
+interface MagentoOrder {
+  entity_id?: number | string;
+  increment_id?: string;
+  orderId?: string;
+  customer_email?: string;
+  customer_id?: number | string | null;
+  grand_total?: number | string;
+  order_currency_code?: string;
+  status?: string;
+  created_at?: string;
+  total_refunded?: number | string;
+  billing_address?: MagentoAddress | null;
+  items?: MagentoOrderItem[];
+}
+
+interface MagentoCustomer {
+  id?: number | string;
+  email?: string;
+  firstname?: string;
+  lastname?: string;
+  total_orders?: number | string;
+  total_spent?: number | string;
+  updated_at?: string;
+}
+
+interface MagentoList<T> {
+  items?: T[];
+}
+
+function mapOrder(raw: MagentoOrder): CommerceOrder {
   const items: CommerceOrderItem[] = Array.isArray(raw.items)
-    ? raw.items.map((it: any) => ({
+    ? raw.items.map((it) => ({
         productId: String(it.sku ?? it.product_id ?? it.item_id ?? ""),
-        name: it.name ?? "",
+        name: String(it.name ?? ""),
         quantity: Number(it.qty_ordered ?? it.qty ?? 1),
         price: Number(it.price ?? 0),
       }))
@@ -45,15 +88,15 @@ function mapOrder(raw: any): CommerceOrder {
     customerId:
       raw.customer_id != null ? String(raw.customer_id) : undefined,
     total: Number(raw.grand_total ?? 0),
-    currency: raw.order_currency_code ?? "USD",
-    status: raw.status ?? "",
-    createdAt: raw.created_at ?? new Date().toISOString(),
+    currency: String(raw.order_currency_code ?? "USD"),
+    status: String(raw.status ?? ""),
+    createdAt: String(raw.created_at ?? new Date().toISOString()),
     items,
-    refunded: raw.status === "closed" && raw.total_refunded > 0,
+    refunded: raw.status === "closed" && Number(raw.total_refunded ?? 0) > 0,
   };
 }
 
-function mapCustomer(raw: any): CommerceCustomer {
+function mapCustomer(raw: MagentoCustomer): CommerceCustomer {
   const totalOrders = Number(raw.total_orders ?? 0);
   const totalSpent = Number(raw.total_spent ?? 0);
   return {
@@ -82,7 +125,7 @@ export class MagentoConnector implements ICommerceConnector {
     limit: number
   ): Promise<CommerceOrder[]> {
     if (!shopDomain) return [];
-    const result = await httpClient<{ items?: any[] }>(
+    const result = await httpClient<MagentoList<MagentoOrder>>(
       buildOrdersUrl(shopDomain, since, limit),
       { headers: { Authorization: `Bearer ${apiKey}` } }
     );
@@ -96,7 +139,7 @@ export class MagentoConnector implements ICommerceConnector {
     limit: number
   ): Promise<CommerceCustomer[]> {
     if (!shopDomain) return [];
-    const result = await httpClient<{ items?: any[] }>(
+    const result = await httpClient<MagentoList<MagentoCustomer>>(
       buildCustomersUrl(shopDomain, limit),
       { headers: { Authorization: `Bearer ${apiKey}` } }
     );
@@ -115,7 +158,7 @@ export class MagentoConnector implements ICommerceConnector {
 
   parseOrderWebhook(body: unknown): CommerceOrder | null {
     if (!body || typeof body !== "object") return null;
-    const raw = body as any;
+    const raw = body as MagentoOrder;
     return mapOrder(raw);
   }
 }

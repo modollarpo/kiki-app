@@ -18,20 +18,64 @@ function buildUrl(shopDomain: string | undefined, path: string, params: Record<s
   return `${base}${path}?${query}`;
 }
 
-function mapOrder(raw: Record<string, unknown>): CommerceOrder {
+interface ShopifyLineItem {
+  id?: number | string;
+  product_id?: number | string;
+  name?: string;
+  quantity?: number | string;
+  price?: number | string;
+}
+
+interface ShopifyCustomerRef {
+  id?: number | string;
+  email?: string;
+  phone?: string;
+}
+
+interface ShopifyOrder {
+  id?: number | string;
+  orderId?: string;
+  email?: string;
+  phone?: string;
+  total_price?: number | string;
+  currency?: string;
+  financial_status?: string;
+  status?: string;
+  created_at?: string;
+  customer?: ShopifyCustomerRef | null;
+  line_items?: ShopifyLineItem[];
+}
+
+interface ShopifyNote {
+  first_order_at?: string;
+}
+
+interface ShopifyCustomer {
+  id?: number | string;
+  email?: string;
+  phone?: string;
+  first_name?: string;
+  last_name?: string;
+  orders_count?: number | string;
+  total_spent?: number | string;
+  updated_at?: string;
+  note?: ShopifyNote | string | null;
+}
+
+function mapOrder(raw: ShopifyOrder): CommerceOrder {
   const items: CommerceOrderItem[] = Array.isArray(raw.line_items)
-    ? (raw.line_items as Array<Record<string, unknown>>).map((li) => ({
+    ? raw.line_items.map((li) => ({
         productId: String(li.product_id ?? li.id ?? ""),
         name: String(li.name ?? ""),
         quantity: Number(li.quantity ?? 1),
         price: Number(li.price ?? 0),
       }))
     : [];
-  const customer = (raw.customer && typeof raw.customer === "object") ? (raw.customer as Record<string, unknown>) : {};
+  const customer = (raw.customer && typeof raw.customer === "object") ? raw.customer : {};
   return {
-    orderId: String(raw.id ?? (raw as any).orderId ?? ""),
-    customerEmail: (raw as any).email ?? (customer.email as string | undefined),
-    customerPhone: (raw as any).phone ?? (customer.phone as string | undefined),
+    orderId: String(raw.id ?? raw.orderId ?? ""),
+    customerEmail: raw.email ?? customer.email,
+    customerPhone: raw.phone ?? customer.phone,
     customerId: customer.id != null ? String(customer.id) : undefined,
     total: Number(raw.total_price ?? 0),
     currency: String(raw.currency ?? "USD"),
@@ -42,21 +86,22 @@ function mapOrder(raw: Record<string, unknown>): CommerceOrder {
   };
 }
 
-function mapCustomer(raw: Record<string, unknown>): CommerceCustomer {
+function mapCustomer(raw: ShopifyCustomer): CommerceCustomer {
   const totalOrders = Number(raw.orders_count ?? 0);
   const totalSpent = Number(raw.total_spent ?? 0);
+  const note = raw.note && typeof raw.note === "object" ? raw.note : undefined;
   return {
-    externalId: String(raw.id ?? (raw as any).email ?? ""),
-    email: (raw as any).email as string | undefined,
-    phone: (raw as any).phone as string | undefined,
-    firstName: (raw as any).first_name as string | undefined,
-    lastName: (raw as any).last_name as string | undefined,
+    externalId: String(raw.id ?? raw.email ?? ""),
+    email: raw.email,
+    phone: raw.phone,
+    firstName: raw.first_name,
+    lastName: raw.last_name,
     totalOrders,
     totalSpent,
     averageOrderValue: totalOrders > 0 ? totalSpent / totalOrders : 0,
-    firstOrderAt: ((raw as any).note && typeof (raw as any).note === "object") ? ((raw as any).note.first_order_at as string | undefined) : undefined,
-    lastOrderAt: (raw.updated_at as string | undefined)
-      ? new Date(String(raw.updated_at)).toISOString()
+    firstOrderAt: note?.first_order_at,
+    lastOrderAt: raw.updated_at
+      ? new Date(raw.updated_at).toISOString()
       : undefined,
   };
 }
@@ -78,7 +123,7 @@ export class ShopifyConnector implements ICommerceConnector {
       created_at_min: since,
       limit: String(limit),
     });
-    const result = await httpClient<{ orders?: any[] }>(url, {
+    const result = await httpClient<{ orders?: ShopifyOrder[] }>(url, {
       headers: { "X-Shopify-Access-Token": apiKey },
     });
     if (!result.success || !result.data?.orders) return [];
@@ -94,7 +139,7 @@ export class ShopifyConnector implements ICommerceConnector {
     const url = buildUrl(shopDomain, "/admin/api/2024-01/customers.json", {
       limit: String(limit),
     });
-    const result = await httpClient<{ customers?: any[] }>(url, {
+    const result = await httpClient<{ customers?: ShopifyCustomer[] }>(url, {
       headers: { "X-Shopify-Access-Token": apiKey },
     });
     if (!result.success || !result.data?.customers) return [];
@@ -112,8 +157,8 @@ export class ShopifyConnector implements ICommerceConnector {
 
   parseOrderWebhook(body: unknown): CommerceOrder | null {
     if (!body || typeof body !== "object") return null;
-    const raw = body as any;
-    const order = raw.order ?? raw;
+    const raw = body as { order?: ShopifyOrder };
+    const order = raw.order ?? (body as ShopifyOrder);
     if (order.financial_status && order.financial_status !== "paid") {
       return null;
     }

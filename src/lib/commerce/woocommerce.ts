@@ -28,11 +28,47 @@ function buildCustomersUrl(shopDomain: string | undefined, limit: number): strin
   return `${base}/wp-json/wc/v3/customers?${params.toString()}`;
 }
 
-function mapOrder(raw: any): CommerceOrder {
+interface WooLineItem {
+  id?: number | string;
+  product_id?: number | string;
+  name?: string;
+  quantity?: number | string;
+  price?: number | string;
+}
+
+interface WooBilling {
+  email?: string;
+  phone?: string;
+}
+
+interface WooOrder {
+  id?: number | string;
+  orderId?: string;
+  customer_id?: number | string | null;
+  total?: number | string;
+  currency?: string;
+  status?: string;
+  date_created?: string;
+  date_created_gmt?: string;
+  billing?: WooBilling | null;
+  line_items?: WooLineItem[];
+}
+
+interface WooCustomer {
+  id?: number | string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  orders_count?: number | string;
+  total_spent?: number | string;
+  last_order?: string;
+}
+
+function mapOrder(raw: WooOrder): CommerceOrder {
   const items: CommerceOrderItem[] = Array.isArray(raw.line_items)
-    ? raw.line_items.map((li: any) => ({
+    ? raw.line_items.map((li) => ({
         productId: String(li.product_id ?? li.id ?? ""),
-        name: li.name ?? "",
+        name: String(li.name ?? ""),
         quantity: Number(li.quantity ?? 1),
         price: Number(li.price ?? 0),
       }))
@@ -44,15 +80,15 @@ function mapOrder(raw: any): CommerceOrder {
     customerPhone: billing.phone,
     customerId: raw.customer_id != null ? String(raw.customer_id) : undefined,
     total: Number(raw.total ?? 0),
-    currency: raw.currency ?? "USD",
-    status: raw.status ?? "",
-    createdAt: raw.date_created ?? raw.date_created_gmt ?? new Date().toISOString(),
+    currency: String(raw.currency ?? "USD"),
+    status: String(raw.status ?? ""),
+    createdAt: String(raw.date_created ?? raw.date_created_gmt ?? new Date().toISOString()),
     items,
     refunded: raw.status === "refunded",
   };
 }
 
-function mapCustomer(raw: any): CommerceCustomer {
+function mapCustomer(raw: WooCustomer): CommerceCustomer {
   const totalOrders = Number(raw.orders_count ?? 0);
   const totalSpent = Number(raw.total_spent ?? 0);
   return {
@@ -81,7 +117,7 @@ export class WooCommerceConnector implements ICommerceConnector {
     if (!shopDomain) return [];
     const [key, secret] = apiKey.split(":");
     const auth = Buffer.from(`${key}:${secret}`).toString("base64");
-    const result = await httpClient<any[]>(buildOrdersUrl(shopDomain, since, limit), {
+    const result = await httpClient<WooOrder[]>(buildOrdersUrl(shopDomain, since, limit), {
       headers: { Authorization: `Basic ${auth}` },
     });
     if (!result.success || !Array.isArray(result.data)) return [];
@@ -96,7 +132,7 @@ export class WooCommerceConnector implements ICommerceConnector {
     if (!shopDomain) return [];
     const [key, secret] = apiKey.split(":");
     const auth = Buffer.from(`${key}:${secret}`).toString("base64");
-    const result = await httpClient<any[]>(buildCustomersUrl(shopDomain, limit), {
+    const result = await httpClient<WooCustomer[]>(buildCustomersUrl(shopDomain, limit), {
       headers: { Authorization: `Basic ${auth}` },
     });
     if (!result.success || !Array.isArray(result.data)) return [];
@@ -114,7 +150,7 @@ export class WooCommerceConnector implements ICommerceConnector {
 
   parseOrderWebhook(body: unknown): CommerceOrder | null {
     if (!body || typeof body !== "object") return null;
-    const raw = body as any;
+    const raw = body as WooOrder;
     if (raw.status && raw.status !== "completed" && raw.status !== "processing") {
       return null;
     }
