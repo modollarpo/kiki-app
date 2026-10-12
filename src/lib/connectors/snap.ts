@@ -23,6 +23,13 @@ import {
   type PlatformWebhook,
 } from "./types";
 
+interface SnapWebhookBody {
+  event_type?: string;
+  event_id?: string | number;
+  timestamp?: number;
+  [key: string]: unknown;
+}
+
 // ── Snap Configuration ──────────────────────────────────────
 
 const SNAP_CONFIG: PlatformConfig = {
@@ -506,13 +513,14 @@ export class SnapConnector extends BaseConnector {
     return signature === expectedSignature;
   }
 
-  parseWebhookPayload(body: any): PlatformWebhook {
+  parseWebhookPayload(body: unknown): PlatformWebhook {
+    const b = (body && typeof body === "object" ? body : {}) as SnapWebhookBody;
     return {
       platform: "snap",
-      eventType: body.event_type || "conversion",
-      eventId: body.event_id || crypto.randomBytes(16).toString("hex"),
-      timestamp: body.timestamp || Date.now(),
-      data: body,
+      eventType: b.event_type || "conversion",
+      eventId: (b.event_id ?? crypto.randomBytes(16).toString("hex")).toString(),
+      timestamp: b.timestamp ?? Date.now(),
+      data: b,
     };
   }
 }

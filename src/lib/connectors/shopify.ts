@@ -23,6 +23,32 @@ import {
   type PlatformWebhook,
 } from "./types";
 
+interface ShopifyOAuthResponse {
+  access_token?: string;
+  accessToken?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  error?: string;
+  error_description?: string;
+}
+
+interface ShopifyShopInfo {
+  id?: number | string;
+  name?: string;
+  currency?: string;
+  timezone?: string;
+}
+
+interface ShopifyWebhookBody {
+  order?: { id?: number | string; updated_at?: string };
+  topic?: string;
+  id?: number | string;
+  updated_at?: string;
+  [key: string]: unknown;
+}
+
 const SHOPIFY_CONFIG: PlatformConfig = {
   id: "shopify",
   name: "Shopify",
@@ -111,12 +137,14 @@ export class ShopifyConnector extends BaseConnector {
       throw new Error(`Shopify OAuth failed: ${text}`);
     }
 
-    const data = (await result.json()) as any;
+    const data = (await result.json()) as ShopifyOAuthResponse;
     if (data.error) throw new Error(`Shopify OAuth error: ${data.error_description || data.error}`);
+    const accessToken = data.access_token || data.accessToken;
+    if (!accessToken) throw new Error("Shopify OAuth response missing access_token");
 
     return {
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token || data.access_token,
+      accessToken,
+      refreshToken: data.refresh_token || accessToken,
       expiresAt: data.expires_in ? Date.now() + data.expires_in * 1000 : Date.now() + 86400000,
       tokenType: data.token_type || "Bearer",
       scope: (data.scope || "").split(",").filter(Boolean),
@@ -138,10 +166,12 @@ export class ShopifyConnector extends BaseConnector {
       body: body.toString(),
     });
     if (!result.ok) throw new Error(`Shopify token refresh failed (HTTP ${result.status})`);
-    const data = (await result.json()) as any;
+    const data = (await result.json()) as ShopifyOAuthResponse;
     if (data.error) throw new Error(`Shopify refresh error: ${data.error_description || data.error}`);
+    const accessToken = data.access_token || data.accessToken;
+    if (!accessToken) throw new Error("Shopify refresh response missing access_token");
     return {
-      accessToken: data.access_token || data.accessToken,
+      accessToken,
       refreshToken: data.refresh_token || refreshToken,
       expiresAt: data.expires_in ? Date.now() + data.expires_in * 1000 : Date.now() + 86400000,
       tokenType: "Bearer",
@@ -167,7 +197,7 @@ export class ShopifyConnector extends BaseConnector {
     const res = await fetch(url, { headers: { "X-Shopify-Access-Token": accessToken } });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
 
-    const data = (await res.json()) as any;
+    const data = (await res.json()) as { shop?: ShopifyShopInfo };
     const shopInfo = data?.shop;
     if (!shopInfo) return { success: false, latencyMs: 0, error: "No shop data" };
 
@@ -253,7 +283,7 @@ export class ShopifyConnector extends BaseConnector {
   async sendConversion(accessToken: string, event: ConversionEvent): Promise<ConversionDeliveryResult> {
     const start = Date.now();
     const { eventBus } = await import("../events");
-    eventBus.emit("commerce.order" as any, {
+    eventBus.emit("commerce.order", {
       platform: "shopify",
       tenantId: event.userData.externalId || "",
       orderId: event.customData.orderId || "",
@@ -275,14 +305,15 @@ export class ShopifyConnector extends BaseConnector {
     return expected === signature;
   }
 
-  parseWebhookPayload(body: any): PlatformWebhook {
-    const raw = body?.order ?? body;
+  parseWebhookPayload(body: unknown): PlatformWebhook {
+    const b = (body && typeof body === "object" ? body : {}) as ShopifyWebhookBody;
+    const raw = b.order ?? b;
     return {
       platform: "shopify",
-      eventType: body?.topic || "order",
+      eventType: b.topic || "order",
       eventId: (raw?.id ?? crypto.randomBytes(16).toString("hex")).toString(),
       timestamp: raw?.updated_at ? Date.parse(raw.updated_at) : Date.now(),
-      data: body,
+      data: b,
     };
   }
 }

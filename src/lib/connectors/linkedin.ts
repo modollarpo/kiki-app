@@ -23,6 +23,13 @@ import {
   type PlatformWebhook,
 } from "./types";
 
+interface LinkedInWebhookBody {
+  event_type?: string;
+  event_id?: string | number;
+  timestamp?: number;
+  [key: string]: unknown;
+}
+
 // ── LinkedIn Configuration ──────────────────────────────────
 
 const LINKEDIN_CONFIG: PlatformConfig = {
@@ -461,13 +468,14 @@ export class LinkedInConnector extends BaseConnector {
     return signature === expectedSignature;
   }
 
-  parseWebhookPayload(body: any): PlatformWebhook {
+  parseWebhookPayload(body: unknown): PlatformWebhook {
+    const b = (body && typeof body === "object" ? body : {}) as LinkedInWebhookBody;
     return {
       platform: "linkedin",
-      eventType: body.event_type || "conversion",
-      eventId: body.event_id || crypto.randomBytes(16).toString("hex"),
-      timestamp: body.timestamp || Date.now(),
-      data: body,
+      eventType: b.event_type || "conversion",
+      eventId: (b.event_id ?? crypto.randomBytes(16).toString("hex")).toString(),
+      timestamp: b.timestamp ?? Date.now(),
+      data: b,
     };
   }
 }
