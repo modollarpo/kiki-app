@@ -2,16 +2,34 @@ export const dynamic = "force-dynamic";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 
+interface CampaignAnalyticsRow {
+  platform: string;
+  roas: number;
+  spend: number;
+  budget: number;
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  cpa: number;
+  revenue: number;
+}
+
+interface WeeklyAnalyticsRow {
+  week: string;
+  spend: number;
+  revenue: number;
+}
+
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
   const db = await getDb();
 
-const campaigns = await db.prepare(`
+  const campaigns = await db.prepare(`
     SELECT platform, roas, spend, budget, impressions, clicks, conversions, cpa, revenue
     FROM campaigns WHERE tenant_id = ?
-  `).all(user.tenantId) as any[];
+  `).all<CampaignAnalyticsRow>(user.tenantId);
 
   if (campaigns.length === 0) {
     return json({
@@ -68,13 +86,13 @@ const campaigns = await db.prepare(`
     SELECT strftime('%W', created_at) as week, SUM(spend) as spend, SUM(revenue) as revenue
     FROM campaigns WHERE tenant_id = ? AND created_at >= datetime('now', '-7 weeks')
     GROUP BY week ORDER BY week
-  `).all(user.tenantId) as any[];
+  `).all<WeeklyAnalyticsRow>(user.tenantId);
   const weeklyRoas = weeklyData.length > 0
-    ? weeklyData.map((w: any) => Number((w.spend > 0 ? (w.revenue / w.spend) : blendedRoas).toFixed(2)))
+    ? weeklyData.map((w) => Number((w.spend > 0 ? (w.revenue / w.spend) : blendedRoas).toFixed(2)))
     : [blendedRoas];
 
   // Attribution split from real platform data
-  const attribution = channels.map((ch: any, i: number) => {
+  const attribution = channels.map((ch, i: number) => {
     const colors = ["blue", "teal", "mint", "gold", "oaas"];
     return {
       model: ch.name + " Attribution",
