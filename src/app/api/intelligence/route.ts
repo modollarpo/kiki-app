@@ -1,8 +1,33 @@
-export const dynamic = "force-dynamic";
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
-import { getUserFromRequest } from "@/lib/auth";
-import { logger, handleApiError } from "@/lib/logger";
+export interface CampaignIntelRow {
+  name: string;
+  platform: string;
+  roas: number;
+  cpa: number;
+  spend: number;
+  conversions: number;
+  revenue: number;
+}
+
+interface SignalTrendRow {
+  platform: string;
+  event_type: string;
+  count: number;
+  avg_value: number;
+}
+
+interface LtvSegmentRow {
+  segment: string;
+  count: number;
+  avg_ltv: number;
+}
+
+interface Insight {
+  type: string;
+  title: string;
+  description: string;
+  confidence: string | null;
+  impact: string;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,7 +41,7 @@ export async function GET(req: NextRequest) {
     const campaigns = await db.prepare(`
       SELECT name, platform, roas, cpa, spend, conversions, revenue
       FROM campaigns WHERE tenant_id = ? AND status = 'active'
-    `).all(tenantId) as any[];
+    `).all<CampaignIntelRow>(tenantId);
 
     // Get signal trends
     const signalTrends = await db.prepare(`
@@ -24,17 +49,17 @@ export async function GET(req: NextRequest) {
       FROM signals WHERE tenant_id = ? AND created_at >= datetime('now', '-7 days')
       GROUP BY platform, event_type
       ORDER BY count DESC
-    `).all(tenantId) as any[];
+    `).all<SignalTrendRow>(tenantId);
 
     // Get LTV prediction distribution
     const ltvDistribution = await db.prepare(`
       SELECT segment, COUNT(*) as count, AVG(predicted_ltv) as avg_ltv
       FROM ltv_predictions WHERE tenant_id = ?
       GROUP BY segment
-    `).all(tenantId) as any[];
+    `).all<LtvSegmentRow>(tenantId);
 
     // Build insights from real data
-    const insights: any[] = [];
+    const insights: Insight[] = [];
 
 // Top performing campaign
     const topCampaign = campaigns.sort((a, b) => (b.roas || 0) - (a.roas || 0))[0];
@@ -84,9 +109,9 @@ export async function GET(req: NextRequest) {
       });
     }
 
-// Predictions are not produced — no calibrated forecasting model is wired
+    // Predictions are not produced — no calibrated forecasting model is wired
     // to platform data. Return empty so the UI surfaces the honest empty state.
-    const predictions: any[] = [];
+    const predictions: Insight[] = [];
 
     const totalRevenue = campaigns.reduce((s, c) => s + (c.revenue || 0), 0);
     const totalSpend = campaigns.reduce((s, c) => s + (c.spend || 0), 0);
