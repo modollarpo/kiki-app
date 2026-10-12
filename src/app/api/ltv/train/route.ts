@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         FROM prediction_feedback
         WHERE tenant_id = ? AND actual_ltv IS NOT NULL
         LIMIT 10000
-      `).all(user.tenantId) as any[];
+      `).all<{ predicted_ltv: number | null; actual_ltv: number | null; platform: string; device_type: string; event_type: string; engagement_score: number | null }>(user.tenantId);
 
       if (rows.length >= 50) {
         const features = rows.map(r => ({

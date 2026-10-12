@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const campaigns = await db.prepare(`
       SELECT id, name, platform, status, budget, spend, conversions, revenue, roas, cpa
       FROM campaigns WHERE tenant_id = ?
-    `).all(tenantId) as any[];
+    `).all<{ id: string; name: string; platform: string; status: string; budget: number; spend: number; conversions: number; revenue: number; roas: number; cpa: number }>(tenantId);
 
     const activeCampaigns = campaigns.filter(c => c.status === "active");
     const pausedCampaigns = campaigns.filter(c => c.status === "paused");

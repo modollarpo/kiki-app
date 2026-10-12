@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       SELECT * FROM subscriptions
       WHERE tenant_id = ? AND status IN ('active', 'trialing')
       ORDER BY created_at DESC LIMIT 1
-    `).get(user.tenantId) as any;
+    `).get<{ id: string; stripe_subscription_id: string | null; stripe_subscription_item_id: string | null }>(user.tenantId);
 
     // Update Stripe subscription when configured
     let stripeUpdated = false;

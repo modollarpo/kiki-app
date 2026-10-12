@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
     SELECT COALESCE(SUM(quantity), 0) as total FROM usage_records
     WHERE tenant_id = ? AND type = 'ai_tokens'
     AND timestamp >= datetime('now', 'start of month')
-  `).get(user.tenantId) as any;
-  const tokenCheck = await checkPlanLimit(user.tenantId, "tokens", monthlyTokens.total);
+  `).get<{ total: number }>(user.tenantId);
+  const tokenCheck = await checkPlanLimit(user.tenantId, "tokens", monthlyTokens?.total ?? 0);
   if (!tokenCheck.allowed) {
     return NextResponse.json({
       error: `Monthly AI token limit reached (${tokenCheck.limit.toLocaleString()} tokens). Upgrade your plan for higher limits.`,

@@ -4,6 +4,23 @@ import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
+interface MmmCampaignRow {
+  platform: string;
+  spend: number;
+  revenue: number;
+  conversions: number;
+  impressions: number;
+  clicks: number;
+}
+
+interface MmmPlatformAggregate {
+  spend: number;
+  revenue: number;
+  conversions: number;
+  impressions: number;
+  clicks: number;
+}
+
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
 
 export async function GET(req: NextRequest) {
@@ -18,10 +35,10 @@ export async function GET(req: NextRequest) {
     const campaigns = await db.prepare(`
       SELECT platform, spend, revenue, conversions, impressions, clicks
       FROM campaigns WHERE tenant_id = ?
-    `).all(tenantId) as any[];
+    `).all<MmmCampaignRow>(tenantId);
 
     // Aggregate by platform
-    const platformData: Record<string, any> = {};
+    const platformData: Record<string, MmmPlatformAggregate> = {};
     for (const c of campaigns) {
       const p = c.platform || "unknown";
       if (!platformData[p]) platformData[p] = { spend: 0, revenue: 0, conversions: 0, impressions: 0, clicks: 0 };
@@ -32,11 +49,11 @@ export async function GET(req: NextRequest) {
       platformData[p].clicks += c.clicks || 0;
     }
 
-    const totalSpend = Object.values(platformData).reduce((s: number, d: any) => s + d.spend, 0);
-    const totalRevenue = Object.values(platformData).reduce((s: number, d: any) => s + d.revenue, 0);
+    const totalSpend = Object.values(platformData).reduce((s: number, d: MmmPlatformAggregate) => s + d.spend, 0);
+    const totalRevenue = Object.values(platformData).reduce((s: number, d: MmmPlatformAggregate) => s + d.revenue, 0);
 
     // Calculate channel contributions
-    const channels = Object.entries(platformData).map(([name, data]: [string, any]) => ({
+    const channels = Object.entries(platformData).map(([name, data]) => ({
       name: name.charAt(0).toUpperCase() + name.slice(1),
       contribution: data.revenue,
       spend: data.spend,

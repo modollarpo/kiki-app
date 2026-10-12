@@ -5,6 +5,23 @@ import { getDb } from "@/lib/db";
 import { predictLTV, predictLTVBatch, type SignalData } from "@/lib/ltv-engine";
 import { handleApiError, logger } from "@/lib/logger";
 
+interface LtvPredictionRow {
+  id: string;
+  predicted_ltv: number;
+  confidence: number;
+  horizon_days: number;
+  created_at: string;
+}
+
+interface LtvModelRow {
+  id: string;
+  version: string;
+  status: string;
+  rmse: number;
+  r2: number;
+  trained_at: string;
+}
+
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
 
 export async function GET(req: Request) {
@@ -17,15 +34,15 @@ export async function GET(req: Request) {
 
     const recentPredictions = await (await db.prepare(
       "SELECT * FROM ltv_predictions WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 20"
-    )).all(tid) as any[];
+    )).all<LtvPredictionRow>(tid);
 
     const models = await (await db.prepare(
       "SELECT * FROM ltv_models WHERE tenant_id = ? ORDER BY trained_at DESC LIMIT 5"
-    )).all(tid) as any[];
+    )).all<LtvModelRow>(tid);
 
     const trainingStatus = await (await db.prepare(
       "SELECT status, COUNT(*) as count FROM ltv_models WHERE tenant_id = ? GROUP BY status"
-    )).all(tid) as any[];
+    )).all<{ status: string; count: number }>(tid);
 
     return json({
       predictions: recentPredictions.map(p => ({

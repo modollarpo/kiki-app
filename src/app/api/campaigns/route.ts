@@ -88,8 +88,8 @@ export async function POST(req: Request) {
 
   // Count existing campaigns and enforce limit
   const db = await getDb();
-  const existingCampaigns =   await db.prepare("SELECT COUNT(*) as count FROM campaigns WHERE tenant_id = ?").get(user.tenantId) as any;
-  const limitCheck = await checkPlanLimit(user.tenantId, "campaigns", existingCampaigns.count);
+  const existingCampaigns =   await db.prepare("SELECT COUNT(*) as count FROM campaigns WHERE tenant_id = ?").get<{ count: number }>(user.tenantId);
+  const limitCheck = await checkPlanLimit(user.tenantId, "campaigns", existingCampaigns?.count ?? 0);
   if (!limitCheck.allowed) {
     return jsonError(`Campaign limit reached (${limitCheck.limit}). Upgrade your plan to create more campaigns.`, 403);
   }

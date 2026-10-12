@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const campaigns = await db.prepare(`
       SELECT platform, spend, revenue, conversions, cpa
       FROM campaigns WHERE tenant_id = ?
-    `).all(tenantId) as any[];
+    `).all<{ platform: string; spend: number; revenue: number; conversions: number; cpa: number }>(tenantId);
 
     // Calculate real margins by platform
     const platformData: Record<string, { spend: number; revenue: number; conversions: number }> = {};
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     const avgMargin = totalRevenue > 0 ? Math.round(((totalRevenue - totalSpend) / totalRevenue) * 1000) / 10 : 0;
 
     // Get billing/fee data
-    const wallet = await db.prepare(`SELECT balance FROM wallets WHERE tenant_id = ?`).get(tenantId) as any;
+    const wallet = await db.prepare(`SELECT balance FROM wallets WHERE tenant_id = ?`).get<{ balance: number }>(tenantId);
 
     return Response.json({
       ok: true,

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const campaigns = await db.prepare(`
       SELECT platform, spend, revenue, conversions, roas
       FROM campaigns WHERE tenant_id = ? AND status = 'active'
-    `).all(tenantId) as any[];
+    `).all<{ platform: string; spend: number; revenue: number; conversions: number; roas: number }>(tenantId);
 
     const totalSpent = campaigns.reduce((s, c) => s + (c.spend || 0), 0);
     const totalRevenue = campaigns.reduce((s, c) => s + (c.revenue || 0), 0);
