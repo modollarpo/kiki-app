@@ -179,9 +179,10 @@ export async function pushSegmentToPlatforms(tenantId: string): Promise<{
         });
 
         if (result.success && result.data) {
+          const data = result.data as { id?: string; audience_id?: string };
           const mappings = JSON.parse(segment.platform_mappings || "{}");
           mappings[integ.platform] = {
-            audienceId: result.data.id || result.data.audience_id || "",
+            audienceId: data.id || data.audience_id || "",
             lastSynced: new Date().toISOString(),
           };
           await db.prepare(`

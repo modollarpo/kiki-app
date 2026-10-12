@@ -14,6 +14,42 @@ interface CtvConfig {
   partnerId?: string;
 }
 
+interface CtvTokenResponse {
+  access_token: string;
+  refresh_token?: string;
+  expires_in: number;
+}
+
+interface CtvCampaign {
+  id?: string;
+  campaignId?: string;
+  name: string;
+  status?: string;
+  state?: string;
+  budget?: { dailyBudget?: number };
+  dailyBudget?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface CtvCampaignList {
+  campaigns?: CtvCampaign[];
+  data?: CtvCampaign[];
+}
+
+interface CtvMetrics {
+  spend?: string | number;
+  totalSpend?: string | number;
+  impressions?: string | number;
+  totalImpressions?: string | number;
+  completions?: string | number;
+  videoCompletions?: string | number;
+  clicks?: string | number;
+  conversionValue?: string | number;
+  frequency?: string | number;
+  reach?: string | number;
+}
+
 export class CtvConnector extends BaseConnector implements IPlatformConnector {
   readonly platformId = "ctv" as const;
   private provider: "roku" | "thed-trade-desk";
@@ -23,7 +59,7 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
 
   constructor(config: CtvConfig) {
     super({
-      id: "ctv" as any,
+      id: "ctv",
       name: "CTV",
       apiVersion: "v1",
       apiBaseUrl: config.provider === "roku" ? "https://api.roku.com/advantage" : "https://api.thetradedesk.com/v3",
@@ -84,7 +120,7 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
     });
-    const data = await res.json() as any;
+    const data = await res.json() as CtvTokenResponse;
     return { accessToken: data.access_token, refreshToken: data.refresh_token, expiresAt: Date.now() + data.expires_in * 1000, tokenType: "bearer", scope: ["admin"] };
   }
 
@@ -94,7 +130,7 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: this.clientId, client_secret: this.clientSecret }),
     });
-    const data = await res.json() as any;
+    const data = await res.json() as CtvTokenResponse;
     return { accessToken: data.access_token, expiresAt: Date.now() + data.expires_in * 1000, tokenType: "bearer", scope: [] };
   }
 
@@ -112,9 +148,9 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
   async listCampaigns(accessToken: string, _accountId: string): Promise<PlatformApiResponse<PlatformCampaign[]>> {
     try {
       const res = await fetch(`${this.config.apiBaseUrl}/campaign`, { headers: { Authorization: `Bearer ${accessToken}` } });
-      const data = await res.json() as any;
+      const data = await res.json() as CtvCampaignList;
       const campaigns = data.campaigns || data.data || [];
-      return { success: true, latencyMs: 0, data: campaigns.map((c: any) => ({ id: c.id || c.campaignId, platformId: "ctv" as any, name: c.name, status: (c.status === "ACTIVE" || c.state === "enabled") ? "active" : "paused", objective: "VIDEO_COMPLETION", dailyBudget: c.budget?.dailyBudget || c.dailyBudget || 0, createdAt: c.createdAt || new Date().toISOString(), updatedAt: c.updatedAt || new Date().toISOString() })) };
+      return { success: true, latencyMs: 0, data: campaigns.map((c: CtvCampaign) => ({ id: c.id || c.campaignId || "", platformId: "ctv", name: c.name, status: (c.status === "ACTIVE" || c.state === "enabled") ? "active" : "paused", objective: "VIDEO_COMPLETION", dailyBudget: c.budget?.dailyBudget || c.dailyBudget || 0, createdAt: c.createdAt || new Date().toISOString(), updatedAt: c.updatedAt || new Date().toISOString() })) };
     } catch (e) { return { success: false, error: String(e), latencyMs: 0 }; }
   }
 
@@ -128,37 +164,37 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
   async getCampaignMetrics(accessToken: string, campaignId: string, dateRange: { start: string; end: string }): Promise<PlatformApiResponse<PlatformCampaignMetrics>> {
     try {
       const res = await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}/report?startDate=${dateRange.start}&endDate=${dateRange.end}`, { headers: { Authorization: `Bearer ${accessToken}` } });
-      const data = await res.json() as any;
-      const m = data.metrics || data;
-      const spend = parseFloat(m.spend || m.totalSpend || "0");
-      const impressions = parseInt(m.impressions || m.totalImpressions || "0");
-      const completions = parseInt(m.completions || m.videoCompletions || "0");
-      return { success: true, latencyMs: 0, data: { campaignId, platformId: "ctv" as any, impressions, clicks: parseInt(m.clicks || "0"), conversions: completions, conversionValue: parseFloat(m.conversionValue || "0"), spend, revenue: parseFloat(m.conversionValue || spend * 1.5), roas: spend > 0 ? parseFloat(m.conversionValue || "0") / spend : 0, cpc: parseInt(m.clicks || "0") > 0 ? spend / parseInt(m.clicks || "0") : 0, cpm: impressions > 0 ? (spend / impressions) * 1000 : 0, ctr: impressions > 0 ? (parseInt(m.clicks || "0") / impressions) * 100 : 0, conversionRate: parseInt(m.clicks || "0") > 0 ? (completions / parseInt(m.clicks || "0")) * 100 : 0, frequency: parseInt(m.frequency || "1"), reach: parseInt(m.reach || "0"), period: dateRange } };
+      const data = await res.json() as CtvMetrics & { metrics?: CtvMetrics };
+      const m: CtvMetrics = data.metrics || data;
+      const spend = parseFloat(String(m.spend || m.totalSpend || "0"));
+      const impressions = parseInt(String(m.impressions || m.totalImpressions || "0"));
+      const completions = parseInt(String(m.completions || m.videoCompletions || "0"));
+      return { success: true, latencyMs: 0, data: { campaignId, platformId: "ctv", impressions, clicks: parseInt(String(m.clicks || "0")), conversions: completions, conversionValue: parseFloat(String(m.conversionValue || "0")), spend, revenue: parseFloat(String(m.conversionValue || spend * 1.5)), roas: spend > 0 ? parseFloat(String(m.conversionValue || "0")) / spend : 0, cpc: parseInt(String(m.clicks || "0")) > 0 ? spend / parseInt(String(m.clicks || "0")) : 0, cpm: impressions > 0 ? (spend / impressions) * 1000 : 0, ctr: impressions > 0 ? (parseInt(String(m.clicks || "0")) / impressions) * 100 : 0, conversionRate: parseInt(String(m.clicks || "0")) > 0 ? (completions / parseInt(String(m.clicks || "0"))) * 100 : 0, frequency: parseInt(String(m.frequency || "1")), reach: parseInt(String(m.reach || "0")), period: dateRange } };
     } catch (e) { return { success: false, error: String(e), latencyMs: 0 }; }
   }
 
   async sendConversion(_accessToken: string, event: ConversionEvent): Promise<ConversionDeliveryResult> {
-    return { platform: "ctv" as any, success: false, eventId: event.eventName, error: "CTV conversion tracking via DSP pixels", latencyMs: 0 };
+    return { platform: "ctv", success: false, eventId: event.eventName, error: "CTV conversion tracking via DSP pixels", latencyMs: 0 };
   }
 
   async listCreativeAssets(): Promise<PlatformCreative[]> { return []; }
 
-  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<any>> {
+  async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>> {
     await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ status: "PAUSED", state: "paused" }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
-  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<any>> {
+  async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>> {
     await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ status: "ACTIVE", state: "enabled" }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
-  async setBid(accessToken: string, campaignId: string, bidAmount: number): Promise<PlatformApiResponse<any>> {
+  async setBid(accessToken: string, campaignId: string, bidAmount: number): Promise<PlatformApiResponse<unknown>> {
     await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ bidCpm: bidAmount }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
-  async updateCampaign(accessToken: string, campaignId: string, updates: { dailyBudget?: number }): Promise<PlatformApiResponse<any>> {
+  async updateCampaign(accessToken: string, campaignId: string, updates: { dailyBudget?: number }): Promise<PlatformApiResponse<unknown>> {
     if (updates.dailyBudget) {
       await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ budget: { dailyBudget: updates.dailyBudget } }) });
     }
