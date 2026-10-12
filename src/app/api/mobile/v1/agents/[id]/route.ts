@@ -3,6 +3,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { requireMobileAuth } from '@/lib/mobile/auth';
 
+interface AgentRow {
+  id: string;
+  tenant_id: string;
+  type: string;
+  config: string;
+}
+
+interface AgentActionRow {
+  id: string;
+  agent_id: string;
+  agent_type: string;
+  action_type: string;
+  details: string | null;
+  status: string;
+  created_at: string;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -17,7 +34,7 @@ export async function GET(
 
     const agent = await db.prepare(`
       SELECT * FROM agents WHERE id = ? AND tenant_id = ?
-    `).get((await params).id, auth.tenantId) as any;
+    `).get<AgentRow>((await params).id, auth.tenantId);
 
     if (!agent) {
       return NextResponse.json(
@@ -32,7 +49,7 @@ export async function GET(
       WHERE agent_id = ?
       ORDER BY created_at DESC
       LIMIT 50
-    `).all(id) as any[];
+    `).all<AgentActionRow>(id);
 
     // Get 30-day metrics
     const metrics = await db.prepare(`
@@ -43,7 +60,7 @@ export async function GET(
         AVG(duration_ms) as avg_duration
       FROM agent_actions
       WHERE agent_id = ? AND created_at >= date('now', '-30 days')
-    `).get(id) as any;
+    `).get<{ total_actions: number; completed: number; failed: number; avg_duration: number }>(id);
 
     // Get daily activity for chart
     const dailyActivity = await db.prepare(`
@@ -55,7 +72,7 @@ export async function GET(
       WHERE agent_id = ? AND created_at >= date('now', '-30 days')
       GROUP BY date(created_at)
       ORDER BY date
-    `).all(id) as any[];
+    `).all<{ date: string; actions: number; completed: number }>(id);
 
     return NextResponse.json({
       ok: true,
@@ -100,7 +117,7 @@ export async function PATCH(
 
     const db = await getDb();
 
-    const agent = await db.prepare('SELECT * FROM agents WHERE id = ? AND tenant_id = ?').get((await params).id, auth.tenantId) as any;
+    const agent = await db.prepare('SELECT * FROM agents WHERE id = ? AND tenant_id = ?').get<AgentRow>((await params).id, auth.tenantId);
 
     if (!agent) {
       return NextResponse.json(
@@ -145,7 +162,7 @@ export async function PATCH(
       VALUES (?, ?, ?, ?, 'config_update', ?, 'completed', datetime('now'))
     `).run(crypto.randomUUID(), auth.tenantId, id, agent.type, JSON.stringify({ status, config }));
 
-    const updatedAgent = await db.prepare('SELECT * FROM agents WHERE id = ?').get((await params).id) as any;
+    const updatedAgent = await db.prepare('SELECT * FROM agents WHERE id = ?').get<AgentRow>((await params).id);
 
     return NextResponse.json({
       ok: true,
