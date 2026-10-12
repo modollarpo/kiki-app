@@ -27,11 +27,53 @@ function buildCustomersUrl(storeHash: string | undefined, limit: number): string
   return `https://api.bigcommerce.com/stores/${hash}/v3/customers?${params.toString()}`;
 }
 
-function mapOrder(raw: any): CommerceOrder {
+interface BigCommerceOrderProduct {
+  id?: number | string;
+  product_id?: number | string;
+  name?: string;
+  quantity?: number;
+  price?: number;
+}
+
+interface BigCommerceBillingAddress {
+  email?: string;
+  phone?: string;
+}
+
+interface BigCommerceOrder {
+  id?: number | string;
+  orderId?: number | string;
+  status?: string;
+  total_inc_tax?: number | string;
+  total?: number | string;
+  currency_code?: string;
+  date_created?: string;
+  customer_id?: number | string | null;
+  billing_address?: BigCommerceBillingAddress | null;
+  products?: BigCommerceOrderProduct[];
+}
+
+interface BigCommerceCustomer {
+  id?: number | string;
+  email?: string;
+  phone?: string;
+  first_name?: string;
+  last_name?: string;
+  order_count?: number | string;
+  total_spent?: number | string;
+  date_created?: string;
+  date_modified?: string;
+}
+
+interface BigCommerceList<T> {
+  data?: T[];
+}
+
+function mapOrder(raw: BigCommerceOrder): CommerceOrder {
   const items: CommerceOrderItem[] = Array.isArray(raw.products)
-    ? raw.products.map((p: any) => ({
+    ? raw.products.map((p) => ({
         productId: String(p.product_id ?? p.id ?? ""),
-        name: p.name ?? "",
+        name: String(p.name ?? ""),
         quantity: Number(p.quantity ?? 1),
         price: Number(p.price ?? 0),
       }))
@@ -42,15 +84,15 @@ function mapOrder(raw: any): CommerceOrder {
     customerPhone: raw.billing_address?.phone,
     customerId: raw.customer_id != null ? String(raw.customer_id) : undefined,
     total: Number(raw.total_inc_tax ?? raw.total ?? 0),
-    currency: raw.currency_code ?? "USD",
-    status: raw.status ?? "",
-    createdAt: raw.date_created ?? new Date().toISOString(),
+    currency: String(raw.currency_code ?? "USD"),
+    status: String(raw.status ?? ""),
+    createdAt: String(raw.date_created ?? new Date().toISOString()),
     items,
     refunded: raw.status === "Refunded",
   };
 }
 
-function mapCustomer(raw: any): CommerceCustomer {
+function mapCustomer(raw: BigCommerceCustomer): CommerceCustomer {
   const totalOrders = Number(raw.order_count ?? 0);
   const totalSpent = Number(raw.total_spent ?? 0);
   return {
@@ -84,7 +126,7 @@ export class BigCommerceConnector implements ICommerceConnector {
   ): Promise<CommerceOrder[]> {
     if (!shopDomain) return [];
     const [key, secret] = apiKey.split(":");
-    const result = await httpClient<{ data?: any[] }>(
+    const result = await httpClient<BigCommerceList<BigCommerceOrder>>(
       buildOrdersUrl(shopDomain, since, limit),
       {
         headers: {
@@ -104,7 +146,7 @@ export class BigCommerceConnector implements ICommerceConnector {
   ): Promise<CommerceCustomer[]> {
     if (!shopDomain) return [];
     const [key, secret] = apiKey.split(":");
-    const result = await httpClient<{ data?: any[] }>(
+    const result = await httpClient<BigCommerceList<BigCommerceCustomer>>(
       buildCustomersUrl(shopDomain, limit),
       {
         headers: {
@@ -128,8 +170,8 @@ export class BigCommerceConnector implements ICommerceConnector {
 
   parseOrderWebhook(body: unknown): CommerceOrder | null {
     if (!body || typeof body !== "object") return null;
-    const raw = body as any;
-    const order = raw.data ?? raw;
+    const raw = body as { data?: BigCommerceOrder };
+    const order = raw.data ?? (body as BigCommerceOrder);
     return mapOrder(order);
   }
 }
