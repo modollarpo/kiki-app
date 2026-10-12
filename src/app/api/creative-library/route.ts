@@ -4,6 +4,39 @@ import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
 import { logger } from "@/lib/logger";
 
+export interface CreativeRow {
+  id: string;
+  tenant_id: string;
+  campaign_id: string | null;
+  type: string;
+  content: string;
+  platform: string;
+  status: string;
+  ai_score: number;
+  created_at: string;
+}
+
+export interface CampaignAssetRow {
+  id: string;
+  name: string;
+  platform: string;
+  status: string;
+  roas: number;
+  spend: number;
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  cpa: number;
+}
+
+export interface CreativeSummary {
+  totalAssets: number;
+  avgCtr: string;
+  totalConversions: number;
+  avgRoas: string;
+  aiGenerated: number;
+}
+
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
@@ -11,13 +44,13 @@ export async function GET(req: Request) {
   try {
     const db = await getDb();
 
-    // AI-generated creatives from the creative agent
+// AI-generated creatives from the creative agent
     const generatedCreatives = await db.prepare(`
       SELECT id, tenant_id, campaign_id, type, content, platform, status, ai_score, created_at
       FROM creatives
       WHERE tenant_id = ?
       ORDER BY created_at DESC
-    `).all(user.tenantId) as any[];
+    `).all<CreativeRow>(user.tenantId);
 
     // Campaign-based assets (each campaign represents a creative)
     const campaignAssets = await db.prepare(`
@@ -26,11 +59,11 @@ export async function GET(req: Request) {
       FROM campaigns
       WHERE tenant_id = ?
       ORDER BY roas DESC
-    `).all(user.tenantId) as any[];
+    `).all<CampaignAssetRow>(user.tenantId);
 
-    // Merge: AI-generated creatives as standalone entries + campaign assets
-    const aiCreatives = generatedCreatives.map((c: any) => {
-      let parsed: Record<string, string> = {};
+// Merge: AI-generated creatives as standalone entries + campaign assets
+    const aiCreatives = generatedCreatives.map((c: CreativeRow) => {
+      let parsed: { headline?: string; text?: string } = {};
       try { parsed = JSON.parse(c.content); } catch { parsed = { headline: c.content }; }
       return {
         id: c.id,
@@ -47,7 +80,7 @@ export async function GET(req: Request) {
       };
     });
 
-    const campaignCreatives = campaignAssets.map((a: any) => ({
+    const campaignCreatives = campaignAssets.map((a: CampaignAssetRow) => ({
       id: a.id,
       name: a.name,
       type: a.platform === "youtube" || a.platform === "tiktok" ? "Video" : "Image",
@@ -66,11 +99,11 @@ export async function GET(req: Request) {
     // Calculate summary stats
     const totalAssets = assets.length;
     const avgCtr = campaignAssets.length > 0
-      ? campaignAssets.reduce((sum: number, a: any) => sum + (a.impressions > 0 ? (a.clicks / a.impressions) * 100 : 0), 0) / campaignAssets.length
+      ? campaignAssets.reduce((sum, a) => sum + (a.impressions > 0 ? (a.clicks / a.impressions) * 100 : 0), 0) / campaignAssets.length
       : 0;
-    const totalConversions = campaignAssets.reduce((sum: number, a: any) => sum + (a.conversions || 0), 0);
+    const totalConversions = campaignAssets.reduce((sum, a) => sum + (a.conversions || 0), 0);
     const avgRoas = campaignAssets.length > 0
-      ? campaignAssets.reduce((sum: number, a: any) => sum + (a.roas || 0), 0) / campaignAssets.length
+      ? campaignAssets.reduce((sum, a) => sum + (a.roas || 0), 0) / campaignAssets.length
       : 0;
 
     return json({
