@@ -1,7 +1,20 @@
-// GET /api/mobile/v1/notifications
-import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
-import { requireMobileAuth } from '@/lib/mobile/auth';
+interface NotificationRow {
+  id: string;
+  tenant_id: string;
+  type: string;
+  title: string;
+  message: string;
+  data: string | null;
+  priority: string;
+  status: string;
+  action_required: number;
+  action_url: string | null;
+  created_at: string;
+}
+
+interface CountRow {
+  count: number;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +35,7 @@ export async function GET(request: NextRequest) {
       SELECT * FROM notifications
       WHERE tenant_id = ?
     `;
-    const params: any[] = [tenantId];
+    const params: (string | number)[] = [tenantId];
 
     if (type) {
       query += ' AND type = ?';
@@ -37,12 +50,12 @@ export async function GET(request: NextRequest) {
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
     params.push(limit, (page - 1) * limit);
 
-    const notifications = await db.prepare(query).all(...params) as any[];
+    const notifications = await db.prepare(query).all<NotificationRow>(...params);
 
     // Get unread count
     const unreadCount = await db.prepare(
       'SELECT COUNT(*) as count FROM notifications WHERE tenant_id = ? AND status = ?'
-    ).get(tenantId, 'unread') as any;
+    ).get<CountRow>(tenantId, 'unread');
 
     return NextResponse.json({
       ok: true,
