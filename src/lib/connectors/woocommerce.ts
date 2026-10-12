@@ -23,6 +23,20 @@ import {
   type PlatformWebhook,
 } from "./types";
 
+interface WooSystemStatus {
+  environment?: {
+    site_title?: string;
+    currency?: string;
+    timezone?: string;
+  };
+}
+
+interface WooWebhookBody {
+  id?: number | string;
+  date_created?: string;
+  [key: string]: unknown;
+}
+
 const WOO_CONFIG: PlatformConfig = {
   id: "woocommerce",
   name: "WooCommerce",
@@ -133,7 +147,7 @@ export class WooCommerceConnector extends BaseConnector {
     const res = await fetch(url, { headers: { Authorization: `Basic ${auth}` } });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
 
-    const data = (await res.json()) as any;
+    const data = (await res.json()) as WooSystemStatus;
     const env = data?.environment;
     return {
       success: true,
@@ -216,7 +230,7 @@ export class WooCommerceConnector extends BaseConnector {
   async sendConversion(accessToken: string, event: ConversionEvent): Promise<ConversionDeliveryResult> {
     const start = Date.now();
     const { eventBus } = await import("../events");
-    eventBus.emit("commerce.order" as any, {
+    eventBus.emit("commerce.order", {
       platform: "woocommerce",
       tenantId: event.userData.externalId || "",
       orderId: event.customData.orderId || "",
@@ -237,14 +251,14 @@ export class WooCommerceConnector extends BaseConnector {
     return expected === signature;
   }
 
-  parseWebhookPayload(body: any): PlatformWebhook {
-    const raw = body;
+  parseWebhookPayload(body: unknown): PlatformWebhook {
+    const raw = (body && typeof body === "object" ? body : {}) as WooWebhookBody;
     return {
       platform: "woocommerce",
       eventType: raw?.id ? "order" : "event",
       eventId: (raw?.id ?? crypto.randomBytes(16).toString("hex")).toString(),
       timestamp: raw?.date_created ? Date.parse(raw.date_created) : Date.now(),
-      data: body,
+      data: raw,
     };
   }
 }

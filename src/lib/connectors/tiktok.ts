@@ -23,6 +23,13 @@ import {
   type PlatformWebhook,
 } from "./types";
 
+interface TikTokWebhookBody {
+  event_type?: string;
+  event_id?: string | number;
+  timestamp?: number;
+  [key: string]: unknown;
+}
+
 // ── TikTok Configuration ───────────────────────────────────
 
 const TIKTOK_CONFIG: PlatformConfig = {
@@ -528,13 +535,14 @@ export class TikTokConnector extends BaseConnector {
     return signature === expectedSignature;
   }
 
-  parseWebhookPayload(body: any): PlatformWebhook {
+  parseWebhookPayload(body: unknown): PlatformWebhook {
+    const b = (body && typeof body === "object" ? body : {}) as TikTokWebhookBody;
     return {
       platform: "tiktok",
-      eventType: body.event_type || "conversion",
-      eventId: body.event_id || crypto.randomBytes(16).toString("hex"),
-      timestamp: body.timestamp || Date.now(),
-      data: body,
+      eventType: b.event_type || "conversion",
+      eventId: (b.event_id ?? crypto.randomBytes(16).toString("hex")).toString(),
+      timestamp: b.timestamp ?? Date.now(),
+      data: b,
     };
   }
 }

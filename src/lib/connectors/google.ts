@@ -23,6 +23,19 @@ import {
   type PlatformWebhook,
 } from "./types";
 
+interface GoogleCustomerMatchKey {
+  hashingStrategy: string;
+  addressInfo?: { hashedEmail?: string };
+  mobileDeviceInfo?: { hashedPhoneNumber?: string };
+  userIdentifiers?: Array<{ userIdType: string; userId: string }>;
+}
+
+interface GoogleWebhookBody {
+  kind?: string;
+  conversion?: { conversionActionId?: string | number; conversionDateTime?: string };
+  [key: string]: unknown;
+}
+
 // ── Google Ads Configuration ───────────────────────────────
 
 const GOOGLE_CONFIG: PlatformConfig = {
@@ -592,7 +605,7 @@ export class GoogleConnector extends BaseConnector {
     const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID || "";
 
     const userIdentifierSources: string[] = [];
-    const matchingKeys: Array<{ hashingStrategy: string; addressInfo?: any; mobileDeviceInfo?: any; userIdentifiers?: any[] }> = [];
+    const matchingKeys: GoogleCustomerMatchKey[] = [];
 
     if (params.users.emails) {
       for (const email of params.users.emails) {
@@ -664,15 +677,16 @@ export class GoogleConnector extends BaseConnector {
     return signature === expectedSignature;
   }
 
-  parseWebhookPayload(body: any): PlatformWebhook {
+  parseWebhookPayload(body: unknown): PlatformWebhook {
+    const b = (body && typeof body === "object" ? body : {}) as GoogleWebhookBody;
     return {
       platform: "google",
-      eventType: body.kind?.replace("adhoc#conversionReport ", "") || "conversion",
-      eventId: body.conversion?.conversionActionId || crypto.randomBytes(16).toString("hex"),
-      timestamp: body.conversion?.conversionDateTime
-        ? new Date(body.conversion.conversionDateTime).getTime()
+      eventType: b.kind?.replace("adhoc#conversionReport ", "") || "conversion",
+      eventId: (b.conversion?.conversionActionId ?? crypto.randomBytes(16).toString("hex")).toString(),
+      timestamp: b.conversion?.conversionDateTime
+        ? new Date(b.conversion.conversionDateTime).getTime()
         : Date.now(),
-      data: body,
+      data: b,
     };
   }
 }

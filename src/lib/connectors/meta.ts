@@ -24,6 +24,13 @@ import {
   type PlatformWebhook,
 } from "./types";
 
+interface MetaWebhookBody {
+  id?: string | number;
+  time?: number;
+  entry?: Array<{ changes?: Array<{ field?: string }> }>;
+  [key: string]: unknown;
+}
+
 // ── Meta Configuration ─────────────────────────────────────
 
 const META_CONFIG: PlatformConfig = {
@@ -606,13 +613,14 @@ export class MetaConnector extends BaseConnector {
     );
   }
 
-  parseWebhookPayload(body: any): PlatformWebhook {
+  parseWebhookPayload(body: unknown): PlatformWebhook {
+    const b = (body && typeof body === "object" ? body : {}) as MetaWebhookBody;
     return {
       platform: "meta",
-      eventType: body.entry?.[0]?.changes?.[0]?.field || "unknown",
-      eventId: body.id || crypto.randomBytes(16).toString("hex"),
-      timestamp: body.time || Math.floor(Date.now() / 1000),
-      data: body,
+      eventType: b.entry?.[0]?.changes?.[0]?.field || "unknown",
+      eventId: (b.id ?? crypto.randomBytes(16).toString("hex")).toString(),
+      timestamp: b.time ?? Math.floor(Date.now() / 1000),
+      data: b,
     };
   }
 }
