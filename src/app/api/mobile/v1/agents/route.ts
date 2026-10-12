@@ -1,7 +1,23 @@
-// GET /api/mobile/v1/agents
-import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
-import { requireMobileAuth } from '@/lib/mobile/auth';
+interface AgentListItemRow {
+  id: string;
+  tenant_id: string;
+  name: string;
+  type: string;
+  status: string;
+  config: string;
+  created_at: string;
+  updated_at: string;
+  action_count: number;
+  last_action: string | null;
+  last_action_at: string | null;
+}
+
+interface AgentMetricsRow {
+  total_actions: number;
+  completed: number;
+  failed: number;
+  avg_duration: number | null;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +35,7 @@ export async function GET(request: NextRequest) {
       FROM agents a
       WHERE a.tenant_id = ?
       ORDER BY a.created_at DESC
-    `).all(auth.tenantId) as any[];
+    `).all<AgentListItemRow>(auth.tenantId);
 
     // Get metrics for each agent
     const agentsWithMetrics = await Promise.all(agents.map(async (agent) => {
@@ -31,7 +47,7 @@ export async function GET(request: NextRequest) {
           AVG(duration_ms) as avg_duration
         FROM agent_actions
         WHERE agent_id = ? AND created_at >= date('now', '-30 days')
-      `).get(agent.id) as any;
+      `).get<AgentMetricsRow>(agent.id);
 
       return {
         ...agent,
