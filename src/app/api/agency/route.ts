@@ -2,6 +2,30 @@ export const dynamic = "force-dynamic";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 
+interface PlatformStatRow {
+  platform: string;
+  campaign_count: number;
+  total_spend: number;
+  total_budget: number;
+  total_impressions: number;
+  total_clicks: number;
+  total_conversions: number;
+  avg_roas: number;
+  avg_cpa: number;
+}
+
+interface CampaignAgencyRow {
+  id: string;
+  name: string;
+  platform: string;
+  status: string;
+  roas: number;
+  spend: number;
+  budget: number;
+  conversions: number;
+  cpa: number;
+}
+
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
@@ -24,7 +48,7 @@ export async function GET(req: Request) {
     WHERE tenant_id = ?
     GROUP BY platform
     ORDER BY total_spend DESC
-  `).all(user.tenantId) as any[];
+  `).all<PlatformStatRow>(user.tenantId);
 
   // Get campaign details per platform
   const campaigns = await db.prepare(`
@@ -32,17 +56,17 @@ export async function GET(req: Request) {
     FROM campaigns
     WHERE tenant_id = ?
     ORDER BY spend DESC
-  `).all(user.tenantId) as any[];
+  `).all<CampaignAgencyRow>(user.tenantId);
 
   // Group campaigns by platform
-  const platformCampaigns: Record<string, any[]> = {};
+  const platformCampaigns: Record<string, CampaignAgencyRow[]> = {};
   for (const c of campaigns) {
     if (!platformCampaigns[c.platform]) platformCampaigns[c.platform] = [];
     platformCampaigns[c.platform].push(c);
   }
 
   return json({
-    platforms: platformStats.map((p: any) => ({
+    platforms: platformStats.map((p) => ({
       name: p.platform,
       campaignCount: p.campaign_count,
       totalSpend: p.total_spend,
@@ -57,7 +81,7 @@ export async function GET(req: Request) {
     summary: {
       totalPlatforms: platformStats.length,
       totalCampaigns: campaigns.length,
-      totalSpend: platformStats.reduce((sum: number, p: any) => sum + (p.total_spend || 0), 0),
+      totalSpend: platformStats.reduce((sum: number, p) => sum + (p.total_spend || 0), 0),
     },
   });
 }
