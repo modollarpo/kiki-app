@@ -39,13 +39,13 @@ export async function evaluateCatalog(
 
   for (const product of products) {
     for (const rule of rules) {
-      const fieldValue = (product as any)[rule.field];
+      const fieldValue = (product as Record<string, unknown>)[rule.field];
       if (fieldValue === undefined) continue;
 
       let matches = false;
       switch (rule.operator) {
-        case "gt": matches = fieldValue > rule.value; break;
-        case "lt": matches = fieldValue < rule.value; break;
+        case "gt": matches = Number(fieldValue) > Number(rule.value); break;
+        case "lt": matches = Number(fieldValue) < Number(rule.value); break;
         case "eq": matches = fieldValue === rule.value; break;
         case "contains": matches = String(fieldValue).includes(String(rule.value)); break;
       }
@@ -80,7 +80,7 @@ export async function buildLTVSeedAudience(
     WHERE tenant_id = ? AND predicted_ltv >= ?
     ORDER BY predicted_ltv DESC
     LIMIT ?
-  `).all(tenantId, minLtv, limit) as any[];
+  `).all<{ email?: string; phone?: string; external_id?: string; predicted_ltv: number }>(tenantId, minLtv, limit);
 }
 
 export async function getCatalogStats(tenantId: string): Promise<{

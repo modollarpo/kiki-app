@@ -1,4 +1,5 @@
 import { getDb } from "./db";
+import { type PlatformId } from "./connectors/types";
 import { logger } from "./logger";
 
 export interface ArbitrageDecision {
@@ -142,8 +143,8 @@ async function executeArbitrageDecision(decision: ArbitrageDecision): Promise<vo
   if (fromInteg && toInteg) {
     try {
       const { getConnector } = await import("./connectors");
-      const fromConnector = await getConnector(decision.fromPlatform as any);
-      const toConnector = await getConnector(decision.toPlatform as any);
+      const fromConnector = await getConnector(decision.fromPlatform as PlatformId);
+      const toConnector = await getConnector(decision.toPlatform as PlatformId);
 
       // Reduce budget on underperforming platform
       if (fromConnector?.updateCampaign) {

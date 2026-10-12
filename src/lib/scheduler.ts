@@ -337,7 +337,7 @@ async function runRetentionCleanupForAllTenants(): Promise<void> {
   }
 
   if (totalDeleted > 0) {
-    eventBus.emit("gdpr.retention_complete" as any, { totalDeleted, tenants: tenants.length });
+    eventBus.emit("gdpr.retention_complete", { totalDeleted, tenants: tenants.length });
   }
 }
 
@@ -368,7 +368,7 @@ async function runTokenRefreshForAllTenants(): Promise<void> {
     const refreshed = await checkAndRefreshExpiringTokens();
     if (refreshed > 0) {
       logger.info(`[Scheduler] Token refresh: ${refreshed} tokens refreshed`);
-      eventBus.emit("token.refresh_cycle_complete" as any, { refreshed });
+      eventBus.emit("token.refresh_cycle_complete", { refreshed });
     }
   } catch (e) {
     logger.error("[Scheduler] Token refresh failed:", { error: e instanceof Error ? (e).message : String(e) });

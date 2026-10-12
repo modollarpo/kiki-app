@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { getDb } from "./db";
+import { getDb, type SqlParam } from "./db";
 import { logger } from "./logger";
 
 export interface IncrementalityExperiment {
@@ -19,6 +19,25 @@ export interface IncrementalityExperiment {
   incrementalRoas: number;
   incrementalConversions: number;
   confidenceLevel: number;
+}
+
+interface IncrementalityExperimentRow {
+  id: string;
+  campaign_id: string;
+  name: string;
+  status: "active" | "paused" | "completed";
+  holdout_percentage: number;
+  treatment_conversions: number;
+  treatment_impressions: number;
+  treatment_spend: number;
+  treatment_revenue: number;
+  control_conversions: number;
+  control_impressions: number;
+  control_spend: number;
+  control_revenue: number;
+  incremental_roas: number;
+  incremental_conversions: number;
+  confidence_level: number;
 }
 
 export async function createExperiment(
@@ -97,7 +116,7 @@ export async function calculateIncrementality(
   const db = await getDb();
   const exp = await db.prepare(`
     SELECT * FROM incrementality_experiments WHERE id = ? AND tenant_id = ?
-  `).get(experimentId, tenantId) as any;
+  `).get<IncrementalityExperimentRow>(experimentId, tenantId);
 
   if (!exp) throw new Error(`Experiment ${experimentId} not found`);
 
@@ -146,9 +165,9 @@ export async function getExperimentResults(
   const query = campaignId
     ? "SELECT * FROM incrementality_experiments WHERE tenant_id = ? AND campaign_id = ? ORDER BY created_at DESC"
     : "SELECT * FROM incrementality_experiments WHERE tenant_id = ? ORDER BY created_at DESC";
-  const params = campaignId ? [tenantId, campaignId] : [tenantId];
+  const params: SqlParam[] = campaignId ? [tenantId, campaignId] : [tenantId];
 
-  const rows = await db.prepare(query).all(...params) as any[];
+  const rows = await db.prepare(query).all<IncrementalityExperimentRow>(...params);
   return rows.map(r => ({
     id: r.id,
     campaignId: r.campaign_id,

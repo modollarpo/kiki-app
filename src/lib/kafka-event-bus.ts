@@ -60,8 +60,9 @@ export function bridgeEventBusToKafka(): void {
     enabled: isEnabled(),
   });
 
-  const originalEmit = (eventBus as any).emit.bind(eventBus);
-  (eventBus as any).emit = async function (event: string, data: unknown) {
+  const bus = eventBus as unknown as { emit(event: string, data: unknown): void };
+  const originalEmit = bus.emit.bind(eventBus);
+  bus.emit = async function (event: string, data: unknown) {
     try {
       originalEmit(event, data);
     } catch (e) {

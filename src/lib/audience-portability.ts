@@ -1,4 +1,5 @@
-import { getDb } from "./db";
+import { getDb, type SqlParam } from "./db";
+import { type PlatformId } from "./connectors/types";
 import { logger } from "./logger";
 
 export interface AudienceSegment {
@@ -101,7 +102,7 @@ export async function syncAudienceSegments(tenantId: string): Promise<AudienceSe
 async function countSegmentMembers(tenantId: string, criteria: AudienceSegment["criteria"]): Promise<number> {
   const db = await getDb();
   const conditions: string[] = ["tenant_id = ?"];
-  const params: any[] = [tenantId];
+  const params: SqlParam[] = [tenantId];
 
   if (criteria.minLtv !== undefined) {
     conditions.push("predicted_ltv >= ?");
@@ -166,7 +167,7 @@ export async function pushSegmentToPlatforms(tenantId: string): Promise<{
     for (const integ of integrations) {
       try {
         const { getConnector } = await import("./connectors");
-        const connector = await getConnector(integ.platform as any);
+        const connector = await getConnector(integ.platform as PlatformId);
         if (!connector?.createCustomAudience) continue;
 
         const result = await connector.createCustomAudience(integ.access_token, {
@@ -206,7 +207,7 @@ async function getSegmentMembers(
 ): Promise<Array<{ email?: string; phone?: string; external_id?: string }>> {
   const db = await getDb();
   const conditions: string[] = ["tenant_id = ?"];
-  const params: any[] = [tenantId];
+  const params: SqlParam[] = [tenantId];
 
   if (criteria.minLtv !== undefined) { conditions.push("predicted_ltv >= ?"); params.push(criteria.minLtv); }
   if (criteria.maxLtv !== undefined) { conditions.push("predicted_ltv <= ?"); params.push(criteria.maxLtv); }
@@ -222,5 +223,5 @@ async function getSegmentMembers(
   return await db.prepare(`
     SELECT email, phone, external_id FROM customer_profiles
     WHERE ${conditions.join(" AND ")}
-  `).all(...params) as any[];
+  `).all<{ email?: string; phone?: string; external_id?: string }>(...params);
 }
