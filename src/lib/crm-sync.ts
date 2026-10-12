@@ -8,6 +8,14 @@ export interface CrmCustomer {
   firstName?: string;
   lastName?: string;
   totalOrders: number;
+  totalSpent: number;
+  averageOrderValue: number;
+  firstOrderAt?: string;
+  lastOrderAt?: string;
+  acquisitionSource?: string;
+  acquisitionCampaign?: string;
+}
+
 interface ShopifyCustomer {
   id: string | number;
   email?: string;
@@ -20,11 +28,45 @@ interface ShopifyCustomer {
   updated_at?: string;
   last_order_id?: string | number;
   note?: string;
+  last_order_name?: string;
+  last_order_date?: string;
 }
 
 interface ShopifyCustomersResponse {
   customers: ShopifyCustomer[];
 }
+interface StripeCustomer {
+  id: string;
+  email?: string;
+  name?: string;
+  created: number;
+  phone?: string;
+}
+
+interface StripeInvoice {
+  id: string;
+  customer: string;
+  status?: string;
+  amount_paid?: number;
+  created: number;
+}
+
+interface StripeList<T> {
+  data: T[];
+  has_more: boolean;
+}
+
+interface HubspotContact {
+  id: string;
+  properties?: Record<string, string>;
+}
+
+interface HubspotContactsResponse {
+  results: HubspotContact[];
+  paging?: { next?: { after: string } };
+}
+
+
 
 export async function syncShopifyCustomers(
   tenantId: string,
@@ -57,11 +99,11 @@ export async function syncShopifyCustomers(
             phone: customer.phone,
             firstName: customer.first_name,
             lastName: customer.last_name,
-            totalOrders: customer.orders_count || 0,
-            totalSpent: parseFloat(customer.total_spent || "0"),
-            averageOrderValue: customer.orders_count > 0 ? parseFloat(customer.total_spent || "0") / customer.orders_count : 0,
-            firstOrderAt: customer.orders_count > 0 ? customer.created_at : undefined,
-            lastOrderAt: customer.last_order_at,
+            totalOrders: customer.orders_count ?? 0,
+            totalSpent: parseFloat(String(customer.total_spent || "0")),
+            averageOrderValue: customer.orders_count && customer.orders_count > 0 ? (parseFloat(String(customer.total_spent || "0")) / Number(customer.orders_count)) : 0,
+            firstOrderAt: customer.orders_count && customer.orders_count > 0 ? customer.created_at : undefined,
+            lastOrderAt: customer.last_order_date,
           });
           synced++;
         } catch {
@@ -125,8 +167,8 @@ export async function syncStripeCustomers(
             totalOrders: orderCount,
             totalSpent,
             averageOrderValue: orderCount > 0 ? totalSpent / orderCount : 0,
-            firstOrderAt: customer.created,
-            lastOrderAt: invoices[0]?.created ? new Date(invoices[0].created * 1000).toISOString() : undefined,
+            firstOrderAt: customer.created ? new Date(customer.created * 1000).toISOString() : undefined,
+            lastOrderAt: customer.created ? new Date(customer.created * 1000).toISOString() : undefined,
           });
           synced++;
         } catch {
@@ -150,19 +192,21 @@ export async function syncHubspotContacts(
 ): Promise<{ synced: number; errors: number }> {
   let synced = 0;
   let errors = 0;
-interface HubspotContact {
-  id: string;
-  properties?: Record<string, string>;
-}
+  let after: string | undefined;
 
-interface HubspotContactsResponse {
-  results: HubspotContact[];
-  paging?: { next?: { after: string } };
-}
+  do {
+    try {
+      const url = `https://api.hubapi.com/crm/v3/objects/contacts?limit=100${after ? `&after=${after}` : ""}`;
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) break;
+      const data = await response.json() as HubspotContactsResponse;
 
       for (const contact of data.results) {
         try {
-          const props = contact.properties;
+          const props = contact.properties || {};
           await upsertCustomer(tenantId, {
             externalId: `hubspot_${contact.id}`,
             email: props.email,
