@@ -20,6 +20,36 @@ import {
   type PlatformWebhook,
 } from "./types";
 
+interface SalesforceTokenResponse {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  error?: string;
+  error_description?: string;
+}
+
+interface SalesforceUserInfo {
+  organization_id?: string;
+  user_id?: string;
+}
+
+interface SalesforceQueryResponse<T = Record<string, unknown>> {
+  records?: T[];
+  totalSize?: number;
+  done?: boolean;
+}
+
+interface SalesforceOpportunity {
+  Id: string;
+  Name?: string;
+  Amount?: number;
+  CreatedDate?: string;
+  LastModifiedDate?: string;
+  StageName?: string;
+}
+
 const SF_CONFIG: PlatformConfig = {
   id: "salesforce",
   name: "Salesforce",
@@ -94,7 +124,7 @@ export class SalesforceConnector extends BaseConnector {
       const text = await result.text();
       throw new Error(`Salesforce OAuth failed: ${text}`);
     }
-    const data = (await result.json()) as any;
+    const data = (await result.json()) as SalesforceTokenResponse;
     if (data.error) throw new Error(`Salesforce OAuth error: ${data.error_description || data.error}`);
 
     return {
@@ -119,7 +149,7 @@ export class SalesforceConnector extends BaseConnector {
       body: body.toString(),
     });
     if (!result.ok) throw new Error(`Salesforce token refresh failed (HTTP ${result.status})`);
-    const data = (await result.json()) as any;
+    const data = (await result.json()) as SalesforceTokenResponse;
     if (data.error) throw new Error(`Salesforce refresh error: ${data.error_description || data.error}`);
     return {
       accessToken: data.access_token,
@@ -152,7 +182,7 @@ export class SalesforceConnector extends BaseConnector {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
-    const data = (await res.json()) as any;
+    const data = (await res.json()) as SalesforceUserInfo;
     return {
       success: true,
       latencyMs: 0,
@@ -174,9 +204,9 @@ export class SalesforceConnector extends BaseConnector {
     const url = `${instanceUrl}/services/data/v58.0/query?q=${soql}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
-    const data = (await res.json()) as any;
-    const records: any[] = data?.records || [];
-    const campaigns: PlatformCampaign[] = records.map((r) => ({
+    const data = (await res.json()) as SalesforceQueryResponse<SalesforceOpportunity>;
+    const records = data.records || [];
+    const campaigns: PlatformCampaign[] = records.map((r: SalesforceOpportunity) => ({
       id: `sf_opp_${r.Id}`,
       platformId: "salesforce" as PlatformId,
       name: r.Name || `Opportunity ${r.Id}`,
@@ -198,8 +228,8 @@ export class SalesforceConnector extends BaseConnector {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
-    const data = (await res.json()) as any;
-    const records: any[] = data?.records || [];
+    const data = (await res.json()) as SalesforceQueryResponse<SalesforceOpportunity>;
+    const records = data.records || [];
     if (!records[0]) return { success: true, latencyMs: 0 };
     const r = records[0];
     return {
@@ -255,7 +285,7 @@ export class SalesforceConnector extends BaseConnector {
   async sendConversion(accessToken: string, event: ConversionEvent): Promise<ConversionDeliveryResult> {
     const start = Date.now();
     const { eventBus } = await import("../events");
-    eventBus.emit("crm.contact" as any, {
+    eventBus.emit("crm.contact", {
       platform: "salesforce",
       tenantId: event.userData.externalId || "",
       email: event.userData.email || "",
@@ -276,14 +306,16 @@ export class SalesforceConnector extends BaseConnector {
     return expected === signature;
   }
 
-  parseWebhookPayload(body: any): PlatformWebhook {
+  parseWebhookPayload(body: unknown): PlatformWebhook {
     const event = Array.isArray(body) ? body[0] : body;
+    const ev = event && typeof event === "object" ? (event as Record<string, unknown>) : {};
+    const eventObj = (ev.event && typeof ev.event === "object") ? (ev.event as Record<string, unknown>) : {};
     return {
       platform: "salesforce",
-      eventType: event?.event?.type || "change",
-      eventId: (event?.event?.replayId ?? crypto.randomBytes(16).toString("hex")).toString(),
-      timestamp: event?.event?.createdDate || Date.now(),
-      data: body,
+      eventType: (eventObj.type as string) || "change",
+      eventId: (eventObj.replayId as string | number) ? String(eventObj.replayId) : crypto.randomBytes(16).toString("hex"),
+      timestamp: Number((eventObj.createdDate as string | number | undefined) ?? Date.now()),
+      data: body as Record<string, unknown>,
     };
   }
 }
