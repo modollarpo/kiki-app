@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RoleGuard } from "@/components/layout/RoleGuard";
 import { Card, Badge, StatCard, ScrollableTable, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { influencer as influencerApi } from "@/lib/api";
@@ -52,6 +53,7 @@ export default function InfluencerPage() {
   const totalConversions = creators.reduce((s, c) => s + (c.totalConversions || 0), 0);
 
   return (
+    <RoleGuard allowedRoles={["admin", "superadmin", "finance"]}>
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-t1">
         <div className="flex justify-between items-center mb-5 gap-3 flex-wrap">
@@ -138,5 +140,6 @@ export default function InfluencerPage() {
         </Card>
       </div>
     </DashboardLayout>
+    </RoleGuard>
   );
 }

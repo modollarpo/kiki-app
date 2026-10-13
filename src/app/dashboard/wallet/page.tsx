@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RoleGuard } from "@/components/layout/RoleGuard";
 import { StatCard, Card, Badge, Button, ProgressBar } from "@/components/ui";
 import { useKikiStore } from "@/store";
 import { useAuth } from "@/hooks/useAuth";
@@ -68,6 +69,7 @@ export default function WalletPage() {
   const runwayDays = avgDailySpend > 0 ? Math.floor(balance / avgDailySpend) : 0;
 
   return (
+    <RoleGuard allowedRoles={["admin", "superadmin", "finance"]}>
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
         <div className="mb-[22px] flex items-start justify-between flex-wrap gap-3">
@@ -165,5 +167,6 @@ export default function WalletPage() {
         </div>
       </div>
     </DashboardLayout>
+    </RoleGuard>
   );
 }

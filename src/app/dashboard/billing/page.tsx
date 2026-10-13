@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RoleGuard } from "@/components/layout/RoleGuard";
 import { Card, Badge, ProgressBar, Button, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K, fmt } from "@/lib/kdls";
@@ -81,6 +82,7 @@ export default function BillingPage() {
   ];
 
   return (
+    <RoleGuard allowedRoles={["admin", "superadmin", "finance"]}>
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
@@ -190,5 +192,6 @@ export default function BillingPage() {
         )}
       </div>
     </DashboardLayout>
+    </RoleGuard>
   );
 }

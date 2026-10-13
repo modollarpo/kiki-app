@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RoleGuard } from "@/components/layout/RoleGuard";
 import { StatCard, Card, ProgressBar, ScrollableTable } from "@/components/ui";
 import { K, fmt } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
@@ -21,6 +22,7 @@ export default function FinancePage() {
   const k = (v: number) => `$${fmt.currency(Math.round(v / 1000), "USD").replace("$", "")}K`;
 
   return (
+    <RoleGuard allowedRoles={["admin", "superadmin", "finance"]}>
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
@@ -109,5 +111,6 @@ export default function FinancePage() {
         </Card>
       </div>
     </DashboardLayout>
+    </RoleGuard>
   );
 }
