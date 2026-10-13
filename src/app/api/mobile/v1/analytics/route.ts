@@ -1,7 +1,38 @@
-// GET /api/mobile/v1/analytics
-import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
-import { requireMobileAuth } from '@/lib/mobile/auth';
+interface CampaignRowMobile {
+  id: string;
+  tenant_id: string;
+  name: string;
+  platform: string;
+  status: string;
+  spend: number;
+  revenue: number;
+  conversions: number;
+  clicks: number;
+  impressions: number;
+  roas: number;
+  cpa: number;
+  ctr: number;
+  created_at: string;
+}
+
+interface TimeSeriesRow {
+  date: string;
+  spend: number;
+  revenue: number;
+  conversions: number;
+  impressions: number;
+  clicks: number;
+}
+
+interface PlatformRowMobile {
+  platform: string;
+  spend: number;
+  revenue: number;
+  conversions: number;
+  impressions: number;
+  clicks: number;
+  campaign_count: number;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +58,7 @@ export async function GET(request: NextRequest) {
     // Get campaigns for this tenant
     const campaigns = await db.prepare(`
       SELECT * FROM campaigns WHERE tenant_id = ? AND status = 'active'
-    `).all(tenantId) as any[];
+    `).all<CampaignRowMobile>(tenantId);
 
     if (campaigns.length === 0) {
       return NextResponse.json({
@@ -67,7 +98,7 @@ export async function GET(request: NextRequest) {
       WHERE tenant_id = ? AND created_at >= ${dateFilter}
       GROUP BY date(created_at)
       ORDER BY date
-    `).all(tenantId) as any[];
+    `).all<TimeSeriesRow>(tenantId);
 
     // Platform breakdown
     const platforms = await db.prepare(`
@@ -83,7 +114,7 @@ export async function GET(request: NextRequest) {
       WHERE tenant_id = ? AND created_at >= ${dateFilter}
       GROUP BY platform
       ORDER BY spend DESC
-    `).all(tenantId) as any[];
+    `).all<PlatformRowMobile>(tenantId);
 
     // Campaign performance
     const campaignPerformance = await db.prepare(`
@@ -93,10 +124,10 @@ export async function GET(request: NextRequest) {
       WHERE tenant_id = ? AND created_at >= ${dateFilter}
       ORDER BY roas DESC
       LIMIT 20
-    `).all(tenantId) as any[];
+    `).all<CampaignRowMobile>(tenantId);
 
     // Funnel metrics
-    const totals = timeSeries.reduce((acc: any, day: any) => {
+    const totals = timeSeries.reduce((acc, day) => {
       acc.impressions += day.impressions || 0;
       acc.clicks += day.clicks || 0;
       acc.conversions += day.conversions || 0;
