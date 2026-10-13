@@ -1,16 +1,12 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
+import type Stripe from "stripe";
 import { getDb } from "@/lib/db";
 import { stripe, stripeEnabled } from "@/lib/stripe";
 import { confirmTopUp } from "@/lib/wallet";
 import { eventBus } from "@/lib/events";
 import { logger } from "@/lib/logger";
 import { handlePaymentFailure } from "@/lib/billing";
-
-interface StripeEventObject {
-  id: string;
-  metadata?: { tenantId?: string };
-}
 
 const WEBHOOK_TUNING = {
   // Only process events from this list — unknown event types are acknowledged
@@ -53,7 +49,7 @@ export async function POST(req: NextRequest) {
   try {
     switch (event.type) {
       case "payment_intent.succeeded": {
-        const pi = event.data.object as { id: string };
+        const pi = event.data.object as Stripe.PaymentIntent;
         const result = await confirmTopUp(pi.id);
         if (!result.success) {
           return NextResponse.json({ ok: false, error: result.error }, { status: 422 });
@@ -63,7 +59,7 @@ export async function POST(req: NextRequest) {
 
       case "customer.subscription.created":
       case "customer.subscription.updated": {
-        const sub = event.data.object as StripeEventObject;
+        const sub = event.data.object as Stripe.Subscription;
         const tenantId = sub.metadata?.tenantId;
         if (!tenantId) {
           logger.warn("stripe webhook: subscription event without tenantId metadata", { subId: sub.id });
@@ -116,7 +112,7 @@ export async function POST(req: NextRequest) {
       }
 
       case "customer.subscription.deleted": {
-        const deletedSub = event.data.object as StripeEventObject;
+        const deletedSub = event.data.object as Stripe.Subscription;
         const tenantId = deletedSub.metadata?.tenantId;
         if (tenantId) {
           const db = await getDb();
@@ -135,7 +131,7 @@ export async function POST(req: NextRequest) {
       }
 
       case "customer.subscription.trial_will_end": {
-        const trialSub = event.data.object as StripeEventObject;
+        const trialSub = event.data.object as Stripe.Subscription;
         const trialTenantId = trialSub.metadata?.tenantId;
         if (trialTenantId) {
           eventBus.emit("billing.trial_ending", { tenantId: trialTenantId });
@@ -145,7 +141,7 @@ export async function POST(req: NextRequest) {
       }
 
       case "invoice.payment_succeeded": {
-        const invoice = event.data.object as StripeEventObject;
+        const invoice = event.data.object as Stripe.Invoice;
         const invTenantId = invoice.metadata?.tenantId || invoice.subscription_details?.metadata?.tenantId;
         if (invTenantId) {
           const db = await getDb();
@@ -168,7 +164,7 @@ export async function POST(req: NextRequest) {
       }
 
       case "invoice.payment_failed": {
-        const failedInvoice = event.data.object as StripeEventObject;
+        const failedInvoice = event.data.object as Stripe.Invoice;
         const failTenantId = failedInvoice.metadata?.tenantId || failedInvoice.subscription_details?.metadata?.tenantId;
         if (failTenantId) {
           await handlePaymentFailure(failTenantId, failedInvoice.id, 1);
