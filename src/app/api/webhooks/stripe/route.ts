@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   }
 
 // Acknowledge unsupported events without processing
-  if (!WEBHOOK_TUNING.SUPPORTED_EVENTS.includes(event.type as any)) {
+  if (!(WEBHOOK_TUNING.SUPPORTED_EVENTS as readonly string[]).includes(event.type)) {
     return NextResponse.json({ ok: true, received: true, note: `Unhandled event type: ${event.type}` });
   }
 

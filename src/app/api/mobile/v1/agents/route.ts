@@ -1,3 +1,8 @@
+// GET /api/mobile/v1/agents
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/lib/db';
+import { requireMobileAuth } from '@/lib/mobile/auth';
+
 interface AgentListItemRow {
   id: string;
   tenant_id: string;
@@ -47,7 +52,7 @@ export async function GET(request: NextRequest) {
           AVG(duration_ms) as avg_duration
         FROM agent_actions
         WHERE agent_id = ? AND created_at >= date('now', '-30 days')
-      `).get<AgentMetricsRow>(agent.id);
+      `).get<AgentMetricsRow>(agent.id) ?? { total_actions: 0, completed: 0, failed: 0, avg_duration: null };
 
       return {
         ...agent,

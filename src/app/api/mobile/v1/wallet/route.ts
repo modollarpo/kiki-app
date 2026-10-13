@@ -1,3 +1,8 @@
+// GET /api/mobile/v1/wallet
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/lib/db';
+import { requireMobileAuth } from '@/lib/mobile/auth';
+
 interface WalletRow {
   id: string;
   tenant_id: string;
@@ -72,7 +77,7 @@ export async function GET(request: NextRequest) {
         COUNT(*) as transaction_count
       FROM wallet_transactions
       WHERE wallet_id = ? AND created_at >= date('now', 'start of month')
-    `).get<WalletStatsRow>(wallet.id);
+    `).get<WalletStatsRow>(wallet.id) ?? { total_credits: 0, total_debits: 0, transaction_count: 0 };
 
     return NextResponse.json({
       ok: true,
