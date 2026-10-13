@@ -1,3 +1,8 @@
+// POST /api/mobile/v1/wallet/transactions - Add funds or withdraw
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/lib/db';
+import { requireMobileAuth } from '@/lib/mobile/auth';
+
 interface WalletRow {
   id: string;
   tenant_id: string;
@@ -8,6 +13,7 @@ interface WalletRow {
 interface PaymentMethodRow {
   id: string;
   tenant_id: string;
+  type: string;
   status: string;
 }
 

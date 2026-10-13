@@ -60,7 +60,7 @@ export async function GET(
         AVG(duration_ms) as avg_duration
       FROM agent_actions
       WHERE agent_id = ? AND created_at >= date('now', '-30 days')
-    `).get<{ total_actions: number; completed: number; failed: number; avg_duration: number }>(id);
+    `).get<{ total_actions: number; completed: number; failed: number; avg_duration: number | null }>(id) ?? { total_actions: 0, completed: 0, failed: 0, avg_duration: null };
 
     // Get daily activity for chart
     const dailyActivity = await db.prepare(`

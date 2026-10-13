@@ -1,4 +1,10 @@
-export interface CampaignIntelRow {
+export const dynamic = "force-dynamic";
+import { NextRequest, NextResponse } from "next/server";
+import { getDb } from "@/lib/db";
+import { getUserFromRequest } from "@/lib/auth";
+import { logger } from "@/lib/logger";
+
+interface CampaignIntelRow {
   name: string;
   platform: string;
   roas: number;

@@ -1,3 +1,8 @@
+// GET /api/mobile/v1/notifications
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/lib/db';
+import { requireMobileAuth } from '@/lib/mobile/auth';
+
 interface NotificationRow {
   id: string;
   tenant_id: string;
@@ -9,6 +14,7 @@ interface NotificationRow {
   status: string;
   action_required: number;
   action_url: string | null;
+  read_at: string | null;
   created_at: string;
 }
 

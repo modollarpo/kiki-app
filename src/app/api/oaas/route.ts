@@ -56,7 +56,7 @@ async function generateTasks(tenantId: string) {
       id, tenantId, c.id, c.name, title, "Bid Optimizer",
       i % 2 === 0 ? "budget" : "bidding", details
     );
-    return { id, title, agent: "Bid Optimizer", type: i % 2 === 0 ? "budget" : "bidding", status: "pending", expectedImpact: null, confidence: null, createdAt: new Date().toISOString(), details };
+    return { id, tenant_id: tenantId, campaign_id: c.id, campaign_name: c.name, title, agent: "Bid Optimizer", type: i % 2 === 0 ? "budget" : "bidding", status: "pending", expected_impact: null, confidence: null, created_at: new Date().toISOString(), details };
   }));
 
   return tasks;
@@ -104,7 +104,7 @@ export async function POST(req: Request) {
     }
 
     const db = await getDb();
-    const existing = await db.prepare("SELECT * FROM oaas_tasks WHERE id = ? AND tenant_id = ?").get(id, user.tenantId) as any;
+    const existing = await db.prepare("SELECT * FROM oaas_tasks WHERE id = ? AND tenant_id = ?").get<OaasTaskRow>(id, user.tenantId);
     if (!existing) return jsonError("Task not found", 404);
 
     const status = action === "approve" ? "approved" : "rejected";

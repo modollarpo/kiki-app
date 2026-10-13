@@ -1,3 +1,8 @@
+// GET /api/mobile/v1/campaigns/[id]
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/lib/db';
+import { requireMobileAuth } from '@/lib/mobile/auth';
+
 interface CampaignDetailRow {
   id: string;
   tenant_id: string;
