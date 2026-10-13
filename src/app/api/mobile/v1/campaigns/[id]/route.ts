@@ -1,7 +1,53 @@
-// GET /api/mobile/v1/campaigns/[id]
-import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
-import { requireMobileAuth } from '@/lib/mobile/auth';
+interface CampaignDetailRow {
+  id: string;
+  tenant_id: string;
+  name: string;
+  platform: string;
+  status: string;
+  budget: number;
+  spend: number;
+  revenue: number;
+  roas: number;
+  conversions: number;
+  clicks: number;
+  impressions: number;
+  cpa: number;
+  ctr: number;
+  start_date: string | null;
+  end_date: string | null;
+  auto_pause: number;
+  smart_bidding: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CampaignPerfRow {
+  date: string;
+  spend: number;
+  revenue: number;
+  conversions: number;
+  impressions: number;
+  clicks: number;
+}
+
+interface SignalRow {
+  id: string;
+  tenant_id: string;
+  campaign_id?: string;
+  platform: string;
+  event_type: string;
+  value: number;
+  created_at: string;
+}
+
+interface BidChangeRow {
+  id: string;
+  campaign_id: string;
+  old_bid: number;
+  new_bid: number;
+  reason: string;
+  created_at: string;
+}
 
 export async function GET(
   request: NextRequest,
@@ -22,7 +68,7 @@ export async function GET(
         CASE WHEN c.impressions > 0 THEN (c.clicks / c.impressions) * 100 ELSE 0 END as ctr
       FROM campaigns c
       WHERE c.id = ? AND c.tenant_id = ?
-    `).get((await params).id, auth.tenantId) as any;
+    `).get<CampaignDetailRow>((await params).id, auth.tenantId);
 
     if (!campaign) {
       return NextResponse.json(
@@ -44,7 +90,7 @@ export async function GET(
       WHERE tenant_id = ? AND id = ? AND created_at >= date('now', '-30 days')
       GROUP BY date
       ORDER BY date
-    `).all(auth.tenantId, (await params).id) as any[];
+    `).all<CampaignPerfRow>(auth.tenantId, (await params).id);
 
     // Get recent signals
     const signals = await db.prepare(`
@@ -52,7 +98,7 @@ export async function GET(
       WHERE tenant_id = ? AND campaign_id = ?
       ORDER BY created_at DESC
       LIMIT 50
-    `).all(auth.tenantId, (await params).id) as any[];
+    `).all<SignalRow>(auth.tenantId, (await params).id);
 
     // Get bid history
     const bidHistory = await db.prepare(`
@@ -60,7 +106,7 @@ export async function GET(
       WHERE campaign_id = ?
       ORDER BY created_at DESC
       LIMIT 20
-    `).all((await params).id) as any[];
+    `).all<BidChangeRow>((await params).id);
 
     return NextResponse.json({
       ok: true,
