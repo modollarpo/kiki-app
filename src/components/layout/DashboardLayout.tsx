@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useAuthSync } from "@/hooks/useAuthSync";
+import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 
 // ── Navigation Configuration ────────────────────────────────
@@ -343,6 +344,7 @@ const SidebarContent = memo(function SidebarContent({
   router,
   toggleSidebar,
   setMobileSidebarOpen,
+  onSignOut,
 }: {
   sidebarCollapsed: boolean;
   isMobile: boolean;
@@ -352,6 +354,7 @@ const SidebarContent = memo(function SidebarContent({
   router: ReturnType<typeof useRouter>;
   toggleSidebar: () => void;
   setMobileSidebarOpen: (v: boolean) => void;
+  onSignOut: () => void;
 }) {
   return (
     <>
@@ -530,12 +533,13 @@ const SidebarContent = memo(function SidebarContent({
 
       {/* User */}
       {(!sidebarCollapsed || isMobile) && (
-        <div style={{ borderTop: `1px solid ${K.g800}`, padding: 8, flexShrink: 0 }}>
+        <div style={{ borderTop: `1px solid ${K.g800}`, padding: 8, flexShrink: 0, display: "flex", gap: 6 }}>
           <button
             onClick={() => router.push("/dashboard/settings")}
             aria-label="User settings"
             style={{
-              width: "100%",
+              flex: 1,
+              minWidth: 0,
               display: "flex",
               alignItems: "center",
               gap: 8,
@@ -585,6 +589,29 @@ const SidebarContent = memo(function SidebarContent({
               </p>
             </div>
           </button>
+          <button
+            onClick={onSignOut}
+            aria-label="Sign out"
+            title="Sign out"
+            style={{
+              width: 36,
+              minHeight: 36,
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 2,
+              border: `1px solid ${K.g700}`,
+              background: "none",
+              color: K.danger,
+              cursor: "pointer",
+              fontSize: 14,
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = K.g850)}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+          >
+            ⎋
+          </button>
         </div>
       )}
 
@@ -621,12 +648,14 @@ const SidebarContent = memo(function SidebarContent({
 // ── Main Layout ─────────────────────────────────────────────
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   useAuthSync();
+  const { logout: authLogout, token } = useAuth();
   const {
     user,
     sidebarCollapsed,
     toggleSidebar,
     cmdPaletteOpen,
     setCmdPaletteOpen,
+    logout: storeLogout,
   } = useKikiStore();
   const unread = useUnreadCount();
   const running = useRunningAgents();
@@ -646,6 +675,18 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMobileSidebarOpen(false);
   }, [pathname]);
+
+  // Central auth guard — redirect unauthenticated users to login.
+  useEffect(() => {
+    if (!token) router.replace("/auth/login");
+  }, [token, router]);
+
+  const handleSignOut = useCallback(() => {
+    authLogout();
+    storeLogout();
+    setMobileSidebarOpen(false);
+    router.push("/auth/login");
+  }, [authLogout, storeLogout, router]);
 
   // Keyboard shortcut for command palette
   useEffect(() => {
@@ -724,6 +765,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           router={router}
           toggleSidebar={toggleSidebar}
           setMobileSidebarOpen={setMobileSidebarOpen}
+          onSignOut={handleSignOut}
         />
       </aside>
 

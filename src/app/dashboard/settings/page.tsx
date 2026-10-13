@@ -5,10 +5,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { useKikiStore } from "@/store";
 import { K } from "@/lib/kdls";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
-  const { user, token } = useAuth();
-  const { logout } = useKikiStore();
+  const router = useRouter();
+  const { user, token, logout: authLogout } = useAuth();
+  const { logout: storeLogout } = useKikiStore();
+
+  const handleSignOut = () => {
+    authLogout();
+    storeLogout();
+    router.push("/auth/login");
+  };
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [saved, setSaved] = useState(false);
@@ -171,7 +179,7 @@ export default function SettingsPage() {
         <Card>
           <h3 className="font-mono font-bold text-[13px] text-t1 mb-3">Danger Zone</h3>
           <p className="font-mono text-[11px] text-t3 mb-3">Sign out of your account on this device.</p>
-          <Button variant="danger" size="sm" onClick={logout}>Sign Out</Button>
+          <Button variant="danger" size="sm" onClick={handleSignOut}>Sign Out</Button>
         </Card>
       </div>
     </DashboardLayout>

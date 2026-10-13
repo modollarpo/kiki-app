@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RoleGuard } from "@/components/layout/RoleGuard";
 import { Card, Badge, ProgressBar, StatCard, ScrollableTable, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
@@ -40,6 +41,7 @@ export default function ProfitMarginPage() {
   if (!token) return null;
 
   return (
+    <RoleGuard allowedRoles={["admin", "superadmin", "finance"]}>
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-t1">
         <div className="mb-5">
@@ -114,5 +116,6 @@ export default function ProfitMarginPage() {
         </Card>
       </div>
     </DashboardLayout>
+    </RoleGuard>
   );
 }
