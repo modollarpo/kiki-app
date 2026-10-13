@@ -1,7 +1,33 @@
-// GET /api/mobile/v1/wallet
-import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
-import { requireMobileAuth } from '@/lib/mobile/auth';
+interface WalletRow {
+  id: string;
+  tenant_id: string;
+  balance: number;
+  currency: string;
+}
+
+interface WalletTxRow {
+  id: string;
+  wallet_id: string;
+  amount: number;
+  type: string;
+  description: string;
+  created_at: string;
+}
+
+interface PaymentMethodRow {
+  id: string;
+  tenant_id: string;
+  type: string;
+  card_last4: string;
+  is_default: number;
+  status: string;
+}
+
+interface WalletStatsRow {
+  total_credits: number | null;
+  total_debits: number | null;
+  transaction_count: number;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +40,7 @@ export async function GET(request: NextRequest) {
     // Get wallet
     const wallet = await db.prepare(`
       SELECT * FROM wallets WHERE tenant_id = ?
-    `).get(auth.tenantId) as any;
+    `).get<WalletRow>(auth.tenantId);
 
     if (!wallet) {
       return NextResponse.json(
@@ -29,14 +55,14 @@ export async function GET(request: NextRequest) {
       WHERE wallet_id = ?
       ORDER BY created_at DESC
       LIMIT 20
-    `).all(wallet.id) as any[];
+    `).all<WalletTxRow>(wallet.id);
 
     // Get payment methods
     const paymentMethods = await db.prepare(`
       SELECT * FROM payment_methods
       WHERE tenant_id = ? AND status = 'active'
       ORDER BY is_default DESC, created_at DESC
-    `).all(auth.tenantId) as any[];
+    `).all<PaymentMethodRow>(auth.tenantId);
 
     // Get this month's stats
     const stats = await db.prepare(`
@@ -46,7 +72,7 @@ export async function GET(request: NextRequest) {
         COUNT(*) as transaction_count
       FROM wallet_transactions
       WHERE wallet_id = ? AND created_at >= date('now', 'start of month')
-    `).get(wallet.id) as any;
+    `).get<WalletStatsRow>(wallet.id);
 
     return NextResponse.json({
       ok: true,
