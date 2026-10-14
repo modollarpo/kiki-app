@@ -13,7 +13,7 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { id: "connect", label: "Connect ad account", description: "Link Meta, Google, or TikTok via OAuth", href: "/dashboard/integrations", icon: "🔗" },
+  { id: "connect", label: "Connect ad account", description: "Link Meta, Google, or TikTok via OAuth", href: "/dashboard/settings", icon: "🔗" },
   { id: "pixel", label: "Install tracking pixel", description: "Deploy the CAPI pixel on your store", href: "/dashboard/signals", icon: "📡" },
   { id: "campaign", label: "Create first campaign", description: "Set target CAC and connect to an ad set", href: "/dashboard/campaigns", icon: "🎯" },
   { id: "wallet", label: "Fund wallet", description: "Add balance for ad spend via Stripe", href: "/dashboard/wallet", icon: "💰" },
