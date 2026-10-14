@@ -55,3 +55,8 @@ Events to register:
 - invoice.payment_succeeded
 - invoice.payment_failed
 After registering, set STRIPE_WEBHOOK_SECRET (whsec_...).
+
+## Secrets Management
+- Never commit .env.local or live keys to repo/GitHub.
+- Store production secrets in Azure Key Vault (secrets/references) and set as Container App environment variables for kiki-app (Storegrill_Azure, kiki-agent-rg).
+- Keep GitHub Actions secrets minimal; only add what CI needs (if any). Fresh Groq/Stripe keys should be set directly in Azure (Key Vault/Container App), not pushed via commits.
