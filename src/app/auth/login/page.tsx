@@ -11,6 +11,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { addToast } = useKikiStore();
   const { login, loading: authLoading, error: authError } = useAuth();
+  const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [screen, setScreen] = useState<"login"|"forgot"|"sso">("login");
@@ -63,15 +64,9 @@ export default function LoginPage() {
     setSendingReset(false);
   };
 
-  const handleSsoLogin = () => {
-    addToast("info", "SSO authentication coming soon. Contact your IT admin.");
-  };
-
   const handleProviderLogin = (provider: string) => {
     if (provider === "Google Workspace") {
       window.location.href = "/api/auth/sso/google";
-    } else {
-      addToast("info", `${provider} sign-in coming soon.`);
     }
   };
 
@@ -125,8 +120,9 @@ export default function LoginPage() {
               <span className="font-sans text-[12px] text-t3">Keep me signed in for 30 days</span>
             </div>
             <Button full size="lg" loading={authLoading} onClick={handleLogin}>Sign In →</Button>
-            <div className="my-3 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
-            <Button full variant="ghost" size="sm" onClick={() => { setEmail("demo@keekii.net"); setPassword("password123"); setTimeout(() => handleLogin(), 100); }} style={{ marginBottom: 6 }}>🚀 Demo Login (demo@keekii.net)</Button>
+            {DEMO_MODE && (
+              <Button full variant="ghost" size="sm" onClick={() => { setEmail("demo@keekii.net"); setPassword("password123"); setTimeout(() => handleLogin(), 100); }} className="mt-3">🚀 Demo Login (demo@keekii.net)</Button>
+            )}
             <div className="my-3 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
             <Button full variant="secondary" size="md" onClick={() => setScreen("sso")} icon={<span>⬡</span>}>Sign in with SSO</Button>
             <p className="font-mono text-[10px] text-t4 text-center mt-4">
@@ -166,12 +162,9 @@ export default function LoginPage() {
         <div className="relative w-full max-w-[380px]">
           <Card accent={K.oaas}>
             <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">Single Sign-On</p>
-            <p className="font-sans text-[13px] text-t3 mb-[22px]">Enter your organization&apos;s SSO domain</p>
-            <Input placeholder="yourbrand" suffix=".keekii.net/sso" mono hint="Your IT admin can provide the SSO subdomain" className="mb-4" />
-            <Button full variant="violet" size="lg" onClick={handleSsoLogin}>Continue with SSO →</Button>
-            <div className="my-4 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
+            <p className="font-sans text-[13px] text-t3 mb-[22px]">Continue with your identity provider</p>
             <div className="flex gap-2.5">
-              {[{l:"Google Workspace",c:"#4285F4"},{l:"Microsoft Entra",c:"#0078D4"},{l:"Okta",c:"#007DC1"}].map(p => (
+              {[{l:"Google Workspace",c:"#4285F4"}].map(p => (
                 <button key={p.l} onClick={() => handleProviderLogin(p.l)}
                   className="flex-1 px-2 py-2 rounded-sm font-mono text-[9px] text-t2 cursor-pointer text-center transition-all duration-150"
                   style={{ background:K.g850, border:`1px solid ${K.g700}` }}

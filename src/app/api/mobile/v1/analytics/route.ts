@@ -83,7 +83,6 @@ export async function GET(request: NextRequest) {
           funnel: {
             impressions: 0,
             clicks: 0,
-            leads: 0,
             conversions: 0,
           },
         },
@@ -183,7 +182,6 @@ export async function GET(request: NextRequest) {
         funnel: {
           impressions: totalImpressions,
           clicks: totalClicks,
-          leads: Math.round(totalClicks * 0.15),
           conversions: totalConversions,
         },
       },

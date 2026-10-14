@@ -64,9 +64,9 @@ async function run() {
     console.log("   ✅");
   }
 
-  console.log("\n5. Fetching mock competitor price...");
+  console.log("\n5. Fetching competitor price...");
   const price = await fetchCompetitorPrices(config);
-  console.log(`   Current mock price: $${price.toFixed(2)} ✅`);
+  console.log(`   Current price: ${price === null ? "unavailable (scrape failed)" : `$${price.toFixed(2)}`} ✅`);
 
   console.log("\n6. Executing defensive response (mock event)...");
   const mockEvent: CompetitorPriceDropPayload = {

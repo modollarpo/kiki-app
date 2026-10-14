@@ -177,6 +177,7 @@ export interface WalletData {
     spent: number;
     campaign: string;
     status: string;
+    issuer?: "local" | "stripe";
   }>;
   transactions: Array<{
     id: string;

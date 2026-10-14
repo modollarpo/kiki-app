@@ -9,8 +9,9 @@
 //   LinkedIn   → Pause expensive B2B campaigns temporarily
 //   Pinterest  → Reduce discovery bids by 20% (hold spend)
 //
-// Graceful fallback: uses mock pricing data when SCRAPER_API_KEY
-// is not configured so the pipeline always produces useful output.
+// Pricing is scraped natively and optionally via ScraperAPI. When no
+// price can be obtained, the domain is skipped and reported as an error
+// — no fabricated pricing is ever used.
 // ============================================================
 
 import crypto from "crypto";
@@ -134,17 +135,6 @@ async function getLatestSnapshots(competitorId: string, limit: number = 2): Prom
   }));
 }
 
-// ── Mock price generator (deterministic per domain) ────────
-
-function mockPriceForDomain(domain: string, varianceSeed: number): number {
-  // Deterministic base price from domain hash
-  const hash = crypto.createHash("md5").update(domain).digest("hex");
-  const base = 20 + (parseInt(hash.slice(0, 4), 16) % 280); // $20 – $300
-  // Small daily variance so monitoring detects real changes
-  const variance = Math.sin(varianceSeed) * base * 0.03;
-  return Math.round((base + variance) * 100) / 100;
-}
-
 // ── Price fetcher ──────────────────────────────────────────
 
 const USER_AGENTS = [
@@ -168,7 +158,7 @@ function extractPriceFromHtml(html: string): number | null {
   return null;
 }
 
-export async function fetchCompetitorPrices(config: CompetitorConfig): Promise<number> {
+export async function fetchCompetitorPrices(config: CompetitorConfig): Promise<number | null> {
   const targetUrl = config.monitoredUrls.length > 0 ? config.monitoredUrls[0] : null;
 
   if (targetUrl) {
@@ -211,8 +201,8 @@ export async function fetchCompetitorPrices(config: CompetitorConfig): Promise<n
     }
   }
 
-  // 3. Final Fallback: Mock mode — stable per domain, slight daily drift
-  return mockPriceForDomain(config.domain, Date.now() / 86400000);
+  // No price could be scraped — report unavailable rather than fabricating one
+  return null;
 }
 
 // ── Drop detector ──────────────────────────────────────────
@@ -358,6 +348,10 @@ export async function runCompetitorMonitor(tenantId: string): Promise<MonitorRun
     try {
       // Fetch current price and snapshot
       const currentPrice = await fetchCompetitorPrices(config);
+      if (currentPrice === null) {
+        errors.push(`${config.domain}: price unavailable (scrape failed, no fallback configured)`);
+        continue;
+      }
       const snapshot: CompetitorSnapshot = {
         id: `snap_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`,
         competitorId: config.id,

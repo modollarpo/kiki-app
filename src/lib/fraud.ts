@@ -3,6 +3,7 @@
 // ============================================================
 
 import { getDb, genId } from "./db";
+import { logger } from "./logger";
 import { UAParser } from "ua-parser-js";
 
 interface FraudCheckResult {
@@ -134,14 +135,8 @@ export async function checkFraud(tenantId: string, signalData: {
     } else {
       // 2. Fallback to IPQualityScore (if configured) for deep residential proxy checks
       const apiKey = process.env.IPQS_API_KEY;
-      
-      if (!apiKey) {
-        // Mock mode fallback for missing API key
-        if (ip === "203.0.113.50") {
-          reasons.push(`[MOCK] IP ${ip} has high fraud score (99)`);
-          severity = "critical";
-        }
-      } else {
+
+      if (apiKey) {
         try {
           const res = await fetch(`https://ipqualityscore.com/api/json/ip/${apiKey}/${ip}`);
           if (res.ok) {
@@ -152,7 +147,7 @@ export async function checkFraud(tenantId: string, signalData: {
             }
           }
         } catch (e) {
-          console.error("IPQS API Error", e);
+          logger.error("IPQS API error", { message: e instanceof Error ? e.message : String(e) });
         }
       }
     }

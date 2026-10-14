@@ -6,8 +6,8 @@
 // Formats assets for each platform's specific requirements and
 // saves drafts for sandbox testing before full deployment.
 //
-// Graceful fallback: if Azure OpenAI is unconfigured, returns
-// realistic placeholder copy so the pipeline always produces output.
+// Requires Azure OpenAI; when it is unconfigured the run reports an
+// error and produces nothing rather than emitting fabricated copy.
 // ============================================================
 
 import crypto from "crypto";
@@ -71,37 +71,6 @@ const PLATFORM_SPECS: Record<string, { maxHeadline: number; maxText: number; asp
   linkedin:  { maxHeadline: 70,  maxText: 150, aspectRatio: "1.91:1",           imageSpec: "1200×627px (landscape)",             ctas: ["Learn More", "Sign Up", "Download", "Apply Now"]  },
 };
 
-// ── Fallback copy generator (no AI needed) ─────────────────
-
-function generateFallbackCopy(context: CampaignContext, platform: string): CopyVariation {
-  const spec = PLATFORM_SPECS[platform] ?? PLATFORM_SPECS.meta;
-  const cta = spec.ctas[Math.floor(Math.random() * spec.ctas.length)];
-  const category = context.productCategory ?? "products";
-
-  const headlines = [
-    `${context.campaignName} — Limited Offer`,
-    `Exclusive ${category} deals await you`,
-    `Top-rated ${category} — try today`,
-  ];
-  const texts = [
-    `Discover why thousands choose us for their ${category} needs. Quality guaranteed.`,
-    `Don't miss out — our best ${category} deals are available for a limited time.`,
-    `Join the community of smart shoppers. Find your perfect ${category} match.`,
-  ];
-
-  const headline = headlines[Math.floor(Math.random() * headlines.length)].slice(0, spec.maxHeadline);
-  const primaryText = texts[Math.floor(Math.random() * texts.length)].slice(0, spec.maxText);
-
-  return {
-    id: `copy_${crypto.randomBytes(4).toString("hex")}`,
-    headline,
-    primaryText,
-    callToAction: cta,
-    platform,
-    characterCount: primaryText.length,
-  };
-}
-
 // ── AI copy generator ──────────────────────────────────────
 
 export async function generateAdCopy(
@@ -111,9 +80,9 @@ export async function generateAdCopy(
   const platforms = Object.keys(PLATFORM_SPECS);
   const creds = getAzureOpenAICredentials();
 
-  // Fallback mode — no Azure configured
+  // No Azure configured — cannot generate real copy
   if (!creds) {
-    return platforms.map(p => generateFallbackCopy(context, p));
+    return [];
   }
 
   const specsText = platforms.map(p => {
@@ -157,8 +126,8 @@ Generate ONE variation per platform, 6 total. Make each platform feel native.`;
       };
     });
   } catch {
-    // Fallback on parse error
-    return platforms.map(p => generateFallbackCopy(context, p));
+    // AI call or parse failed — return nothing rather than fabricated copy
+    return [];
   }
 }
 
@@ -166,11 +135,8 @@ Generate ONE variation per platform, 6 total. Make each platform feel native.`;
 
 export async function buildImagePrompt(context: CampaignContext): Promise<string> {
   const creds = getAzureOpenAICredentials();
-  const fallback = `Professional product photography for ${context.productCategory ?? context.campaignName}. ` +
-    `Clean white background, studio lighting, high quality, commercial style. ` +
-    `Subtle gradient overlay, modern aesthetic, brand-safe, no text.`;
 
-  if (!creds) return fallback;
+  if (!creds) return "";
 
   const systemPrompt = `You are a DALL-E 3 prompt engineer for performance advertising. 
 Return only the image generation prompt — no commentary, no quotes.`;
@@ -185,7 +151,7 @@ Requirements: photorealistic, commercial quality, no text/logos in image, brand-
 modern aesthetic. Optimised for ${context.platform} ad format.`;
 
   const { content } = await callAzureOpenAI(userPrompt, systemPrompt, "mini", { temperature: 0.7 });
-  return content || fallback;
+  return content || "";
 }
 
 // ── Format creative for all platforms ─────────────────────
@@ -325,6 +291,10 @@ export async function runCreativeGeneration(tenantId: string): Promise<CreativeR
       });
 
       const copies = await generateAdCopy(context, tenantId);
+      if (copies.length === 0) {
+        errors.push(`Campaign ${context.campaignId}: Azure OpenAI not configured — no copy generated`);
+        continue;
+      }
       const imagePrompt = await buildImagePrompt(context);
       const platformFormats = formatForAllPlatforms(copies);
 
