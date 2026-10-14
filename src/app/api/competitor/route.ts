@@ -54,19 +54,21 @@ export async function POST(req: Request) {
 
     await saveCompetitorConfig(config);
 
-    // Take first snapshot immediately
+    // Take first snapshot immediately (only when a real price was scraped)
     const price = await fetchCompetitorPrices(config);
-    await saveCompetitorSnapshot({
-      id: genId("snap"),
-      competitorId: config.id,
-      domain: config.domain,
-      productCategory: config.productCategory,
-      avgPrice: price,
-      sampleUrls: config.monitoredUrls,
-      capturedAt: Date.now(),
-    });
+    if (price !== null) {
+      await saveCompetitorSnapshot({
+        id: genId("snap"),
+        competitorId: config.id,
+        domain: config.domain,
+        productCategory: config.productCategory,
+        avgPrice: price,
+        sampleUrls: config.monitoredUrls,
+        capturedAt: Date.now(),
+      });
+    }
 
-    return json({ ok: true, config, initialPrice: price });
+    return json({ ok: true, config, initialPrice: price, priceUnavailable: price === null });
   }
 
   return jsonError("Unknown action. Use 'run_monitor' or 'add_competitor'", 400);

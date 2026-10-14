@@ -7,12 +7,6 @@
       "reason": "baseline — pending remediation"
     },
     {
-      "id": "coming-soon",
-      "file": "src/app/auth/login/page.tsx",
-      "match": "coming soon",
-      "reason": "baseline — pending remediation"
-    },
-    {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/agents/[id]/route.ts",
       "match": "console.error",
@@ -111,18 +105,6 @@
     {
       "id": "console-log",
       "file": "src/lib/connectors/index.ts",
-      "match": "console.error",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "console-log",
-      "file": "src/lib/connectors/meta.ts",
-      "match": "console.log",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "console-log",
-      "file": "src/lib/fraud.ts",
       "match": "console.error",
       "reason": "baseline — pending remediation"
     },
@@ -248,12 +230,6 @@
     },
     {
       "id": "math-random",
-      "file": "src/lib/creative.ts",
-      "match": "Math.random",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "math-random",
       "file": "src/lib/db.ts",
       "match": "Math.random",
       "reason": "baseline — pending remediation"
@@ -320,30 +296,6 @@
     },
     {
       "id": "mock",
-      "file": "src/lib/competitor.ts",
-      "match": "Mock",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "mock",
-      "file": "src/lib/connectors/meta.ts",
-      "match": "[MOCK",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "mock",
-      "file": "src/lib/fraud.ts",
-      "match": "[MOCK",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "mock",
-      "file": "src/lib/fraud.ts",
-      "match": "Mock",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "mock",
       "file": "src/lib/slack.ts",
       "match": "mock",
       "reason": "baseline — pending remediation"
@@ -369,12 +321,6 @@
     {
       "id": "placeholder",
       "file": "src/lib/card-issuer.ts",
-      "match": "placeholder",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "placeholder",
-      "file": "src/lib/creative.ts",
       "match": "placeholder",
       "reason": "baseline — pending remediation"
     }

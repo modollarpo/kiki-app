@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   }
 
   const cards = await (await db.prepare("SELECT * FROM wallet_cards WHERE wallet_id = ?")).all(wallet.id) as Array<{
-    id: string; last4: string; brand: string; limit: number; spent: number; campaign: string; status: string;
+    id: string; last4: string; brand: string; limit: number; spent: number; campaign: string; status: string; issuer: string;
   }>;
 
   const transactions = await (await db.prepare("SELECT * FROM wallet_transactions WHERE wallet_id = ? ORDER BY created_at DESC LIMIT 20")).all(wallet.id) as Array<{
@@ -39,7 +39,7 @@ export async function GET(req: Request) {
     currency: wallet.currency,
     cards: cards.map(c => ({
       id: c.id, last4: c.last4, brand: c.brand, limit: c.limit,
-      spent: c.spent, campaign: c.campaign, status: c.status,
+      spent: c.spent, campaign: c.campaign, status: c.status, issuer: c.issuer,
     })),
     transactions: transactions.map(t => ({
       id: t.id, type: t.type, amount: t.amount, description: t.description,
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
       const limit = typeof totalLimit === "number" && totalLimit > 0 ? totalLimit : 5000;
 
       const card = await createVirtualCard(user.tenantId, wallet.id, genId("cmp"), name, Math.round(limit / 30), limit);
-      return json({ card: { id: card.id, last4: card.last4, brand: card.brand, limit: card.limit, spent: 0, campaign: card.campaignName, status: card.status } });
+      return json({ card: { id: card.id, last4: card.last4, brand: card.brand, limit: card.limit, spent: 0, campaign: card.campaignName, status: card.status, issuer: card.issuer } });
     }
 
     if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) {

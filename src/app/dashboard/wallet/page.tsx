@@ -51,7 +51,7 @@ export default function WalletPage() {
       if (res.ok) {
         const result = await res.json();
         setData(prev => prev ? { ...prev, cards: [...(prev.cards || []), result.card] } : prev);
-        addToast("success", `Virtual card •••• ${result.card.last4} issued`);
+        addToast("success", `${result.card.issuer === "stripe" ? "Virtual" : "Simulated virtual"} card •••• ${result.card.last4} issued`);
       }
     } catch {
       addToast("error", "Failed to issue card.");
@@ -99,8 +99,11 @@ export default function WalletPage() {
                   <div key={card.id} className="min-w-[220px] shrink-0 rounded-[4px] p-4 border"
                     style={{ background: `linear-gradient(135deg,${K.g850},${K.indigoD})`, borderColor: card.status === "frozen" ? `${K.danger}40` : `${K.indigo}40` }}>
                     <div className="flex justify-between mb-3">
-                      <span className="font-mono text-[10px] tracking-widest text-t4">KIKI VIRTUAL</span>
-                      {card.status === "frozen" && <Badge color={K.danger}>FROZEN</Badge>}
+                      <span className="font-mono text-[10px] tracking-widest text-t4">{card.issuer === "stripe" ? "KIKI VIRTUAL" : "KIKI SIMULATED"}</span>
+                      <div className="flex items-center gap-1.5">
+                        {card.issuer !== "stripe" && <Badge color={K.warn}>SIMULATED</Badge>}
+                        {card.status === "frozen" && <Badge color={K.danger}>FROZEN</Badge>}
+                      </div>
                     </div>
                     <p className="font-mono text-sm text-t3 mb-2 tracking-widest">•••• {card.last4}</p>
                     <p className="font-mono text-xs font-bold text-kindigo mb-2">{card.campaign}</p>
