@@ -27,3 +27,19 @@ Active: .env.local (not committed). See .env.example and .env.template for full 
 | OPENCODE_ENDPOINT | Optional | Headless agent backend (e.g. http://localhost:8080). |
 | OPENCODE_SECRET | Optional | Auth for OpenCode endpoint. |
 
+
+## Azure Production Resources (Confirmed)
+
+Connected to subscription 'Azure subscription 1' (Default Directory). Resources in 'sewa-ai-prod-rg' (swedencentral):
+
+| Resource | Type | Details |
+|---|---|---|
+| sewa-ai-prod-eu-openai | Azure OpenAI | Endpoint: https://sewa-ai-prod-eu-openai-abb49.openai.azure.com/ |
+| sewa-ai-prod-eu-pg | PostgreSQL Flexible Server | FQDN: sewa-ai-prod-eu-pg.postgres.database.azure.com, v15, Ready |
+| sewa-ai-prod-eu-kv | Key Vault | Vault URI: https://sewa-ai-prod-eu-kv.vault.azure.net/ |
+| sewa-ai-prod-eu-aks | AKS | K8s 1.35.6, FQDN: sewa-ai-prod-eu-w228to3a.hcp.swedencentral.azmk8s.io |
+| sewaaieuprodacr | ACR | Container registry |
+| sewa-ai-prod-eu-appinsights | App Insights | Monitoring |
+| sewa-ai-prod-eu-law | Log Analytics | Central logs |
+
+
