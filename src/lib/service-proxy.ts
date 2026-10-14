@@ -8,6 +8,9 @@
 // deployed. Instead of attempting a localhost connection that always
 // fails (and wastes the request timeout), we short-circuit with a
 // structured 503 so the UI can show "connect your X service".
+//
+// We never substitute demo/mock data for a missing service — every
+// unconfigured call fails loudly with `code: "SERVICE_NOT_CONFIGURED"`.
 // ============================================================
 
 import { NextRequest, NextResponse } from "next/server";
@@ -27,8 +30,6 @@ export interface ServiceProxyOptions {
   envVar: string;
   /** Timeout in ms (default 10000). */
   timeoutMs?: number;
-  /** Fallback data to return when service is not configured (instead of 503). */
-  fallback?: unknown;
 }
 
 /**
@@ -40,22 +41,14 @@ export async function proxyToService(req: NextRequest, opts: ServiceProxyOptions
   const serviceUrl = process.env[opts.envVar] || defaultUrlFor(opts.envVar);
 
   if (LOCALHOST_DEFAULT.test(serviceUrl)) {
-    if (opts.fallback !== undefined) {
-      // The fallback is demo content, never real telemetry — surface that
-      // clearly so consumers cannot mistake it for production data.
-      return NextResponse.json({
-        ok: true,
-        demo: true,
-        mode: "demo",
-        serviceNotConfigured: true,
-        envVar: opts.envVar,
-        ...opts.fallback as Record<string, unknown>,
-      });
-    }
     return NextResponse.json(
       {
+        ok: false,
         success: false,
         code: "SERVICE_NOT_CONFIGURED",
+        serviceNotConfigured: true,
+        service: opts.serviceName,
+        envVar: opts.envVar,
         error: `${opts.serviceName} service is not configured`,
         detail: `Set ${opts.envVar} to the service URL to enable this feature.`,
       },

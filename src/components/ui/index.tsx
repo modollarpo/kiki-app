@@ -363,6 +363,28 @@ export function EmptyState({ icon, title, body, cta, onCta, accent = K.t3 }: {
   );
 }
 
+// ─── NotConfigured — backing microservice not deployed ─────
+export function NotConfigured({ service, envVar, note, className = "" }: {
+  service: string; envVar?: string; note?: string; className?: string;
+}) {
+  return (
+    <Card accent={K.warn} className={className}>
+      <div className="flex flex-col items-center text-center py-10 px-4">
+        <div className="text-[28px] mb-3" style={{ color: K.warn }}>⬡</div>
+        <h3 className="font-mono font-bold text-[15px] text-t1 mb-2">{service} service not configured</h3>
+        <p className="font-mono text-[13px] text-t3 max-w-md leading-[1.6]">
+          {note ?? "This page is connected, but its backing microservice is not deployed in this environment, so no live data is available."}
+        </p>
+        {envVar && (
+          <p className="font-mono text-[11px] text-t4 mt-4">
+            Configure <span style={{ color: K.warn }}>{envVar}</span> to enable this feature.
+          </p>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 // ─── ScrollableTable — horizontal scroll with fade indicator ─
 export function ScrollableTable({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = React.useRef<HTMLDivElement>(null);

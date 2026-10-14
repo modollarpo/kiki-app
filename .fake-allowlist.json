@@ -169,12 +169,6 @@
       "reason": "baseline — pending remediation"
     },
     {
-      "id": "demo-literal",
-      "file": "src/lib/service-proxy.ts",
-      "match": "\"demo\"",
-      "reason": "baseline — pending remediation"
-    },
-    {
       "id": "fake",
       "file": "src/app/dashboard/fraud/page.tsx",
       "match": "Fake",
@@ -291,6 +285,12 @@
     {
       "id": "mock",
       "file": "src/lib/competitor.ts",
+      "match": "mock",
+      "reason": "baseline — pending remediation"
+    },
+    {
+      "id": "mock",
+      "file": "src/lib/service-proxy.ts",
       "match": "mock",
       "reason": "baseline — pending remediation"
     },

@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     body: { ...body, tenantId: user.tenantId },
     serviceName: "Media Mix Modelling",
     envVar: "MMM_URL",
-    fallback: { status: "ok", message: "MMM analysis queued (demo mode)", runId: "demo_" + Date.now() },
   });
 }
 
@@ -31,10 +30,5 @@ export async function GET(req: NextRequest) {
     query: `tenantId=${user.tenantId}`,
     serviceName: "Media Mix Modelling",
     envVar: "MMM_URL",
-    fallback: {
-      channels: [],
-      recommendations: [],
-      modelFit: null,
-    },
   });
 }

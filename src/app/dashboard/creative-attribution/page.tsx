@@ -3,9 +3,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, StatCard, Badge, ScrollableTable, AIThinking } from "@/components/ui";
+import { Card, StatCard, Badge, ScrollableTable, AIThinking, NotConfigured } from "@/components/ui";
 import { K } from "@/lib/kdls";
-import { attribution } from "@/lib/api";
+import { attribution, isNotConfigured } from "@/lib/api";
 
 interface Attribution { creative_id: string; platform: string; attributions: number; total_revenue: number; total_ltv: number; }
 
@@ -13,7 +13,7 @@ export default function CreativeAttributionPage() {
   const [attributions, setAttributions] = useState<Attribution[]>([]);
   const [model, setModel] = useState("last_touch");
   const [loading, setLoading] = useState(false);
-  const [demoMode, setDemoMode] = useState(false);
+  const [notConfigured, setNotConfigured] = useState(false);
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -27,8 +27,10 @@ export default function CreativeAttributionPage() {
     try {
       const data = await attribution.breakdown(token);
       if (data.ok) setAttributions(Array.isArray(data.data) ? data.data as Attribution[] : []);
-      setDemoMode(Boolean(data.demo));
-    } catch {}
+      setNotConfigured(false);
+    } catch (e) {
+      if (isNotConfigured(e)) setNotConfigured(true);
+    }
     setLoading(false);
   }, [token]);
 
@@ -60,12 +62,10 @@ export default function CreativeAttributionPage() {
           </div>
         </div>
 
-        {demoMode && !loading && (
-          <div className="mb-4 p-3 rounded-sm font-mono text-[11px]" style={{ background: `${K.warn}12`, border: `1px solid ${K.warn}40`, color: K.warn }}>
-            Attribution service not configured — showing connection status only. Set CREATIVE_ATTRIBUTION_URL to enable live breakdowns.
-          </div>
-        )}
-
+        {notConfigured ? (
+          <NotConfigured service="Creative Attribution" envVar="CREATIVE_ATTRIBUTION_URL" />
+        ) : (
+        <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
           <StatCard label="Total Attributions" value={String(attributions.reduce((s, a) => s + (a.attributions || 0), 0))} accent={K.blue} loading={loading} />
           <StatCard label="Attributed Revenue" value={`$${totalRevenue.toLocaleString()}`} accent={K.mint} loading={loading} />
@@ -102,6 +102,8 @@ export default function CreativeAttributionPage() {
               ))
             )}
           </Card>
+        )}
+        </>
         )}
       </div>
     </DashboardLayout>
