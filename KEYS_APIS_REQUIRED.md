@@ -43,3 +43,15 @@ az cognitiveservices account deployment list -n kikiopenaichrdtvff -g kiki-agent
 - JWT_SECRET/ENCRYPTION_KEY/GROQ_API_KEY present
 - STRIPE_* placeholders
 - Flags not set (defaults false)
+
+## Stripe Webhook
+Webhook URL: https://keekii.net/api/webhooks/stripe (or https://www.keekii.net/api/webhooks/stripe)
+Events to register:
+- payment_intent.succeeded
+- customer.subscription.created
+- customer.subscription.updated
+- customer.subscription.deleted
+- customer.subscription.trial_will_end
+- invoice.payment_succeeded
+- invoice.payment_failed
+After registering, set STRIPE_WEBHOOK_SECRET (whsec_...).
