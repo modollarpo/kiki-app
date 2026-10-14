@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, StatCard, AIThinking } from "@/components/ui";
+import { Card, Badge, StatCard, AIThinking, NotConfigured } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Channel { name: string; contributionPct: number; spend: number; revenue: number; efficiency: number; }
@@ -13,6 +13,7 @@ export default function MmmPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [modelFit, setModelFit] = useState<{ rSquared: number; algorithm: string } | null>(null);
+  const [notConfigured, setNotConfigured] = useState<{ service: string; envVar: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasRun, setHasRun] = useState(false);
   const { token, loading: authLoading } = useAuth();
@@ -30,6 +31,7 @@ export default function MmmPage() {
     try {
       const res = await fetch("/api/mmm-analysis", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ weeks: 52 }) });
       const data = await res.json();
+      if (data.code === "SERVICE_NOT_CONFIGURED" || data.serviceNotConfigured) { setNotConfigured({ service: "Media Mix Modelling", envVar: "MMM_URL" }); setLoading(false); return; }
       if (data.ok) {
         setChannels(data.data.channels || []);
         setRecommendations(data.data.recommendations || []);
@@ -104,7 +106,8 @@ export default function MmmPage() {
           </>
         )}
 
-        {!loading && !hasRun && (
+        {!loading && notConfigured && (<NotConfigured service={notConfigured.service} envVar={notConfigured.envVar} />)}
+        {!loading && !notConfigured && !hasRun && (
           <Card>
             <div className="py-15 text-center">
               <p className="font-mono text-xs text-t3 mb-3">Run MMM analysis to see channel contributions and budget recommendations.</p>
