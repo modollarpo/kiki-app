@@ -12,6 +12,49 @@ interface ServiceStatus {
   detail: string;
 }
 
+interface IntegrationStatus {
+  id: string;
+  name: string;
+  category: string;
+  configured: boolean;
+  keys: { key: string; present: boolean }[];
+}
+
+// Every external integration and the env vars it requires. This is the single
+// source of truth for "is this integration actually wired?" — surfaced via
+// /api/status so no feature silently falls back to fabricated data.
+const INTEGRATION_DEFS: { id: string; name: string; category: string; keys: string[] }[] = [
+  { id: "database", name: "Database (PostgreSQL)", category: "core", keys: ["DATABASE_URL"] },
+  { id: "kafka", name: "Kafka event bus", category: "core", keys: ["KAFKA_ENABLED", "KAFKA_BROKERS"] },
+  { id: "groq", name: "Groq (fast AI tier)", category: "ai", keys: ["GROQ_API_KEY"] },
+  { id: "azure-openai", name: "Azure OpenAI (mini/standard)", category: "ai", keys: ["AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT"] },
+  { id: "opencode", name: "OpenCode agent backend", category: "ai", keys: ["OPENCODE_ENDPOINT"] },
+  { id: "translator", name: "Azure Translator / Speech", category: "ai", keys: ["AZURE_TRANSLATOR_KEY", "AZURE_SPEECH_KEY"] },
+  { id: "ml-service", name: "ML service", category: "ai", keys: ["ML_SERVICE_URL"] },
+  { id: "stripe", name: "Stripe billing", category: "finance", keys: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"] },
+  { id: "slack", name: "Slack approvals", category: "ops", keys: ["SLACK_BOT_TOKEN", "SLACK_CHANNEL_ID", "SLACK_SIGNING_SECRET"] },
+  { id: "smtp", name: "Transactional email (SMTP)", category: "ops", keys: ["SMTP_HOST", "SMTP_USER", "SMTP_PASS", "SMTP_FROM"] },
+  { id: "posthog", name: "PostHog analytics", category: "ops", keys: ["NEXT_PUBLIC_POSTHOG_KEY"] },
+  { id: "ipqs", name: "IPQualityScore fraud", category: "fraud", keys: ["IPQS_API_KEY"] },
+  { id: "scraper", name: "Competitor scraper", category: "intel", keys: ["SCRAPER_API_KEY"] },
+  { id: "google-sso", name: "Google SSO", category: "auth", keys: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"] },
+  { id: "meta", name: "Meta Ads", category: "ads", keys: ["META_APP_ID", "META_APP_SECRET"] },
+  { id: "google-ads", name: "Google Ads", category: "ads", keys: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_ADS_DEVELOPER_TOKEN"] },
+  { id: "tiktok", name: "TikTok Ads", category: "ads", keys: ["TIKTOK_APP_ID", "TIKTOK_APP_SECRET"] },
+  { id: "snap", name: "Snap Ads", category: "ads", keys: ["SNAP_CLIENT_ID", "SNAP_CLIENT_SECRET"] },
+  { id: "pinterest", name: "Pinterest Ads", category: "ads", keys: ["PINTEREST_APP_ID", "PINTEREST_APP_SECRET"] },
+  { id: "linkedin", name: "LinkedIn Ads", category: "ads", keys: ["LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"] },
+  { id: "amazon", name: "Amazon Ads", category: "ads", keys: ["AMAZON_CLIENT_ID", "AMAZON_CLIENT_SECRET"] },
+  { id: "ctv", name: "CTV", category: "ads", keys: ["CTV_CLIENT_ID", "CTV_CLIENT_SECRET"] },
+  { id: "shopify", name: "Shopify commerce", category: "commerce", keys: ["SHOPIFY_CLIENT_ID", "SHOPIFY_CLIENT_SECRET"] },
+  { id: "woocommerce", name: "WooCommerce commerce", category: "commerce", keys: ["WOO_CLIENT_ID", "WOO_CLIENT_SECRET"] },
+  { id: "hubspot", name: "HubSpot CRM", category: "crm", keys: ["HUBSPOT_CLIENT_ID", "HUBSPOT_CLIENT_SECRET"] },
+  { id: "salesforce", name: "Salesforce CRM", category: "crm", keys: ["SALESFORCE_CLIENT_ID", "SALESFORCE_CLIENT_SECRET"] },
+  { id: "nl-analytics", name: "NL Analytics service", category: "service", keys: ["NL_ANALYTICS_URL"] },
+  { id: "profit-margin", name: "Profit Margin service", category: "service", keys: ["PROFIT_MARGIN_URL"] },
+  { id: "libre-translate", name: "LibreTranslate service", category: "service", keys: ["LIBRE_TRANSLATE_URL"] },
+];
+
 async function checkDatabase(): Promise<{ latencyMs: number | null; ok: boolean }> {
   const started = Date.now();
   try {
@@ -175,10 +218,25 @@ export async function GET(request: Request) {
     const degraded = services.some(s => s.status === "degraded");
     const unconfigured = services.some(s => s.status === "not_configured");
 
+    const integrations: IntegrationStatus[] = INTEGRATION_DEFS.map((def) => {
+      const keys = def.keys.map((key) => ({ key, present: configured(process.env[key]) }));
+      return {
+        id: def.id,
+        name: def.name,
+        category: def.category,
+        configured: keys.every((k) => k.present),
+        keys,
+      };
+    });
+    const integrationsConfigured = integrations.filter((i) => i.configured).length;
+
     return json({
       status: degraded ? "degraded" : unconfigured ? "degraded" : "operational",
       lastUpdated: new Date().toISOString(),
       services,
+      integrations,
+      integrationsConfigured,
+      integrationsTotal: integrations.length,
       stats,
       note: "p99/uptime reflect live percentile infrastructure once wired; currently null — no fabricated values.",
     });
@@ -189,6 +247,9 @@ export async function GET(request: Request) {
       status: "unknown",
       lastUpdated: new Date().toISOString(),
       services: [] as ServiceStatus[],
+      integrations: [] as IntegrationStatus[],
+      integrationsConfigured: 0,
+      integrationsTotal: INTEGRATION_DEFS.length,
       stats: null,
       note: "Failed to evaluate service status",
     });
