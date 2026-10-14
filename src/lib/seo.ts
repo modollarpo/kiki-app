@@ -378,7 +378,7 @@ export const partnersMetadata = meta(
   "Partner Management — Reseller & Referral Network",
   "Manage KIKI Agent reseller partners: tier status, revenue attribution, commission tracking, white-label portal activation, and co-marketing coordination.",
   ["ad platform partners", "reseller management", "referral commission"],
-  { path: "/dashboard/partners", robots: "noindex,nofollow" }
+  { path: "/dashboard/agency", robots: "noindex,nofollow" }
 );
 
 export const consentMetadata = meta(
@@ -420,7 +420,7 @@ export const savingsMetadata = meta(
   "Savings Center — Platform ROI & Efficiency Tracking",
   "Quantify KIKI Agent's impact: LTV enrichment revenue uplift, fraud savings, bid efficiency gains, token cost optimizations, and total platform ROI per agent.",
   ["ad platform ROI", "LTV uplift tracking", "marketing AI savings"],
-  { path: "/dashboard/savings", robots: "noindex,nofollow" }
+  { path: "/dashboard/finance", robots: "noindex,nofollow" }
 );
 
 export const mobileMetadata = meta(
