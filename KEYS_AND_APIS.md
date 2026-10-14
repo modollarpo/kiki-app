@@ -43,3 +43,7 @@ Connected to subscription 'Azure subscription 1' (Default Directory). Resources 
 | sewa-ai-prod-eu-law | Log Analytics | Central logs |
 
 
+
+## Azure (Correct Subscription: Storegrill_Azure)
+Subscription: Storegrill_Azure. RG: kiki-agent-rg (swedencentral).
+Resources: kikiopenaichrdtvff (OpenAI), kiki-pg-chrdtvff (Postgres v16), kiki-app (Container App with keekii.net), kikiagentacrchrdtvff (ACR), kiki-logs.
