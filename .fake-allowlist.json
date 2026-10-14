@@ -145,24 +145,6 @@
       "reason": "baseline — pending remediation"
     },
     {
-      "id": "dead-link",
-      "file": "src/components/dashboard/OnboardingChecklist.tsx",
-      "match": "/dashboard/integrations",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "dead-link",
-      "file": "src/lib/seo.ts",
-      "match": "/dashboard/partners",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "dead-link",
-      "file": "src/lib/seo.ts",
-      "match": "/dashboard/savings",
-      "reason": "baseline — pending remediation"
-    },
-    {
       "id": "demo-literal",
       "file": "src/app/api/capi/enrich/route.ts",
       "match": "\"demo\"",
