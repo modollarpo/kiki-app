@@ -37,3 +37,9 @@ az cognitiveservices account deployment list -n kikiopenaichrdtvff -g kiki-agent
 ## 8) Flags
 - NEXT_PUBLIC_DEMO_MODE: false
 - SEED_DEMO_DATA: false
+
+## Status vs .env.local
+- DATABASE_URL/AZURE_OPENAI_ENDPOINT point to old infra (not kiki-agent-rg/Storegrill_Azure)
+- JWT_SECRET/ENCRYPTION_KEY/GROQ_API_KEY present
+- STRIPE_* placeholders
+- Flags not set (defaults false)
