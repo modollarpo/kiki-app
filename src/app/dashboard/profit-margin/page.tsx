@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
-import { Card, StatCard, AIThinking } from "@/components/ui";
+import { Card, StatCard, AIThinking, NotConfigured } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
 interface Portfolio { summary: { total_skus: number; avg_margin: number; total_cogs: number; total_revenue: number; low_margin_count: number; mid_margin_count: number; high_margin_count: number; }; distribution: Array<{ bucket: string; count: number; avg_margin: number; }>; }
@@ -12,7 +12,7 @@ interface Portfolio { summary: { total_skus: number; avg_margin: number; total_c
 export default function ProfitMarginPage() {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(false);
-  const [demoMode, setDemoMode] = useState(false);
+  const [notConfigured, setNotConfigured] = useState(false);
   const [csvInput, setCsvInput] = useState("");
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -27,8 +27,13 @@ export default function ProfitMarginPage() {
     try {
       const res = await fetch("/api/profit-margin", { headers: { "Authorization": `Bearer ${token}` } });
       const data = await res.json();
-      if (data.ok) setPortfolio(data.data ?? null);
-      setDemoMode(Boolean(data.demo));
+      if (res.status === 503 || data.code === "SERVICE_NOT_CONFIGURED") {
+        setNotConfigured(true);
+        setPortfolio(null);
+      } else if (data.ok) {
+        setNotConfigured(false);
+        setPortfolio(data.data ?? null);
+      }
     } catch {}
     setLoading(false);
   }, [token]);
@@ -39,7 +44,7 @@ export default function ProfitMarginPage() {
   if (!token) return null;
 
   const uploadMargins = async () => {
-    if (!token) return;
+    if (notConfigured || !token) return;
     const lines = csvInput.split("\n").filter(l => l.trim());
     const products = lines.map(l => {
       const [sku, productName, cogs, price] = l.split(",").map((s: string) => s.trim());
@@ -59,12 +64,10 @@ export default function ProfitMarginPage() {
           <p className="font-mono text-[11px] text-t3">COGS-aware bidding — profit ROAS instead of revenue ROAS</p>
         </div>
 
-        {demoMode && !loading && (
-          <div className="mb-4 p-3 rounded-sm font-mono text-[11px]" style={{ background: `${K.warn}12`, border: `1px solid ${K.warn}40`, color: K.warn }}>
-            Profit Margin service not configured — showing connection status only. Set PROFIT_MARGIN_URL to enable live margin analytics.
-          </div>
-        )}
-
+        {notConfigured ? (
+          <NotConfigured service="Profit Margin" envVar="PROFIT_MARGIN_URL" />
+        ) : (
+        <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Total SKUs" value={String(portfolio?.summary?.total_skus || 0)} accent={K.blue} loading={loading} />
           <StatCard label="Avg Margin" value={portfolio?.summary?.avg_margin ? `${portfolio.summary.avg_margin.toFixed(1)}%` : "—"} accent={K.mint} loading={loading} />
@@ -101,6 +104,8 @@ export default function ProfitMarginPage() {
           <button onClick={fetchPortfolio} className="font-mono text-[11px] font-semibold px-5 py-2 rounded-sm cursor-pointer"
             style={{ border: `1px solid ${K.blue}40`, background: K.blue + "20", color: K.blue }}>Refresh Portfolio</button>
         </div>
+        </>
+        )}
       </div>
     </DashboardLayout>
     </RoleGuard>

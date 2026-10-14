@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     body: { ...body, tenantId: user.tenantId },
     serviceName: "Profit Margin",
     envVar: "PROFIT_MARGIN_URL",
-    fallback: { status: "ok", marginId: "demo_" + Date.now() },
   });
 }
 
@@ -31,19 +30,5 @@ export async function GET(req: NextRequest) {
     query: `tenantId=${user.tenantId}`,
     serviceName: "Profit Margin",
     envVar: "PROFIT_MARGIN_URL",
-    fallback: {
-      data: {
-        summary: {
-          total_skus: 0,
-          avg_margin: null,
-          total_cogs: 0,
-          total_revenue: 0,
-          low_margin_count: 0,
-          mid_margin_count: 0,
-          high_margin_count: 0,
-        },
-        distribution: [],
-      },
-    },
   });
 }

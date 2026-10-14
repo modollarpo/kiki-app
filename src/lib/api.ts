@@ -4,6 +4,23 @@ interface FetchOptions extends RequestInit {
   token?: string | null;
 }
 
+/** Structured API error so callers can branch on status/code. */
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+/** True when an error came from an undeployed backing microservice. */
+export function isNotConfigured(err: unknown): boolean {
+  return err instanceof ApiError && (err.code === "SERVICE_NOT_CONFIGURED" || err.status === 503);
+}
+
 async function request<T>(path: string, options: FetchOptions = {}): Promise<T> {
   const { token, ...fetchOpts } = options;
   const headers: Record<string, string> = {
@@ -23,7 +40,7 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      throw new Error(body.error || `Request failed: ${res.status}`);
+      throw new ApiError(body.error || `Request failed: ${res.status}`, res.status, body.code);
     }
 
     const text = await res.text();

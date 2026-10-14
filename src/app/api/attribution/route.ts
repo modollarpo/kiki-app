@@ -4,10 +4,6 @@ import { getUserFromRequest } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
 import { proxyToService } from "@/lib/service-proxy";
 
-const attributionFallback = {
-  data: [],
-};
-
 export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
@@ -24,7 +20,6 @@ export async function GET(req: NextRequest) {
     query: qs ? `${qs}&tenantId=${user.tenantId}` : `tenantId=${user.tenantId}`,
     serviceName: "Creative Attribution",
     envVar: "CREATIVE_ATTRIBUTION_URL",
-    fallback: attributionFallback,
   });
 }
 
@@ -42,7 +37,6 @@ export async function POST(req: NextRequest) {
     body: { ...body, tenantId: user.tenantId },
     serviceName: "Creative Attribution",
     envVar: "CREATIVE_ATTRIBUTION_URL",
-    fallback: { status: "ok", attributionId: "demo_" + Date.now() },
   });
 }
 
@@ -60,6 +54,5 @@ export async function PUT(req: NextRequest) {
     body: { ...body, tenantId: user.tenantId },
     serviceName: "Creative Attribution",
     envVar: "CREATIVE_ATTRIBUTION_URL",
-    fallback: { status: "ok", message: "Attribution settings updated (demo mode)" },
   });
 }
