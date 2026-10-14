@@ -46,7 +46,7 @@ export default function AppDownloadPage() {
             {platform === "ios" && (
               <div>
                 <div className="p-4 rounded-sm mb-4" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
-                  <p className="font-mono font-bold text-[12px] mb-1.5" style={{ color:K.blue4 }}>iOS app — coming soon</p>
+                  <p className="font-mono font-bold text-[12px] mb-1.5" style={{ color:K.blue4 }}>iOS app — coming soon — configure app store builds</p>
                   <p className="font-sans text-[13px] text-t2">Until it ships, add the web app to your Home Screen: open <span style={{color:K.blue4}}>keekii.net</span> in Safari, tap Share, then &quot;Add to Home Screen&quot;.</p>
                 </div>
                 <Button size="lg" onClick={() => { window.location.href = "/dashboard"; }}>Open Web App →</Button>
@@ -55,7 +55,7 @@ export default function AppDownloadPage() {
             {platform === "android" && (
               <div>
                 <div className="p-4 rounded-sm mb-4" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
-                  <p className="font-mono font-bold text-[12px] mb-1.5" style={{ color:K.blue4 }}>Android app — coming soon</p>
+                  <p className="font-mono font-bold text-[12px] mb-1.5" style={{ color:K.blue4 }}>Android app — coming soon — configure app store builds</p>
                   <p className="font-sans text-[13px] text-t2">Until it ships, use the web app in Chrome and tap &quot;Install app&quot; from the menu.</p>
                 </div>
                 <Button size="lg" onClick={() => { window.location.href = "/dashboard"; }}>Open Web App →</Button>
