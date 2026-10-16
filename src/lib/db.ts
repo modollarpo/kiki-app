@@ -1290,6 +1290,24 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 `;
 
+// SQLite's json_extract(text, '$.path'), emulated in PostgreSQL using jsonb.
+// Handles the simple dotted paths used in this codebase ('$.campaignId').
+const JSON_EXTRACT_FN = `
+CREATE OR REPLACE FUNCTION json_extract(data text, path text)
+RETURNS text AS $$
+DECLARE
+  p text;
+BEGIN
+  IF data IS NULL OR data = '' THEN RETURN NULL; END IF;
+  p := regexp_replace(path, '^\\$\\.?', '');
+  IF p = '' THEN RETURN NULL; END IF;
+  RETURN jsonb_extract_path_text(data::jsonb, VARIADIC string_to_array(p, '.'));
+EXCEPTION WHEN others THEN
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql STABLE;
+`;
+
 async function runMigrations(db: PgDb) {
   // Widen any pre-existing 32-bit INTEGER columns to BIGINT. Tables created
   // before this fix stored millisecond-epoch timestamps in INTEGER, which
@@ -1536,6 +1554,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
     await db.exec(PG_SCHEMA);
     await pool.query(DATETIME_FN);
     await pool.query(STRFTIME_FN);
+    await pool.query(JSON_EXTRACT_FN);
     try {
       await pool.query(PG_CASTS);
     } catch (e) {
