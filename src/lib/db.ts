@@ -6,8 +6,13 @@ import { logger } from "./logger";
 // (prepare/get/run/all/exec) so call sites mainly just add `await`.
 // ============================================================
 
-import { Pool } from "pg";
+import { Pool, types } from "pg";
 import { hashPassword } from "./auth";
+
+// node-postgres returns int8 (BIGINT, OID 20) as strings to avoid precision
+// loss. Every integer column is BIGINT here (to hold ms-epoch timestamps), and
+// all values stay well below 2^53, so parse them back to JS numbers.
+types.setTypeParser(20, (val: string) => Number(val));
 
 // Shared SQL value/row types. Kept loose enough to cover every backend
 // (pg, node:sqlite, in-memory) while still removing `any` from the layer.
