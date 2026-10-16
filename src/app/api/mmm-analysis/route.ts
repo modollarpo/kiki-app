@@ -2,7 +2,21 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
-import { proxyToService } from "@/lib/service-proxy";
+import { logger } from "@/lib/logger";
+import { runMmmAnalysis } from "@/lib/mmm";
+
+export async function GET(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const analysis = await runMmmAnalysis(user.tenantId);
+    return NextResponse.json({ ok: true, data: analysis });
+  } catch (error) {
+    logger.error("mmm-analysis/GET failed", { message: error instanceof Error ? error.message : String(error) });
+    return NextResponse.json({ ok: false, error: "Failed to compute MMM analysis" }, { status: 500 });
+  }
+}
 
 export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
@@ -11,24 +25,11 @@ export async function POST(req: NextRequest) {
   const enf = await checkEnforcement(user.tenantId);
   if (!enf.allowed) return NextResponse.json({ ok: false, error: enf.reason || "Access denied" }, { status: 403 });
 
-  const body = await req.json();
-  return proxyToService(req, {
-    path: "/api/runs",
-    method: "POST",
-    body: { ...body, tenantId: user.tenantId },
-    serviceName: "Media Mix Modelling",
-    envVar: "MMM_URL",
-  });
-}
-
-export async function GET(req: NextRequest) {
-  const user = getUserFromRequest(req);
-  if (!user) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  return proxyToService(req, {
-    path: "/api/recommendations",
-    method: "GET",
-    query: `tenantId=${user.tenantId}`,
-    serviceName: "Media Mix Modelling",
-    envVar: "MMM_URL",
-  });
+  try {
+    const analysis = await runMmmAnalysis(user.tenantId);
+    return NextResponse.json({ ok: true, data: analysis });
+  } catch (error) {
+    logger.error("mmm-analysis/POST failed", { message: error instanceof Error ? error.message : String(error) });
+    return NextResponse.json({ ok: false, error: "Failed to compute MMM analysis" }, { status: 500 });
+  }
 }
