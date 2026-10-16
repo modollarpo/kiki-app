@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button, StatCard, AIThinking, ScrollableTable } from "@/components/ui";
+import { Card, Badge, StatCard, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K, fmt } from "@/lib/kdls";
 
@@ -148,7 +148,7 @@ export default function AgencyPage() {
                 ) : (
                   <ScrollableTable>
                   {selected.campaigns.map((c, i) => (
-                    <div key={c.id} className="grid grid-cols-[1fr_100px_100px_80px_80px] gap-3 px-5 py-3 items-center min-w-[500px]"
+                    <div key={c.id} className="grid grid-cols-[1fr_100px_100px_80px] gap-3 px-5 py-3 items-center min-w-[500px]"
                       style={{ borderBottom: i < selected.campaigns.length - 1 ? `1px solid ${K.g900}` : undefined }}>
                       <div>
                         <p className="font-mono text-[11px] font-semibold text-t1">{c.name}</p>
@@ -157,7 +157,6 @@ export default function AgencyPage() {
                       <span className="font-mono text-[11px] text-t2">${fmt.compact(c.spend)}</span>
                       <span className="font-mono text-[11px] font-bold" style={{ color: c.roas >= 4 ? K.mint : c.roas >= 2 ? K.gold : K.warn }}>{c.roas.toFixed(1)}x</span>
                       <span className="font-mono text-[11px] text-t2">{c.conversions}</span>
-                      <Button variant="ghost" size="xs">View →</Button>
                     </div>
                   ))}
                   </ScrollableTable>

@@ -7,14 +7,12 @@ import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 
 interface UsageByType { type: string; count: number; totalQuantity: number; totalCost: number }
-interface SystemMetric { name: string; value: number; tags: string; createdAt: string }
 interface RecentAction { id: string; agentType: string; actionType: string; status: string; durationMs: number; createdAt: string }
 
 export default function DeveloperPage() {
   const { token } = useAuth();
   const [showKey, setShowKey] = useState<number | null>(null);
   const [usage, setUsage] = useState<{ byType: UsageByType[]; totalApiCalls: number; totalCost: number } | null>(null);
-  const [systemMetrics, setSystemMetrics] = useState<SystemMetric[]>([]);
   const [recentActions, setRecentActions] = useState<RecentAction[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +24,6 @@ export default function DeveloperPage() {
       .then(d => {
         if (d?.data) {
           setUsage(d.data.usage ?? null);
-          setSystemMetrics(d.data.systemMetrics ?? []);
           setRecentActions(d.data.recentActions ?? []);
         }
       })
@@ -36,9 +33,6 @@ export default function DeveloperPage() {
 
   const totalApiCalls = usage?.totalApiCalls ?? 0;
   const totalCost = usage?.totalCost ?? 0;
-  const avgLatency = systemMetrics.length > 0
-    ? Math.round(systemMetrics.reduce((s, m) => s + m.value, 0) / systemMetrics.length)
-    : 0;
   const errorCount = recentActions.filter(a => a.status === "error").length;
   const errorRate = recentActions.length > 0 ? ((errorCount / recentActions.length) * 100).toFixed(2) : "0.00";
 
@@ -67,8 +61,8 @@ export default function DeveloperPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          {[{ label: "API Calls (24h)", value: loading ? "…" : totalApiCalls > 1000 ? `${(totalApiCalls / 1000).toFixed(1)}K` : String(totalApiCalls), color: K.blue },
-            { label: "Avg Latency", value: loading ? "…" : avgLatency > 0 ? `${avgLatency}ms` : "—", color: K.mint },
+          {[{ label: "API Calls (all-time)", value: loading ? "…" : totalApiCalls > 1000 ? `${(totalApiCalls / 1000).toFixed(1)}K` : String(totalApiCalls), color: K.blue },
+            { label: "Recent Actions", value: loading ? "…" : String(recentActions.length), color: K.mint },
             { label: "Error Rate", value: loading ? "…" : `${errorRate}%`, color: K.teal },
             { label: "Total Cost", value: loading ? "…" : `$${totalCost.toFixed(2)}`, color: K.gold },
           ].map((s, i) => (
@@ -83,7 +77,6 @@ export default function DeveloperPage() {
           <Card padding={0}>
             <div className="px-5 py-3.5 flex justify-between items-center border-b border-g800">
               <h2 className="font-mono font-bold text-[13px] text-t1 flex items-center gap-2">API Keys <Badge color={K.t3} className="text-[10px]">PENDING</Badge></h2>
-              <Button variant="secondary" size="sm">+ Generate Key</Button>
             </div>
             {loading ? (
               <div className="flex items-center justify-center py-8"><AIThinking text="Loading..." /></div>
@@ -119,12 +112,11 @@ export default function DeveloperPage() {
           <Card padding={0}>
             <div className="px-5 py-3.5 flex justify-between items-center border-b border-g800">
               <h2 className="font-mono font-bold text-[13px] text-t1 flex items-center gap-2">Webhooks <Badge color={K.t3} className="text-[10px]">PENDING</Badge></h2>
-              <Button variant="secondary" size="sm">+ Add Endpoint</Button>
             </div>
             {loading ? (
               <div className="flex items-center justify-center py-8"><AIThinking text="Loading..." /></div>
             ) : webhooks.length === 0 ? (
-              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">No webhook endpoints configured. Click "+ Add Endpoint" to create one.</span></div>
+              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">Webhook endpoint provisioning is not enabled for this tenant yet.</span></div>
             ) : (
               webhooks.map((w, i) => (
                 <div key={i} className="px-5 py-3" style={{ borderBottom: i < webhooks.length - 1 ? `1px solid ${K.g900}` : undefined }}>

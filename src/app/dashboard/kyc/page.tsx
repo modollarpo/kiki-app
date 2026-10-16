@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar, Button, AIThinking } from "@/components/ui";
+import { StatCard, Card, Badge, ProgressBar, AIThinking } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K } from "@/lib/kdls";
 
@@ -67,8 +67,6 @@ export default function KycPage() {
   const documents = data?.documents || [];
   const checks = data?.checks || [];
   const verified = entities.filter(e => e.verificationStatus === "verified").length;
-  const totalChecks = checks.length;
-  const passedChecks = checks.filter(c => c.status === "passed").length;
 
   return (
     <DashboardLayout>
@@ -85,8 +83,7 @@ export default function KycPage() {
         ) : entities.length === 0 ? (
           <Card>
             <div className="p-10 text-center">
-              <p className="font-mono text-xs text-t4 mb-3">No entities found.</p>
-              <Button variant="primary" size="sm">+ Add Entity</Button>
+              <p className="font-mono text-xs text-t4">No entities found.</p>
             </div>
           </Card>
         ) : (
@@ -94,7 +91,7 @@ export default function KycPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
               <StatCard label="Entities Verified" value={`${verified}/${entities.length}`} accent={K.mint} />
               <StatCard label="Documents Uploaded" value={String(documents.filter(d => d.status === "uploaded").length)} accent={K.blue} />
-              <StatCard label="Compliance Score" value={`${totalChecks > 0 ? Math.round(passedChecks / totalChecks * 100) : 0}%`} accent={K.gold} period="last quarter" />
+              <StatCard label="Avg Compliance" value={`${entities.length > 0 ? Math.round(entities.reduce((s, e) => s + e.complianceScore, 0) / entities.length) : 0}%`} accent={K.gold} />
               <StatCard label="Failed Checks" value={String(checks.filter(c => c.status === "failed").length)} accent={K.danger} />
             </div>
 

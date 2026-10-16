@@ -55,6 +55,7 @@ export default function CompetitorPage() {
   const [newDomain, setNewDomain] = useState("");
   const [newCategory, setNewCategory] = useState("general");
   const [lastSummary, setLastSummary] = useState<string | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
@@ -77,11 +78,15 @@ export default function CompetitorPage() {
     if (!token) return;
     setRunning(true);
     setResults([]);
+    setRunError(null);
     try {
       const json = await competitorApi.runMonitor(token);
       if (json.ok) {
         setResults(json.results);
         setLastSummary(`Checked ${json.configsChecked} competitor(s) — ${json.dropsDetected} price drop(s) detected`);
+        if (json.errors && json.errors.length > 0) {
+          setRunError(`${json.errors.length} check(s) failed: ${json.errors.slice(0, 3).join("; ")}`);
+        }
         await fetchData();
       }
     } finally {
@@ -133,12 +138,17 @@ export default function CompetitorPage() {
           </div>
         )}
 
+        {runError && (
+          <div className="mb-4 px-4 py-3 rounded font-mono text-[11px]" style={{ background: K.g850, border: `1px solid ${K.warn}`, color: K.warn }}>
+            ⚠ {runError}
+          </div>
+        )}
+
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <StatCard label="Competitors Tracked" value={loading ? "…" : String(configs.length)} accent={K.danger} />
-          <StatCard label="Drops Detected" value={String(results.length)} accent={K.warn} />
-          <StatCard label="Actions Taken" value={String(results.reduce((s, r) => s + r.defensiveActions.filter(a => a.executed).length, 0))} accent={K.mint} />
-          <StatCard label="Platforms Protected" value="6" accent={K.blue} />
+          <StatCard label="Price Drops (last run)" value={String(results.length)} accent={K.warn} />
+          <StatCard label="Actions Executed (last run)" value={String(results.reduce((s, r) => s + r.defensiveActions.filter(a => a.executed).length, 0))} accent={K.mint} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -197,7 +207,8 @@ export default function CompetitorPage() {
 
           {/* Defensive Response Playbook */}
           <Card>
-            <h2 className="font-mono font-bold text-[13px] mb-4" style={{ color: K.t1 }}>⚡ Defensive Response Playbook</h2>
+            <h2 className="font-mono font-bold text-[13px] mb-1" style={{ color: K.t1 }}>⚡ Defensive Response Playbook</h2>
+            <p className="font-mono text-[10px] mb-4" style={{ color: K.t3 }}>Automated cross-platform responses triggered on a competitor price drop.</p>
             <div className="space-y-3">
               {[
                 { platform: "Google", action: "Bid +15% on competitor keywords immediately", icon: "🔴", color: "#ef4444" },

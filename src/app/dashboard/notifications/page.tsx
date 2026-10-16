@@ -51,7 +51,6 @@ export default function NotificationsPage() {
             </p>
           </div>
           <div className="flex gap-2 items-center">
-            <Badge color={K.blue} dot pulse>LIVE</Badge>
             {unread > 0 && <Button size="sm" variant="ghost" onClick={handleMarkAllRead}>Mark all read</Button>}
           </div>
         </div>

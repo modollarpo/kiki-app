@@ -2,10 +2,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Button } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
-import { useInsights } from "@/hooks/useInsights";
 
 interface WorkflowEvent {
   id: string; agentId: string | null; agentType: string | null;
@@ -13,22 +12,11 @@ interface WorkflowEvent {
   status: string; durationMs: number; createdAt: string;
 }
 
-interface WorkflowInsight {
-  agent: string;
-  action: string;
-  details: string;
-  status: string;
-  time: string;
-}
-
 export default function WorkflowPage() {
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
-  const { data, loading: insightsLoading } = useInsights();
-  const fires = data?.workflow?.length ?? 0;
-  // Savings tracking was deleted — there is no budget-saved figure to show.
-  const workflowFromInsights = (data?.workflow ?? []) as WorkflowInsight[];
   const [events, setEvents] = useState<WorkflowEvent[]>([]);
+  const [total, setTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,25 +29,18 @@ export default function WorkflowPage() {
     fetch("/api/workflow", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d?.data) setEvents(d.data.events ?? []);
+        if (d?.data) {
+          setEvents(d.data.events ?? []);
+          setTotal(d.data.total ?? 0);
+        }
       })
       .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
 
-  const allActions: WorkflowEvent[] = events.length > 0 ? events : workflowFromInsights.map((w: WorkflowInsight, i: number): WorkflowEvent => ({
-    id: `wf-${i}`,
-    agentId: null,
-    agentType: w.agent,
-    actionType: w.action,
-    input: typeof w.details === "string" ? w.details : JSON.stringify(w.details ?? ""),
-    output: "",
-    status: w.status ?? "success",
-    durationMs: 0,
-    createdAt: w.time,
-  }));
+  const allActions = events;
 
-  const groupedByType = allActions.reduce<Record<string, typeof allActions>>((acc, a) => {
+  const groupedByType = allActions.reduce<Record<string, WorkflowEvent[]>>((acc, a) => {
     const key = a.actionType ?? "unknown";
     if (!acc[key]) acc[key] = [];
     acc[key].push(a);
@@ -78,14 +59,13 @@ export default function WorkflowPage() {
       successCount: successes,
       errorCount: errors,
       lastFired: latest?.createdAt ?? "Never",
-      active: true,
       color: errors > 0 ? K.danger : successes > 5 ? K.mint : K.blue,
     };
   });
 
-  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
-  const filtered = filter === "all" ? workflows : filter === "active" ? workflows.filter(w => w.active) : workflows.filter(w => !w.active);
-  const isLoading = loading || insightsLoading;
+  const durations = allActions.filter(a => a.durationMs > 0);
+  const avgDuration = durations.length > 0 ? Math.round(durations.reduce((s, a) => s + a.durationMs, 0) / durations.length) : null;
+  const isLoading = loading;
 
   if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
   if (!token) return null;
@@ -95,20 +75,8 @@ export default function WorkflowPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
-            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Automation Builder</h1>
-            <p className="font-mono text-[11px] text-t3">Workflow rules · Trigger conditions · Automated actions · {workflows.length} action types</p>
-          </div>
-          <div className="flex gap-2">
-            <div className="flex gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
-              {(["all", "active", "inactive"] as const).map(f => (
-                <button key={f} onClick={() => setFilter(f)}
-                  className="font-mono text-[10px] font-semibold tracking-wider px-3 py-[5px] rounded-sm cursor-pointer uppercase"
-                  style={{ color: filter === f ? K.t1 : K.t4, background: filter === f ? K.g800 : "transparent", border: "none" }}>
-                  {f}
-                </button>
-              ))}
-            </div>
-            <Button variant="primary" size="sm">+ New Rule</Button>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Automation Activity</h1>
+            <p className="font-mono text-[11px] text-t3">Automated agent actions grouped by type · {workflows.length} action types in recent log</p>
           </div>
         </div>
 
@@ -118,11 +86,10 @@ export default function WorkflowPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
           {[{ label: "Action Types", value: `${workflows.length}`, color: K.mint },
-            { label: "Triggered (30d)", value: isLoading ? "…" : String(fires), color: K.blue },
-            { label: "Budget Saved", value: isLoading ? "…" : "—", color: K.gold },
-            { label: "Avg Response Time", value: isLoading ? "…" : allActions.length > 0 ? `${Math.round(allActions.reduce((s, a) => s + (a.durationMs || 0), 0) / allActions.length)}ms` : "< 1 min", color: K.teal },
+            { label: "Total Actions", value: isLoading ? "…" : String(total), color: K.blue },
+            { label: "Avg Duration", value: isLoading ? "…" : avgDuration != null ? `${avgDuration}ms` : "—", color: K.teal },
           ].map((s, i) => (
             <Card key={i} accent={s.color}>
               <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-1.5">{s.label}</p>
@@ -134,10 +101,10 @@ export default function WorkflowPage() {
         <div className="flex flex-col gap-3">
           {isLoading ? (
             <Card><div className="py-8 text-center"><span className="font-mono text-[11px] text-t3">Loading workflows…</span></div></Card>
-          ) : filtered.length === 0 ? (
+          ) : workflows.length === 0 ? (
             <Card><div className="py-8 text-center"><span className="font-mono text-[11px] text-t3">No workflows found. Agent actions will appear here once agents start running.</span></div></Card>
           ) : (
-            filtered.map((wf, i) => (
+            workflows.map((wf, i) => (
               <Card key={i} accent={wf.color}>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-3">
                   <div className="flex-1">
