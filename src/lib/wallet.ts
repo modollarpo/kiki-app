@@ -511,6 +511,66 @@ export async function topUpWallet(
   return creditTopUp(tenantId, amount, method, description);
 }
 
+/**
+ * Starts a Stripe Checkout Session for a wallet top-up and returns the
+ * hosted payment URL. The wallet is credited only after the payment
+ * completes (settled by the `checkout.session.completed` webhook). Returns
+ * an error when Stripe is not configured — callers should surface 503.
+ */
+export async function createTopUpCheckoutSession(
+  tenantId: string,
+  amount: number,
+  baseUrl: string
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  if (!stripeEnabled || !stripe) {
+    return { success: false, error: "Stripe is not configured" };
+  }
+  if (!Number.isFinite(amount) || amount <= 0 || amount > 1_000_000) {
+    return { success: false, error: "Amount must be between $1 and $1,000,000" };
+  }
+
+  const db = await getDb();
+  const description = "Wallet top-up";
+  const metadata = { tenantId, amount: String(amount), kind: "wallet_topup" };
+
+  let session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: "usd",
+            unit_amount: Math.round(amount * 100),
+            product_data: { name: "KIKI Wallet Top-Up" },
+          },
+        },
+      ],
+      success_url: `${baseUrl}/dashboard/wallet?topup=success`,
+      cancel_url: `${baseUrl}/dashboard/wallet?topup=cancelled`,
+      metadata,
+      payment_intent_data: { metadata },
+    });
+  } catch (err) {
+    return { success: false, error: `Payment failed: ${(err as Error).message}` };
+  }
+
+  if (!session.url) {
+    return { success: false, error: "Stripe did not return a checkout URL" };
+  }
+
+  // Persist a pending top-up keyed by the Checkout Session id so the
+  // webhook can settle it. Wallet balance is NOT changed here.
+  const pendingId = `top_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+  await db.prepare(`
+    INSERT INTO wallet_topups (id, tenant_id, amount, method, description, payment_intent_id, status, created_at)
+    VALUES (?, ?, ?, 'card', ?, ?, 'pending', datetime('now'))
+  `).run(pendingId, tenantId, amount, description, session.id);
+
+  return { success: true, url: session.url };
+}
+
 /** Credits a wallet immediately (local/demo mode, no PSP). */
 async function creditTopUp(
   tenantId: string,
@@ -565,8 +625,9 @@ async function creditTopUp(
 }
 
 /**
- * Settles a pending top-up after Stripe `payment_intent.succeeded`.
- * Called by the Stripe webhook handler. Idempotent: a payment intent is
+ * Settles a pending top-up after Stripe confirms payment. Called by the
+ * Stripe webhook handler with either a PaymentIntent id (direct top-ups)
+ * or a Checkout Session id (Checkout top-ups). Idempotent: a reference is
  * credited at most once.
  */
 export async function confirmTopUp(paymentIntentId: string): Promise<{ success: boolean; error?: string }> {

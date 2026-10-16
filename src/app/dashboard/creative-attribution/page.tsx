@@ -26,13 +26,27 @@ export default function CreativeAttributionPage() {
     setLoading(true);
     try {
       const data = await attribution.breakdown(token);
-      if (data.ok) setAttributions(Array.isArray(data.data) ? data.data as Attribution[] : []);
+      if (data.ok) {
+        setAttributions(Array.isArray(data.data) ? data.data as Attribution[] : []);
+        if (typeof data.model === "string") setModel(data.model);
+      }
       setNotConfigured(false);
     } catch (e) {
       if (isNotConfigured(e)) setNotConfigured(true);
     }
     setLoading(false);
   }, [token]);
+
+  const handleModelChange = useCallback(async (next: string) => {
+    setModel(next);
+    if (!token) return;
+    try {
+      await attribution.setModel(token, next);
+      await fetchBreakdown();
+    } catch {
+      // keep current selection; breakdown unchanged
+    }
+  }, [token, fetchBreakdown]);
 
   useEffect(() => { fetchBreakdown(); }, [fetchBreakdown]);
 
@@ -51,7 +65,7 @@ export default function CreativeAttributionPage() {
             <p className="font-mono text-[11px] text-t3">Per-signal-variant revenue attribution</p>
           </div>
           <div className="flex gap-2 items-center shrink-0 flex-wrap">
-            <select value={model} onChange={e => setModel(e.target.value)}
+            <select value={model} onChange={e => handleModelChange(e.target.value)}
               className="px-[10px] py-[6px] font-mono text-[11px] bg-g850 border border-g700 rounded-kdls text-t1 min-h-[32px] outline-none">
               <option value="last_touch">Last Touch</option><option value="first_touch">First Touch</option><option value="linear">Linear</option><option value="position">Position (U-Shape)</option><option value="time_decay">Time Decay</option>
             </select>

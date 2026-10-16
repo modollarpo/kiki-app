@@ -210,7 +210,13 @@ export interface WalletData {
 export const wallet = {
   get: (token: string) => request<WalletData>("/api/wallet", { token }),
   topUp: (token: string, amount: number) =>
-    request<{ balance: number; transaction: unknown }>("/api/wallet", {
+    request<{ balance: number; transaction?: unknown; requiresConfirmation?: boolean; clientSecret?: string; paymentIntentId?: string }>("/api/wallet", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ amount }),
+    }),
+  checkout: (token: string, amount: number) =>
+    request<{ url: string }>("/api/wallet/checkout", {
       method: "POST",
       token,
       body: JSON.stringify({ amount }),
@@ -254,36 +260,37 @@ export const contacts = {
 export interface CommerceConnection {
   id: string;
   platform: string;
-  shopDomain: string;
-  status: "connected" | "pending" | "error" | "syncing";
-  lastSync: string | null;
+  platformName?: string;
+  shopDomain: string | null;
+  status: string;
+  lastSyncAt: string | null;
   totalOrders: number;
   totalRevenue: number;
 }
 
 export interface PlatformCatalogItem {
-  key: string;
-  label: string;
-  description: string;
+  platformId: string;
+  name: string;
+  authType: string;
 }
 
 export interface CommerceData {
   connections: CommerceConnection[];
-  catalog: PlatformCatalogItem[];
+  available: PlatformCatalogItem[];
 }
 
 export interface LtvSegment {
   segment: string;
-  predictedLtv: number;
-  realizedLtv: number;
-  errorPct: number;
   count: number;
+  avgPredicted: number;
+  avgActual: number;
+  avgErrorPct: number;
 }
 
 export interface LtvAccuracyData {
-  overallAccuracy: number;
-  predictionCoverage: number;
   bySegment: LtvSegment[];
+  avgError: number;
+  coverage: number;
 }
 
 export interface CommerceConnectBody {
@@ -637,7 +644,9 @@ export const nlQuery = {
 export const attribution = {
   get: (token: string) => request<Record<string, unknown>>("/api/attribution", { token }),
   breakdown: (token: string) =>
-    request<{ ok: boolean; data: unknown[]; demo?: boolean }>("/api/attribution?path=/api/attributions/breakdown", { token }),
+    request<{ ok: boolean; model?: string; data: unknown[] }>("/api/attribution", { token }),
+  setModel: (token: string, model: string) =>
+    request<{ ok: boolean; model: string }>("/api/attribution", { method: "PUT", token, body: JSON.stringify({ model }) }),
 };
 
 // ── CAPI Enrich ──────────────────────────────────────────

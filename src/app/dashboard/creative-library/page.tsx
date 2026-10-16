@@ -68,6 +68,7 @@ export default function CreativeLibraryPage() {
   const assets = data?.assets || [];
   const filtered = filter === "All" ? assets : assets.filter(a => a.type === filter);
   const summary = data?.summary;
+  const typeFilters = ["All", ...Array.from(new Set(assets.map(a => a.type)))];
 
   return (
     <DashboardLayout>
@@ -84,7 +85,7 @@ export default function CreativeLibraryPage() {
         ) : (
           <>
             <div className="flex flex-wrap gap-1.5 mb-4">
-              {["All", "Image", "Video"].map((f) => (
+              {typeFilters.map((f) => (
                 <button key={f} onClick={() => setFilter(f)}
                   className="font-mono text-[10px] font-semibold px-4 py-1.5 rounded-sm cursor-pointer"
                   style={{ border: `1px solid ${filter === f ? K.blue + "40" : K.g700}`, background: filter === f ? K.blue + "20" : K.g900, color: filter === f ? K.blue : K.t3 }}>
@@ -96,7 +97,11 @@ export default function CreativeLibraryPage() {
             {filtered.length === 0 ? (
               <Card>
                 <div className="p-10 text-center">
-                  <p className="font-mono text-xs text-t4">No creative assets found. Create campaigns to populate this library.</p>
+                  <p className="font-mono text-xs text-t4">
+                    {assets.length === 0
+                      ? "No creative assets found. Create campaigns to populate this library."
+                      : "No assets match this filter."}
+                  </p>
                 </div>
               </Card>
             ) : (
@@ -114,7 +119,7 @@ export default function CreativeLibraryPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
                       <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
                         <div className="font-mono text-[10px] text-t4">CTR</div>
-                        <div className="font-mono text-xs font-bold text-kmint">{asset.ctr}%</div>
+                        <div className="font-mono text-xs font-bold text-kmint">{asset.ctr === "—" ? "—" : `${asset.ctr}%`}</div>
                       </div>
                       <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
                         <div className="font-mono text-[10px] text-t4">Conv.</div>
@@ -125,7 +130,7 @@ export default function CreativeLibraryPage() {
                         <div className="font-mono text-xs font-bold text-kgold">{asset.roas}x</div>
                       </div>
                     </div>
-                    <ProgressBar value={parseFloat(asset.ctr) * 20} max={100} color={platformColors[asset.platform] || K.t3} height={3} />
+                    <ProgressBar value={Math.min(100, parseFloat(asset.ctr) || 0)} max={100} color={platformColors[asset.platform] || K.t3} height={3} />
                   </Card>
                 ))}
               </div>

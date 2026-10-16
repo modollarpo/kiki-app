@@ -112,14 +112,27 @@ export async function GET(req: Request) {
   const profit = totalRevenue - costs;
   const margin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
 
-  const revenueStreams = [
-    { name: "Ad Spend Managed", amount: totalSpend, share: totalRevenue > 0 ? (totalSpend / totalRevenue) * 100 : 0, color: "blue" },
-    { name: "Platform Fees (OaaS)", amount: totalUsageCost, share: totalRevenue > 0 ? (totalUsageCost / totalRevenue) * 100 : 0, color: "mint" },
-  ].filter(s => s.amount > 0);
+  const revenueStreams = (() => {
+    const byPlatform = new Map<string, number>();
+    for (const c of campaigns) {
+      const rev = c.revenue || (c.spend || 0) * (c.roas || 0);
+      byPlatform.set(c.platform, (byPlatform.get(c.platform) || 0) + rev);
+    }
+    const colors = ["mint", "blue", "teal", "gold", "warn", "oaas", "t3"];
+    return Array.from(byPlatform.entries())
+      .filter(([, amount]) => amount > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([platform, amount], i) => ({
+        name: `${platform} revenue`,
+        amount,
+        share: totalRevenue > 0 ? (amount / totalRevenue) * 100 : 0,
+        color: colors[i % colors.length],
+      }));
+  })();
 
   const costCategories = [
     { name: "Ad Spend (Client)", amount: totalSpend, pct: costs > 0 ? (totalSpend / costs) * 100 : 0, color: "blue" },
-    { name: "Platform Hosting", amount: totalUsageCost, pct: costs > 0 ? (totalUsageCost / costs) * 100 : 0, color: "teal" },
+    { name: "Platform Fees", amount: totalUsageCost, pct: costs > 0 ? (totalUsageCost / costs) * 100 : 0, color: "teal" },
   ];
 
   // Monthly P&L derived from real campaign data aggregated by month

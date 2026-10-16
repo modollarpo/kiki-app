@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
 import { StatCard, Card, ProgressBar, ScrollableTable } from "@/components/ui";
@@ -17,7 +16,6 @@ export default function FinancePage() {
   const REVENUE_STREAMS = f?.revenueStreams ?? [];
   const COST_CATEGORIES = f?.costCategories ?? [];
   const MONTHLY_PNL = f?.monthlyPnl ?? [];
-  const [period, setPeriod] = useState<"monthly" | "quarterly" | "annual">("monthly");
 
   const k = (v: number) => `$${fmt.currency(Math.round(v / 1000), "USD").replace("$", "")}K`;
 
@@ -30,22 +28,13 @@ export default function FinancePage() {
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Finance Operations</h1>
             <p className="font-mono text-[11px] text-t3">P&L summary · Revenue streams · Cost breakdown · Profitability</p>
           </div>
-          <div className="flex gap-1 p-[3px] rounded-sm bg-g900 border border-g800">
-            {(["monthly", "quarterly", "annual"] as const).map(p => (
-              <button key={p} onClick={() => setPeriod(p)}
-                className="font-mono text-[10px] font-semibold tracking-widest px-3.5 py-[5px] rounded-sm cursor-pointer uppercase"
-                style={{ color: period === p ? K.t1 : K.t4, background: period === p ? K.g800 : "transparent", border: "none" }}>
-                {p}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Total Revenue" value={loading ? "…" : k(totals.revenue)} period="last month" accent={K.mint} />
+          <StatCard label="Total Revenue" value={loading ? "…" : k(totals.revenue)} accent={K.mint} />
           <StatCard label="Total Costs" value={loading ? "…" : k(totals.costs)} accent={K.blue} />
-          <StatCard label="Net Profit" value={loading ? "…" : k(totals.profit)} period="last month" accent={K.gold} />
-          <StatCard label="Gross Margin" value={loading ? "…" : `${totals.margin.toFixed(1)}%`} accent={K.teal} />
+          <StatCard label="Net Profit" value={loading ? "…" : k(totals.profit)} accent={K.gold} />
+          <StatCard label="Net Margin" value={loading ? "…" : `${totals.margin.toFixed(1)}%`} accent={K.teal} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-3 mb-4">
@@ -60,7 +49,11 @@ export default function FinancePage() {
                     <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-t4">{h}</span>
                   ))}
                 </div>
-                {(MONTHLY_PNL.length ? MONTHLY_PNL : [{ month: "Jul", revenue: 0, costs: 0, profit: 0 }]).map((m: { month: string; revenue: number; costs: number; profit: number }, i: number) => {
+                {MONTHLY_PNL.length === 0 ? (
+                  <div className="px-5 py-6 text-center">
+                    <p className="font-mono text-[11px] text-t4">No P&L history yet.</p>
+                  </div>
+                ) : MONTHLY_PNL.map((m: { month: string; revenue: number; costs: number; profit: number }, i: number) => {
                   const margin = m.revenue > 0 ? ((m.profit / m.revenue) * 100).toFixed(1) : "0.0";
                   return (
                     <div key={i} className="grid grid-cols-[80px_100px_100px_100px_120px] gap-3 px-5 py-2.5 items-center hover:bg-[var(--card-hover)] border-b border-g900">

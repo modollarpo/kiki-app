@@ -665,12 +665,15 @@ export async function getBillingStats(tenantId: string) {
     ORDER BY created_at DESC LIMIT 50
   `).all<InvoiceRow>(tenantId);
 
+  const tenantPlan = await db.prepare("SELECT plan FROM users WHERE tenant_id = ? LIMIT 1").get<{ plan: string }>(tenantId);
+
   return {
     subscription: subscription ? {
       plan: subscription.plan,
       status: subscription.status,
       currentPeriodEnd: subscription.current_period_end,
     } : null,
+    limits: getPlanLimits(subscription?.plan || tenantPlan?.plan || "starter"),
     usage: currentUsage.reduce((acc: Record<string, unknown>, row: UsageGroupRow) => {
       acc[row.type] = { quantity: row.total_quantity, cost: row.total_cost };
       return acc;
