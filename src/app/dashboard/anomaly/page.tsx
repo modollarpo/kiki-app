@@ -48,9 +48,9 @@ export default function AnomalyDetectionPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Active Anomalies" value={loading ? "…" : String(anomalies.filter(a => a.status === "investigating").length)} accent={K.danger} sub={`${anomalies.length} total flagged`} />
+          <StatCard label="Active Anomalies" value={loading ? "…" : String(anomalies.filter(a => a.status === "detected").length)} accent={K.danger} sub={`${anomalies.length} total flagged`} />
           <StatCard label="Critical" value={loading ? "…" : String(anomalies.filter(a => a.severity === "critical").length)} accent={K.warn} sub="Require action" />
-          <StatCard label="Detection Score" value="94.7%" accent={K.blue} sub="AI model accuracy" />
+          <StatCard label="Blocked" value={loading ? "…" : String(anomalies.filter(a => a.status === "blocked").length)} accent={K.blue} sub="Auto-blocked / handled" />
           <StatCard label="High Severity" value={loading ? "…" : String(anomalies.filter(a => a.severity === "high").length)} accent={K.teal} sub="Under review" />
         </div>
 
@@ -71,7 +71,7 @@ export default function AnomalyDetectionPage() {
                   <p className="font-mono text-[13px] font-bold" style={{ color: getSeverityColor(anomaly.severity) }}>{anomaly.change}</p>
                   <p className="font-mono text-[10px] text-t4">{anomaly.timestamp}</p>
                 </div>
-                <Badge color={anomaly.status === "investigating" ? K.warn : K.mint}>{anomaly.status}</Badge>
+                <Badge color={anomaly.status === "detected" ? K.warn : K.mint}>{anomaly.status}</Badge>
               </div>
             ))}
           </div>

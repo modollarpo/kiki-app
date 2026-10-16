@@ -21,7 +21,7 @@ interface Signal {
 interface SignalStats {
   totalSignals: number;
   processedSignals: number;
-  avgLtv: number;
+  avgPredictedLTV: number;
   avgConfidence: number;
   platformBreakdown: Record<string, number>;
   recentSignals: Signal[];
@@ -75,7 +75,7 @@ export default function SignalsPage() {
 
   const totalSignals = stats?.totalSignals || 0;
   const processedSignals = stats?.processedSignals || 0;
-  const avgLtv = stats?.avgLtv || 0;
+  const avgLtv = stats?.avgPredictedLTV || 0;
   const avgConfidence = stats?.avgConfidence || 0;
   const recentSignals = stats?.recentSignals || [];
   const platformBreakdown = stats?.platformBreakdown || {};

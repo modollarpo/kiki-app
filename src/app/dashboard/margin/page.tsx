@@ -7,7 +7,7 @@ import { RoleGuard } from "@/components/layout/RoleGuard";
 import { Card, Badge, ProgressBar, StatCard, ScrollableTable, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
-interface ChannelMargin { name: string; spend: number; revenue: number; margin: number; cac: number; ltv: number; }
+interface ChannelMargin { name: string; spend: number; revenue: number; margin: number; cac: number; }
 
 export default function ProfitMarginPage() {
   const [overview, setOverview] = useState<{ avgMargin: number; profitAdjCAC: number; grossProfit: number } | null>(null);

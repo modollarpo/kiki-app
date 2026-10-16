@@ -7,7 +7,7 @@ import { Card, Badge, StatCard, AIThinking, NotConfigured } from "@/components/u
 import { K } from "@/lib/kdls";
 
 interface Channel { name: string; contributionPct: number; spend: number; revenue: number; efficiency: number; }
-interface Recommendation { channel: string; currentSpend: number; recommendedSpend: number; confidence: number; reason: string; }
+interface Recommendation { channel: string; currentSpend: number; recommendedSpend: number; changePct: number; reason: string; }
 
 export default function MmmPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -48,7 +48,7 @@ export default function MmmPage() {
         <div className="flex justify-between items-center mb-5 gap-3 flex-wrap">
           <div className="min-w-0">
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Media Mix Modelling</h1>
-            <p className="font-mono text-[11px] text-t3">Bayesian adstock + Hill saturation channel attribution</p>
+            <p className="font-mono text-[11px] text-t3">OLS channel attribution and budget reallocation from campaign data</p>
           </div>
           <button onClick={runMmm} disabled={loading} className="font-mono text-[11px] font-semibold px-5 py-2 rounded-sm cursor-pointer"
             style={{ border: `1px solid ${K.blue}40`, background: loading ? K.g800 : K.blue + "20", color: K.blue, cursor: loading ? "wait" : "pointer" }}>
@@ -56,7 +56,7 @@ export default function MmmPage() {
           </button>
         </div>
 
-        {loading && <div className="flex justify-center py-15"><AIThinking text="Fitting Bayesian model with adstock decay..." /></div>}
+        {loading && <div className="flex justify-center py-15"><AIThinking text="Fitting revenue-weighted regression across channels..." /></div>}
 
         {!loading && hasRun && (
           <>
@@ -98,7 +98,7 @@ export default function MmmPage() {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="font-mono text-[11px] text-t2">${rec.currentSpend?.toLocaleString()} → ${rec.recommendedSpend?.toLocaleString()}</div>
-                    <Badge color={rec.confidence > 80 ? K.mint : K.gold}>{rec.confidence}% confidence</Badge>
+                    <Badge color={rec.changePct > 0 ? K.mint : rec.changePct < 0 ? K.gold : K.t3}>{rec.changePct > 0 ? "+" : ""}{rec.changePct}%</Badge>
                   </div>
                 </div>
               ))}
@@ -111,7 +111,7 @@ export default function MmmPage() {
           <Card>
             <div className="py-15 text-center">
               <p className="font-mono text-xs text-t3 mb-3">Run MMM analysis to see channel contributions and budget recommendations.</p>
-              <p className="font-mono text-[11px] text-t3">Requires at least 8 weeks of campaign data. Uses Bayesian adstock decay + Hill saturation curves.</p>
+              <p className="font-mono text-[11px] text-t3">Requires campaign data. Uses an OLS regression of revenue on spend to attribute channel contributions and recommend budget shifts.</p>
             </div>
           </Card>
         )}
