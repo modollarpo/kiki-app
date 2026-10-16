@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button, StatCard, ProgressBar, AIThinking } from "@/components/ui";
+import { Card, Badge, Button, StatCard, ProgressBar } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { ai, transcribe, translate, type ChatMessage } from "@/lib/api";
 import { K } from "@/lib/kdls";
@@ -332,32 +332,25 @@ export default function SyncBrainPage() {
           <StatCard label="Wallet Balance" value={`$${(stats?.walletBalance || 0).toLocaleString()}`} accent={K.teal} sub={`$${(stats?.totalSpend || 0).toLocaleString()} managed spend`} />
 
           <Card accent={K.blue}>
-            <h3 className="font-mono font-bold text-xs text-t1 mb-3">Model Routing</h3>
+            <h3 className="font-mono font-bold text-xs text-t1 mb-3">Agent Distribution</h3>
             {(() => {
-              const total = stats?.agentTypes?.reduce((s, a) => s + a.count, 0) || 0;
+              const types = stats?.agentTypes ?? [];
+              const total = types.reduce((s, a) => s + a.count, 0);
               if (total === 0) {
-                return <p className="font-mono text-[10px] text-t3">No routing data available</p>;
+                return <p className="font-mono text-[10px] text-t3">No agents configured</p>;
               }
-              // Map agent types to model tiers
-              const miniTypes = ["bidding", "pacing", "signals"];
-              const standardTypes = ["creative", "syncbrain", "oaas"];
-              const miniCount = stats?.agentTypes?.filter(a => miniTypes.includes(a.type)).reduce((s, a) => s + a.count, 0) || 0;
-              const standardCount = stats?.agentTypes?.filter(a => standardTypes.includes(a.type)).reduce((s, a) => s + a.count, 0) || 0;
-              const miniPct = Math.round((miniCount / total) * 100);
-              const standardPct = 100 - miniPct;
-              return [
-                { label: "GPT-4o-mini", pct: miniPct, color: K.blue, desc: "Classification, routing, Q&A" },
-                { label: "GPT-4o", pct: standardPct, color: K.gold, desc: "Creative, analysis, reasoning" },
-              ].map(m => (
-                <div key={m.label} className="mb-3">
-                  <div className="flex justify-between mb-[3px]">
-                    <span className="font-mono text-[10px] text-t2">{m.label}</span>
-                    <span className="font-mono text-[10px] font-bold text-t1">{m.pct}%</span>
+              return types.map(a => {
+                const pct = Math.round((a.count / total) * 100);
+                return (
+                  <div key={a.type} className="mb-3">
+                    <div className="flex justify-between mb-[3px]">
+                      <span className="font-mono text-[10px] text-t2 capitalize">{a.type}</span>
+                      <span className="font-mono text-[10px] font-bold text-t1">{a.count} · {pct}%</span>
+                    </div>
+                    <ProgressBar value={pct} max={100} color={K.blue} height={3} glow />
                   </div>
-                  <ProgressBar value={m.pct} max={100} color={m.color} height={3} glow />
-                  <p className="font-mono text-[10px] text-t4 mt-0.5">{m.desc}</p>
-                </div>
-              ));
+                );
+              });
             })()}
           </Card>
 
@@ -378,7 +371,7 @@ export default function SyncBrainPage() {
           </Card>
 
           <Card>
-            <h3 className="font-mono font-bold text-xs text-t1 mb-3">System Capabilities</h3>
+            <h3 className="font-mono font-bold text-xs text-t1 mb-3">SyncBrain can help with</h3>
             {[
               "Campaign performance analysis",
               "Budget optimization recommendations",
@@ -388,7 +381,7 @@ export default function SyncBrainPage() {
               "Creative performance scoring",
             ].map((cap, i) => (
               <div key={i} className="flex items-center gap-2 py-1.5">
-                <span className="text-emerald-400 text-[10px]">✓</span>
+                <span className="text-t4 text-[10px]">•</span>
                 <span className="font-mono text-[10px] text-t2">{cap}</span>
               </div>
             ))}
@@ -412,7 +405,7 @@ function generateFallbackResponse(question: string, stats: SyncBrainStats | null
 - Total managed spend: $${spend.toLocaleString()}
 - Wallet balance: $${balance.toLocaleString()}
 
-**Recommendation:** Check the Dashboard page for detailed per-campaign ROAS breakdowns. The Bidding Agent optimizes bids across all campaigns automatically. Consider increasing budget on top performers.`;
+**Recommendation:** Check the Dashboard page for detailed per-campaign ROAS breakdowns, and the Agents page to review the Bidding Agent's current configuration. Consider increasing budget on top performers.`;
   }
   if (q.includes("budget") || q.includes("spend") || q.includes("wallet")) {
     return `**Current Financial Status:**
@@ -424,9 +417,9 @@ function generateFallbackResponse(question: string, stats: SyncBrainStats | null
   }
   if (q.includes("fraud") || q.includes("ivt")) {
     return `**Fraud & IVT Status:**
-- The Fraud Detection Engine automatically monitors all incoming signals
-- Check the Signals page for real-time fraud detection metrics
-- All suspicious events are flagged and can be reviewed in the agent actions log`;
+- Fraud detection results are tracked on the Fraud & IVT page
+- Check the Signals page for signal-level metrics
+- Suspicious events can be reviewed in the agent actions log`;
   }
   return `I can help you with that. Based on your platform data:
 

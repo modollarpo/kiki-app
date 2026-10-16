@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, ProgressBar, AIThinking, ScrollableTable, EmptyState } from "@/components/ui";
+import { StatCard, Card, ProgressBar, AIThinking, ScrollableTable, EmptyState } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K, fmt, PLATFORM_COLORS } from "@/lib/kdls";
 
@@ -15,7 +15,6 @@ interface AnalyticsData {
 
 export default function AnalyticsPage() {
   const { token } = useAuth();
-  const [period, setPeriod] = useState<"7d" | "30d" | "90d">("30d");
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +37,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData, period]);
+  }, [fetchData]);
 
   const channels = data?.channels || [];
   const funnel = data?.funnel || [];
@@ -56,15 +55,6 @@ export default function AnalyticsPage() {
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Performance Analytics</h1>
             <p className="font-mono text-[11px] text-t3">Cross-platform attribution · ROAS by channel · Conversion funnel</p>
           </div>
-          <div className="flex gap-1 p-[3px] rounded-sm" style={{ background: K.g900, border: `1px solid ${K.g800}` }}>
-            {(["7d", "30d", "90d"] as const).map(p => (
-              <button key={p} onClick={() => setPeriod(p)}
-                className="font-mono text-[10px] font-semibold tracking-widest px-3.5 py-[5px] rounded-sm cursor-pointer"
-                style={{ color: period === p ? K.t1 : K.t4, background: period === p ? K.g800 : "transparent", border: "none" }}>
-                {p.toUpperCase()}
-              </button>
-            ))}
-          </div>
         </div>
 
         {loading ? (
@@ -74,7 +64,7 @@ export default function AnalyticsPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-              <StatCard label="Blended ROAS" value={totals ? `${totals.blendedRoas.toFixed(2)}×` : "0×"} period="last month" accent={K.mint} sparkline={weeklyRoas} loading={loading} />
+              <StatCard label="Blended ROAS" value={totals ? `${totals.blendedRoas.toFixed(2)}×` : "0×"} accent={K.mint} sparkline={weeklyRoas} loading={loading} />
               <StatCard label="Total Conversions" value={totals ? fmt.compact(totals.totalConversions) : "0"} accent={K.blue} loading={loading} />
               <StatCard label="Blended CPA" value={totals ? `$${totals.blendedCpa.toFixed(2)}` : "$0"} accent={K.gold} loading={loading} />
               <StatCard label="Total Spend" value={totals ? fmt.currency(totals.totalSpend) : "$0"} accent={K.teal} loading={loading} />
@@ -141,8 +131,7 @@ export default function AnalyticsPage() {
 
             <Card>
               <div className="flex justify-between items-center mb-3.5">
-                <h2 className="font-mono font-bold text-[13px] text-t1">Attribution Windows</h2>
-                <Badge color={K.teal}>SYNC ACTIVE</Badge>
+                <h2 className="font-mono font-bold text-[13px] text-t1">Conversions by Channel</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                 {attribution.map((m, i) => (

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Button, StatusBadge, ProgressBar, ScrollableTable, AIThinking } from "@/components/ui";
+import { StatCard, Card, Button, StatusBadge, ProgressBar, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { campaigns as campaignsApi, type Campaign } from "@/lib/api";
 import { K } from "@/lib/kdls";
@@ -47,11 +47,10 @@ export default function CampaignsPage() {
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Campaigns</h1>
             <p className="font-mono text-[11px] text-t3">
-              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `${campaignList.length} campaigns · ${active.length} active · Bidding Agent active`}
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `${campaignList.length} campaigns · ${active.length} active`}
             </p>
           </div>
           <div className="page-header-actions">
-            <Button variant="secondary" size="sm">⬡ Zero-Shot Create</Button>
             <Button size="sm" onClick={() => setCreating(true)}>+ New Campaign</Button>
           </div>
         </div>
@@ -100,7 +99,7 @@ export default function CampaignsPage() {
             const rc = c.roas >= 4 ? "text-kmint" : c.roas >= 2 ? "text-kwarn" : "text-t3";
             return (
               <div key={c.id}
-                className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-3 border-b border-g900 items-center cursor-pointer hover:bg-g850 transition-colors">
+                className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-3 border-b border-g900 items-center">
                 <div>
                   <p className="font-mono text-[11px] font-bold text-t1 mb-[3px]">{c.name}</p>
                   {c.budget > 0 && <ProgressBar value={(c.spend / c.budget) * 100} color={K.blue} height={2} />}

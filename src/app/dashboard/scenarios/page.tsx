@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 interface Scenario {
   id: string; name: string; description: string; budgetChange: number;
-  projectedRevenue: number; projectedROAS: number; risk: string; confidence: number | null;
+  projectedRevenue: number; projectedRoas: number; risk: string; confidence: number | null;
 }
 
 export default function ScenariosPage() {
@@ -51,7 +51,7 @@ export default function ScenariosPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Scenarios" value={scenarios.length > 0 ? String(scenarios.length) : "—"} accent={K.blue} loading={loading} />
-          <StatCard label="Best Projected ROAS" value={scenarios.length > 0 ? `${Math.max(...scenarios.map(s => s.projectedROAS))}×` : "—"} accent={K.mint} sub="Highest return" loading={loading} />
+          <StatCard label="Best Projected ROAS" value={scenarios.length > 0 ? `${Math.max(...scenarios.map(s => s.projectedRoas))}×` : "—"} accent={K.mint} sub="Highest return" loading={loading} />
           <StatCard label="Avg Confidence" value={scenarios.some(s => s.confidence != null) ? `${Math.round(scenarios.reduce((s, sc) => s + (sc.confidence ?? 0), 0) / scenarios.length)}%` : "—"} accent={K.teal} loading={loading} />
           <StatCard label="Total Projected Revenue" value={scenarios.length > 0 ? fmt.currency(scenarios.reduce((s, sc) => s + sc.projectedRevenue, 0)) : "—"} accent={K.gold} loading={loading} />
         </div>
@@ -82,7 +82,7 @@ export default function ScenariosPage() {
                     </div>
                     <div>
                       <p className="font-mono text-[10px] text-t4 mb-0.5">PROJECTED ROAS</p>
-                      <p className="font-mono text-[13px] font-bold text-kmint">{sc.projectedROAS}×</p>
+                      <p className="font-mono text-[13px] font-bold text-kmint">{sc.projectedRoas}×</p>
                     </div>
                     <div>
                       <p className="font-mono text-[10px] text-t4 mb-0.5">PROJECTED REVENUE</p>
@@ -96,8 +96,9 @@ export default function ScenariosPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5 flex-shrink-0">
-                  {selected === sc.id && <Button variant="primary" size="sm">Selected</Button>}
-                  {selected !== sc.id && <Button variant="secondary" size="sm">Select</Button>}
+                  {selected === sc.id
+                    ? <Badge color={K.blue}>Selected</Badge>
+                    : <Button variant="secondary" size="sm" onClick={() => setSelected(sc.id)}>Select</Button>}
                 </div>
               </div>
             </Card>
