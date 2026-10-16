@@ -3,6 +3,7 @@ import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
 import { createVirtualCard, topUpWallet } from "@/lib/wallet";
+import { isStripeIssuingEnabled, SERVICE_NOT_CONFIGURED } from "@/lib/card-issuer";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { validateBody, walletTopUpSchema } from "@/lib/validation";
 import { logger } from "@/lib/logger";
@@ -37,6 +38,7 @@ export async function GET(req: Request) {
   return json({
     id: wallet.id, tenantId: wallet.tenant_id, balance: wallet.balance,
     currency: wallet.currency,
+    issuingEnabled: isStripeIssuingEnabled(),
     cards: cards.map(c => ({
       id: c.id, last4: c.last4, brand: c.brand, limit: c.limit,
       spent: c.spent, campaign: c.campaign, status: c.status, issuer: c.issuer,
@@ -67,6 +69,10 @@ export async function POST(req: Request) {
     const { amount, action, campaignName, totalLimit } = body;
 
     if (action === "issue_card") {
+      if (!isStripeIssuingEnabled()) {
+        return json({ ok: false, error: "Card issuance requires Stripe Issuing to be configured.", code: SERVICE_NOT_CONFIGURED }, 503);
+      }
+
       const db = await getDb();
       const wallet = await (await db.prepare("SELECT * FROM wallets WHERE tenant_id = ?")).get(user.tenantId) as { id: string } | undefined;
       if (!wallet) return jsonError("Wallet not found", 404);
@@ -74,8 +80,13 @@ export async function POST(req: Request) {
       const name = (campaignName as string) || "General Campaign";
       const limit = typeof totalLimit === "number" && totalLimit > 0 ? totalLimit : 5000;
 
-      const card = await createVirtualCard(user.tenantId, wallet.id, genId("cmp"), name, Math.round(limit / 30), limit);
-      return json({ card: { id: card.id, last4: card.last4, brand: card.brand, limit: card.limit, spent: 0, campaign: card.campaignName, status: card.status, issuer: card.issuer } });
+      try {
+        const card = await createVirtualCard(user.tenantId, wallet.id, genId("cmp"), name, Math.round(limit / 30), limit);
+        return json({ card: { id: card.id, last4: card.last4, brand: card.brand, limit: card.limit, spent: 0, campaign: card.campaignName, status: card.status, issuer: card.issuer } });
+      } catch (e) {
+        logger.error("wallet/issue_card failed", { message: e instanceof Error ? e.message : String(e) });
+        return jsonError("Card issuance failed at the provider", 502);
+      }
     }
 
     if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) {
