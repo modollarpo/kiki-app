@@ -1221,6 +1221,11 @@ const SQLITE_SCHEMA = SCHEMA.replace(
   "INTEGER PRIMARY KEY AUTOINCREMENT"
 );
 
+// SQLite's INTEGER is 64-bit, so the millisecond-epoch timestamps (Date.now())
+// fit. PostgreSQL's INTEGER is 32-bit and overflows (~1.7e12 > 2^31), so the
+// DDL must use BIGINT there. Only applied on the PostgreSQL path.
+const PG_SCHEMA = SCHEMA.replace(/\bINTEGER\b/g, "BIGINT");
+
 // SQLite's datetime() helper, emulated in PostgreSQL. Handles 'now', modifiers
 // like '-7 days' / '+10 minutes', and 'start of day' / 'start of month'.
 const DATETIME_FN = `
@@ -1256,6 +1261,29 @@ CREATE CAST (text AS timestamptz) WITH INOUT AS IMPLICIT;
 `;
 
 async function runMigrations(db: PgDb) {
+  // Widen any pre-existing 32-bit INTEGER columns to BIGINT. Tables created
+  // before this fix stored millisecond-epoch timestamps in INTEGER, which
+  // overflow on PostgreSQL. Idempotent: after the first run no `integer`
+  // columns remain, so the loop is a no-op. PG-only (the DO block is pl/pgSQL).
+  try {
+    await pool.query(`
+      DO $$
+      DECLARE r record;
+      BEGIN
+        FOR r IN
+          SELECT table_name, column_name
+          FROM information_schema.columns
+          WHERE table_schema = 'public' AND data_type = 'integer'
+        LOOP
+          EXECUTE format('ALTER TABLE %I ALTER COLUMN %I TYPE bigint',
+                         r.table_name, r.column_name);
+        END LOOP;
+      END $$;
+    `);
+  } catch (e) {
+    logger.warn("[DB] integer->bigint widen skipped:", { error: (e as Error).message });
+  }
+
   // Revenue backfill for legacy rows (revenue defaults to 0 in schema).
   await db.exec(
     "UPDATE campaigns SET revenue = spend * roas WHERE revenue IS NULL OR revenue = 0"
@@ -1468,7 +1496,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
     }
 
     const db = new PgDb();
-    await db.exec(SCHEMA);
+    await db.exec(PG_SCHEMA);
     await pool.query(DATETIME_FN);
     try {
       await pool.query(PG_CASTS);
