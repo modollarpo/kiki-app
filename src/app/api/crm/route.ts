@@ -61,6 +61,7 @@ export async function GET(req: NextRequest) {
           totalContacts,
           pipelineValue: pipelineValue?.total || 0,
           activeDeals: activeDeals?.count || 0,
+          avgDealSize: (activeDeals?.count || 0) > 0 ? Math.round((pipelineValue?.total || 0) / activeDeals!.count) : 0,
           conversionRate: totalContacts > 0 ? Math.round((activeDeals?.count || 0) / totalContacts * 1000) / 10 : 0,
         },
         recentLeads,

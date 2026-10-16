@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { StatCard, Card, Badge, Button, StatusBadge, AIThinking } from "@/components/ui";
+import { StatCard, Card, Badge, Button, StatusBadge } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useKikiStore } from "@/store";
 import { agents as agentsApi, type Agent } from "@/lib/api";
@@ -123,7 +123,7 @@ export default function AgentsPage() {
           <StatCard label="Running Agents" value={String(running.length)} accent={K.mint} loading={loading} />
           <StatCard label="Paused" value={String(agentList.filter(a => a.status === "paused").length)} accent={K.warn} loading={loading} />
           <StatCard label="Total Actions" value={totalActions.toLocaleString()} accent={K.blue} loading={loading} />
-          <StatCard label="Avg Uptime" value="99.7%" accent={K.teal} />
+          <StatCard label="Total Agents" value={String(visibleAgents.length)} sub="Configured" accent={K.teal} loading={loading} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -183,9 +183,7 @@ export default function AgentsPage() {
             )) : (
               <p className="font-mono text-[11px] text-t3 py-2">No guardrails configured</p>
             )}
-            <div className="mt-4">
-              <AIThinking label="All agents operating within guardrails — no interventions needed" />
-            </div>
+            <p className="font-mono text-[10px] text-t4 mt-4">{guardrails.length} guardrail{guardrails.length === 1 ? "" : "s"} active · {running.length}/{visibleAgents.length} agents running</p>
 
             <div className="mt-4 p-[14px] bg-g850 rounded-kdls border border-g700">
               <h4 className="font-mono text-[11px] font-bold text-t1 mb-2">Agent Config (Azure OpenAI)</h4>

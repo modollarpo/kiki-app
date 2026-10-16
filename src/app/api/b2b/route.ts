@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
         totalValue,
         deals: campaigns.length,
         avgSize: campaigns.length > 0 ? Math.round(totalValue / campaigns.length) : 0,
-        winRate: totalConversions > 0 ? Math.round((totalRevenue / Math.max(totalSpent, 1)) * 100) / 10 : 0,
+        roas: totalSpent > 0 ? Math.round((totalRevenue / totalSpent) * 100) / 100 : 0,
       },
       stages,
       topAccounts,

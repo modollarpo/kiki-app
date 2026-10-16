@@ -6,9 +6,9 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, ProgressBar, StatCard, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
-interface Pipeline { totalValue: number; deals: number; avgSize: number; winRate: number; }
+interface Pipeline { totalValue: number; deals: number; avgSize: number; roas: number; }
 interface Stage { name: string; count: number; value: number; color: string; }
-interface Account { name: string; value: number; stage: string; owner: string; daysInStage: number; }
+interface Account { name: string; value: number; stage: string; platform: string; roas: number; }
 interface ChannelAttribution { channel: string; credit: number; pipeline: number; deals: number; }
 
 export default function B2BPage() {
@@ -64,7 +64,7 @@ export default function B2BPage() {
           <StatCard label="Pipeline Value" value={pipeline ? `$${(pipeline.totalValue / 1000).toFixed(0)}K` : "—"} accent={K.mint} loading={loading} />
           <StatCard label="Total Deals" value={pipeline ? String(pipeline.deals) : "—"} sub="Active opportunities" accent={K.blue} loading={loading} />
           <StatCard label="Avg Deal Size" value={pipeline ? `$${(pipeline.avgSize / 1000).toFixed(1)}K` : "—"} sub="Per deal" accent={K.gold} loading={loading} />
-          <StatCard label="Win Rate" value={pipeline ? `${pipeline.winRate}%` : "—"} accent={K.mint} loading={loading} />
+          <StatCard label="ROAS" value={pipeline ? `${pipeline.roas}x` : "—"} accent={K.mint} loading={loading} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-3 mb-4">
@@ -88,13 +88,13 @@ export default function B2BPage() {
             <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Top Accounts</h3>
             <div className="flex flex-col gap-2">
               {accounts.map((account, i) => (
-                <div key={i} className="p-2.5 px-3 rounded-sm bg-g850" style={{ borderLeft: `3px solid ${account.stage === "Closed Won" ? K.mint : account.stage === "Negotiation" ? K.gold : K.blue}` }}>
+                <div key={i} className="p-2.5 px-3 rounded-sm bg-g850" style={{ borderLeft: `3px solid ${account.stage === "active" ? K.mint : account.stage === "paused" ? K.gold : K.blue}` }}>
                   <div className="flex justify-between items-center mb-1">
                     <span className="font-mono text-[11px] font-semibold text-t1">{account.name}</span>
-                    <Badge color={account.stage === "Closed Won" ? K.mint : account.stage === "Negotiation" ? K.gold : K.blue}>{account.stage}</Badge>
+                    <Badge color={account.stage === "active" ? K.mint : account.stage === "paused" ? K.gold : K.blue}>{account.stage}</Badge>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-mono text-[10px] text-t3">{account.owner} · {account.daysInStage}d in stage</span>
+                    <span className="font-mono text-[10px] text-t3 capitalize">{account.platform} · ROAS {account.roas}x</span>
                     <span className="font-mono text-[11px] font-bold text-kmint">${(account.value / 1000).toFixed(0)}K</span>
                   </div>
                 </div>

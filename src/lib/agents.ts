@@ -182,10 +182,10 @@ Return JSON array: [{"headline": "string", "text": "string", "cta": "string", "a
         );
       }
     } else {
-      variants = 3;
+      variants = 0;
     }
   } catch {
-    variants = 3;
+    variants = 0;
   }
 
   await db.prepare("UPDATE agents SET action_count = action_count + 1, last_action = ?, metric = ? WHERE id = ?")

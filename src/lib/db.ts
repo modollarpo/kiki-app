@@ -685,6 +685,8 @@ const SCHEMA = `
     value REAL NOT NULL DEFAULT 0,
     ltv_predicted REAL NOT NULL DEFAULT 0,
     ltv_confidence REAL NOT NULL DEFAULT 0,
+    segment TEXT NOT NULL DEFAULT 'low',
+    bid_multiplier REAL NOT NULL DEFAULT 1.0,
     enriched INTEGER NOT NULL DEFAULT 0,
     delivered INTEGER NOT NULL DEFAULT 0,
     raw_data TEXT NOT NULL DEFAULT '{}',
@@ -1417,6 +1419,8 @@ async function runMigrations(db: PgDb) {
   };
 
   await addColumnIfMissing("signals", "customer_id", "TEXT");
+  await addColumnIfMissing("signals", "segment", "TEXT NOT NULL DEFAULT 'low'");
+  await addColumnIfMissing("signals", "bid_multiplier", "REAL NOT NULL DEFAULT 1.0");
   await addColumnIfMissing("ltv_predictions", "customer_id", "TEXT");
   await addColumnIfMissing("users", "trial_ends_at", "TEXT");
   await addColumnIfMissing("users", "status", "TEXT NOT NULL DEFAULT 'active'");

@@ -37,7 +37,7 @@ export interface MmmRecommendation {
   channel: string;
   currentSpend: number;
   recommendedSpend: number;
-  confidence: number;
+  changePct: number;
   reason: string;
 }
 
@@ -79,8 +79,6 @@ export async function runMmmAnalysis(tenantId: string): Promise<MmmAnalysis> {
   }));
 
   const recommendations: MmmRecommendation[] = channels.map((ch) => {
-    const conv = byPlatform[ch.name.toLowerCase()]?.conversions ?? 0;
-    const confidence = Math.round(Math.min(95, 55 + Math.min(30, conv / 20)));
     let multiplier = 1;
     let reason: string;
     if (ch.efficiency >= 3) {
@@ -94,21 +92,39 @@ export async function runMmmAnalysis(tenantId: string): Promise<MmmAnalysis> {
     } else {
       reason = "No spend recorded — not yet evaluated.";
     }
+    const recommendedSpend = round2(ch.spend * multiplier);
+    const changePct = ch.spend > 0 ? Math.round(((recommendedSpend - ch.spend) / ch.spend) * 100) : 0;
     return {
       channel: ch.name,
       currentSpend: ch.spend,
-      recommendedSpend: round2(ch.spend * multiplier),
-      confidence,
+      recommendedSpend,
+      changePct,
       reason,
     };
   });
 
   const bestChannel = [...channels].sort((a, b) => b.efficiency - a.efficiency)[0]?.name || "N/A";
 
+  // Real goodness-of-fit: ordinary least squares regression of revenue on
+  // spend at the campaign level (revenue ~ spend). No synthetic assumptions.
+  const pts = campaigns.map(c => ({ x: Number(c.spend) || 0, y: Number(c.revenue) || 0 }));
+  const n = pts.length;
+  const meanX = n > 0 ? pts.reduce((s, p) => s + p.x, 0) / n : 0;
+  const meanY = n > 0 ? pts.reduce((s, p) => s + p.y, 0) / n : 0;
+  let ssxx = 0, ssyy = 0, ssxy = 0;
+  for (const p of pts) {
+    const dx = p.x - meanX, dy = p.y - meanY;
+    ssxx += dx * dx;
+    ssyy += dy * dy;
+    ssxy += dx * dy;
+  }
+  const rSquared = ssxx > 0 && ssyy > 0 ? round2((ssxy * ssxy) / (ssxx * ssyy)) : 0;
+  const adjRSquared = n > 2 ? round2(1 - (1 - rSquared) * ((n - 1) / (n - 2))) : rSquared;
+
   const modelFit = {
-    rSquared: totalRevenue > 0 ? Math.min(0.95, round2(0.7 + campaigns.length * 0.02)) : 0,
-    adjRSquared: totalRevenue > 0 ? Math.min(0.92, round2(0.65 + campaigns.length * 0.02)) : 0,
-    algorithm: "Linear regression with platform weights",
+    rSquared,
+    adjRSquared,
+    algorithm: "OLS: revenue ~ spend (campaign-level)",
   };
 
   logger.info("mmm/analysis", { tenantId, channels: channels.length, totalSpend, totalRevenue });

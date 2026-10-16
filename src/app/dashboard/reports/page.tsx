@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, Button, ScrollableTable } from "@/components/ui";
+import { Card, Badge, Button } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 import { useInsights } from "@/hooks/useInsights";
@@ -21,7 +21,7 @@ interface WarehouseFeature {
 export default function ReportsPage() {
   const { token } = useAuth();
   const { data: insights } = useInsights();
-  const [tab, setTab] = useState<"scheduled" | "templates">("scheduled");
+  const [tab, setTab] = useState<"exports" | "templates">("exports");
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [warehouseFeatures, setWarehouseFeatures] = useState<WarehouseFeature[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -40,8 +40,6 @@ export default function ReportsPage() {
       .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
-
-  const scheduledReports: { name: string; schedule: string; recipients: string; format: string; lastSent: string; nextSend: string; status: string }[] = [];
 
   const recentExports = warehouseFeatures.length > 0
     ? warehouseFeatures.slice(0, 5).map((f, i) => ({
@@ -80,11 +78,11 @@ export default function ReportsPage() {
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Reports</h1>
-            <p className="font-mono text-[11px] text-t3">Scheduled reports · Recent exports · Report builder</p>
+            <p className="font-mono text-[11px] text-t3">Recent exports · Report builder</p>
           </div>
           <div className="flex gap-2">
             <div className="flex gap-1 p-[3px] rounded-sm" style={{ background: K.g900, border: `1px solid ${K.g800}` }}>
-              {(["scheduled", "templates"] as const).map(t => (
+              {(["exports", "templates"] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)}
                   className="font-mono text-[10px] font-semibold tracking-widest px-3.5 py-[5px] rounded-sm cursor-pointer uppercase"
                   style={{ color: tab === t ? K.t1 : K.t4, background: tab === t ? K.g800 : "transparent", border: "none" }}>
@@ -102,36 +100,8 @@ export default function ReportsPage() {
           </div>
         )}
 
-        {tab === "scheduled" && (
+        {tab === "exports" && (
           <>
-            <Card padding={0}>
-              <div className="px-5 py-3.5" style={{ borderBottom: `1px solid ${K.g800}` }}>
-                <h2 className="font-mono font-bold text-[13px] text-t1 flex items-center gap-2">Scheduled Reports ({scheduledReports.length})</h2>
-              </div>
-              {loading ? (
-                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">Loading reports…</span></div>
-              ) : scheduledReports.length === 0 ? (
-                <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">No scheduled reports. Create one to automate your reporting.</span></div>
-              ) : (
-                <ScrollableTable>
-                {scheduledReports.map((r, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_160px_140px_80px_100px_80px] gap-3 px-5 py-3.5 items-center hover:bg-[var(--card-hover)] min-w-[600px]"
-                    style={{ borderBottom: i < scheduledReports.length - 1 ? `1px solid ${K.g900}` : undefined }}>
-                    <div>
-                      <p className="font-mono text-[11px] font-semibold text-t1 mb-0.5">{r.name}</p>
-                      <p className="font-mono text-[10px] text-t4">{r.schedule}</p>
-                    </div>
-                    <span className="font-mono text-[10px] text-t3">{r.recipients}</span>
-                    <Badge color={K.blue}>{r.format}</Badge>
-                    <span className="font-mono text-[10px] text-t4">Last: {r.lastSent}</span>
-                    <span className="font-mono text-[10px] text-t3">Next: {r.nextSend}</span>
-                    <Badge color={K.mint} dot pulse>ACTIVE</Badge>
-                  </div>
-                ))}
-                </ScrollableTable>
-              )}
-            </Card>
-
             <Card>
               <div className="px-5 py-3.5" style={{ borderBottom: `1px solid ${K.g800}` }}>
                 <h2 className="font-mono font-bold text-[13px] text-t1 flex items-center gap-2">Recent Exports</h2>
