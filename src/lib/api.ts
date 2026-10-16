@@ -580,7 +580,7 @@ export const competitor = {
   list: (token: string) =>
     request<{ ok: boolean; configs: Array<{ id: string; domain: string; productCategory: string; priceDropThreshold: number; lastCheckedAt?: number; status: string }> }>("/api/competitor", { token }),
   runMonitor: (token: string) =>
-    request<{ ok: boolean; configsChecked: number; dropsDetected: number; results: Array<{ competitorDomain: string; priceDropPct: number; defensiveActions: Array<{ platform: string; action: string; campaignName: string; reason: string; executed: boolean }>; creativeQueued: boolean; summary: string }> }>("/api/competitor", {
+    request<{ ok: boolean; configsChecked: number; dropsDetected: number; results: Array<{ competitorDomain: string; priceDropPct: number; defensiveActions: Array<{ platform: string; action: string; campaignName: string; reason: string; executed: boolean }>; creativeQueued: boolean; summary: string }>; errors?: string[] }>("/api/competitor", {
       method: "POST",
       token,
       body: JSON.stringify({ action: "run_monitor" }),

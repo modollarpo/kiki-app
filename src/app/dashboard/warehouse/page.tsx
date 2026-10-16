@@ -10,7 +10,10 @@ export default function WarehousePage() {
   const { data, loading } = useInsights();
   const features = data?.warehouse || [];
 
-  const totalRows = features.reduce((s: number, f: { samples: number }) => s + (f.samples || 0), 0);
+  const lastUpdatedMs = features.length > 0
+    ? Math.max(...features.map((f: { updated: string }) => new Date(f.updated).getTime()))
+    : NaN;
+  const lastUpdated = Number.isFinite(lastUpdatedMs) ? new Date(lastUpdatedMs).toLocaleString() : "—";
 
   return (
     <DashboardLayout>
@@ -26,11 +29,10 @@ export default function WarehousePage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-              <StatCard label="Feature Snapshots" value={String(features.length)} accent={K.blue} />
-              <StatCard label="Total Samples" value={fmt.compact(totalRows)} accent={K.mint} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+              <StatCard label="Recent Features" value={String(features.length)} accent={K.blue} sub="Latest snapshots" />
               <StatCard label="Feature Store" value={features.length > 0 ? "ACTIVE" : "EMPTY"} accent={K.teal} />
-              <StatCard label="Last Sync" value={features.length > 0 ? new Date(features[0].updated).toLocaleTimeString() : "—"} accent={K.gold} />
+              <StatCard label="Last Updated" value={lastUpdated} accent={K.gold} />
             </div>
 
             {features.length === 0 ? (

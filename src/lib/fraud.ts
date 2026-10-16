@@ -184,19 +184,21 @@ export async function getFraudStats(tenantId: string) {
     "SELECT severity, COUNT(*) as c FROM fraud_events WHERE tenant_id = ? AND created_at >= ? GROUP BY severity"
   ).all(tenantId, today) as Array<{ severity: string; c: number }>;
 
-  // Dynamic savings based on tenant's average CPA from campaigns table
+  // Savings are only reported when we have a real CPA to value blocked
+  // events against. Without CPA data we report null rather than a fabricated
+  // dollar figure.
   const avgCpaQuery = await db.prepare(
     "SELECT AVG(cpa) as avgCpa FROM campaigns WHERE tenant_id = ? AND cpa > 0"
   ).get(tenantId) as { avgCpa: number | null };
-  const avgCpa = avgCpaQuery.avgCpa || 33.4; // Fallback to 33.4 if no active CPA data
-  
-  const estimatedSavings = totalBlocked * avgCpa;
+  const avgCpa = avgCpaQuery.avgCpa;
+  const estimatedSavings = avgCpa != null ? Math.round(totalBlocked * avgCpa) : null;
 
   return {
     totalBlocked,
     totalDetected,
-    estimatedSavings: Math.round(estimatedSavings),
+    estimatedSavings,
+    // Share of detected events that were actually blocked (null when none detected).
+    blockRate: totalDetected > 0 ? Math.round((totalBlocked / totalDetected) * 100) : null,
     bySeverity: Object.fromEntries(bySeverity.map(r => [r.severity, r.c])),
-    dataQualityScore: Math.max(90, 100 - (totalDetected * 0.1)),
   };
 }

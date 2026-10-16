@@ -52,6 +52,8 @@ const PLATFORM_COLORS: Record<string, string> = {
   all: "#10b981",
 };
 
+const SUPPORTED_PLATFORM_COUNT = Object.keys(PLATFORM_COLORS).filter(k => k !== "all").length;
+
 export default function CreativeAIPage() {
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -102,7 +104,7 @@ export default function CreativeAIPage() {
               Creative AI Engine
             </h1>
             <p className="font-mono text-[11px]" style={{ color: K.t3 }}>
-              Auto-generate cross-platform ad copy · Detect creative fatigue · Deploy to all 6 ad networks
+              Auto-generate cross-platform ad copy · Detect creative fatigue · Deploy to all {SUPPORTED_PLATFORM_COUNT} ad networks
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -126,8 +128,8 @@ export default function CreativeAIPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard label="Fatigued Campaigns" value={loading ? "…" : String(data?.counts.fatigued ?? 0)} accent={K.warn} />
           <StatCard label="Creatives Generated" value={loading ? "…" : String(data?.counts.creatives ?? 0)} accent={K.mint} />
-          <StatCard label="Platforms Covered" value="6" accent={K.blue} />
-          <StatCard label="AI Model" value="GPT-4o" accent={K.teal} />
+          <StatCard label="Copy Variations" value={loading ? "…" : String(data?.creatives.reduce((s, c) => s + c.copies.length, 0) ?? 0)} accent={K.teal} />
+          <StatCard label="Supported Platforms" value={String(SUPPORTED_PLATFORM_COUNT)} accent={K.blue} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

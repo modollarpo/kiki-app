@@ -6,12 +6,14 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, StatCard, EmptyState, AIThinking } from "@/components/ui";
 import { K } from "@/lib/kdls";
 
-interface Insight { type: string; title: string; description: string; impact: string; confidence: number | null; }
+interface Insight { type: string; title: string; description: string; impact: string; confidence: string | null; }
 interface Prediction { metric: string; value: string; confidence: number; range: string; }
+interface Summary { totalCampaigns: number; avgRoas: number; totalSignals: number; }
 
 export default function IntelligencePage() {
   const [insights, setInsights] = useState<Insight[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [summary, setSummary] = useState<Summary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { token, loading: authLoading } = useAuth();
@@ -29,6 +31,7 @@ export default function IntelligencePage() {
         if (d.ok && d.data) {
           setInsights(d.data.insights);
           setPredictions(d.data.predictions);
+          setSummary(d.data.summary ?? null);
         }
       })
       .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
@@ -55,10 +58,11 @@ export default function IntelligencePage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Active Insights" value={insights.length > 0 ? String(insights.length) : "—"} accent={K.blue} sub="AI-generated" loading={loading} />
-          <StatCard label="Avg Confidence" value={insights.some(i => i.confidence != null) ? `${Math.round(insights.reduce((s, i) => s + (i.confidence ?? 0), 0) / insights.length)}%` : "—"} accent={K.mint} sub="Model accuracy" loading={loading} />
           <StatCard label="High Impact" value={insights.length > 0 ? String(insights.filter(i => i.impact === "high").length) : "—"} accent={K.gold} sub="Action needed" loading={loading} />
+          <StatCard label="Signals (7d)" value={summary ? String(summary.totalSignals) : "—"} accent={K.teal} sub="Ingested events" loading={loading} />
+          <StatCard label="Avg ROAS" value={summary && summary.totalCampaigns > 0 ? `${summary.avgRoas.toFixed(2)}×` : "—"} accent={K.mint} sub="Active campaigns" loading={loading} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-3 mb-4">
@@ -76,7 +80,7 @@ export default function IntelligencePage() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Badge color={getImpactColor(insight.impact)}>{insight.impact} impact</Badge>
-                      <span className="font-mono text-[10px] text-t3">{insight.confidence != null ? `${insight.confidence}% conf` : "no model"}</span>
+                      {insight.confidence != null && <span className="font-mono text-[10px] text-t3">{insight.confidence}% conf</span>}
                     </div>
                   </div>
                   <p className="font-mono text-[11px] text-t2 leading-relaxed">{insight.description}</p>

@@ -21,6 +21,7 @@ interface SyncBrainStats {
 interface SignalStats {
   totalSignals: number;
   todaySignals: number;
+  processedSignals: number;
   avgPredictedLTV: number;
   processingRate: string;
 }
@@ -32,7 +33,7 @@ function fmt(n: number) {
 }
 
 export default function DashboardPage() {
-  const { agents: storeAgents, walletBalance, toggleAgent, addToast } = useKikiStore();
+  const { agents: storeAgents, walletBalance, addToast } = useKikiStore();
   const { token } = useAuth();
   const router = useRouter();
   const { connected, subscribe } = useSSE("/api/events", token ?? undefined);
@@ -41,7 +42,6 @@ export default function DashboardPage() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [syncbrainStats, setSyncbrainStats] = useState<SyncBrainStats | null>(null);
   const [signalStats, setSignalStats] = useState<SignalStats | null>(null);
-  const [runwayDays, setRunwayDays] = useState<number | null>(null);
   const [seeding, setSeeding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,32 +118,32 @@ export default function DashboardPage() {
 
   const agents = data?.agents || storeAgents;
   const balance = data?.wallet?.balance || walletBalance;
+  const cardCount = data?.wallet?.cards ?? 0;
 
-  // Compute runway from wallet balance and daily spend rate
-  useEffect(() => {
-    if (!data) return;
-    const balanceVal = data.wallet?.balance || 0;
-    const totalSpend = data.kpis?.spend?.value || 0;
-    const activeCount = data.campaigns?.filter(c => c.status === "active").length || 0;
-    const dailyBurn = activeCount > 0 ? totalSpend / Math.max(activeCount * 30, 1) : 0;
-    setRunwayDays(dailyBurn > 0 ? Math.round(balanceVal / dailyBurn) : null);
-  }, [data]);
+  const handleToggleAgent = async (id: string, status: string) => {
+    if (!token) return;
+    const next = status === "running" ? "paused" : "running";
+    try {
+      const res = await fetch("/api/agents", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id, status: next }),
+      });
+      if (res.ok) {
+        addToast("success", `Agent set to ${next}`);
+        dashboard.get(token).then(d => { setData(d); setLastUpdate(new Date()); }).catch(() => {});
+      } else {
+        addToast("error", "Failed to update agent");
+      }
+    } catch { addToast("error", "Failed to update agent"); }
+  };
 
-  // Derive syncbrain metrics
-  const decisionsPerMin = syncbrainStats ? Math.round((syncbrainStats.routingPerMin || 0) / 60) : null;
-  const tokenBudget = syncbrainStats?.totalTokens
-    ? Math.min(100, Math.round((syncbrainStats.totalTokens / 10000) * 100))
-    : null;
-
-  // Derive signal quality metrics
+  // Derive honest signal quality metrics from the real stats payload
   const enrichmentRate = signalStats && signalStats.totalSignals > 0
-    ? Math.round((signalStats.todaySignals / Math.max(signalStats.totalSignals, 1)) * 1000) / 10
+    ? Math.round(((signalStats.processedSignals ?? 0) / Math.max(signalStats.totalSignals, 1)) * 1000) / 10
     : null;
-  const fraudBlocked = data?.system?.fraudBlocked;
-  const signalsTotal = data?.system?.signalsTotal || 0;
-  const fraudRate = signalsTotal > 0 && fraudBlocked !== undefined
-    ? Math.round((fraudBlocked / Math.max(signalsTotal, 1)) * 1000) / 10
-    : null;
+  const avgLtvSignal = signalStats ? Math.round(signalStats.avgPredictedLTV || 0) : null;
+  const fraudBlockedToday = data?.system?.fraudBlocked ?? null;
 
   return (
     <DashboardLayout>
@@ -174,10 +174,10 @@ export default function DashboardPage() {
         {/* KPI Row */}
         <ErrorBoundary>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-            <StatCard label="Platform ROAS" value={data ? `${data.kpis.roas.value}×` : "—"} delta={data?.kpis.roas.delta ?? undefined} period="last month" accent={K.mint} loading={loading} />
+            <StatCard label="Platform ROAS" value={data ? `${data.kpis.roas.value}×` : "—"} delta={data?.kpis.roas.delta ?? undefined} accent={K.mint} loading={loading} />
             <StatCard label="Total Ad Spend" value={data ? `$${fmt(data.kpis.spend.value)}` : "—"} delta={data?.kpis.spend.delta ?? undefined} accent={K.blue} loading={loading} />
             <StatCard label="Avg LTV Signal" value={data ? `$${data.kpis.ltv.value}` : "—"} delta={data?.kpis.ltv.delta ?? undefined} accent={K.gold} loading={loading} />
-            <StatCard label="Wallet Balance" value={`$${fmt(balance)}`} accent={K.gold} sub={runwayDays !== null ? `~${runwayDays} days runway` : "—"} loading={loading} />
+            <StatCard label="Wallet Balance" value={`$${fmt(balance)}`} accent={K.gold} sub={data ? `${cardCount} virtual card(s)` : undefined} loading={loading} />
           </div>
         </ErrorBoundary>
 
@@ -192,14 +192,14 @@ export default function DashboardPage() {
             {/* Table header */}
             <ScrollableTable>
               <div className="min-w-[500px]">
-                <div className="grid grid-cols-[1fr_65px_65px_65px_65px] gap-2 px-5 py-2 border-b border-kcardborder bg-g950">
-              {["NAME", "STATUS", "ROAS", "BUDGET", "AGENT"].map(h => (
+                <div className="grid grid-cols-[1fr_65px_65px_65px] gap-2 px-5 py-2 border-b border-kcardborder bg-g950">
+              {["NAME", "STATUS", "ROAS", "SPEND"].map(h => (
                 <span key={h} className="font-mono text-[10px] tracking-widest text-t3">{h}</span>
               ))}
             </div>
             {/* Table rows */}
             {(data?.campaigns || []).slice(0, 5).map((c, i) => (
-              <div key={i} className="grid grid-cols-[1fr_65px_65px_65px_65px] gap-2 px-5 py-3 border-b border-g900 items-center cursor-pointer hover:bg-kcardhover transition-colors"
+              <div key={i} className="grid grid-cols-[1fr_65px_65px_65px] gap-2 px-5 py-3 border-b border-g900 items-center cursor-pointer hover:bg-kcardhover transition-colors"
                 onClick={() => router.push("/dashboard/campaigns")}>
                 <div className="min-w-0">
                   <p className="font-mono text-xs font-bold text-t1 mb-[3px] overflow-hidden text-ellipsis whitespace-nowrap">{c.name}</p>
@@ -208,7 +208,6 @@ export default function DashboardPage() {
                 <StatusBadge status={c.status} />
                 <span className={`font-mono text-xs font-bold ${c.roas >= 4 ? "text-kmint" : c.roas >= 2 ? "text-kwarn" : "text-kdanger"}`}>{c.roas}×</span>
                 <span className="font-mono text-[11px] text-t2">${fmt(c.spend)}</span>
-                <StatusBadge status={c.status} />
               </div>
             ))}
             {loading && [1, 2, 3].map(i => (
@@ -236,7 +235,7 @@ export default function DashboardPage() {
                 <p className="font-mono text-[11px] text-t3 mb-[6px] overflow-hidden text-ellipsis whitespace-nowrap">{agent.task as string}</p>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[11px] font-bold" style={{ color: agent.color as string }}>{agent.metric as string}</span>
-                  <Button size="xs" variant="ghost" onClick={() => toggleAgent(agent.id as string)}>{agent.status === "running" ? "Pause" : "Resume"}</Button>
+                  <Button size="xs" variant="ghost" onClick={() => handleToggleAgent(agent.id as string, agent.status as string)}>{agent.status === "running" ? "Pause" : "Resume"}</Button>
                 </div>
               </div>
             ))}
@@ -253,12 +252,16 @@ export default function DashboardPage() {
               <h3 className="font-mono font-bold text-[13px] text-t1">SyncBrain™</h3>
               <Badge color={connected ? K.green : K.t3} dot pulse={connected}>{connected ? "LIVE" : "STANDBY"}</Badge>
             </div>
-            <AIThinking label="Routing AI tasks across GPT-4o-mini and GPT-4o..." />
+            {connected ? (
+              <AIThinking label="Routing AI tasks across GPT-4o-mini and GPT-4o..." />
+            ) : (
+              <p className="font-mono text-[11px] text-t3">Stream standby — connect to view live routing.</p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
               {[
-                { l: "Decisions/min", v: decisionsPerMin !== null ? String(decisionsPerMin) : "—" },
-                { l: "Active agents", v: syncbrainStats?.agentTypes ? String(syncbrainStats.agentTypes.reduce((s, a) => s + a.count, 0)) : "—" },
-                { l: "Token budget", v: tokenBudget !== null ? `${tokenBudget}%` : "—" },
+                { l: "Agent actions (1h)", v: syncbrainStats ? String(syncbrainStats.routingPerMin ?? 0) : "—" },
+                { l: "Agents", v: syncbrainStats?.agentTypes ? String(syncbrainStats.agentTypes.reduce((s, a) => s + a.count, 0)) : "—" },
+                { l: "Tokens today", v: syncbrainStats ? fmt(syncbrainStats.totalTokens ?? 0) : "—" },
               ].map(m => (
                 <div key={m.l} className="p-2 bg-g850 rounded-kdls">
                   <p className="font-mono text-[11px] text-t3 mb-[3px]">{m.l}</p>
@@ -275,17 +278,17 @@ export default function DashboardPage() {
               <Badge color={connected ? K.teal : K.t3} dot pulse={connected}>{connected ? "LIVE" : "STANDBY"}</Badge>
             </div>
             {[
-              { l: "Enrichment rate", v: enrichmentRate, c: K.mint, unit: "%" },
-              { l: "LTV predictions", v: signalStats?.totalSignals ?? null, c: K.gold, unit: "" },
-              { l: "Today's signals", v: signalStats?.todaySignals ?? null, c: K.blue, unit: "" },
-              { l: "Fraud blocked", v: fraudRate, c: K.danger, unit: "%" },
+              { l: "Enrichment rate", v: enrichmentRate, c: K.mint, display: enrichmentRate !== null ? `${enrichmentRate}%` : "—", bar: enrichmentRate },
+              { l: "Avg LTV", v: avgLtvSignal, c: K.gold, display: avgLtvSignal !== null ? `$${avgLtvSignal}` : "—", bar: null },
+              { l: "Today's signals", v: signalStats?.todaySignals ?? null, c: K.blue, display: signalStats ? String(signalStats.todaySignals) : "—", bar: null },
+              { l: "Fraud blocked (today)", v: fraudBlockedToday, c: K.danger, display: fraudBlockedToday !== null ? String(fraudBlockedToday) : "—", bar: null },
             ].map(m => (
               <div key={m.l} className="mb-[10px]">
                 <div className="flex justify-between mb-[3px]">
                   <span className="font-mono text-[11px] text-t3">{m.l}</span>
-                  <span className="font-mono text-xs font-bold" style={{ color: m.c }}>{m.v !== null ? `${m.v}${m.unit}` : "—"}</span>
+                  <span className="font-mono text-xs font-bold" style={{ color: m.c }}>{m.display}</span>
                 </div>
-                <ProgressBar value={m.v !== null ? Math.min(100, m.unit === "%" ? m.v : Math.min(100, m.v / 10)) : 0} color={m.c} glow height={4} />
+                {m.bar !== null && <ProgressBar value={Math.min(100, m.bar)} color={m.c} glow height={4} />}
               </div>
             ))}
           </Card>
@@ -325,9 +328,8 @@ export default function DashboardPage() {
             <div className="mb-[14px]">
               <p className="font-mono text-[11px] tracking-widest text-t3 mb-[6px]">WALLET BALANCE</p>
               <p className="font-mono text-[clamp(24px,4vw,32px)] font-bold text-kgold">${fmt(balance)}</p>
-              <p className="font-mono text-[11px] text-t3 mt-1">{runwayDays !== null ? `~${runwayDays} days runway at current spend` : "—"}</p>
+              <p className="font-mono text-[11px] text-t3 mt-1">{cardCount} virtual card(s) issued</p>
             </div>
-            <ProgressBar value={Math.min(100, (balance / 100000) * 100)} color={K.gold} glow height={5} />
             <div className="mt-[14px] flex gap-2">
               <Button variant="mint" size="sm" full onClick={() => router.push("/dashboard/wallet")}>↑ Top Up</Button>
               <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard/wallet")}>Details →</Button>
