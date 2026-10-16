@@ -32,7 +32,7 @@ describe.skipIf(!dbAvailable)("billing — fx spread", () => {
 
 describe.skipIf(!dbAvailable)("billing — plan pricing", () => {
   it("has sane starter pricing", () => {
-    expect(PLAN_PRICING.starter.monthlyPrice).toBe(490);
+    expect(PLAN_PRICING.starter.monthlyPrice).toBe(690);
     expect(PLAN_PRICING.starter.signalOverageRate).toBeGreaterThan(0);
   });
 

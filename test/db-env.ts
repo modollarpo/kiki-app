@@ -1,19 +1,16 @@
-import { Pool } from "pg";
+import { getDb } from "@/lib/db";
 
-// Detects whether a reachable PostgreSQL instance is configured. DB-dependent
-// test suites use this to gracefully skip in environments (CI, offline local)
-// where no database is available, while pure unit tests still run.
+// Reports whether the application database layer is usable. It exercises the
+// exact path the suites will use — getDb() resolves PostgreSQL, else the local
+// SQLite file (honoring DATABASE_PATH), else an in-memory store — and runs the
+// migrations + demo seed. This lets DB-dependent suites run everywhere (CI has
+// no external Postgres) instead of silently skipping.
 export async function isDbAvailable(): Promise<boolean> {
-  const url =
-    process.env.DATABASE_URL ||
-    "postgres://postgres:postgres@localhost:5432/kiki?sslmode=disable";
-  const pool = new Pool({ connectionString: url, connectionTimeoutMillis: 2500 });
   try {
-    await pool.query("SELECT 1");
+    const db = await getDb();
+    await db.prepare("SELECT 1 as ok").get();
     return true;
   } catch {
     return false;
-  } finally {
-    await pool.end().catch(() => {});
   }
 }
