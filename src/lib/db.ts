@@ -46,11 +46,61 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
-// Translate better-sqlite3 "?" positional placeholders to pg "$1..$n",
-// and SQLite date helpers to their PostgreSQL equivalents.
+// SQLite's `INSERT OR REPLACE` / `INSERT OR IGNORE` have no PostgreSQL
+// equivalent, so they are rewritten to `INSERT ... ON CONFLICT`. The conflict
+// target is the table's unique/PK column(s).
+const REPLACE_CONFLICT_TARGETS: Record<string, string[]> = {
+  bid_approvals: ["id"],
+  creative_generations: ["id"],
+  competitor_configs: ["id"],
+  oauth_states: ["state"],
+  user_devices: ["device_id"],
+  push_tokens: ["tenant_id", "user_id", "platform"],
+};
+
+// The ON CONFLICT clause must follow the VALUES list but precede RETURNING.
+function appendOnConflict(sql: string, clause: string): string {
+  if (/\breturning\b/i.test(sql)) {
+    return sql.replace(/\breturning\b/i, `${clause} RETURNING`);
+  }
+  return sql.trimEnd() + clause;
+}
+
+// Translate better-sqlite3 SQL to its PostgreSQL equivalent:
+//   - "?" positional placeholders        -> "$1..$n"
+//   - date('now')                        -> CURRENT_DATE
+//   - datetime("now")                    -> datetime('now') (double quotes are
+//                                            identifiers in pg, string in sqlite)
+//   - INSERT OR REPLACE / INSERT OR IGNORE -> INSERT ... ON CONFLICT ...
 function translate(sql: string): string {
+  let out = sql
+    .replace(/(datetime|date)\("now"\)/gi, "$1('now')");
+
+  const replaceMatch = out.match(
+    /^\s*INSERT\s+OR\s+REPLACE\s+INTO\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(([^)]*)\)/i
+  );
+  if (replaceMatch) {
+    const table = replaceMatch[1];
+    const cols = replaceMatch[2]
+      .split(",")
+      .map((c) => c.trim())
+      .filter((c) => c.length > 0);
+    const target = REPLACE_CONFLICT_TARGETS[table.toLowerCase()] ?? [cols[0]];
+    const updates = cols
+      .filter((c) => !target.includes(c))
+      .map((c) => `${c} = EXCLUDED.${c}`);
+    const clause = updates.length
+      ? ` ON CONFLICT (${target.join(", ")}) DO UPDATE SET ${updates.join(", ")}`
+      : ` ON CONFLICT (${target.join(", ")}) DO NOTHING`;
+    out = out.replace(/INSERT\s+OR\s+REPLACE\s+INTO/i, "INSERT INTO");
+    out = appendOnConflict(out, clause);
+  } else if (/^\s*INSERT\s+OR\s+IGNORE\s+INTO/i.test(out)) {
+    out = out.replace(/INSERT\s+OR\s+IGNORE\s+INTO/i, "INSERT INTO");
+    out = appendOnConflict(out, " ON CONFLICT DO NOTHING");
+  }
+
   let i = 0;
-  return sql
+  return out
     .replace(/\?/g, () => `$${++i}`)
     .replace(/date\('now'\)/gi, "CURRENT_DATE");
 }
@@ -76,12 +126,23 @@ class PgStatement {
 
   async run(...params: SqlParam[]): Promise<{ lastInsertRowid: string | number; changes: number }> {
     const trimmed = this.sql.trim();
-    let q = translate(this.sql);
+    const q = translate(this.sql);
     let lastInsertRowid: string | number = 0;
     let changes = 0;
     if (/^insert\s+/i.test(trimmed)) {
-      if (!/\breturning\b/i.test(q)) q += " RETURNING id";
-      const res = await pool.query(q, params);
+      let res;
+      try {
+        res = await pool.query(/\breturning\b/i.test(q) ? q : `${q} RETURNING id`, params);
+      } catch (e) {
+        // Tables without an `id` column (oauth_states, push_tokens, user_devices…)
+        // reject the synthetic RETURNING — retry the statement unchanged.
+        const err = e as { code?: string };
+        if (err.code === "42703") {
+          res = await pool.query(q, params);
+        } else {
+          throw e;
+        }
+      }
       if (res.rows[0] && res.rows[0].id !== undefined) lastInsertRowid = res.rows[0].id;
       changes = res.rowCount ?? 0;
     } else {
