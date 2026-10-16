@@ -258,17 +258,26 @@ class SqliteDb {
 async function createSqliteDb(): Promise<SqliteDb | MemoryDb> {
   const fs = require("fs") as typeof import("fs");
   const path = require("path") as typeof import("path");
-  const dataDir = path.resolve(process.cwd(), "data");
+  // Honor DATABASE_PATH when provided (e.g. tests use an isolated file so they
+  // never touch the dev database); otherwise default to ./data/kiki-local.sqlite.
+  const file = process.env.DATABASE_PATH
+    ? path.resolve(process.cwd(), process.env.DATABASE_PATH)
+    : path.resolve(process.cwd(), "data", "kiki-local.sqlite");
+  const dataDir = path.dirname(file);
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-  const file = path.join(dataDir, "kiki-local.sqlite");
-  let DatabaseSync: (new (file: string, opts?: Record<string, unknown>) => SqliteHandle) | undefined;
-  try {
-    const sqliteModule = await import(/* @vite-ignore */ /* webpackIgnore: true */ "node:sqlite");
-    DatabaseSync = sqliteModule.DatabaseSync;
-  } catch (e) {
+  // Resolve the built-in at runtime rather than via a static/dynamic import:
+  // bundlers and test runners rewrite `import("node:sqlite")` (Vite resolves it
+  // as a package named "sqlite" and fails), whereas process.getBuiltinModule is
+  // an ordinary runtime call. Available on Node 20.16+/22.3+; returns undefined
+  // when the module is not a built-in (e.g. Node 20), so we fall back to memory.
+  const getBuiltin = (process as unknown as { getBuiltinModule?: (id: string) => unknown }).getBuiltinModule;
+  const sqliteModule = (getBuiltin ? getBuiltin.call(process, "node:sqlite") : undefined) as
+    | { DatabaseSync?: new (file: string, opts?: Record<string, unknown>) => SqliteHandle }
+    | undefined;
+  const DatabaseSync = sqliteModule?.DatabaseSync;
+  if (!DatabaseSync) {
     logger.warn(
-      "[DB] node:sqlite unavailable (" + (e as Error).message.split("\n")[0] +
-      ") — using in-memory fallback. Set DATABASE_URL to enable persistent PostgreSQL."
+      "[DB] node:sqlite unavailable — using in-memory fallback. Set DATABASE_URL to enable persistent PostgreSQL."
     );
     return createMemoryDb();
   }
@@ -1466,8 +1475,8 @@ async function seedIfEmpty(db: PgDb) {
   await insertUser.run("u2", "admin@keekii.net", "Admin User", hashPassword("admin123"), "superadmin", "t2", "KIKI Inc.", "enterprise", "AU", trialEnd);
 
   const insertCampaign = db.prepare(`
-    INSERT INTO campaigns (id, tenant_id, name, platform, status, roas, spend, budget, impressions, clicks, conversions, cpa, ltv_predicted)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO campaigns (id, tenant_id, name, platform, status, roas, spend, budget, impressions, clicks, conversions, cpa, ltv_predicted, revenue)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const campaigns = [
     ["c1", "t1", "Q4 Fitness Acquisition", "meta", "active", 4.23, 8400, 15000, 245000, 12800, 420, 20.0, 312],
@@ -1479,7 +1488,12 @@ async function seedIfEmpty(db: PgDb) {
     ["c7", "t1", "Snapchat Stories Campaign", "snapchat", "draft", 0, 0, 5000, 0, 0, 0, 0, 0],
     ["c8", "t1", "Pinterest Holiday Shopping", "pinterest", "completed", 5.12, 9800, 12000, 310000, 18500, 520, 18.85, 380],
   ];
-  for (const c of campaigns) await insertCampaign.run(...c);
+  for (const c of campaigns) {
+    // Revenue is derived from ROAS × spend so downstream features (OaaS fees,
+    // analytics, MMM) read a consistent figure rather than a default of 0.
+    const revenue = Math.round((c[5] as number) * (c[6] as number));
+    await insertCampaign.run(...c, revenue);
+  }
 
   const insertAgent = db.prepare(`
     INSERT INTO agents (id, tenant_id, name, type, status, task, metric, color, last_action, action_count, config)
@@ -1684,7 +1698,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
           await seedBillingIfEmpty(db as unknown as PgDb);
           await seedFeatureDemoIfEmpty(db as unknown as PgDb);
         }
-        logger.info("[DB] Using local SQLite fallback at ./data/kiki-local.sqlite");
+        logger.info("[DB] Using local SQLite fallback at " + (process.env.DATABASE_PATH || "./data/kiki-local.sqlite"));
         globalForDb.__kikiDb = db as unknown as PgDb;
         return globalForDb.__kikiDb;
       } catch (e) {

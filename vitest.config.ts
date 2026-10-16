@@ -5,11 +5,13 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["test/**/*.test.ts"],
+    globalSetup: ["test/global-setup.ts"],
     fileParallelism: false,
     env: {
       JWT_SECRET: "test-jwt-secret-at-least-32-characters-long",
       ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       DATABASE_PATH: path.join(process.cwd(), "test", ".test-kiki.db"),
+      SEED_DEMO_DATA: "true",
     },
   },
   resolve: {
