@@ -13,6 +13,7 @@ const WEBHOOK_TUNING = {
   // but not processed to avoid accidental state changes from Stripe's API.
   SUPPORTED_EVENTS: [
     "payment_intent.succeeded",
+    "checkout.session.completed",
     "customer.subscription.created",
     "customer.subscription.updated",
     "customer.subscription.deleted",
@@ -50,7 +51,21 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case "payment_intent.succeeded": {
         const pi = event.data.object as Stripe.PaymentIntent;
+        // Checkout-driven top-ups are settled by `checkout.session.completed`
+        // (keyed by session id); skip here to avoid a duplicate lookup miss.
+        if (pi.metadata?.kind === "wallet_topup") break;
         const result = await confirmTopUp(pi.id);
+        if (!result.success) {
+          return NextResponse.json({ ok: false, error: result.error }, { status: 422 });
+        }
+        break;
+      }
+
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.metadata?.kind !== "wallet_topup") break;
+        if (session.payment_status !== "paid") break;
+        const result = await confirmTopUp(session.id);
         if (!result.success) {
           return NextResponse.json({ ok: false, error: result.error }, { status: 422 });
         }

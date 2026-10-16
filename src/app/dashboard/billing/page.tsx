@@ -15,10 +15,15 @@ interface BillingData {
     status: string;
     currentPeriodEnd: string;
   } | null;
+  limits: {
+    maxApiCallsPerDay: number;
+    maxTokensPerMonth: number;
+    maxSignalsPerDay: number;
+  };
   usage: Record<string, { quantity: number; cost: number }>;
   totalManagedSpend: number;
   invoices: { id: string; amount: number; status: string; currency: string; periodStart: string; periodEnd: string }[];
-  oaas: { totalFees: number; platformFeeRate: number } | null;
+  oaas: { managementFee: number; performanceBonus: number; totalRevenue: number; upliftPercent: number; baselineRoas: number; actualRoas: number } | null;
 }
 
 export default function BillingPage() {
@@ -53,6 +58,7 @@ export default function BillingPage() {
 
   const plan = billing?.subscription;
   const usage = billing?.usage || {};
+  const limits = billing?.limits;
   const totalSpend = billing?.totalManagedSpend || 0;
   const oaas = billing?.oaas;
   const invoices = billing?.invoices || [];
@@ -74,11 +80,10 @@ export default function BillingPage() {
   };
 
   const meters = [
-    { name: "API Calls", used: usage.api_calls?.quantity || 0, limit: 500000, unit: "calls" },
-    { name: "AI Agent Runs", used: usage.ai_agent_runs?.quantity || 0, limit: 2000, unit: "runs" },
-    { name: "Storage", used: usage.storage?.quantity || 0, limit: 50, unit: "GB" },
-    { name: "Team Seats", used: usage.team_seats?.quantity || 0, limit: 10, unit: "seats" },
-    { name: "Webhooks", used: usage.webhooks?.quantity || 0, limit: 20, unit: "endpoints" },
+    { name: "API Calls", used: usage.api_calls?.quantity || 0, limit: limits?.maxApiCallsPerDay ?? 0, unit: "calls" },
+    { name: "AI Tokens", used: usage.ai_tokens?.quantity || 0, limit: limits?.maxTokensPerMonth ?? 0, unit: "tokens" },
+    { name: "Signals Sent", used: usage.signals_sent?.quantity || 0, limit: limits?.maxSignalsPerDay ?? 0, unit: "signals" },
+    { name: "Ad Spend", used: usage.ad_spend?.quantity || 0, limit: 0, unit: "USD" },
   ];
 
   return (
@@ -111,7 +116,7 @@ export default function BillingPage() {
               <Card accent={K.gold} glow={K.gold}>
                 <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-2">CURRENT PLAN</p>
                 <div className="flex items-center gap-2.5 mb-3">
-                  <span className="font-mono text-[22px] font-bold text-kgold">{plan?.plan?.toUpperCase() || "FREE"}</span>
+                  <span className="font-mono text-[22px] font-bold text-kgold">{plan?.plan?.toUpperCase() || "—"}</span>
                   <Badge color={plan?.status === "active" ? K.mint : K.warn}>{plan?.status?.toUpperCase() || "NONE"}</Badge>
                 </div>
                 <p className="font-mono text-[10px] text-t3 mt-1">
@@ -128,10 +133,10 @@ export default function BillingPage() {
               <Card>
                 <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-2">OaaS FEES</p>
                 <p className="font-mono text-[28px] font-bold mb-1 text-kmint">
-                  {oaas ? `$${oaas.totalFees.toFixed(2)}` : "N/A"}
+                  {oaas ? `$${oaas.totalRevenue.toFixed(2)}` : "N/A"}
                 </p>
                 <p className="font-mono text-[10px] text-t3 mb-3">
-                  {oaas ? `${(oaas.platformFeeRate * 100).toFixed(1)}% platform fee` : "Not on OaaS plan"}
+                  {oaas ? `${oaas.upliftPercent >= 0 ? "+" : ""}${oaas.upliftPercent.toFixed(1)}% uplift · ${oaas.actualRoas.toFixed(2)}x ROAS` : "Not on OaaS plan"}
                 </p>
               </Card>
             </div>
@@ -149,7 +154,9 @@ export default function BillingPage() {
                       <span className="font-mono text-[11px] font-semibold text-t1">{m.name}</span>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[11px]" style={{ color: warn ? K.warn : K.t2 }}>
-                          {m.used >= 1000 ? fmt.compact(m.used) : m.used} / {m.limit >= 1000 ? fmt.compact(m.limit) : m.limit} {m.unit}
+                          {m.limit > 0
+                            ? `${m.used >= 1000 ? fmt.compact(m.used) : m.used} / ${m.limit >= 1000 ? fmt.compact(m.limit) : m.limit} ${m.unit}`
+                            : `${m.unit === "USD" ? "$" : ""}${m.used >= 1000 ? fmt.compact(m.used) : m.used}${m.unit === "USD" ? "" : ` ${m.unit}`}`}
                         </span>
                         {warn && <Badge color={K.warn}>HIGH</Badge>}
                       </div>

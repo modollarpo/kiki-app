@@ -10,39 +10,38 @@ import { useAuth } from "@/hooks/useAuth";
 interface CommerceConnection {
   id: string;
   platform: string;
-  shopDomain: string;
-  status: "connected" | "pending" | "error" | "syncing";
-  lastSync: string | null;
+  platformName?: string;
+  shopDomain: string | null;
+  status: string;
+  lastSyncAt: string | null;
   totalOrders: number;
   totalRevenue: number;
 }
 
 interface PlatformCatalogItem {
-  key: string;
-  label: string;
-  description: string;
+  platformId: string;
+  name: string;
+  authType: string;
 }
 
 interface CommerceData {
   connections: CommerceConnection[];
-  catalog: PlatformCatalogItem[];
+  available: PlatformCatalogItem[];
 }
 
 interface LtvSegment {
   segment: string;
-  predictedLtv: number;
-  realizedLtv: number;
-  errorPct: number;
   count: number;
+  avgPredicted: number;
+  avgActual: number;
+  avgErrorPct: number;
 }
 
 interface LtvAccuracyData {
-  overallAccuracy: number;
-  predictionCoverage: number;
   bySegment: LtvSegment[];
+  avgError: number;
+  coverage: number;
 }
-
-const PLATFORMS = ["shopify", "woocommerce", "magento", "bigcommerce", "square"];
 
 export default function CommercePage() {
   const { token, loading: authLoading } = useAuth();
@@ -53,7 +52,7 @@ export default function CommercePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [platform, setPlatform] = useState(PLATFORMS[0]);
+  const [platform, setPlatform] = useState("");
   const [shopDomain, setShopDomain] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [webhookSecret, setWebhookSecret] = useState("");
@@ -72,12 +71,12 @@ export default function CommercePage() {
       ]);
       if (!cRes.ok) throw new Error("Failed to load commerce connections");
       const cData = await cRes.json();
-      setCommerce(cData.data ?? { connections: [], catalog: [] });
+      setCommerce(cData.data ?? { connections: [], available: [] });
       if (lRes.ok) {
         const lData = await lRes.json();
-        setLtv(lData.data ?? { overallAccuracy: 0, predictionCoverage: 0, bySegment: [] });
+        setLtv(lData.data ?? null);
       } else {
-        setLtv({ overallAccuracy: 0, predictionCoverage: 0, bySegment: [] });
+        setLtv(null);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load commerce data");
@@ -85,6 +84,15 @@ export default function CommercePage() {
       setLoading(false);
     }
   }, [token]);
+
+  useEffect(() => {
+    if (!commerce || commerce.available.length === 0) return;
+    setPlatform(prev =>
+      prev && commerce.available.some(a => a.platformId === prev)
+        ? prev
+        : commerce.available[0].platformId
+    );
+  }, [commerce]);
 
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
@@ -167,12 +175,13 @@ export default function CommercePage() {
   };
 
   const connections = commerce?.connections ?? [];
-  const catalog = commerce?.catalog ?? [];
+  const catalog = commerce?.available ?? [];
   const totalOrders = connections.reduce((s, c) => s + (c.totalOrders || 0), 0);
   const totalStores = connections.length;
-  const avgAccuracy = ltv?.overallAccuracy ?? 0;
-  const coverage = ltv?.predictionCoverage ?? 0;
+  const avgError = ltv?.avgError ?? null;
+  const coverage = ltv?.coverage ?? null;
   const segments = ltv?.bySegment ?? [];
+  const accuracy = avgError != null ? 100 - avgError : null;
 
   return (
     <DashboardLayout>
@@ -194,10 +203,10 @@ export default function CommercePage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Stores Connected" value={loading ? "…" : String(totalStores)} sub={`${connections.filter(c => c.status === "connected").length} active`} accent={K.mint} loading={loading} />
+          <StatCard label="Stores Connected" value={loading ? "…" : String(totalStores)} sub={`${connections.filter(c => c.status === "active").length} active`} accent={K.mint} loading={loading} />
           <StatCard label="Orders Synced" value={loading ? "…" : (totalOrders > 0 ? totalOrders.toLocaleString() : "0")} sub="Total across stores" accent={K.blue} loading={loading} />
-          <StatCard label="Avg LTV Accuracy" value={loading ? "…" : `${avgAccuracy.toFixed(1)}%`} sub="Predicted vs realized" accent={K.gold} loading={loading} />
-          <StatCard label="Prediction Coverage" value={loading ? "…" : `${coverage.toFixed(1)}%`} sub="Customers with LTV" accent={K.teal} loading={loading} />
+          <StatCard label="Avg LTV Accuracy" value={loading ? "…" : accuracy != null ? `${accuracy.toFixed(1)}%` : "—"} sub="100 − avg prediction error" accent={K.gold} loading={loading} />
+          <StatCard label="Prediction Coverage" value={loading ? "…" : coverage != null ? `${(coverage * 100).toFixed(1)}%` : "—"} sub="Customers with realized LTV" accent={K.teal} loading={loading} />
         </div>
 
         <div id="connect-panel">
@@ -215,8 +224,10 @@ export default function CommercePage() {
                   fontFamily: K.mono, fontSize: 13, outline: "none",
                 }}
               >
-                {PLATFORMS.map((p) => (
-                  <option key={p} value={p}>{catalog.find((c) => c.key === p)?.label ?? p}</option>
+                {catalog.length === 0 ? (
+                  <option value="">No connectors available</option>
+                ) : catalog.map((c) => (
+                  <option key={c.platformId} value={c.platformId}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -244,8 +255,8 @@ export default function CommercePage() {
                 <div key={c.id} className="p-3 rounded-sm flex flex-wrap items-center gap-3" style={{ background: K.g850, border: `1px solid ${K.cardBorder}` }}>
                   <div className="flex-1 min-w-[180px]">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-mono text-[11px] font-semibold text-t1">{c.platform}</span>
-                      <Badge color={c.status === "connected" ? K.mint : c.status === "error" ? K.danger : K.warn} dot pulse={c.status === "connected" || c.status === "syncing"}>{c.status}</Badge>
+                      <span className="font-mono text-[11px] font-semibold text-t1">{c.platformName ?? c.platform}</span>
+                      <Badge color={c.status === "active" ? K.mint : c.status === "revoked" ? K.danger : K.warn} dot pulse={c.status === "active"}>{c.status}</Badge>
                     </div>
                     <span className="font-mono text-[10px] text-t3">{c.shopDomain}</span>
                   </div>
@@ -258,7 +269,7 @@ export default function CommercePage() {
                     <div className="font-mono text-[9px] text-t3">revenue</div>
                   </div>
                   <div className="text-right w-32">
-                    <div className="font-mono text-[10px] text-t2">{c.lastSync ? new Date(c.lastSync).toLocaleString() : "never"}</div>
+                    <div className="font-mono text-[10px] text-t2">{c.lastSyncAt ? new Date(c.lastSyncAt).toLocaleString() : "never"}</div>
                     <div className="font-mono text-[9px] text-t3">last sync</div>
                   </div>
                   <div className="flex gap-2">
@@ -292,9 +303,9 @@ export default function CommercePage() {
                   {segments.map((s) => (
                     <tr key={s.segment}>
                       <td className="font-mono text-[11px] font-semibold text-t1 py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>{s.segment}</td>
-                      <td className="font-mono text-[11px] text-kblue py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>${s.predictedLtv.toFixed(2)}</td>
-                      <td className="font-mono text-[11px] text-kmint py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>${s.realizedLtv.toFixed(2)}</td>
-                      <td className="font-mono text-[11px] py-2 px-2" style={{ color: Math.abs(s.errorPct) <= 10 ? K.mint : K.warn, borderBottom: `1px solid ${K.g800}` }}>{s.errorPct.toFixed(1)}%</td>
+                      <td className="font-mono text-[11px] text-kblue py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>${s.avgPredicted.toFixed(2)}</td>
+                      <td className="font-mono text-[11px] text-kmint py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>${s.avgActual.toFixed(2)}</td>
+                      <td className="font-mono text-[11px] py-2 px-2" style={{ color: Math.abs(s.avgErrorPct) <= 10 ? K.mint : K.warn, borderBottom: `1px solid ${K.g800}` }}>{s.avgErrorPct.toFixed(1)}%</td>
                       <td className="font-mono text-[11px] text-t2 py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>{s.count.toLocaleString()}</td>
                     </tr>
                   ))}

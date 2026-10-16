@@ -1,38 +1,64 @@
 ﻿"use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
 import { StatCard, Card, Badge, Button, ProgressBar } from "@/components/ui";
 import { useKikiStore } from "@/store";
 import { useAuth } from "@/hooks/useAuth";
-import { wallet as walletApi, type WalletData } from "@/lib/api";
+import { wallet as walletApi, isNotConfigured, type WalletData } from "@/lib/api";
 import { K } from "@/lib/kdls";
 
 const fmt = (n: number) => n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : n.toLocaleString();
 
 export default function WalletPage() {
-  const { walletBalance, topUpWallet, addToast } = useKikiStore();
+  const { walletBalance, addToast } = useKikiStore();
   const { token } = useAuth();
   const [data, setData] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
   const [topUpAmt, setTopUpAmt] = useState(1000);
   const [toppingUp, setToppingUp] = useState(false);
+  const topupToastShown = useRef(false);
 
   useEffect(() => {
     if (!token) return;
     walletApi.get(token).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
   }, [token]);
 
+  useEffect(() => {
+    if (topupToastShown.current) return;
+    topupToastShown.current = true;
+    const status = new URLSearchParams(window.location.search).get("topup");
+    if (status === "success") addToast("success", "Payment received — your wallet will be credited once Stripe confirms.");
+    else if (status === "cancelled") addToast("info", "Top-up cancelled.");
+  }, [addToast]);
+
   const handleTopUp = async () => {
     if (!token) return;
     setToppingUp(true);
     try {
-      const result = await walletApi.topUp(token, topUpAmt);
-      topUpWallet(topUpAmt);
-      setData(prev => prev ? { ...prev, balance: result.balance } : prev);
-      addToast("success", `Wallet topped up by $${topUpAmt.toLocaleString()}`);
-    } catch {
-      addToast("error", "Top-up failed. Please try again.");
+      const result = await walletApi.checkout(token, topUpAmt);
+      if (result.url) {
+        window.location.href = result.url;
+        return;
+      }
+      addToast("error", "Could not start checkout.");
+    } catch (e) {
+      if (isNotConfigured(e)) {
+        // No payment provider configured (local/demo): credit immediately.
+        try {
+          const r = await walletApi.topUp(token, topUpAmt);
+          if (r.requiresConfirmation) {
+            addToast("info", `Top-up of $${topUpAmt.toLocaleString()} awaiting payment confirmation.`);
+          } else {
+            setData(prev => prev ? { ...prev, balance: r.balance } : prev);
+            addToast("success", `Wallet topped up by $${topUpAmt.toLocaleString()}`);
+          }
+        } catch {
+          addToast("error", "Top-up failed. Please try again.");
+        }
+      } else {
+        addToast("error", "Top-up failed. Please try again.");
+      }
     }
     setToppingUp(false);
   };
@@ -63,9 +89,13 @@ export default function WalletPage() {
   const cards = data?.cards || [];
   const txs = data?.transactions || [];
   const todaySpend = txs.filter((tx: WalletData["transactions"][0]) => tx.type === "campaign_spend" && new Date(tx.date).toDateString() === new Date().toDateString()).reduce((s: number, tx: WalletData["transactions"][0]) => s + Math.abs(tx.amount), 0);
-  const avgDailySpend = txs.length > 0
-    ? txs.filter((tx: WalletData["transactions"][0]) => tx.type === "campaign_spend").reduce((s: number, tx: WalletData["transactions"][0]) => s + Math.abs(tx.amount), 0) / 30
-    : 0;
+  const spendTxs = txs.filter((tx: WalletData["transactions"][0]) => tx.type === "campaign_spend");
+  const totalSpend = spendTxs.reduce((s: number, tx: WalletData["transactions"][0]) => s + Math.abs(tx.amount), 0);
+  const spendTimes = spendTxs.map((tx: WalletData["transactions"][0]) => new Date(tx.date).getTime()).filter((n: number) => !Number.isNaN(n));
+  const spanDays = spendTimes.length > 1
+    ? Math.max(1, Math.round((Math.max(...spendTimes) - Math.min(...spendTimes)) / 86400000))
+    : (spendTxs.length > 0 ? 1 : 0);
+  const avgDailySpend = spanDays > 0 ? totalSpend / spanDays : 0;
   const runwayDays = avgDailySpend > 0 ? Math.floor(balance / avgDailySpend) : 0;
 
   return (
@@ -75,7 +105,7 @@ export default function WalletPage() {
         <div className="mb-[22px] flex items-start justify-between flex-wrap gap-3">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 mb-1">Wallet & Cards</h1>
-            <p className="font-mono text-[11px] text-t3">Multi-currency · Virtual cards · Double-entry ledger</p>
+            <p className="font-mono text-[11px] text-t3">{`Virtual cards · ${(data?.currency || "USD").toUpperCase()} ledger`}</p>
           </div>
           <Button size="sm" loading={toppingUp} onClick={handleTopUp}>↑ Top Up Wallet</Button>
         </div>
@@ -158,14 +188,6 @@ export default function WalletPage() {
               <p className="font-mono text-[28px] font-bold text-kgold">${topUpAmt.toLocaleString()}</p>
             </div>
             <Button variant="mint" size="lg" full loading={toppingUp} onClick={handleTopUp}>↑ Top Up Now</Button>
-            <div className="mt-4 flex flex-col gap-[6px]">
-              {[{ l: "Bank transfer fee", v: "Free" }, { l: "Card processing", v: "2.9%" }, { l: "Settlement", v: "Instant" }].map(r => (
-                <div key={r.l} className="flex justify-between">
-                  <span className="font-mono text-[10px] text-t3">{r.l}</span>
-                  <span className="font-mono text-[10px] text-t2">{r.v}</span>
-                </div>
-              ))}
-            </div>
           </Card>
         </div>
       </div>
