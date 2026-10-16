@@ -74,10 +74,14 @@ export default function WalletPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: "issue_card", campaignName: "General Campaign", totalLimit: 5000 }),
       });
-      if (res.ok) {
-        const result = await res.json();
+      const result = await res.json().catch(() => null);
+      if (res.ok && result?.card) {
         setData(prev => prev ? { ...prev, cards: [...(prev.cards || []), result.card] } : prev);
-        addToast("success", `${result.card.issuer === "stripe" ? "Virtual" : "Simulated virtual"} card •••• ${result.card.last4} issued`);
+        addToast("success", `Virtual card •••• ${result.card.last4} issued`);
+      } else if (result?.code === "SERVICE_NOT_CONFIGURED") {
+        addToast("error", "Card issuance isn't configured for this workspace.");
+      } else {
+        addToast("error", result?.error || "Failed to issue card.");
       }
     } catch {
       addToast("error", "Failed to issue card.");
@@ -122,7 +126,11 @@ export default function WalletPage() {
             <Card accent={K.indigo}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-mono font-bold text-[13px] text-t1">Virtual Cards</h2>
-                <Button size="xs" variant="secondary" loading={issuing} onClick={handleIssueCard}>+ Issue New Card</Button>
+                {data?.issuingEnabled ? (
+                  <Button size="xs" variant="secondary" loading={issuing} onClick={handleIssueCard}>+ Issue New Card</Button>
+                ) : (
+                  <span className="font-mono text-[10px] text-t4 whitespace-nowrap">Issuance not configured</span>
+                )}
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1">
                 {cards.map((card: WalletData["cards"][0]) => (

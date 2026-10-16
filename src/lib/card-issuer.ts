@@ -2,12 +2,12 @@
 // KIKI Agent Platform — Virtual Card Issuer abstraction
 // Decouples card creation/funding from the underlying provider.
 //
-//  - LocalCardIssuer: simulated cards (no real network). Used when
-//    Stripe Issuing is not configured (dev/demo). This is the
-//    pre-Stripe behaviour and remains fully functional.
 //  - StripeCardIssuer: real cards via Stripe Issuing when
 //    STRIPE_SECRET_KEY is present. Cards are issued on a Stripe
 //    Issuing cardholder backed by the tenant wallet.
+//  - UnavailableCardIssuer: throws when Stripe Issuing is not
+//    configured. Card issuance fails loud (SERVICE_NOT_CONFIGURED)
+//    rather than fabricating a simulated card.
 //
 // The rest of the app (wallet.ts, api/wallet) only depends on the
 // `CardIssuer` interface, so swapping providers is a one-line change.
@@ -36,14 +36,24 @@ export interface CardIssuer {
   }): Promise<IssuedCard>;
 }
 
-// ── Local (simulated) issuer ────────────────────────────────
-class LocalCardIssuer implements CardIssuer {
+// ── Unconfigured issuer (fail-loud) ─────────────────────────
+// Card issuance requires a real provider. We never fabricate cards.
+
+export const SERVICE_NOT_CONFIGURED = "SERVICE_NOT_CONFIGURED";
+
+export class CardIssuanceUnavailableError extends Error {
+  readonly code = SERVICE_NOT_CONFIGURED;
+  constructor(message = "Card issuance requires Stripe Issuing to be configured") {
+    super(message);
+    this.name = "CardIssuanceUnavailableError";
+  }
+}
+
+class UnavailableCardIssuer implements CardIssuer {
   readonly provider = "local" as const;
 
   async issueCard(): Promise<IssuedCard> {
-    const last4 = crypto.randomBytes(2).toString("hex").slice(0, 4);
-    const brand = ["Visa", "Mastercard", "Amex"][Math.floor(Math.random() * 3)];
-    return { last4, brand, issuer: "local" };
+    throw new CardIssuanceUnavailableError();
   }
 }
 
@@ -118,7 +128,7 @@ class StripeCardIssuer implements CardIssuer {
   }
 }
 
-export const cardIssuer: CardIssuer = stripeEnabled && stripe ? new StripeCardIssuer() : new LocalCardIssuer();
+export const cardIssuer: CardIssuer = stripeEnabled && stripe ? new StripeCardIssuer() : new UnavailableCardIssuer();
 
 export function isStripeIssuingEnabled(): boolean {
   return stripeEnabled && Boolean(stripe);

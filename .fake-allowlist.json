@@ -188,12 +188,6 @@
     },
     {
       "id": "math-random",
-      "file": "src/lib/card-issuer.ts",
-      "match": "Math.random",
-      "reason": "reviewed: local simulated issuer, used only when Stripe Issuing is unconfigured (dev); Stripe issuer used in prod"
-    },
-    {
-      "id": "math-random",
       "file": "src/lib/competitor.ts",
       "match": "Math.random",
       "reason": "reviewed: scraper user-agent rotation + id generation"

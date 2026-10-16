@@ -186,6 +186,7 @@ export interface WalletData {
   tenantId: string;
   balance: number;
   currency: string;
+  issuingEnabled: boolean;
   cards: Array<{
     id: string;
     last4: string;
