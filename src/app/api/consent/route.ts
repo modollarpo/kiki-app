@@ -18,16 +18,18 @@ export async function GET(req: Request) {
     const db = await getDb();
     const tid = user.tenantId;
 
-    const [planCounts, totalUsers, consentLog] = await Promise.all([
+    const [planCounts, totalUsers, actionRows, lastAction] = await Promise.all([
       db.prepare(`
         SELECT plan, COUNT(*) as count FROM users
         WHERE tenant_id = ? GROUP BY plan ORDER BY count DESC
       `).all<PlanCount>(tid),
       db.prepare("SELECT COUNT(*) as count FROM users WHERE tenant_id = ?").get<CountRow>(tid),
-      db.prepare("SELECT action_type, created_at FROM agent_actions WHERE tenant_id = ? AND agent_type = 'consent' ORDER BY created_at DESC LIMIT 1").get<{ action_type: string; created_at: string }>(tid),
+      db.prepare("SELECT action_type, COUNT(*) as count FROM agent_actions WHERE tenant_id = ? AND agent_type = 'consent' GROUP BY action_type").all<{ action_type: string; count: number }>(tid),
+      db.prepare("SELECT created_at FROM agent_actions WHERE tenant_id = ? AND agent_type = 'consent' ORDER BY created_at DESC LIMIT 1").get<{ created_at: string }>(tid),
     ]);
 
-    const lastConsentAction = consentLog;
+    const consentCounts: Record<string, number> = {};
+    for (const r of actionRows) consentCounts[r.action_type] = r.count;
 
     return json({
       data: {
@@ -36,12 +38,15 @@ export async function GET(req: Request) {
           plan: r.plan,
           count: r.count,
         })),
-        compliance: {
-          gdprEnabled: true,
-          ccpaEnabled: true,
-          dataRetentionDays: 365,
-          consentVersion: "1.0",
-          lastAuditDate: lastConsentAction?.created_at || new Date().toISOString(),
+        consent: {
+          optIn: consentCounts["opt_in"] || 0,
+          optOut: consentCounts["opt_out"] || 0,
+          withdraw: consentCounts["withdraw"] || 0,
+          updatePreferences: consentCounts["update_preferences"] || 0,
+          dataRequest: consentCounts["data_request"] || 0,
+          dataDeletion: consentCounts["data_deletion"] || 0,
+          total: actionRows.reduce((s, r) => s + r.count, 0),
+          lastActionAt: lastAction?.created_at || null,
         },
       },
     });

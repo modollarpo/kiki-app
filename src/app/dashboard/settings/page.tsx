@@ -18,7 +18,6 @@ export default function SettingsPage() {
     router.push("/auth/login");
   };
   const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -96,16 +95,19 @@ export default function SettingsPage() {
           <h3 className="font-mono font-bold text-[13px] text-t1 mb-4">Account</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <Input label="Name" value={name} onChange={setName} />
-            <Input label="Email" value={email} onChange={setEmail} />
+            <div>
+              <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-t3 mb-1.5">Email</p>
+              <p className="font-mono text-xs text-t1 py-[10px] break-all">{user?.email || "—"}</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
               <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-t3 mb-1.5">Role</p>
-              <Badge color={K.blue}>{user?.role?.toUpperCase() || "ADVERTISER"}</Badge>
+              <Badge color={K.blue}>{user?.role ? user.role.toUpperCase() : "—"}</Badge>
             </div>
             <div>
               <p className="font-mono text-[10px] tracking-[0.1em] uppercase text-t3 mb-1.5">Plan</p>
-              <Badge color={K.gold}>{user?.plan?.toUpperCase() || "GROWTH"}</Badge>
+              <Badge color={K.gold}>{user?.plan ? user.plan.toUpperCase() : "—"}</Badge>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -131,14 +133,9 @@ export default function SettingsPage() {
           <p className="font-mono text-[11px] text-t3 mb-4">Connect your ad accounts, CMS, and CRM to enable autonomous execution.</p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {(platforms.length > 0 ? platforms : [
-              { platformId: "meta", name: "Meta Ads" },
-              { platformId: "google", name: "Google Ads" },
-              { platformId: "tiktok", name: "TikTok Ads" },
-              { platformId: "shopify", name: "Shopify" },
-              { platformId: "woocommerce", name: "WooCommerce" },
-              { platformId: "hubspot", name: "HubSpot" }
-            ]).map(p => {
+            {platforms.length === 0 ? (
+              <p className="font-mono text-[11px] text-t3 py-2">No platforms available. Check that integrations are configured.</p>
+            ) : platforms.map(p => {
               const connected = integrations.find(i => i.platform === (p.platformId ?? p.id));
                 return (
                   <div key={p.platformId ?? p.id ?? p.name} className="flex items-center justify-between p-3 rounded-sm bg-g850 border border-g800">
@@ -164,16 +161,6 @@ export default function SettingsPage() {
               );
             })}
           </div>
-        </Card>
-
-        <Card className="mb-3">
-          <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Security</h3>
-          {[{l:"Two-factor auth",v:"Enabled",c:K.mint},{l:"Session timeout",v:"24 hours",c:K.t2},{l:"API keys",v:"2 active",c:K.t2}].map(r => (
-            <div key={r.l} className="flex flex-wrap items-center justify-between gap-2 py-2.5 border-b border-g800">
-              <span className="font-mono text-[11px] text-t2">{r.l}</span>
-              <span className="font-mono text-[11px] font-bold" style={{ color: r.c }}>{r.v}</span>
-            </div>
-          ))}
         </Card>
 
         <Card>

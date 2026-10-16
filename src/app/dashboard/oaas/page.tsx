@@ -9,9 +9,21 @@ const TASK_TYPE_COLORS: Record<string, string> = {
   budget: K.gold, creative: K.oaas, scheduling: K.teal, audience: K.blue, bidding: K.mint,
 };
 
+interface OaasTask {
+  id: string;
+  title: string;
+  agent: string;
+  type: string;
+  status: string;
+  expectedImpact: number | null;
+  confidence: number | null;
+  createdAt: string;
+  details: string | null;
+}
+
 export default function OaasPage() {
   const { token } = useAuth();
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<OaasTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -31,13 +43,15 @@ export default function OaasPage() {
   useEffect(() => { load(); }, [load]);
 
   const handleAction = async (taskId: string, action: "approve" | "reject") => {
+    if (!token) return;
     setBusy(taskId);
     try {
-      await fetch("/api/oaas", {
+      const res = await fetch("/api/oaas", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id: taskId, action }),
       });
+      if (!res.ok) return;
       setTasks(prev => prev.map(t =>
         t.id === taskId ? { ...t, status: action === "approve" ? "approved" : "rejected" } : t
       ));
@@ -61,9 +75,9 @@ export default function OaasPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Pending Review" value={loading ? "…" : String(pending.length)} accent={K.warn} />
-          <StatCard label="Approved Today" value={loading ? "…" : String(approved.length)} accent={K.blue} />
-          <StatCard label="Completed Today" value={loading ? "…" : String(completed.length)} accent={K.mint} />
-          <StatCard label="Generated Tasks" value={loading ? "…" : String(allTasks.length)} accent={K.gold} sub="from live campaigns" />
+          <StatCard label="Approved" value={loading ? "…" : String(approved.length)} accent={K.blue} />
+          <StatCard label="Completed" value={loading ? "…" : String(completed.length)} accent={K.mint} />
+          <StatCard label="Total Tasks" value={loading ? "…" : String(allTasks.length)} accent={K.gold} sub="Generated from campaigns" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -98,7 +112,7 @@ export default function OaasPage() {
           </div>
 
           <div className="flex flex-col gap-2.5">
-            <h3 className="font-mono text-[11px] tracking-[0.12em] uppercase text-t4 mb-1">In Progress ({approved.length})</h3>
+            <h3 className="font-mono text-[11px] tracking-[0.12em] uppercase text-t4 mb-1">Approved ({approved.length})</h3>
             {approved.map(task => (
               <Card key={task.id}>
                 <div className="flex items-center gap-2.5">

@@ -3,19 +3,22 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
+import { Card, ProgressBar, StatCard } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 
 interface ConsentData {
   totalUsers: number;
   byPlan: { plan: string; count: number }[];
-  compliance: {
-    gdprEnabled: boolean;
-    ccpaEnabled: boolean;
-    dataRetentionDays: number;
-    consentVersion: string;
-    lastAuditDate: string;
+  consent: {
+    optIn: number;
+    optOut: number;
+    withdraw: number;
+    updatePreferences: number;
+    dataRequest: number;
+    dataDeletion: number;
+    total: number;
+    lastActionAt: string | null;
   };
 }
 
@@ -42,23 +45,22 @@ export default function ConsentPrivacyPage() {
   }, [token]);
 
   const totalUsers = consentData?.totalUsers ?? 0;
-  const compliance = consentData?.compliance;
   const byPlan = consentData?.byPlan ?? [];
+  const consent = consentData?.consent;
 
-  const regions = byPlan.map(p => ({
-    region: `${p.plan?.toUpperCase() ?? "STANDARD"} Plan`,
-    compliance: 0,
-    users: p.count,
-    consentRate: 0,
-  }));
+  const decideTotal = (consent?.optIn ?? 0) + (consent?.optOut ?? 0);
+  const optInRate = decideTotal > 0 ? Math.round(((consent?.optIn ?? 0) / decideTotal) * 1000) / 10 : null;
 
-  const overallCompliance = regions.length > 0
-    ? (regions.reduce((s, r) => s + r.compliance, 0) / regions.length).toFixed(1)
-    : "—";
-
-  const overallConsentRate = regions.length > 0
-    ? (regions.reduce((s, r) => s + r.consentRate, 0) / regions.length).toFixed(1)
-    : "—";
+  const consentActions = consent
+    ? [
+        { label: "Opt-ins", value: consent.optIn, color: K.mint },
+        { label: "Opt-outs", value: consent.optOut, color: K.danger },
+        { label: "Withdrawals", value: consent.withdraw, color: K.warn },
+        { label: "Preference updates", value: consent.updatePreferences, color: K.blue },
+        { label: "Data requests", value: consent.dataRequest, color: K.teal },
+        { label: "Deletion requests", value: consent.dataDeletion, color: K.gold },
+      ]
+    : [];
 
   if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
   if (!token) return null;
@@ -78,40 +80,53 @@ export default function ConsentPrivacyPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Overall Compliance" value={loading ? "…" : `${overallCompliance}%`} sub={compliance?.gdprEnabled ? "GDPR enabled" : "GDPR pending"} accent={K.mint} />
-          <StatCard label="Consent Rate" value={loading ? "…" : `${overallConsentRate}%`} sub={compliance?.ccpaEnabled ? "CCPA enabled" : "CCPA pending"} accent={K.mint} />
-          <StatCard label="Total Users" value={loading ? "…" : totalUsers > 0 ? totalUsers.toLocaleString() : "—"} sub={compliance ? `Retention: ${compliance.dataRetentionDays}d` : "—"} accent={K.mint} loading={loading} />
-          <StatCard label="Privacy Sandbox" value={compliance?.gdprEnabled ? "Ready" : "Setup"} sub={compliance ? `Consent v${compliance.consentVersion}` : "Pending config"} accent={K.mint} />
+          <StatCard label="Opt-In Rate" value={loading ? "…" : optInRate != null ? `${optInRate}%` : "—"} sub={decideTotal > 0 ? `${decideTotal} opt-in/out decisions` : "No opt-in/out decisions yet"} accent={K.mint} />
+          <StatCard label="Consent Actions" value={loading ? "…" : consent ? String(consent.total) : "—"} sub={consent?.lastActionAt ? `Last: ${new Date(consent.lastActionAt).toLocaleDateString()}` : "No actions recorded"} accent={K.blue} />
+          <StatCard label="Total Users" value={loading ? "…" : totalUsers > 0 ? totalUsers.toLocaleString() : "—"} sub="In this tenant" accent={K.gold} />
+          <StatCard label="Opt-Outs" value={loading ? "…" : consent ? String(consent.optOut) : "—"} sub="Users who declined" accent={K.danger} />
         </div>
 
         <Card className="p-4 bg-g950 border-g850">
-          <h3 className="text-sm font-semibold mb-3 text-t1">Compliance by Region</h3>
+          <h3 className="text-sm font-semibold mb-3 text-t1">Users by Plan</h3>
           <div className="space-y-3">
-            {regions.length > 0 ? regions.map((region, i) => (
-              <div key={i} className="flex items-center gap-4 p-3 rounded-lg bg-g900">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-t1">{region.region}</span>
-                    <span className="text-sm font-semibold text-kmint">{region.compliance > 0 ? `${region.compliance}%` : "—"}</span>
+            {byPlan.length > 0 ? byPlan.map((plan, i) => {
+              const share = totalUsers > 0 ? (plan.count / totalUsers) * 100 : 0;
+              return (
+                <div key={i} className="flex items-center gap-4 p-3 rounded-lg bg-g900">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-t1 capitalize">{plan.plan || "unknown"}</span>
+                      <span className="text-sm font-semibold text-t1">{plan.count.toLocaleString()}</span>
+                    </div>
+                    <ProgressBar value={share} max={100} color={K.blue} height={4} />
                   </div>
-                  {region.compliance > 0 && <ProgressBar value={region.compliance} max={100} color={K.mint} height={4} />}
+                  <div className="text-right w-24">
+                    <div className="text-xs text-t3">Share</div>
+                    <div className="text-sm font-medium text-t2">{share.toFixed(1)}%</div>
+                  </div>
                 </div>
-                <div className="text-right w-24">
-                  <div className="text-xs text-t3">Users</div>
-                  <div className="text-sm font-medium text-t2">{region.users > 1000 ? `${(region.users / 1000).toFixed(1)}K` : region.users}</div>
-                </div>
-                <div className="text-right w-24">
-                  <div className="text-xs text-t3">Consent</div>
-                  <div className="text-sm font-medium text-kblue">{region.consentRate > 0 ? `${region.consentRate}%` : "—"}</div>
-                </div>
-              </div>
-            )) : (
-              <p className="font-mono text-[11px] text-t3 py-4 text-center">No consent data yet. Start collecting user consent to see compliance metrics.</p>
+              );
+            }) : (
+              <p className="font-mono text-[11px] text-t3 py-4 text-center">No user data yet.</p>
             )}
           </div>
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card className="p-4 bg-g950 border-g850">
+            <h3 className="text-sm font-semibold mb-3 text-t1">Consent Action Log</h3>
+            <div className="space-y-3">
+              {consent && consent.total > 0 ? consentActions.map((a, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-sm text-t2">{a.label}</span>
+                  <span className="text-sm font-semibold" style={{ color: a.color }}>{a.value.toLocaleString()}</span>
+                </div>
+              )) : (
+                <p className="font-mono text-[11px] text-t3 py-4 text-center">No consent actions recorded yet. Consent events will appear here as they are captured.</p>
+              )}
+            </div>
+          </Card>
+
           <Card className="p-4 bg-g950 border-g850">
             <h3 className="text-sm font-semibold mb-3 text-t1">UID2 Adoption Status</h3>
             <div className="space-y-4">
@@ -128,24 +143,6 @@ export default function ConsentPrivacyPage() {
                 <span className="text-sm font-semibold text-kteal">—</span>
               </div>
               <p className="font-mono text-[11px] text-t4">No UID2 match data available yet. Connect an identity partner to populate match rates.</p>
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-g950 border-g850">
-            <h3 className="text-sm font-semibold mb-3 text-t1">Privacy Sandbox Status</h3>
-            <div className="space-y-3">
-              {[
-                { api: "Topics API", status: compliance?.gdprEnabled ? "Active" : "Pending", color: compliance?.gdprEnabled ? K.mint : K.warn },
-                { api: "Protected Audiences", status: compliance?.gdprEnabled ? "Active" : "Pending", color: compliance?.gdprEnabled ? K.mint : K.warn },
-                { api: "Attribution Reporting", status: compliance?.ccpaEnabled ? "Active" : "Pending", color: compliance?.ccpaEnabled ? K.mint : K.warn },
-                { api: "FLEDGE", status: "Testing", color: K.gold },
-                { api: "Trust Tokens", status: "Deprecated", color: K.warn },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-g900">
-                  <span className="text-sm text-t1">{item.api}</span>
-                  <Badge style={{ background: item.color + "20", color: item.color }}>{item.status}</Badge>
-                </div>
-              ))}
             </div>
           </Card>
         </div>
