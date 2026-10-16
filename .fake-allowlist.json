@@ -4,307 +4,289 @@
       "id": "coming-soon",
       "file": "src/app/app-download/page.tsx",
       "match": "coming soon",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: iOS/Android apps not yet shipped — honest label"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/agents/[id]/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/agents/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/analytics/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/auth/login/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/auth/me/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/auth/refresh/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/campaigns/[id]/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/campaigns/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/notifications/read/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/notifications/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/wallet/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/mobile/v1/wallet/transactions/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/api/webhooks/slack/route.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/dashboard/settings/page.tsx",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/app/docs/page.tsx",
       "match": "console.log",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/lib/billing.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/lib/connectors/index.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/lib/logger.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/lib/logger.ts",
       "match": "console.log",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/lib/logger.ts",
       "match": "console.warn",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/lib/mobile/db.ts",
       "match": "console.error",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/lib/mobile/db.ts",
       "match": "console.log",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "console-log",
       "file": "src/lib/slack.ts",
       "match": "console.warn",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: logging only (logger / migration / docs example) — not a data stub"
     },
     {
       "id": "demo-literal",
       "file": "src/app/api/capi/enrich/route.ts",
       "match": "\"demo\"",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "fake",
-      "file": "src/app/dashboard/fraud/page.tsx",
-      "match": "Fake",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: intentional rate-limited public demo tenant (isolated from real tenants)"
     },
     {
       "id": "fake",
       "file": "src/lib/agents.ts",
       "match": "fake",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: comment documents that agents process real webhook signals, not generated ones"
     },
     {
       "id": "math-random",
       "file": "src/app/api/commerce/route.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: unique id generation"
     },
     {
       "id": "math-random",
       "file": "src/app/api/integrations/route.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: unique id generation"
     },
     {
       "id": "math-random",
       "file": "src/app/api/webhooks/slack/route.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: unique id generation"
     },
     {
       "id": "math-random",
       "file": "src/hooks/useSSE.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: unique id generation"
     },
     {
       "id": "math-random",
       "file": "src/lib/bidding.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: unique id generation"
     },
     {
       "id": "math-random",
       "file": "src/lib/card-issuer.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: local simulated issuer, used only when Stripe Issuing is unconfigured (dev); Stripe issuer used in prod"
     },
     {
       "id": "math-random",
       "file": "src/lib/competitor.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: scraper user-agent rotation + id generation"
     },
     {
       "id": "math-random",
       "file": "src/lib/db.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: id-generation uniqueness"
     },
     {
       "id": "math-random",
       "file": "src/lib/gdpr.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: unique id generation"
     },
     {
       "id": "math-random",
       "file": "src/lib/logger.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: log trace id"
     },
     {
       "id": "math-random",
       "file": "src/lib/ltv-feedback.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: unique id generation"
     },
     {
       "id": "math-random",
       "file": "src/lib/platform-sync.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: unique id generation"
     },
     {
       "id": "math-random",
       "file": "src/lib/retry.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: backoff / schedule jitter"
     },
     {
       "id": "math-random",
       "file": "src/lib/scheduler.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: backoff / schedule jitter"
     },
     {
       "id": "math-random",
       "file": "src/store/index.ts",
       "match": "Math.random",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: unique id generation"
     },
     {
       "id": "mock-flag",
       "file": "src/lib/slack.ts",
       "match": "mock: false",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: Slack dev fallback flag — callers can detect mock:true"
     },
     {
       "id": "mock-flag",
       "file": "src/lib/slack.ts",
       "match": "mock: true",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "mock",
-      "file": "src/lib/competitor.ts",
-      "match": "mock",
-      "reason": "baseline — pending remediation"
-    },
-    {
-      "id": "mock",
-      "file": "src/lib/service-proxy.ts",
-      "match": "mock",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: Slack dev fallback flag — callers can detect mock:true"
     },
     {
       "id": "mock",
       "file": "src/lib/slack.ts",
       "match": "mock",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: Slack dev fallback when SLACK_BOT_TOKEN is unset; reports mock:true to the caller and still persists the approval"
     },
     {
       "id": "mock",
       "file": "src/lib/slack.ts",
       "match": "Mock",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: Slack dev fallback when SLACK_BOT_TOKEN is unset; reports mock:true to the caller and still persists the approval"
     },
     {
       "id": "mock",
       "file": "src/lib/slack.ts",
       "match": "MOCK",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: Slack dev fallback when SLACK_BOT_TOKEN is unset; reports mock:true to the caller and still persists the approval"
     },
     {
       "id": "placeholder",
       "file": "src/components/ui/index.tsx",
       "match": "placeholder",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: SQL bind placeholder / UI input prop / comment"
     },
     {
       "id": "placeholder",
       "file": "src/lib/card-issuer.ts",
       "match": "placeholder",
-      "reason": "baseline — pending remediation"
+      "reason": "reviewed: SQL bind placeholder / UI input prop / comment"
     }
   ]
 }
