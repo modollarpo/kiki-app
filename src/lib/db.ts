@@ -1214,6 +1214,75 @@ const SCHEMA = `
     completed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(tenant_id, step_id)
   );
+
+  -- Profit margins (COGS-aware bidding). One row per SKU per tenant.
+  CREATE TABLE IF NOT EXISTS profit_margins (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    sku TEXT NOT NULL,
+    product_name TEXT NOT NULL,
+    cogs REAL NOT NULL DEFAULT 0,
+    price REAL NOT NULL DEFAULT 0,
+    margin_pct REAL NOT NULL DEFAULT 0,
+    stock INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(tenant_id, sku)
+  );
+  CREATE INDEX IF NOT EXISTS idx_profit_margins_tenant ON profit_margins(tenant_id);
+
+  -- Influencer creators tracked for promo-code / referral attribution.
+  CREATE TABLE IF NOT EXISTS creators (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    handle TEXT NOT NULL,
+    platform TEXT NOT NULL DEFAULT 'meta',
+    promo_code TEXT NOT NULL,
+    cost REAL NOT NULL DEFAULT 0,
+    total_conversions INTEGER NOT NULL DEFAULT 0,
+    total_revenue REAL NOT NULL DEFAULT 0,
+    total_ltv REAL NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_creators_tenant ON creators(tenant_id);
+
+  -- Per-creative / per-variant revenue attribution rows.
+  CREATE TABLE IF NOT EXISTS creative_attributions (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    creative_id TEXT NOT NULL,
+    platform TEXT NOT NULL DEFAULT 'unknown',
+    campaign_id TEXT,
+    model TEXT NOT NULL DEFAULT 'last_touch',
+    attributions INTEGER NOT NULL DEFAULT 0,
+    total_revenue REAL NOT NULL DEFAULT 0,
+    total_ltv REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_creative_attr_tenant ON creative_attributions(tenant_id);
+
+  -- Selected attribution model per tenant.
+  CREATE TABLE IF NOT EXISTS attribution_settings (
+    tenant_id TEXT PRIMARY KEY,
+    model TEXT NOT NULL DEFAULT 'last_touch',
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- Dark-social events (untagged shares / referrals).
+  CREATE TABLE IF NOT EXISTS dark_social_events (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    campaign_id TEXT,
+    referrer TEXT,
+    share_count INTEGER NOT NULL DEFAULT 0,
+    converted INTEGER NOT NULL DEFAULT 0,
+    revenue REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_dark_social_tenant ON dark_social_events(tenant_id);
 `;
 
 // SQLite-compatible variant of SCHEMA for the local `node:sqlite` fallback.
@@ -1463,6 +1532,88 @@ async function seedIfEmpty(db: PgDb) {
   logger.info("[DB] Seeded database with demo data");
 }
 
+// Backfills the feature tables added after the original seed. Idempotent: each
+// table is only populated when empty, so existing data is never overwritten.
+async function seedFeatureDemoIfEmpty(db: PgDb) {
+  const tid = "t1";
+  const countOf = async (table: string) =>
+    ((await db.prepare(`SELECT COUNT(*) as c FROM ${table}`).get()) as { c: number }).c;
+
+  if ((await countOf("profit_margins")) === 0) {
+    const ins = db.prepare(`
+      INSERT INTO profit_margins (id, tenant_id, sku, product_name, cogs, price, margin_pct, stock)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const products: Array<[string, string, number, number, number]> = [
+      ["SKU-001", "Widget Pro", 12.5, 49.99, 180],
+      ["SKU-002", "Basic Widget", 3.2, 19.99, 640],
+      ["SKU-003", "Premium Bundle", 28.0, 89.99, 95],
+      ["SKU-004", "Starter Kit", 18.75, 39.99, 210],
+      ["SKU-005", "Pro Accessory", 9.1, 24.99, 430],
+      ["SKU-006", "Economy Pack", 14.4, 22.0, 320],
+      ["SKU-007", "Loss Leader Bundle", 18.0, 19.99, 150],
+    ];
+    for (const [sku, name, cogs, price, stock] of products) {
+      const margin = price > 0 ? Number((((price - cogs) / price) * 100).toFixed(2)) : 0;
+      await ins.run(`pm_${sku.toLowerCase()}`, tid, sku, name, cogs, price, margin, stock);
+    }
+  }
+
+  if ((await countOf("creators")) === 0) {
+    const ins = db.prepare(`
+      INSERT INTO creators (id, tenant_id, name, handle, platform, promo_code, cost, total_conversions, total_revenue, total_ltv)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const creators: Array<[string, string, string, string, string, number, number, number, number]> = [
+      ["cr1", "Ava Lifestyle", "@avalifestyle", "instagram", "AVA15", 5000, 1240, 18600, 22500],
+      ["cr2", "FitWithMark", "@fitwithmark", "tiktok", "MARK20", 8000, 2100, 31500, 40200],
+      ["cr3", "TechDealsDaily", "@techdeals", "youtube", "TECH10", 12000, 890, 26700, 33800],
+      ["cr4", "Sarah Eats", "@saraheats", "instagram", "SARA5", 3000, 620, 9300, 11400],
+    ];
+    for (const c of creators) await ins.run(c[0], tid, c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
+  }
+
+  if ((await countOf("creative_attributions")) === 0) {
+    const ins = db.prepare(`
+      INSERT INTO creative_attributions (id, tenant_id, creative_id, platform, campaign_id, model, attributions, total_revenue, total_ltv)
+      VALUES (?, ?, ?, ?, ?, 'last_touch', ?, ?, ?)
+    `);
+    const rows: Array<[string, string, string, string, number, number, number]> = [
+      ["crtv_c1_v1", "meta", "c1", "meta", 420, 35532, 131040],
+      ["crtv_c2_v1", "google", "c2", "google", 680, 28854, 329800],
+      ["crtv_c3_v1", "youtube", "c3", "youtube", 120, 25200, 21600],
+      ["crtv_c4_v1", "tiktok", "c4", "tiktok", 340, 22425, 90100],
+    ];
+    for (const r of rows) await ins.run(`ca_${r[0]}`, tid, r[0], r[1], r[2], r[4], r[5], r[6]);
+  }
+
+  if ((await countOf("attribution_settings")) === 0) {
+    await db.prepare("INSERT INTO attribution_settings (tenant_id, model) VALUES (?, 'last_touch')").run(tid);
+  }
+
+  if ((await countOf("dark_social_events")) === 0) {
+    const ins = db.prepare(`
+      INSERT INTO dark_social_events (id, tenant_id, campaign_id, referrer, share_count, converted, revenue, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', ?))
+    `);
+    const events: Array<[string, string, string, number, number, number, string]> = [
+      ["dse1", "c1", "reddit", 42, 1, 49.99, "-1 days"],
+      ["dse2", "c1", "whatsapp", 88, 1, 99.98, "-2 days"],
+      ["dse3", "c4", "threads", 31, 0, 0, "-2 days"],
+      ["dse4", "c2", "discord", 17, 1, 89.99, "-3 days"],
+      ["dse5", "c1", "reddit", 64, 1, 149.97, "-4 days"],
+      ["dse6", "c4", "instagram", 120, 1, 39.99, "-5 days"],
+      ["dse7", "c2", "whatsapp", 55, 0, 0, "-6 days"],
+      ["dse8", "c1", "facebook", 73, 1, 59.98, "-7 days"],
+      ["dse9", "c4", "tiktok", 96, 0, 0, "-8 days"],
+      ["dse10", "c1", "reddit", 28, 0, 0, "-9 days"],
+    ];
+    for (const e of events) await ins.run(e[0], tid, e[1], e[2], e[3], e[4], e[5], e[6]);
+  }
+
+  logger.info("[DB] Seeded feature demo data (margins, creators, attribution, dark social)");
+}
+
 async function seedBillingIfEmpty(db: PgDb) {
   const subCount = (await db.prepare("SELECT COUNT(*) as c FROM subscriptions").get()) as { c: number };
   if (subCount.c > 0) return;
@@ -1527,6 +1678,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
         if (process.env.SEED_DEMO_DATA === "true") {
           await seedIfEmpty(db as unknown as PgDb);
           await seedBillingIfEmpty(db as unknown as PgDb);
+          await seedFeatureDemoIfEmpty(db as unknown as PgDb);
         }
         logger.info("[DB] Using local SQLite fallback at ./data/kiki-local.sqlite");
         globalForDb.__kikiDb = db as unknown as PgDb;
@@ -1544,6 +1696,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
         if (process.env.SEED_DEMO_DATA === "true") {
           await seedIfEmpty(mem as unknown as PgDb);
           await seedBillingIfEmpty(mem as unknown as PgDb);
+          await seedFeatureDemoIfEmpty(mem as unknown as PgDb);
         }
         globalForDb.__kikiDb = mem as unknown as PgDb;
         return globalForDb.__kikiDb;
@@ -1564,6 +1717,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
     if (process.env.SEED_DEMO_DATA === "true") {
       await seedIfEmpty(db);
       await seedBillingIfEmpty(db);
+      await seedFeatureDemoIfEmpty(db);
     }
     globalForDb.__kikiDb = db;
   }

@@ -629,8 +629,8 @@ export const integrations = {
 
 // ── NL Query ─────────────────────────────────────────────
 export const nlQuery = {
-  query: (data: { query: string; context?: Record<string, unknown> }) =>
-    request<{ answer: string }>("/api/nl-query", { method: "POST", body: JSON.stringify(data) }),
+  query: (token: string, data: { query: string; context?: Record<string, unknown> }) =>
+    request<{ ok: boolean; answer: string; tokens?: number }>("/api/nl-query", { method: "POST", token, body: JSON.stringify(data) }),
 };
 
 // ── Attribution ──────────────────────────────────────────

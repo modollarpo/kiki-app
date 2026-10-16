@@ -93,6 +93,8 @@ export async function GET(req: NextRequest) {
         topReferrers,
         dailyBreakdown,
         periodDays: days,
+        totalUnattributedConversions: converted.length,
+        totalUnattributedRevenue: +estimatedRevenue.toFixed(2),
       },
     });
   } catch (error) {
