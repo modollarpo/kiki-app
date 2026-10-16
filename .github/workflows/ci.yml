@@ -11,6 +11,7 @@ env:
   RG: kiki-agent-rg
   APP: kiki-app
   AZURE_REGION: swedencentral
+  PUPPETEER_SKIP_DOWNLOAD: "true"
 
 jobs:
   check:
