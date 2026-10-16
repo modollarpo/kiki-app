@@ -142,7 +142,7 @@ export default function DashboardPage() {
   const enrichmentRate = signalStats && signalStats.totalSignals > 0
     ? Math.round(((signalStats.processedSignals ?? 0) / Math.max(signalStats.totalSignals, 1)) * 1000) / 10
     : null;
-  const avgLtvSignal = signalStats ? Math.round(signalStats.avgPredictedLTV || 0) : null;
+  const avgLtvSignal = signalStats && signalStats.totalSignals > 0 ? Math.round(signalStats.avgPredictedLTV || 0) : null;
   const fraudBlockedToday = data?.system?.fraudBlocked ?? null;
 
   return (
