@@ -196,7 +196,7 @@ export async function fetchCompetitorPrices(config: CompetitorConfig): Promise<n
           if (price) return price;
         }
       } catch {
-        // Fall through to mock
+        // ScraperAPI unavailable — report the price as unavailable below
       }
     }
   }
