@@ -937,7 +937,7 @@ const SCHEMA = `
     type TEXT NOT NULL DEFAULT 'budget',
     status TEXT NOT NULL DEFAULT 'pending',
     expected_impact TEXT,
-    confidence INTEGER NOT NULL DEFAULT 80,
+    confidence INTEGER,
     details TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -1265,6 +1265,31 @@ DROP CAST IF EXISTS (text AS timestamptz);
 CREATE CAST (text AS timestamptz) WITH INOUT AS IMPLICIT;
 `;
 
+// SQLite's strftime(), emulated in PostgreSQL via to_char(). Supports the
+// specifiers used in this codebase: %Y %m %d %H %M %S %W (week) %j %w.
+const STRFTIME_FN = `
+CREATE OR REPLACE FUNCTION strftime(fmt text, ts text)
+RETURNS text AS $$
+DECLARE
+  pf text;
+  t timestamptz;
+BEGIN
+  IF ts IS NULL OR trim(ts) = '' THEN t := NOW(); ELSE t := ts::timestamptz; END IF;
+  pf := fmt;
+  pf := replace(pf, '%Y', 'YYYY');
+  pf := replace(pf, '%m', 'MM');
+  pf := replace(pf, '%d', 'DD');
+  pf := replace(pf, '%H', 'HH24');
+  pf := replace(pf, '%M', 'MI');
+  pf := replace(pf, '%S', 'SS');
+  pf := replace(pf, '%j', 'DDD');
+  pf := replace(pf, '%W', 'IW');
+  pf := replace(pf, '%w', 'D');
+  RETURN to_char(t, pf);
+END;
+$$ LANGUAGE plpgsql STABLE;
+`;
+
 async function runMigrations(db: PgDb) {
   // Widen any pre-existing 32-bit INTEGER columns to BIGINT. Tables created
   // before this fix stored millisecond-epoch timestamps in INTEGER, which
@@ -1318,6 +1343,13 @@ async function runMigrations(db: PgDb) {
   await addColumnIfMissing("customer_profiles", "commerce_platform", "TEXT");
   await addColumnIfMissing("customer_profiles", "identity_hash", "TEXT");
   await addColumnIfMissing("commerce_connections", "auth_type", "TEXT NOT NULL DEFAULT 'api_key'");
+
+  // `oaas_tasks.confidence` was NOT NULL, but OaaS tasks generated from live
+  // campaign data report confidence as NULL (no model evaluated them). Drop the
+  // constraint on existing tables. PG-only statement; ignored on SQLite.
+  try {
+    await db.exec("ALTER TABLE oaas_tasks ALTER COLUMN confidence DROP NOT NULL");
+  } catch { /* sqlite or already nullable */ }
 
   try {
     await db.exec("CREATE INDEX IF NOT EXISTS idx_signals_customer ON signals(tenant_id, customer_id)");
@@ -1503,6 +1535,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
     const db = new PgDb();
     await db.exec(PG_SCHEMA);
     await pool.query(DATETIME_FN);
+    await pool.query(STRFTIME_FN);
     try {
       await pool.query(PG_CASTS);
     } catch (e) {
