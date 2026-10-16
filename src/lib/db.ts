@@ -377,6 +377,7 @@ class MemoryDb {
     // Handle ORDER BY, LIMIT — ignore for in-memory (multi-pass to handle both orders)
     let noTail = noCoalesce;
     for (let i = 0; i < 3; i++) {
+      noTail = noTail.replace(/\bgroup\s+by\s+[a-z0-9_"`.,\s]+(\bhaving\s+[\s\S]*)?$/i, "");
       noTail = noTail.replace(/\border\s+by\s+[a-z0-9_"`.,\s]+(\s+(asc|desc))?\s*$/i, "");
       noTail = noTail.replace(/\blimit\s+\d+(\s*(offset\s+\d+)?)?\s*$/i, "");
     }
@@ -386,31 +387,10 @@ class MemoryDb {
       const t = tm ? tm[1].replace(/"/g, "") : "";
       let rows = (this.tables[t] || []).slice();
 
-      // Parse WHERE clause with comparison operators
-      const whereClause = noTail.match(/where\s+(.+?)$/i);
+      // Parse WHERE clause (parameterized or literal operands).
+      const whereClause = noTail.match(/where\s+(.+)$/i);
       if (whereClause) {
-        const conditions = whereClause[1].split(/\s+and\s+/i);
-        for (const cond of conditions) {
-          // Match: column op ?  (op: =, >=, >, <=, <, !=, <>)
-          const opMatch = cond.match(/^([a-z0-9_"]+)\s*(>=|<=|!=|<>|=|>|<)\s*\?$/i);
-          if (opMatch) {
-            const col = opMatch[1].replace(/"/g, "");
-            const op = opMatch[2];
-            const pv = String(params.shift() ?? "");
-            rows = rows.filter((r: SqlRow) => {
-              const rv = String(r[col] ?? "");
-              switch (op) {
-                case "=": return rv === pv;
-                case ">=": return rv >= pv;
-                case "<=": return rv <= pv;
-                case ">": return rv > pv;
-                case "<": return rv < pv;
-                case "!=": case "<>": return rv !== pv;
-                default: return true;
-              }
-            });
-          }
-        }
+        rows = this.filterRows(rows, whereClause[1], params);
       }
 
       // Extract aggregate expressions (AVG, SUM, COUNT, MIN, MAX)
@@ -488,14 +468,15 @@ class MemoryDb {
         cols.forEach((c, i) => {
           const raw = vals[i];
           if (raw === "?") {
-            row[c] = this.coerce(pIdx < params.length ? String(params[pIdx++]) : "NULL");
+            row[c] = pIdx < params.length ? this.coerceParam(params[pIdx++]) : null;
           } else {
             row[c] = this.coerce(raw);
           }
         });
         const idIdx = cols.indexOf("id");
-        if (idIdx >= 0) row.id = this.coerce(vals[idIdx] === "?" && idIdx < params.length ? String(params[idIdx]) : vals[idIdx]);
-        else row.id = "mem_" + ++this.seq;
+        if (idIdx >= 0) {
+          row.id = idIdx < params.length && vals[idIdx] === "?" ? this.coerceParam(params[idIdx]) : this.coerce(vals[idIdx]);
+        } else row.id = "mem_" + ++this.seq;
         (this.tables[t] ||= []).push(row);
         this.lastInsertRowid = this.seq;
         this.lastRowCount = 1;
@@ -504,50 +485,30 @@ class MemoryDb {
       return { lastInsertRowid: 0, changes: 0 };
     }
     if (lower.startsWith("update")) {
-      const um = trimmed.match(/update\s+([a-z0-9_"]+)\s+set\s+(.+?)(?:\s+where\s+|\s*$)/i);
-      const t = um ? um[1].replace(/"/g, "") : "";
+      const um = trimmed.match(/^update\s+([a-z0-9_"`]+)\s+set\s+([\s\S]+?)(?:\s+where\s+([\s\S]+))?$/i);
+      const t = um ? um[1].replace(/["`]/g, "") : "";
       const setClause = um ? um[2] : "";
-      const setMatches = [...setClause.matchAll(/([a-z0-9_"]+)\s*=\s*\?/gi)];
-      const whereCol = trimmed.match(/where\s+([a-z0-9_"]+)\s*=\s*\?/i);
-      let affected = (this.tables[t] || []).length;
-      if (whereCol) {
-        const wc = whereCol[1].replace(/"/g, "");
-        const wv = String(params[params.length - 1]);
-        let pIdx = 0;
-        for (const row of (this.tables[t] || [])) {
-          if (String(row[wc]) === wv) {
-            for (const sm of setMatches) {
-              const col = sm[1].replace(/"/g, "");
-              row[col] = this.coerce(String(params[pIdx++]));
-            }
-          }
-        }
-        affected = (this.tables[t] || []).filter((r: SqlRow) => String(r[wc]) === wv).length;
-      } else {
-        let pIdx = 0;
-        for (const row of (this.tables[t] || [])) {
-          for (const sm of setMatches) {
-            const col = sm[1].replace(/"/g, "");
-            row[col] = this.coerce(String(params[pIdx++]));
-          }
-        }
+      const whereClause = um && um[3] ? um[3] : "";
+      const rest = params.slice();
+      const assignments = this.parseAssignments(setClause, rest);
+      const table = this.tables[t] || [];
+      const matched = whereClause ? this.filterRows(table, whereClause, rest) : table.slice();
+      for (const row of matched) {
+        for (const apply of assignments) apply(row);
       }
-      this.lastRowCount = affected;
-      return { lastInsertRowid: 0, changes: affected };
+      this.lastRowCount = matched.length;
+      return { lastInsertRowid: 0, changes: matched.length };
     }
     if (lower.startsWith("delete")) {
-      const dm = trimmed.match(/delete\s+from\s+([a-z0-9_"]+)(?:\s+where\s+(.+?))?$/i);
-      const t = dm ? dm[1].replace(/"/g, "") : "";
+      const dm = trimmed.match(/^delete\s+from\s+([a-z0-9_"`]+)(?:\s+where\s+([\s\S]+))?$/i);
+      const t = dm ? dm[1].replace(/["`]/g, "") : "";
       if (dm && dm[2]) {
-        const whereCol = dm[2].match(/([a-z0-9_"]+)\s*=\s*\?/i);
-        if (whereCol) {
-          const wc = whereCol[1].replace(/"/g, "");
-          const wv = String(params[0]);
-          const before = (this.tables[t] || []).length;
-          this.tables[t] = (this.tables[t] || []).filter((r: SqlRow) => String(r[wc]) !== wv);
-          this.lastRowCount = before - (this.tables[t] || []).length;
-          return { lastInsertRowid: 0, changes: this.lastRowCount };
-        }
+        const rest = params.slice();
+        const matched = new Set(this.filterRows(this.tables[t] || [], dm[2], rest));
+        const before = (this.tables[t] || []).length;
+        this.tables[t] = (this.tables[t] || []).filter((r: SqlRow) => !matched.has(r));
+        this.lastRowCount = before - (this.tables[t] || []).length;
+        return { lastInsertRowid: 0, changes: this.lastRowCount };
       }
       const before = (this.tables[t] || []).length;
       delete this.tables[t];
@@ -559,6 +520,125 @@ class MemoryDb {
 
   async pragma(_name: string): Promise<unknown> {
     return undefined;
+  }
+
+  // Expand an AND-separated WHERE clause into a row filter. Supports both
+  // parameterized (`col = ?`) and literal (`col = 'active'`, `col > 5`,
+  // `col = date('now')`, `col IS [NOT] NULL`) operands.
+  private filterRows(rows: Record<string, SqlValue>[], whereStr: string, params: SqlParam[]): Record<string, SqlValue>[] {
+    let out = rows;
+    for (const raw of whereStr.split(/\s+and\s+/i)) {
+      const cond = raw.trim();
+      if (!cond) continue;
+      const isNull = cond.match(/^([a-z0-9_"`]+)\s+is\s+(not\s+)?null$/i);
+      if (isNull) {
+        const col = isNull[1].replace(/["`]/g, "");
+        const negate = Boolean(isNull[2]);
+        out = out.filter((r) => {
+          const empty = r[col] === null || r[col] === undefined;
+          return negate ? !empty : empty;
+        });
+        continue;
+      }
+      const m = cond.match(/^([a-z0-9_"`]+)\s*(>=|<=|!=|<>|=|>|<)\s*([\s\S]+)$/i);
+      if (!m) continue;
+      const col = m[1].replace(/["`]/g, "");
+      const op = m[2];
+      const expected = this.resolveOperand(m[3], params);
+      out = out.filter((r) => {
+        const cmp = this.compare(r[col] ?? null, expected);
+        switch (op) {
+          case "=": return cmp === 0;
+          case "!=": case "<>": return cmp !== 0;
+          case ">": return cmp > 0;
+          case "<": return cmp < 0;
+          case ">=": return cmp >= 0;
+          case "<=": return cmp <= 0;
+          default: return true;
+        }
+      });
+    }
+    return out;
+  }
+
+  // Resolve the right-hand side of a comparison/SET: `?`, a quoted string,
+  // a number, NULL, or date()/datetime('now').
+  private resolveOperand(raw: string, params: SqlParam[]): SqlValue {
+    const r = raw.trim();
+    if (r === "?") return this.coerceParam(params.length ? params.shift()! : null);
+    const now = r.match(/^(datetime|date)\s*\(\s*'now'\s*\)$/i);
+    if (now) {
+      const iso = new Date().toISOString();
+      return now[1].toLowerCase() === "date" ? iso.slice(0, 10) : iso.slice(0, 19).replace("T", " ");
+    }
+    return this.coerce(r);
+  }
+
+  // Parse `a = b, c = 'x', n = n + ?` into row mutators. Handles literal
+  // assignments and arithmetic on an existing column; unlike the previous
+  // implementation, literals are no longer silently ignored.
+  private parseAssignments(clause: string, params: SqlParam[]): ((row: Record<string, SqlValue>) => void)[] {
+    const out: ((row: Record<string, SqlValue>) => void)[] = [];
+    for (const raw of this.splitTop(clause, ",")) {
+      const m = raw.trim().match(/^([a-z0-9_"`]+)\s*=\s*([\s\S]+)$/i);
+      if (!m) continue;
+      const col = m[1].replace(/["`]/g, "");
+      const rhs = m[2].trim();
+      const am = rhs.match(/^([a-z0-9_"`]+)\s*([+\-*/])\s*([\s\S]+)$/i);
+      if (am && !/^['"]/.test(am[1]) && !/^\d/.test(am[1])) {
+        const src = am[1].replace(/["`]/g, "");
+        const op = am[2];
+        const operand = Number(this.resolveOperand(am[3], params));
+        out.push((row) => {
+          const base = Number(row[src] ?? 0) || 0;
+          if (op === "+") row[col] = base + operand;
+          else if (op === "-") row[col] = base - operand;
+          else if (op === "*") row[col] = base * operand;
+          else row[col] = operand === 0 ? 0 : base / operand;
+        });
+        continue;
+      }
+      const value = this.resolveOperand(rhs, params);
+      out.push((row) => { row[col] = value; });
+    }
+    return out;
+  }
+
+  // Split on a separator at the top level (outside quotes and parentheses).
+  private splitTop(s: string, sep: string): string[] {
+    const out: string[] = [];
+    let cur = "";
+    let q = false;
+    let depth = 0;
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i];
+      if (ch === "'") {
+        if (q && s[i + 1] === "'") { cur += "''"; i++; continue; }
+        q = !q;
+        cur += ch;
+        continue;
+      }
+      if (!q) {
+        if (ch === "(") depth++;
+        else if (ch === ")") depth = Math.max(0, depth - 1);
+        else if (ch === sep && depth === 0) { out.push(cur); cur = ""; continue; }
+      }
+      cur += ch;
+    }
+    if (cur.trim().length) out.push(cur);
+    return out;
+  }
+
+  // SQL-ish comparison: numeric when both sides are numeric, else string.
+  private compare(a: SqlValue, b: SqlValue): number {
+    const na = a === null ? NaN : Number(a);
+    const nb = b === null ? NaN : Number(b);
+    if (!Number.isNaN(na) && !Number.isNaN(nb) && String(a).trim() !== "" && String(b).trim() !== "") {
+      return na < nb ? -1 : na > nb ? 1 : 0;
+    }
+    const sa = a === null ? "" : String(a);
+    const sb = b === null ? "" : String(b);
+    return sa < sb ? -1 : sa > sb ? 1 : 0;
   }
 
   private splitValues(s: string): string[] {
@@ -585,9 +665,16 @@ class MemoryDb {
     if (/^-?\d+(\.\d+)?$/.test(t)) return Number(t);
     return t.replace(/^'|'$/g, "").replace(/''/g, "'");
   }
+
+  // Preserve SQL NULL for null/undefined params (the string form would become
+  // the literal "null").
+  private coerceParam(v: SqlParam): SqlValue {
+    if (v === null || v === undefined) return null;
+    return this.coerce(String(v));
+  }
 }
 
-function createMemoryDb(): MemoryDb {
+export function createMemoryDb(): MemoryDb {
   return new MemoryDb();
 }
 
