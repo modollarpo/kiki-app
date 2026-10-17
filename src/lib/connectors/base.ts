@@ -188,7 +188,9 @@ export async function httpClient<T>(
   const retryDelay = config.retryDelay ?? 1000;
   const timeout = config.timeout ?? 30000;
 
-  let url = `${config.baseUrl}${path}`;
+  const baseUrl = config.baseUrl.replace(/\/+$/, "");
+  const relPath = path.startsWith("/") ? path : `/${path}`;
+  let url = `${baseUrl}${relPath}`;
   if (params) {
     const searchParams = new URLSearchParams(params);
     url += `?${searchParams.toString()}`;
