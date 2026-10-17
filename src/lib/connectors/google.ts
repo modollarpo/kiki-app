@@ -115,7 +115,7 @@ export class GoogleConnector extends BaseConnector {
 
     if (codeVerifier) body.set("code_verifier", codeVerifier);
 
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -144,7 +144,7 @@ export class GoogleConnector extends BaseConnector {
       grant_type: "refresh_token",
     });
 
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -166,7 +166,7 @@ export class GoogleConnector extends BaseConnector {
     try {
       const result = await fetch(
         `https://www.googleapis.com/oauth2/v3/userinfo`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}` } }
       );
       return result.ok;
     } catch {
@@ -180,7 +180,7 @@ export class GoogleConnector extends BaseConnector {
     try {
       // Google Ads requires a developer token and customer ID
       // In production, fetch from user info + Ads API
-      const userResult = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      const userResult = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", { signal: AbortSignal.timeout(15000), 
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 

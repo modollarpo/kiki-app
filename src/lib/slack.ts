@@ -304,6 +304,8 @@ export async function dispatchApprovalRequest(
         text: `KIKI bid decision pending approval for *${payload.campaignName}*`,
         blocks: buildSlackBlocks(payload),
       }),
+      // Fail fast: a hung Slack call must never stall the bidding cycle.
+      signal: AbortSignal.timeout(5000),
     });
 
     const data = await res.json() as { ok: boolean; ts?: string; error?: string };

@@ -104,7 +104,7 @@ export class TikTokConnector extends BaseConnector {
 
     const result = await fetch(
       `${this.config.oauth.tokenUrl}?access_token=`,
-      {
+      { signal: AbortSignal.timeout(15000), 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -139,7 +139,7 @@ export class TikTokConnector extends BaseConnector {
 
     const result = await fetch(
       `${this.config.oauth.tokenUrl}?access_token=`,
-      {
+      { signal: AbortSignal.timeout(15000), 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

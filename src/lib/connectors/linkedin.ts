@@ -101,7 +101,7 @@ export class LinkedInConnector extends BaseConnector {
 
     if (codeVerifier) params.set("code_verifier", codeVerifier);
 
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
@@ -134,7 +134,7 @@ export class LinkedInConnector extends BaseConnector {
       client_secret: this.config.oauth.clientSecret,
     });
 
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),

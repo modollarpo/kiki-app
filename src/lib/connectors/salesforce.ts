@@ -115,7 +115,7 @@ export class SalesforceConnector extends BaseConnector {
     });
     if (codeVerifier) body.set("code_verifier", codeVerifier);
 
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -143,7 +143,7 @@ export class SalesforceConnector extends BaseConnector {
       client_secret: this.config.oauth.clientSecret,
       refresh_token: refreshToken,
     });
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -163,7 +163,7 @@ export class SalesforceConnector extends BaseConnector {
   async validateToken(accessToken: string): Promise<boolean> {
     const instanceUrl = this.instanceBase;
     if (!instanceUrl) return false;
-    const res = await fetch(`${instanceUrl}/services/oauth2/userinfo`, {
+    const res = await fetch(`${instanceUrl}/services/oauth2/userinfo`, { signal: AbortSignal.timeout(15000), 
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     return res.ok;
@@ -178,7 +178,7 @@ export class SalesforceConnector extends BaseConnector {
   async getAccountInfo(accessToken: string): Promise<PlatformApiResponse<AccountInfo>> {
     const instanceUrl = this.instanceBase;
     if (!instanceUrl) return { success: false, latencyMs: 0, error: "Salesforce instance URL not configured" };
-    const res = await fetch(`${instanceUrl}/services/oauth2/userinfo`, {
+    const res = await fetch(`${instanceUrl}/services/oauth2/userinfo`, { signal: AbortSignal.timeout(15000), 
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
@@ -202,7 +202,7 @@ export class SalesforceConnector extends BaseConnector {
     if (!instanceUrl) return { success: false, latencyMs: 0, error: "Salesforce instance URL not configured" };
     const soql = encodeURIComponent("SELECT Id, Name, Amount, CreatedDate, LastModifiedDate, StageName FROM Opportunity ORDER BY CreatedDate DESC LIMIT 50");
     const url = `${instanceUrl}/services/data/v58.0/query?q=${soql}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}` } });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
     const data = (await res.json()) as SalesforceQueryResponse<SalesforceOpportunity>;
     const records = data.records || [];
@@ -224,7 +224,7 @@ export class SalesforceConnector extends BaseConnector {
     const instanceUrl = this.instanceBase;
     if (!instanceUrl) return { success: false, latencyMs: 0, error: "Salesforce instance URL not configured" };
     const soql = encodeURIComponent(`SELECT Id, Name, Amount, CreatedDate, LastModifiedDate, StageName FROM Opportunity WHERE Id = '${realId}'`);
-    const res = await fetch(`${instanceUrl}/services/data/v58.0/query?q=${soql}`, {
+    const res = await fetch(`${instanceUrl}/services/data/v58.0/query?q=${soql}`, { signal: AbortSignal.timeout(15000), 
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
