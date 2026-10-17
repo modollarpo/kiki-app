@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
   const tokenCheck = await checkPlanLimit(user.tenantId, "tokens", monthlyTokens?.total ?? 0);
   if (!tokenCheck.allowed) {
     return NextResponse.json({
+      ok: false,
       error: `Monthly AI token limit reached (${tokenCheck.limit.toLocaleString()} tokens). Upgrade your plan for higher limits.`,
     }, { status: 403 });
   }
@@ -185,7 +186,7 @@ export async function POST(req: NextRequest) {
         tenantId: user?.tenantId,
       });
       return NextResponse.json(
-        { error: "AI service temporarily unavailable", detail: response.status },
+        { ok: false, error: "AI service temporarily unavailable", detail: response.status },
         { status: 502 }
       );
     }
