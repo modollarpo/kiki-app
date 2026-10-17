@@ -16,6 +16,7 @@ import {
   type OAuthTokens,
   type PlatformCampaign,
   type PlatformCampaignMetrics,
+  type AdSet,
   type ConversionEvent,
   type ConversionDeliveryResult,
   type PlatformApiResponse,
@@ -591,6 +592,81 @@ export class GoogleConnector extends BaseConnector {
         }],
       }
     );
+  }
+
+  // ── Ad-group (ad-set) level operations ──────────────────
+  // Google bids live on ad groups (cpc_bid_micros), so these are the
+  // real targets for the bidding engine.
+
+  async getAdSets(accessToken: string, campaignId: string): Promise<PlatformApiResponse<AdSet[]>> {
+    const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID || "";
+    if (!customerId) {
+      return { success: false, error: "GOOGLE_ADS_CUSTOMER_ID not configured", latencyMs: 0 };
+    }
+
+    const query = `
+      SELECT ad_group.id, ad_group.name, ad_group.status, ad_group.campaign,
+             ad_group.cpc_bid_micros
+      FROM ad_group
+      WHERE ad_group.campaign = 'customers/${customerId}/campaigns/${campaignId}'
+        AND ad_group.status != 'REMOVED'
+    `;
+
+    const result = await this.post<{
+      results?: Array<{
+        adGroup?: { id: string; name: string; status: string; cpcBidMicros?: string };
+      }>;
+    }>(
+      `customers/${customerId}/googleAds:searchStream`,
+      accessToken,
+      { query }
+    );
+
+    if (!result.success) {
+      return { ...result, data: undefined };
+    }
+
+    const adSets: AdSet[] = (result.data?.results ?? [])
+      .filter(r => r.adGroup)
+      .map(r => ({
+        id: r.adGroup!.id,
+        campaignId,
+        name: r.adGroup!.name,
+        status: r.adGroup!.status,
+        bidAmount: r.adGroup!.cpcBidMicros ? Number(r.adGroup!.cpcBidMicros) / 1_000_000 : undefined,
+      }));
+
+    return { success: true, data: adSets, latencyMs: result.latencyMs };
+  }
+
+  async updateAdSet(
+    accessToken: string,
+    adSetId: string,
+    updates: { bidAmount?: number; dailyBudget?: number; status?: string }
+  ): Promise<PlatformApiResponse<{ resourceName: string }>> {
+    // Google ad groups support bid + status (budgets live on the campaign).
+    if (updates.bidAmount !== undefined) {
+      const result = await this.setBid(accessToken, adSetId, updates.bidAmount);
+      if (!result.success || updates.status === undefined) return result;
+    }
+    if (updates.status !== undefined) {
+      const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID || "";
+      const s = updates.status.toLowerCase();
+      return this.post<{ resourceName: string }>(
+        `customers/${customerId}/adGroups:mutate`,
+        accessToken,
+        {
+          operations: [{
+            update: {
+              resourceName: `customers/${customerId}/adGroups/${adSetId}`,
+              status: s === "paused" ? "PAUSED" : "ENABLED",
+            },
+            updateMask: "status",
+          }],
+        }
+      );
+    }
+    return { success: true, data: { resourceName: `customers/${process.env.GOOGLE_ADS_CUSTOMER_ID || ""}/adGroups/${adSetId}` }, latencyMs: 0 };
   }
 
   // ── Customer Match (Audiences) ──────────────────────────

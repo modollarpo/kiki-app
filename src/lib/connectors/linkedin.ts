@@ -16,6 +16,7 @@ import {
   type OAuthTokens,
   type PlatformCampaign,
   type PlatformCampaignMetrics,
+  type AdSet,
   type ConversionEvent,
   type ConversionDeliveryResult,
   type PlatformApiResponse,
@@ -435,6 +436,37 @@ export class LinkedInConnector extends BaseConnector {
     } catch (error) {
       return { success: false, error: String(error), latencyMs: 0 };
     }
+  }
+
+  async getAdSets(accessToken: string, campaignId: string): Promise<PlatformApiResponse<AdSet[]>> {
+    // LinkedIn bids live on the campaign itself, so the campaign is the
+    // single "ad set" the bidding engine targets.
+    const current = await this.get<{ id: string; name?: string; status?: string; unitCost?: { amount: string } }>(
+      `/adCampaignsV2:${campaignId}`,
+      accessToken
+    );
+    if (!current.success || !current.data?.id) {
+      return { ...current, data: undefined };
+    }
+    const adSet: AdSet = {
+      id: current.data.id,
+      campaignId,
+      name: current.data.name || current.data.id,
+      status: current.data.status || "active",
+      bidAmount: current.data.unitCost?.amount ? parseFloat(current.data.unitCost.amount) : undefined,
+    };
+    return { success: true, data: [adSet], latencyMs: current.latencyMs };
+  }
+
+  async updateAdSet(
+    accessToken: string,
+    adSetId: string,
+    updates: { bidAmount?: number; dailyBudget?: number; status?: string }
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    if (updates.bidAmount !== undefined) {
+      return this.setBid(accessToken, adSetId, updates.bidAmount);
+    }
+    return { success: false, error: "LinkedIn campaign update requires bidAmount", latencyMs: 0 };
   }
 
   // ── CAPI (Pixel-only) ──────────────────────────────────

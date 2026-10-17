@@ -16,6 +16,7 @@ import {
   type OAuthTokens,
   type PlatformCampaign,
   type PlatformCampaignMetrics,
+  type AdSet,
   type ConversionEvent,
   type ConversionDeliveryResult,
   type ConversionUserData,
@@ -437,12 +438,37 @@ export class MetaConnector extends BaseConnector {
     return this.updateCampaign(accessToken, campaignId, { status: "ACTIVE" });
   }
 
+  async getAdSets(accessToken: string, campaignId: string): Promise<PlatformApiResponse<AdSet[]>> {
+    const result = await this.get<{
+      data: Array<{ id: string; name: string; status: string; bid_amount?: string; daily_budget?: string }>;
+    }>(
+      `${campaignId}/adsets`,
+      accessToken,
+      { fields: "id,name,status,bid_amount,daily_budget", limit: "100" }
+    );
+
+    if (!result.success || !result.data) {
+      return { ...result, data: undefined };
+    }
+
+    const adSets: AdSet[] = result.data.data.map(s => ({
+      id: s.id,
+      campaignId,
+      name: s.name,
+      status: s.status,
+      bidAmount: s.bid_amount !== undefined ? parseFloat(s.bid_amount) / 100 : undefined,
+      dailyBudget: s.daily_budget !== undefined ? parseFloat(s.daily_budget) / 100 : undefined,
+    }));
+
+    return { success: true, data: adSets, latencyMs: result.latencyMs };
+  }
+
   async updateAdSet(
     accessToken: string,
     adSetId: string,
-    updates: { bidAmount?: number; dailyBudget?: number; status?: "ACTIVE" | "PAUSED" }
+    updates: { bidAmount?: number; dailyBudget?: number; status?: string }
   ): Promise<PlatformApiResponse<{ id: string }>> {
-    const fields: Record<string, any> = {};
+    const fields: Record<string, unknown> = {};
     if (updates.bidAmount !== undefined) fields.bid_amount = Math.round(updates.bidAmount * 100);
     if (updates.dailyBudget !== undefined) fields.daily_budget = Math.round(updates.dailyBudget * 100);
     if (updates.status !== undefined) fields.status = updates.status;

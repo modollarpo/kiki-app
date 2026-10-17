@@ -16,6 +16,7 @@ import {
   type OAuthTokens,
   type PlatformCampaign,
   type PlatformCampaignMetrics,
+  type AdSet,
   type ConversionEvent,
   type ConversionDeliveryResult,
   type PlatformApiResponse,
@@ -429,6 +430,52 @@ export class SnapConnector extends BaseConnector {
     } catch (error) {
       return { success: false, error: String(error), latencyMs: 0 };
     }
+  }
+
+  async getAdSets(accessToken: string, campaignId: string): Promise<PlatformApiResponse<AdSet[]>> {
+    try {
+      const current = await this.get<{ campaigns: Array<{ id: string; ad_account_id: string }> }>(
+        `/campaigns/${campaignId}`,
+        accessToken
+      );
+      const campaign = current.success && current.data?.campaigns?.[0];
+      if (!campaign) {
+        return { success: false, error: current.error || "Campaign not found", latencyMs: current.latencyMs };
+      }
+
+      const result = await this.get<{
+        adsquads: Array<{ id: string; name: string; status: string; bid_micro?: number; daily_budget_micro?: number }>;
+      }>(`/adaccounts/${campaign.ad_account_id}/adsquads`, accessToken, { limit: "100" });
+
+      if (!result.success || !result.data?.adsquads) {
+        return { ...result, data: undefined };
+      }
+
+      const adSets: AdSet[] = result.data.adsquads.map(s => ({
+        id: s.id,
+        campaignId,
+        name: s.name,
+        status: s.status,
+        bidAmount: s.bid_micro !== undefined ? s.bid_micro / 1_000_000 : undefined,
+        dailyBudget: s.daily_budget_micro !== undefined ? s.daily_budget_micro / 1_000_000 : undefined,
+      }));
+
+      return { success: true, data: adSets, latencyMs: result.latencyMs };
+    } catch (error) {
+      return { success: false, error: String(error), latencyMs: 0 };
+    }
+  }
+
+  async updateAdSet(
+    accessToken: string,
+    adSetId: string,
+    updates: { bidAmount?: number; dailyBudget?: number; status?: string }
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    // Snap bids live on ad squads.
+    if (updates.bidAmount !== undefined) {
+      return this.setBid(accessToken, adSetId, updates.bidAmount);
+    }
+    return { success: false, error: "Snap ad squad update requires bidAmount", latencyMs: 0 };
   }
 
   // ── CAPI ───────────────────────────────────────────────

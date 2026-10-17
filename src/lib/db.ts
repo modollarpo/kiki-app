@@ -802,6 +802,8 @@ const SCHEMA = `
     target_cpa REAL NOT NULL DEFAULT 0,
     target_roas REAL NOT NULL DEFAULT 4.0,
     revenue REAL NOT NULL DEFAULT 0,
+    platform_campaign_id TEXT,
+    platform_ad_set_id TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
@@ -1469,6 +1471,30 @@ const SCHEMA = `
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
   CREATE INDEX IF NOT EXISTS idx_dark_social_tenant ON dark_social_events(tenant_id);
+
+  -- Audit trail of every bid change the engine computed and whether it was
+  -- actually applied on the ad platform (ad-set level), held for approval,
+  -- rejected, or skipped because no platform mapping/connector existed.
+  CREATE TABLE IF NOT EXISTS bid_history (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    campaign_id TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    platform_campaign_id TEXT,
+    platform_ad_set_id TEXT,
+    action_type TEXT NOT NULL DEFAULT 'bid_adjustment',
+    current_bid REAL NOT NULL DEFAULT 0,
+    new_bid REAL NOT NULL DEFAULT 0,
+    change_percent REAL NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'computed',
+    applied INTEGER NOT NULL DEFAULT 0,
+    reason TEXT,
+    error TEXT,
+    details TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_bid_history_tenant ON bid_history(tenant_id);
+  CREATE INDEX IF NOT EXISTS idx_bid_history_campaign ON bid_history(tenant_id, campaign_id);
 `;
 
 // SQLite-compatible variant of SCHEMA for the local `node:sqlite` fallback.
@@ -1618,6 +1644,11 @@ async function runMigrations(db: PgDb) {
   await addColumnIfMissing("customer_profiles", "commerce_platform", "TEXT");
   await addColumnIfMissing("customer_profiles", "identity_hash", "TEXT");
   await addColumnIfMissing("commerce_connections", "auth_type", "TEXT NOT NULL DEFAULT 'api_key'");
+
+  // External platform identifiers so bidding decisions can be pushed back to
+  // the real ad sets (bids live on ad sets, not campaign budgets).
+  await addColumnIfMissing("campaigns", "platform_campaign_id", "TEXT");
+  await addColumnIfMissing("campaigns", "platform_ad_set_id", "TEXT");
 
   // `oaas_tasks.confidence` was NOT NULL, but OaaS tasks generated from live
   // campaign data report confidence as NULL (no model evaluated them). Drop the

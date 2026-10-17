@@ -16,6 +16,7 @@ import {
   type OAuthTokens,
   type PlatformCampaign,
   type PlatformCampaignMetrics,
+  type AdSet,
   type ConversionEvent,
   type ConversionDeliveryResult,
   type PlatformApiResponse,
@@ -470,6 +471,64 @@ export class TikTokConnector extends BaseConnector {
         bid: bidAmount,
       }
     );
+  }
+
+  async getAdSets(accessToken: string, campaignId: string): Promise<PlatformApiResponse<AdSet[]>> {
+    const accountId = campaignId.split("_")[0] || "";
+    const result = await this.get<{
+      data: {
+        list: Array<{
+          adgroup_id: string;
+          adgroup_name: string;
+          operation_status: string;
+          bid: number;
+          budget: number;
+        }>;
+      };
+    }>(
+      "adgroup/get/",
+      accessToken,
+      {
+        advertiser_id: accountId,
+        filtering: JSON.stringify({ campaign_ids: [campaignId] }),
+        page_size: "100",
+        page: "1",
+      }
+    );
+
+    if (!result.success || !result.data?.data?.list) {
+      return { ...result, data: undefined };
+    }
+
+    const adSets: AdSet[] = result.data.data.list.map(g => ({
+      id: g.adgroup_id,
+      campaignId,
+      name: g.adgroup_name,
+      status: g.operation_status === "ADGROUP_STATUS_ENABLE" ? "active" : "paused",
+      bidAmount: g.bid,
+      dailyBudget: g.budget,
+    }));
+
+    return { success: true, data: adSets, latencyMs: result.latencyMs };
+  }
+
+  async updateAdSet(
+    accessToken: string,
+    adSetId: string,
+    updates: { bidAmount?: number; dailyBudget?: number; status?: string }
+  ): Promise<PlatformApiResponse<{ adgroup_id: string }>> {
+    if (updates.bidAmount !== undefined) {
+      return this.setBid(accessToken, adSetId, updates.bidAmount);
+    }
+    const accountId = adSetId.split("_")[0] || "";
+    const body: Record<string, unknown> = { advertiser_id: accountId, adgroup_id: adSetId };
+    if (updates.dailyBudget !== undefined) body.budget = updates.dailyBudget;
+    if (updates.status !== undefined) {
+      body.operation_status = updates.status.toLowerCase() === "paused"
+        ? "ADGROUP_STATUS_DISABLE"
+        : "ADGROUP_STATUS_ENABLE";
+    }
+    return this.post<{ adgroup_id: string }>("adgroup/update/", accessToken, body);
   }
 
   // ── Custom Audiences ─────────────────────────────────────
