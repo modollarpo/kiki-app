@@ -4,6 +4,7 @@ import { logger } from "./logger";
 // ============================================================
 
 import { withRetry } from "./retry";
+import { recordLatency, nowMs } from "./metrics";
 
 export const AZURE_OPENAI_CONFIG = {
   // Cheapest model — GPT-4o-mini: ~$0.15/1M input, ~$0.60/1M output
@@ -123,8 +124,9 @@ export async function callAzureOpenAI(
 ): Promise<{ content: string; tokens: number }> {
   const config = AZURE_OPENAI_CONFIG[tier];
 
+  const t0 = nowMs();
   try {
-    return await withRetry(async () => {
+    const out = await withRetry(async () => {
       const url = buildAzureOpenAIUrl(config.deploymentName);
       const headers = buildAzureOpenAIHeaders();
 
@@ -152,7 +154,10 @@ export async function callAzureOpenAI(
 
       throw new Error(`Azure OpenAI returned ${response.status}: ${response.statusText}`);
     }, { maxRetries: 3, baseDelayMs: 1000, maxDelayMs: 10000 });
+    recordLatency(`ai.azure.${tier}`, nowMs() - t0, true);
+    return out;
   } catch (e) {
+    recordLatency(`ai.azure.${tier}`, nowMs() - t0, false);
     logger.warn(`[Azure OpenAI] ${tier} call failed after retries:`, { error: e instanceof Error ? (e).message : String(e) });
     return { content: "", tokens: 0 };
   }

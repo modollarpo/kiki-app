@@ -8,6 +8,13 @@ import { logger } from "./logger";
 
 import { Pool, types } from "pg";
 import { hashPassword } from "./auth";
+import { recordLatency, dbKind, nowMs } from "./metrics";
+
+// Record the duration of every DB statement so /api/status can report real
+// per-operation latency percentiles instead of nulls.
+function recordDbTiming(sql: string, ms: number, ok: boolean): void {
+  recordLatency("db." + dbKind(sql), ms, ok);
+}
 
 // node-postgres returns int8 (BIGINT, OID 20) as strings to avoid precision
 // loss. Every integer column is BIGINT here (to hold ms-epoch timestamps), and
@@ -130,6 +137,18 @@ class PgStatement {
   }
 
   async run(...params: SqlParam[]): Promise<{ lastInsertRowid: string | number; changes: number }> {
+    const t0 = nowMs();
+    try {
+      const r = await this.runInner(params);
+      recordDbTiming(this.sql, nowMs() - t0, true);
+      return r;
+    } catch (e) {
+      recordDbTiming(this.sql, nowMs() - t0, false);
+      throw e;
+    }
+  }
+
+  private async runInner(params: SqlParam[]): Promise<{ lastInsertRowid: string | number; changes: number }> {
     const trimmed = this.sql.trim();
     const q = translate(this.sql);
     let lastInsertRowid: string | number = 0;
@@ -160,6 +179,18 @@ class PgStatement {
   }
 
   async get<T = Record<string, unknown>>(...params: SqlParam[]): Promise<T | undefined> {
+    const t0 = nowMs();
+    try {
+      const r = await this.getInner<T>(params);
+      recordDbTiming(this.sql, nowMs() - t0, true);
+      return r;
+    } catch (e) {
+      recordDbTiming(this.sql, nowMs() - t0, false);
+      throw e;
+    }
+  }
+
+  private async getInner<T>(params: SqlParam[]): Promise<T | undefined> {
     const synthetic = this.interceptSynthetic();
     if (synthetic !== null) return synthetic as T;
     const res = await pool.query(translate(this.sql), params);
@@ -167,6 +198,18 @@ class PgStatement {
   }
 
   async all<T = Record<string, unknown>>(...params: SqlParam[]): Promise<T[]> {
+    const t0 = nowMs();
+    try {
+      const r = await this.allInner<T>(params);
+      recordDbTiming(this.sql, nowMs() - t0, true);
+      return r;
+    } catch (e) {
+      recordDbTiming(this.sql, nowMs() - t0, false);
+      throw e;
+    }
+  }
+
+  private async allInner<T>(params: SqlParam[]): Promise<T[]> {
     const synthetic = this.interceptSynthetic();
     if (synthetic !== null) return [synthetic as T];
     const res = await pool.query(translate(this.sql), params);
@@ -208,18 +251,41 @@ class SqliteStatement {
   constructor(private db: SqliteDb, private sql: string) {}
 
   run(...params: SqlParam[]): { lastInsertRowid: number; changes: number } {
-    const info = this.db.raw.prepare(this.sql).run(...params);
-    this.db.lastRowCount = info.changes ?? 0;
-    this.db.lastInsertRowid = Number(info.lastInsertRowid ?? 0);
-    return { lastInsertRowid: this.db.lastInsertRowid, changes: this.db.lastRowCount };
+    const t0 = nowMs();
+    try {
+      const info = this.db.raw.prepare(this.sql).run(...params);
+      this.db.lastRowCount = info.changes ?? 0;
+      this.db.lastInsertRowid = Number(info.lastInsertRowid ?? 0);
+      recordDbTiming(this.sql, nowMs() - t0, true);
+      return { lastInsertRowid: this.db.lastInsertRowid, changes: this.db.lastRowCount };
+    } catch (e) {
+      recordDbTiming(this.sql, nowMs() - t0, false);
+      throw e;
+    }
   }
 
   get<T = SqlRow>(...params: SqlParam[]): T | undefined {
-    return this.db.raw.prepare(this.sql).get(...params) as T | undefined;
+    const t0 = nowMs();
+    try {
+      const r = this.db.raw.prepare(this.sql).get(...params) as T | undefined;
+      recordDbTiming(this.sql, nowMs() - t0, true);
+      return r;
+    } catch (e) {
+      recordDbTiming(this.sql, nowMs() - t0, false);
+      throw e;
+    }
   }
 
   all<T = SqlRow>(...params: SqlParam[]): T[] {
-    return this.db.raw.prepare(this.sql).all(...params) as T[];
+    const t0 = nowMs();
+    try {
+      const r = this.db.raw.prepare(this.sql).all(...params) as T[];
+      recordDbTiming(this.sql, nowMs() - t0, true);
+      return r;
+    } catch (e) {
+      recordDbTiming(this.sql, nowMs() - t0, false);
+      throw e;
+    }
   }
 }
 
@@ -311,15 +377,37 @@ class MemoryStatement {
     return rows;
   }
   run(...params: SqlParam[]): { lastInsertRowid: number; changes: number } {
-    return this.db.execStatement(this.sql, params, "run") as { lastInsertRowid: number; changes: number };
+    const t0 = nowMs();
+    try {
+      const r = this.db.execStatement(this.sql, params, "run") as { lastInsertRowid: number; changes: number };
+      recordDbTiming(this.sql, nowMs() - t0, true);
+      return r;
+    } catch (e) {
+      recordDbTiming(this.sql, nowMs() - t0, false);
+      throw e;
+    }
   }
   get<T = SqlRow>(...params: SqlParam[]): T | undefined {
-    const r = this.db.execStatement(this.sql, params, "get");
-    return (Array.isArray(r) ? r[0] : r) as T | undefined;
+    const t0 = nowMs();
+    try {
+      const r = this.db.execStatement(this.sql, params, "get");
+      recordDbTiming(this.sql, nowMs() - t0, true);
+      return (Array.isArray(r) ? r[0] : r) as T | undefined;
+    } catch (e) {
+      recordDbTiming(this.sql, nowMs() - t0, false);
+      throw e;
+    }
   }
   all<T = SqlRow>(...params: SqlParam[]): T[] {
-    const r = this.db.execStatement(this.sql, params, "all");
-    return (Array.isArray(r) ? r : [r]) as T[];
+    const t0 = nowMs();
+    try {
+      const r = this.db.execStatement(this.sql, params, "all");
+      recordDbTiming(this.sql, nowMs() - t0, true);
+      return (Array.isArray(r) ? r : [r]) as T[];
+    } catch (e) {
+      recordDbTiming(this.sql, nowMs() - t0, false);
+      throw e;
+    }
   }
 }
 
