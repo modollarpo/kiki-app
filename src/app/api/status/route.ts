@@ -135,9 +135,9 @@ export async function GET(request: Request) {
 
     const services: ServiceStatus[] = [
       svc("Database", dbCheck.ok ? "operational" : "degraded", dbLat, uptimeSec, dbDetail),
-      svc("Signal Pipeline", "unknown", dbLat, uptimeSec, "No signals yet"),
-      svc("LTV Prediction Engine", "unknown", dbLat, uptimeSec, "No predictions yet"),
-      svc("Agent Orchestrator", "unknown", dbLat, uptimeSec, "No agents running"),
+      svc("Signal Pipeline", "unknown", null, uptimeSec, "No signals yet"),
+      svc("LTV Prediction Engine", "unknown", null, uptimeSec, "No predictions yet"),
+      svc("Agent Orchestrator", "unknown", null, uptimeSec, "No agents running"),
       svc(
         "SyncBrain AI Router",
         groqUp || azureUp ? "operational" : "not_configured",
@@ -145,7 +145,7 @@ export async function GET(request: Request) {
         uptimeSec,
         groqUp || azureUp ? `${aiLat?.count ?? 0} AI calls sampled` : "No AI provider configured"
       ),
-      svc("Fraud Detection", "unknown", dbLat, uptimeSec, "No signals to screen"),
+      svc("Fraud Detection", "unknown", null, uptimeSec, "No signals to screen"),
       svc("Wallet Service", dbCheck.ok ? "operational" : "degraded", dbLat, uptimeSec, dbCheck.ok ? "DB-backed" : "DB unavailable"),
       svc("Campaign Delivery", "unknown", null, null, "Not instrumented in-process"),
       svc("WebSocket Gateway", "unknown", null, null, "Not instrumented (SSE used instead)"),
