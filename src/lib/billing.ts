@@ -577,8 +577,10 @@ export async function handlePaymentFailure(
       });
       break;
 
-    case 4:
-      // Cancel subscription, suspend tenant
+    default:
+      // attemptCount >= 4: cancel subscription, suspend tenant.
+      // `default` (not `case 4`) so Stripe's real attempt_count — which can
+      // exceed 4 with Smart Retries — always escalates to suspension.
       await db.prepare(`
         UPDATE subscriptions SET status = 'cancelled', updated_at = datetime('now')
         WHERE tenant_id = ?

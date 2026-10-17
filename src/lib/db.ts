@@ -924,6 +924,7 @@ const SCHEMA = `
     description TEXT NOT NULL,
     campaign TEXT,
     status TEXT NOT NULL DEFAULT 'settled',
+    idempotency_key TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -1650,6 +1651,9 @@ async function runMigrations(db: PgDb) {
   await addColumnIfMissing("campaigns", "platform_campaign_id", "TEXT");
   await addColumnIfMissing("campaigns", "platform_ad_set_id", "TEXT");
 
+  // Idempotency key so a retried wallet spend is applied at most once.
+  await addColumnIfMissing("wallet_transactions", "idempotency_key", "TEXT");
+
   // `oaas_tasks.confidence` was NOT NULL, but OaaS tasks generated from live
   // campaign data report confidence as NULL (no model evaluated them). Drop the
   // constraint on existing tables. PG-only statement; ignored on SQLite.
@@ -1665,6 +1669,14 @@ async function runMigrations(db: PgDb) {
   } catch { /* ignore */ }
   try {
     await db.exec("CREATE INDEX IF NOT EXISTS idx_customer_identity ON customer_profiles(tenant_id, identity_hash)");
+  } catch { /* ignore */ }
+
+  // Enforce one-time application of an idempotent wallet spend. Partial index
+  // so the many legacy/seed rows with a NULL key are unaffected.
+  try {
+    await db.exec(
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_tx_idempotency ON wallet_transactions(idempotency_key) WHERE idempotency_key IS NOT NULL"
+    );
   } catch { /* ignore */ }
 }
 
@@ -1742,6 +1754,10 @@ async function seedIfEmpty(db: PgDb) {
   await insertCheck.run("kc7", "t1", null, "Source of Wealth", "pending", null);
 
   await db.prepare("INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, ?, ?)").run("w1", "t1", 84200, "USD");
+  // Matching ledger entry so wallets.balance reconciles with the transaction
+  // ledger (SUM of credit/debit) — keeps nightly reconciliation clean on demo data.
+  await db.prepare("INSERT INTO wallet_transactions (id, wallet_id, type, amount, description, campaign, status) VALUES (?, ?, ?, ?, ?, ?, ?)")
+    .run("tx_seed_w1", "w1", "credit", 84200, "Initial funding", null, "settled");
   const insertCard = db.prepare("INSERT INTO wallet_cards (id, wallet_id, last4, brand, \"limit\", spent, campaign, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
   await insertCard.run("wc1", "w1", "4892", "Visa", 15000, 8400, "Q4 Fitness", "active");
   await insertCard.run("wc2", "w1", "2341", "Mastercard", 10000, 4200, "Retargeting", "active");

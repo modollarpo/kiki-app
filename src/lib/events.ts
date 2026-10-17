@@ -113,6 +113,7 @@ export const EVENTS = {
 
   // System events
   SYSTEM_METRIC: "system:metric",
+  SYSTEM_ALERT: "system:alert",
   WALLET_UPDATED: "wallet:updated",
 
   // Wallet card lifecycle
