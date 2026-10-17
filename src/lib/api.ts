@@ -377,8 +377,11 @@ export const mmmAnalysis = {
 export interface ServiceStatus {
   name: string;
   status: "operational" | "degraded" | "not_configured" | "unknown";
+  p50: number | null;
+  p95: number | null;
   p99: number | null;
   uptime: number | null;
+  samples: number | null;
   detail: string;
 }
 

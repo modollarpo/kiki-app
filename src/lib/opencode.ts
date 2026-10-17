@@ -1,4 +1,5 @@
 import { logger } from "./logger";
+import { recordLatency, nowMs } from "./metrics";
 // ============================================================
 // OpenCode Client — Headless agent backend connector
 // Connects to an OpenCode serve instance for conversational
@@ -72,6 +73,7 @@ export async function sendMessage(
 ): Promise<OpenCodeChatResponse | null> {
   if (!isOpenCodeConfigured()) return null;
 
+  const t0 = nowMs();
   try {
     const res = await fetch(`${OPENCODE_ENDPOINT}/api/sessions/${sessionId}/messages`, {
       method: "POST",
@@ -82,6 +84,7 @@ export async function sendMessage(
 
     if (res.ok) {
       const data = await res.json();
+      recordLatency("ai.opencode", nowMs() - t0, true);
       return {
         content: data.content || data.choices?.[0]?.message?.content || "",
         model: data.model || "opencode",
@@ -89,7 +92,9 @@ export async function sendMessage(
         finishReason: data.finishReason || data.finish_reason || "stop",
       };
     }
+    recordLatency("ai.opencode", nowMs() - t0, false);
   } catch (e) {
+    recordLatency("ai.opencode", nowMs() - t0, false);
     logger.warn("[OpenCode] Message send failed:", { error: e instanceof Error ? (e).message : String(e) });
   }
 
@@ -103,6 +108,7 @@ export async function chat(
 ): Promise<OpenCodeChatResponse | null> {
   if (!isOpenCodeConfigured()) return null;
 
+  const t0 = nowMs();
   try {
     const res = await fetch(`${OPENCODE_ENDPOINT}/api/chat`, {
       method: "POST",
@@ -117,6 +123,7 @@ export async function chat(
 
     if (res.ok) {
       const data = await res.json();
+      recordLatency("ai.opencode", nowMs() - t0, true);
       return {
         content: data.content || data.choices?.[0]?.message?.content || "",
         model: data.model || "opencode",
@@ -124,7 +131,9 @@ export async function chat(
         finishReason: data.finishReason || data.finish_reason || "stop",
       };
     }
+    recordLatency("ai.opencode", nowMs() - t0, false);
   } catch (e) {
+    recordLatency("ai.opencode", nowMs() - t0, false);
     logger.warn("[OpenCode] Chat failed:", { error: e instanceof Error ? (e).message : String(e) });
   }
 

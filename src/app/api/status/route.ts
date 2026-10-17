@@ -3,12 +3,23 @@ import { getDb } from "@/lib/db";
 import { json } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { tenantScope } from "@/lib/tenant";
+import {
+  latencySummary,
+  latencySummaryMatching,
+  allLatency,
+  allCounters,
+  uptimeMs,
+  type LatencySummary,
+} from "@/lib/metrics";
 
 interface ServiceStatus {
   name: string;
   status: "operational" | "degraded" | "not_configured" | "unknown";
+  p50: number | null;
+  p95: number | null;
   p99: number | null;
   uptime: number | null;
+  samples: number | null;
   detail: string;
 }
 
@@ -71,102 +82,96 @@ function configured(envVar: string | undefined): boolean {
   return Boolean(envVar && envVar.trim().length > 0);
 }
 
+function mb(bytes: number): number {
+  return Math.round((bytes / 1048576) * 100) / 100;
+}
+
+// Build a service row from a real latency summary (or null when unsampled).
+function svc(
+  name: string,
+  status: ServiceStatus["status"],
+  lat: LatencySummary | null,
+  uptime: number | null,
+  detail: string
+): ServiceStatus {
+  return {
+    name,
+    status,
+    p50: lat?.p50 ?? null,
+    p95: lat?.p95 ?? null,
+    p99: lat?.p99 ?? null,
+    uptime,
+    samples: lat?.count ?? null,
+    detail,
+  };
+}
+
 export async function GET(request: Request) {
   try {
     const user = await (await import("@/lib/auth")).getUserFromRequest(request);
     const dbCheck = await checkDatabase();
 
+    const uptimeSec = Math.round(process.uptime());
+    const dbLat = latencySummaryMatching("db.");
+    const aiLat = latencySummaryMatching("ai.");
+    const groqLat = latencySummary("ai.groq");
+    const azureLat = latencySummaryMatching("ai.azure.");
+    const mem = process.memoryUsage();
+
+    const groqUp = configured(process.env.GROQ_API_KEY);
+    const azureUp = configured(process.env.AZURE_OPENAI_API_KEY) && configured(process.env.AZURE_OPENAI_ENDPOINT);
+
+    // Health of an external AI provider: configured → check measured error rate
+    // for a recent call; otherwise not_configured.
+    const aiProviderStatus = (up: boolean, lat: LatencySummary | null): ServiceStatus["status"] => {
+      if (!up) return "not_configured";
+      if (lat && lat.errorRate >= 0.5) return "degraded";
+      return "operational";
+    };
+
+    const dbDetail = dbCheck.ok
+      ? `Query OK in ${dbCheck.latencyMs}ms · ${dbLat?.count ?? 0} queries sampled`
+      : "Query failed";
+
     const services: ServiceStatus[] = [
-      {
-        name: "Database",
-        status: dbCheck.ok ? "operational" : "degraded",
-        p99: null, // p99 requires percentile tracking infra (not measured)
-        uptime: null,
-        detail: dbCheck.ok ? `Query OK in ${dbCheck.latencyMs}ms` : "Query failed",
-      },
-      {
-        name: "Signal Pipeline",
-        status: "unknown",
-        p99: null,
-        uptime: null,
-        detail: "Depends on tenant data",
-      },
-      {
-        name: "LTV Prediction Engine",
-        status: "unknown",
-        p99: null,
-        uptime: null,
-        detail: "Depends on tenant data",
-      },
-      {
-        name: "Agent Orchestrator",
-        status: "unknown",
-        p99: null,
-        uptime: null,
-        detail: "Depends on tenant data",
-      },
-      {
-        name: "SyncBrain AI Router",
-        status: "unknown",
-        p99: null,
-        uptime: null,
-        detail: "Depends on tenant data",
-      },
-      {
-        name: "Fraud Detection",
-        status: "unknown",
-        p99: null,
-        uptime: null,
-        detail: "Depends on tenant data",
-      },
-      {
-        name: "Wallet Service",
-        status: dbCheck.ok ? "operational" : "degraded",
-        p99: null,
-        uptime: null,
-        detail: dbCheck.ok ? "DB-backed" : "DB unavailable",
-      },
-      {
-        name: "Campaign Delivery",
-        status: "unknown",
-        p99: null,
-        uptime: null,
-        detail: "Depends on connected ad platforms",
-      },
-      {
-        name: "WebSocket Gateway",
-        status: "unknown",
-        p99: null,
-        uptime: null,
-        detail: "Not measured",
-      },
-      {
-        name: "CDN",
-        status: "unknown",
-        p99: null,
-        uptime: null,
-        detail: "Not measured",
-      },
-      {
-        name: "Groq (fast AI tier)",
-        status: configured(process.env.GROQ_API_KEY) ? "operational" : "not_configured",
-        p99: null,
-        uptime: null,
-        detail: configured(process.env.GROQ_API_KEY) ? "GROQ_API_KEY present" : "GROQ_API_KEY missing",
-      },
-      {
-        name: "Azure OpenAI (mini/standard)",
-        status:
-          configured(process.env.AZURE_OPENAI_API_KEY) && configured(process.env.AZURE_OPENAI_ENDPOINT)
-            ? "operational"
-            : "not_configured",
-        p99: null,
-        uptime: null,
-        detail:
-          configured(process.env.AZURE_OPENAI_API_KEY) && configured(process.env.AZURE_OPENAI_ENDPOINT)
-            ? "Credentials present"
-            : "API key or endpoint missing",
-      },
+      svc("Database", dbCheck.ok ? "operational" : "degraded", dbLat, uptimeSec, dbDetail),
+      svc("Signal Pipeline", "unknown", dbLat, uptimeSec, "No signals yet"),
+      svc("LTV Prediction Engine", "unknown", dbLat, uptimeSec, "No predictions yet"),
+      svc("Agent Orchestrator", "unknown", dbLat, uptimeSec, "No agents running"),
+      svc(
+        "SyncBrain AI Router",
+        groqUp || azureUp ? "operational" : "not_configured",
+        aiLat,
+        uptimeSec,
+        groqUp || azureUp ? `${aiLat?.count ?? 0} AI calls sampled` : "No AI provider configured"
+      ),
+      svc("Fraud Detection", "unknown", dbLat, uptimeSec, "No signals to screen"),
+      svc("Wallet Service", dbCheck.ok ? "operational" : "degraded", dbLat, uptimeSec, dbCheck.ok ? "DB-backed" : "DB unavailable"),
+      svc("Campaign Delivery", "unknown", null, null, "Not instrumented in-process"),
+      svc("WebSocket Gateway", "unknown", null, null, "Not instrumented (SSE used instead)"),
+      svc("CDN", "unknown", null, null, "Edge-provided; not measured in-process"),
+      svc(
+        "Groq (fast AI tier)",
+        aiProviderStatus(groqUp, groqLat),
+        groqLat,
+        null,
+        groqUp
+          ? groqLat
+            ? `${groqLat.count} calls · ${Math.round(groqLat.errorRate * 100)}% errors`
+            : "Configured; no calls yet"
+          : "GROQ_API_KEY missing"
+      ),
+      svc(
+        "Azure OpenAI (mini/standard)",
+        aiProviderStatus(azureUp, azureLat),
+        azureLat,
+        null,
+        azureUp
+          ? azureLat
+            ? `${azureLat.count} calls · ${Math.round(azureLat.errorRate * 100)}% errors`
+            : "Configured; no calls yet"
+          : "API key or endpoint missing"
+      ),
     ];
 
     let stats: Record<string, unknown> | null = null;
@@ -196,9 +201,6 @@ export async function GET(request: Request) {
         } else if (s.name === "Agent Orchestrator") {
           s.status = agentsRunning > 0 ? "operational" : "unknown";
           s.detail = agentsRunning > 0 ? `${agentsRunning}/${agents.length} agents running` : "No agents running";
-        } else if (s.name === "SyncBrain AI Router") {
-          s.status = configured(process.env.AZURE_OPENAI_API_KEY) ? "operational" : "not_configured";
-          s.detail = s.status === "operational" ? "AI credentials present" : "AI credentials missing";
         } else if (s.name === "Fraud Detection") {
           s.status = fraudBlocked > 0 || signalCount > 0 ? "operational" : "unknown";
           s.detail = signalCount > 0 ? `${fraudBlocked} events blocked` : "No signals to screen";
@@ -238,7 +240,21 @@ export async function GET(request: Request) {
       integrationsConfigured,
       integrationsTotal: integrations.length,
       stats,
-      note: "p99/uptime reflect live percentile infrastructure once wired; currently null — no fabricated values.",
+      metrics: {
+        instanceUptimeSec: uptimeSec,
+        metricsRegistryUptimeSec: Math.round(uptimeMs() / 1000),
+        startedAt: new Date(Date.now() - process.uptime() * 1000).toISOString(),
+        memory: {
+          rssMB: mb(mem.rss),
+          heapUsedMB: mb(mem.heapUsed),
+          heapTotalMB: mb(mem.heapTotal),
+        },
+        latency: allLatency(),
+        counters: allCounters(),
+      },
+      note:
+        "Latency percentiles are computed from in-process samples (last 500 per operation) on THIS instance; " +
+        "they are null until the operation has run at least once. Services marked 'Not instrumented' have no samples by design.",
     });
   } catch (error) {
     logger.error("status GET failed", { message: error instanceof Error ? error.message : String(error) });
@@ -251,6 +267,7 @@ export async function GET(request: Request) {
       integrationsConfigured: 0,
       integrationsTotal: INTEGRATION_DEFS.length,
       stats: null,
+      metrics: null,
       note: "Failed to evaluate service status",
     });
   }

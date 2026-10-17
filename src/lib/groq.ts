@@ -5,6 +5,7 @@ import { logger } from "./logger";
 // ============================================================
 
 import { withRetry } from "./retry";
+import { recordLatency, nowMs } from "./metrics";
 
 export const GROQ_CONFIG = {
   // GPT-OSS 20B: ~$0.075/1M input, ~$0.30/1M output (Groq, production tier)
@@ -51,8 +52,9 @@ export async function callGroq(
 ): Promise<string> {
   if (!isGroqConfigured()) return "";
 
+  const t0 = nowMs();
   try {
-    return await withRetry(async () => {
+    const out = await withRetry(async () => {
       const url = buildGroqUrl();
       const headers = buildGroqHeaders();
       const config = GROQ_CONFIG.fast;
@@ -79,7 +81,10 @@ export async function callGroq(
 
       throw new Error(`Groq API returned ${response.status}: ${response.statusText}`);
     }, { maxRetries: 2, baseDelayMs: 200, maxDelayMs: 1000 });
+    recordLatency("ai.groq", nowMs() - t0, true);
+    return out;
   } catch (e) {
+    recordLatency("ai.groq", nowMs() - t0, false);
     logger.warn("[Groq] Fast inference failed after retries:", { error: e instanceof Error ? (e).message : String(e) });
   }
 
