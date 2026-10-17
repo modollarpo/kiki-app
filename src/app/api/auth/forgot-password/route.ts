@@ -4,10 +4,16 @@ import { json, jsonError } from "@/lib/auth";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   setRequestId(generateRequestId());
   try {
+    // Per-IP throttle to prevent reset-link enumeration and mailbox bombing
+    // across many accounts. The per-email limit below guards a single mailbox.
+    const rl = checkRateLimit(`forgot:${getClientIp(req)}`, { maxRequests: 5, windowMs: 60_000 });
+    if (!rl.allowed) return rateLimitResponse(rl);
+
     const { email } = await req.json();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return jsonError("Valid email is required", 400);

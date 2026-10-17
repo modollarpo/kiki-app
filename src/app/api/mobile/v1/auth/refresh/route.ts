@@ -2,8 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { createSession } from '@/lib/auth';
-import { REFRESH_SECRET, REFRESH_ISSUER, REFRESH_AUDIENCE, signRefreshToken } from '@/lib/mobile/auth';
+import { refreshSecret, REFRESH_ISSUER, REFRESH_AUDIENCE, signRefreshToken } from '@/lib/mobile/auth';
 import { jwtVerify } from 'jose';
+import { logger } from '@/lib/logger';
 
 interface UserRow {
   id: string; email: string; password: string; first_name: string; last_name: string;
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { payload } = await jwtVerify(refreshToken, REFRESH_SECRET, {
+    const { payload } = await jwtVerify(refreshToken, refreshSecret(), {
       issuer: REFRESH_ISSUER,
       audience: REFRESH_AUDIENCE,
     });
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Token refresh error:', error);
+    logger.error('mobile/auth/refresh failed', { message: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { ok: false, error: 'Invalid or expired refresh token', code: 'TOKEN_EXPIRED' },
       { status: 401 }

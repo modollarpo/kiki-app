@@ -4,21 +4,48 @@ import { SignJWT, jwtVerify } from 'jose';
 import { getDb } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 
-const ACCESS_TOKEN_SECRET = new TextEncoder().encode(
-  process.env.MOBILE_JWT_SECRET || process.env.JWT_SECRET || 'kiki-mobile-secret-change-in-production'
-);
+// Resolve a signing secret lazily so we can fail loud in production rather
+// than silently signing tokens with a well-known development default.
+// Resolution order (access):  MOBILE_JWT_SECRET → JWT_SECRET → dev fallback.
+// Resolution order (refresh): MOBILE_REFRESH_SECRET → REFRESH_SECRET → JWT_SECRET → dev fallback.
+function resolveSecret(
+  primary: string | undefined,
+  secondary: string | undefined,
+  devFallback: string,
+  label: string
+): Uint8Array {
+  const value = primary || secondary || process.env.JWT_SECRET;
+  if (!value) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`${label} (or JWT_SECRET) must be set in production`);
+    }
+    return new TextEncoder().encode(devFallback);
+  }
+  return new TextEncoder().encode(value);
+}
 
-// Single source of truth for the refresh-token secret. Resolution order:
-// MOBILE_REFRESH_SECRET → REFRESH_SECRET → dev fallback. Login and refresh
+function accessSecret(): Uint8Array {
+  return resolveSecret(
+    process.env.MOBILE_JWT_SECRET,
+    process.env.JWT_SECRET,
+    "kiki-mobile-dev-secret",
+    "MOBILE_JWT_SECRET"
+  );
+}
+
+// Single source of truth for the refresh-token secret. Login and refresh
 // MUST resolve to the same secret or refresh tokens can never be verified.
-const REFRESH_TOKEN_SECRET = new TextEncoder().encode(
-  process.env.MOBILE_REFRESH_SECRET || process.env.REFRESH_SECRET || 'kiki-refresh-secret-2024'
-);
+export function refreshSecret(): Uint8Array {
+  return resolveSecret(
+    process.env.MOBILE_REFRESH_SECRET,
+    process.env.REFRESH_SECRET,
+    "kiki-refresh-dev-secret",
+    "MOBILE_REFRESH_SECRET"
+  );
+}
 
 export const REFRESH_ISSUER = 'kiki-mobile';
 export const REFRESH_AUDIENCE = 'kiki-api';
-
-export { ACCESS_TOKEN_SECRET as JWT_SECRET, REFRESH_TOKEN_SECRET as REFRESH_SECRET };
 
 export interface MobileAuthPayload {
   sub: string;           // user id
@@ -36,7 +63,7 @@ export async function signAccessToken(payload: Omit<MobileAuthPayload, 'type' | 
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('15m')
-    .sign(ACCESS_TOKEN_SECRET);
+    .sign(accessSecret());
 }
 
 export async function signRefreshToken(payload: Omit<MobileAuthPayload, 'type' | 'iat' | 'exp'>): Promise<string> {
@@ -46,12 +73,12 @@ export async function signRefreshToken(payload: Omit<MobileAuthPayload, 'type' |
     .setIssuer(REFRESH_ISSUER)
     .setAudience(REFRESH_AUDIENCE)
     .setExpirationTime('30d')
-    .sign(REFRESH_TOKEN_SECRET);
+    .sign(refreshSecret());
 }
 
 export async function verifyAccessToken(token: string): Promise<MobileAuthPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, ACCESS_TOKEN_SECRET);
+    const { payload } = await jwtVerify(token, accessSecret());
     return payload as unknown as MobileAuthPayload;
   } catch {
     // Fall back to web auth token format
@@ -71,7 +98,7 @@ export async function verifyAccessToken(token: string): Promise<MobileAuthPayloa
 
 export async function verifyRefreshToken(token: string): Promise<MobileAuthPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, REFRESH_TOKEN_SECRET);
+    const { payload } = await jwtVerify(token, refreshSecret());
     return payload as unknown as MobileAuthPayload;
   } catch {
     return null;
