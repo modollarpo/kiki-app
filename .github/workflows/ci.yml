@@ -34,6 +34,11 @@ jobs:
     needs: check
     runs-on: ubuntu-latest
     environment: production
+    # Share the same group as deploy.yml so the two workflows never run
+    # `az containerapp update` concurrently (ContainerAppOperationInProgress).
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     permissions:
       id-token: write
       contents: read
