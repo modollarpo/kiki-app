@@ -114,7 +114,7 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
     });
 
     if (codeVerifier) body.set("code_verifier", codeVerifier);
-    const res = await fetch(this.config.oauth.tokenUrl, {
+    const res = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -124,7 +124,7 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
   }
 
   async refreshToken(refreshToken: string): Promise<OAuthTokens> {
-    const res = await fetch("https://api.amazon.com/auth/o2/token", {
+    const res = await fetch("https://api.amazon.com/auth/o2/token", { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: this.clientId, client_secret: this.clientSecret }),
@@ -135,14 +135,14 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
 
   async validateToken(accessToken: string): Promise<boolean> {
     try {
-      const res = await fetch(`${this.getBaseUrl()}/v2/profiles`, { headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
+      const res = await fetch(`${this.getBaseUrl()}/v2/profiles`, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
       return res.ok;
     } catch { return false; }
   }
 
   async getAccountInfo(accessToken: string): Promise<PlatformApiResponse<AccountInfo>> {
     try {
-      const res = await fetch(`${this.getBaseUrl()}/v2/profiles`, { headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
+      const res = await fetch(`${this.getBaseUrl()}/v2/profiles`, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
       const profiles = await res.json() as AmazonProfile[];
       const p = profiles[0];
       return { success: true, data: { id: p.profileId, name: p.accountInfo?.name || "Amazon Ads", currency: "USD", timezone: "America/New_York", config: {} }, latencyMs: 0 };
@@ -151,7 +151,7 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
 
   async listCampaigns(accessToken: string, _accountId: string): Promise<PlatformApiResponse<PlatformCampaign[]>> {
     try {
-      const res = await fetch(`${this.getBaseUrl()}/v2/campaigns?stateFilter=enabled`, { headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
+      const res = await fetch(`${this.getBaseUrl()}/v2/campaigns?stateFilter=enabled`, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
       const data = await res.json() as AmazonCampaign[];
       return { success: true, latencyMs: 0, data: data.map((c: AmazonCampaign) => ({ id: c.campaignId, platformId: "amazon", name: c.name, status: c.state === "enabled" ? "active" : "paused", objective: c.campaignType || "CONVERSIONS", dailyBudget: c.budget?.dailyBudget || 0, createdAt: c.creationDate || new Date().toISOString(), updatedAt: c.lastUpdatedDate || new Date().toISOString() })) };
     } catch (e) { return { success: false, error: String(e), latencyMs: 0 }; }
@@ -159,7 +159,7 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
 
   async getCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<PlatformCampaign>> {
     try {
-      const res = await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
+      const res = await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId } });
       const c = await res.json() as AmazonCampaign;
       return { success: true, latencyMs: 0, data: { id: c.campaignId, platformId: "amazon", name: c.name, status: c.state === "enabled" ? "active" : "paused", objective: c.campaignType || "CONVERSIONS", dailyBudget: c.budget?.dailyBudget || 0, createdAt: c.creationDate || new Date().toISOString(), updatedAt: c.lastUpdatedDate || new Date().toISOString() } };
     } catch (e) { return { success: false, error: String(e), latencyMs: 0 }; }
@@ -167,7 +167,7 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
 
   async getCampaignMetrics(accessToken: string, campaignId: string, dateRange: { start: string; end: string }): Promise<PlatformApiResponse<PlatformCampaignMetrics>> {
     try {
-      const res = await fetch(`${this.getBaseUrl()}/v1/campaigns/metrics`, {
+      const res = await fetch(`${this.getBaseUrl()}/v1/campaigns/metrics`, { signal: AbortSignal.timeout(15000), 
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" },
         body: JSON.stringify({ campaignIdFilter: [campaignId], period: { startDate: dateRange.start, endDate: dateRange.end }, metrics: "impressions,clicks,conversions,conversionValue,spend" }),
@@ -188,23 +188,23 @@ export class AmazonConnector extends BaseConnector implements IPlatformConnector
   async listCreativeAssets(): Promise<PlatformCreative[]> { return []; }
 
   async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>> {
-    await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ state: "paused" }) });
+    await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { signal: AbortSignal.timeout(15000),  method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ state: "paused" }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
   async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>> {
-    await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ state: "enabled" }) });
+    await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { signal: AbortSignal.timeout(15000),  method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ state: "enabled" }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
   async setBid(accessToken: string, adGroupId: string, bidAmount: number): Promise<PlatformApiResponse<unknown>> {
-    await fetch(`${this.getBaseUrl()}/v2/adGroups/${adGroupId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ defaultBid: bidAmount }) });
+    await fetch(`${this.getBaseUrl()}/v2/adGroups/${adGroupId}`, { signal: AbortSignal.timeout(15000),  method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ defaultBid: bidAmount }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
   async updateCampaign(accessToken: string, campaignId: string, updates: { dailyBudget?: number }): Promise<PlatformApiResponse<unknown>> {
     if (updates.dailyBudget) {
-      await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ budget: { dailyBudget: Math.max(updates.dailyBudget, 1) } }) });
+      await fetch(`${this.getBaseUrl()}/v2/campaigns/${campaignId}`, { signal: AbortSignal.timeout(15000),  method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Amazon-Advertising-API-Scope": this.profileId, "Content-Type": "application/json" }, body: JSON.stringify({ budget: { dailyBudget: Math.max(updates.dailyBudget, 1) } }) });
     }
     return { success: true, data: null, latencyMs: 0 };
   }

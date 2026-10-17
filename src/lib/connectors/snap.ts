@@ -105,7 +105,7 @@ export class SnapConnector extends BaseConnector {
 
     if (codeVerifier) body.set("code_verifier", codeVerifier);
 
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -138,7 +138,7 @@ export class SnapConnector extends BaseConnector {
       client_secret: this.config.oauth.clientSecret,
     });
 
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),

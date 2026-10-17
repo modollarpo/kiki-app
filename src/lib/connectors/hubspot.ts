@@ -106,7 +106,7 @@ export class HubspotConnector extends BaseConnector {
     });
     if (codeVerifier) body.set("code_verifier", codeVerifier);
 
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -133,7 +133,7 @@ export class HubspotConnector extends BaseConnector {
       client_secret: this.config.oauth.clientSecret,
       refresh_token: refreshToken,
     });
-    const result = await fetch(this.config.oauth.tokenUrl, {
+    const result = await fetch(this.config.oauth.tokenUrl, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -152,14 +152,14 @@ export class HubspotConnector extends BaseConnector {
 
   async validateToken(accessToken: string): Promise<boolean> {
     const url = `${this.config.apiBaseUrl}/crm/v3/objects/contacts?limit=1`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}` } });
     return res.ok;
   }
 
   // ── Account ────────────────────────────────────────────
 
   async getAccountInfo(accessToken: string): Promise<PlatformApiResponse<AccountInfo>> {
-    const res = await fetch(`${this.config.apiBaseUrl}/crm/v3/objects/contacts?limit=1`, {
+    const res = await fetch(`${this.config.apiBaseUrl}/crm/v3/objects/contacts?limit=1`, { signal: AbortSignal.timeout(15000), 
       method: "GET",
       headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
     });

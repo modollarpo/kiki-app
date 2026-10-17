@@ -126,7 +126,7 @@ export class ShopifyConnector extends BaseConnector {
     });
 
     const url = `https://${shop}${this.config.oauth.tokenUrl}`;
-    const result = await fetch(url, {
+    const result = await fetch(url, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -160,7 +160,7 @@ export class ShopifyConnector extends BaseConnector {
       client_id: this.config.oauth.clientId,
       client_secret: this.config.oauth.clientSecret,
     });
-    const result = await fetch(`https://${shop}${this.config.oauth.tokenUrl}`, {
+    const result = await fetch(`https://${shop}${this.config.oauth.tokenUrl}`, { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -183,7 +183,7 @@ export class ShopifyConnector extends BaseConnector {
     const shop = (process.env.SHOPIFY_STORE_DOMAIN || "").replace(/^https?:\/\//, "");
     if (!shop) return false;
     const url = `https://${shop}/admin/api/2024-01/shop.json`;
-    const res = await fetch(url, { headers: { "X-Shopify-Access-Token": accessToken } });
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000),  headers: { "X-Shopify-Access-Token": accessToken } });
     return res.ok;
   }
 
@@ -194,7 +194,7 @@ export class ShopifyConnector extends BaseConnector {
     if (!shop) return { success: false, latencyMs: 0, error: "Shopify store domain not configured" };
 
     const url = `https://${shop}/admin/api/2024-01/shop.json`;
-    const res = await fetch(url, { headers: { "X-Shopify-Access-Token": accessToken } });
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000),  headers: { "X-Shopify-Access-Token": accessToken } });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
 
     const data = (await res.json()) as { shop?: ShopifyShopInfo };

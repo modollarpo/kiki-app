@@ -115,7 +115,7 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
     });
 
     if (codeVerifier) body.set("code_verifier", codeVerifier);
-    const res = await fetch(this.getTokenUrl(), {
+    const res = await fetch(this.getTokenUrl(), { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
@@ -125,7 +125,7 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
   }
 
   async refreshToken(refreshToken: string): Promise<OAuthTokens> {
-    const res = await fetch(this.getTokenUrl(), {
+    const res = await fetch(this.getTokenUrl(), { signal: AbortSignal.timeout(15000), 
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: this.clientId, client_secret: this.clientSecret }),
@@ -136,7 +136,7 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
 
   async validateToken(accessToken: string): Promise<boolean> {
     try {
-      const res = await fetch(`${this.config.apiBaseUrl}/campaign`, { headers: { Authorization: `Bearer ${accessToken}` } });
+      const res = await fetch(`${this.config.apiBaseUrl}/campaign`, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}` } });
       return res.ok;
     } catch { return false; }
   }
@@ -147,7 +147,7 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
 
   async listCampaigns(accessToken: string, _accountId: string): Promise<PlatformApiResponse<PlatformCampaign[]>> {
     try {
-      const res = await fetch(`${this.config.apiBaseUrl}/campaign`, { headers: { Authorization: `Bearer ${accessToken}` } });
+      const res = await fetch(`${this.config.apiBaseUrl}/campaign`, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}` } });
       const data = await res.json() as CtvCampaignList;
       const campaigns = data.campaigns || data.data || [];
       return { success: true, latencyMs: 0, data: campaigns.map((c: CtvCampaign) => ({ id: c.id || c.campaignId || "", platformId: "ctv", name: c.name, status: (c.status === "ACTIVE" || c.state === "enabled") ? "active" : "paused", objective: "VIDEO_COMPLETION", dailyBudget: c.budget?.dailyBudget || c.dailyBudget || 0, createdAt: c.createdAt || new Date().toISOString(), updatedAt: c.updatedAt || new Date().toISOString() })) };
@@ -163,7 +163,7 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
 
   async getCampaignMetrics(accessToken: string, campaignId: string, dateRange: { start: string; end: string }): Promise<PlatformApiResponse<PlatformCampaignMetrics>> {
     try {
-      const res = await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}/report?startDate=${dateRange.start}&endDate=${dateRange.end}`, { headers: { Authorization: `Bearer ${accessToken}` } });
+      const res = await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}/report?startDate=${dateRange.start}&endDate=${dateRange.end}`, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Bearer ${accessToken}` } });
       const data = await res.json() as CtvMetrics & { metrics?: CtvMetrics };
       const m: CtvMetrics = data.metrics || data;
       const spend = parseFloat(String(m.spend || m.totalSpend || "0"));
@@ -180,23 +180,23 @@ export class CtvConnector extends BaseConnector implements IPlatformConnector {
   async listCreativeAssets(): Promise<PlatformCreative[]> { return []; }
 
   async pauseCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>> {
-    await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ status: "PAUSED", state: "paused" }) });
+    await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { signal: AbortSignal.timeout(15000),  method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ status: "PAUSED", state: "paused" }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
   async resumeCampaign(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>> {
-    await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ status: "ACTIVE", state: "enabled" }) });
+    await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { signal: AbortSignal.timeout(15000),  method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ status: "ACTIVE", state: "enabled" }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
   async setBid(accessToken: string, campaignId: string, bidAmount: number): Promise<PlatformApiResponse<unknown>> {
-    await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ bidCpm: bidAmount }) });
+    await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { signal: AbortSignal.timeout(15000),  method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ bidCpm: bidAmount }) });
     return { success: true, data: null, latencyMs: 0 };
   }
 
   async updateCampaign(accessToken: string, campaignId: string, updates: { dailyBudget?: number }): Promise<PlatformApiResponse<unknown>> {
     if (updates.dailyBudget) {
-      await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ budget: { dailyBudget: updates.dailyBudget } }) });
+      await fetch(`${this.config.apiBaseUrl}/campaign/${campaignId}`, { signal: AbortSignal.timeout(15000),  method: "PUT", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ budget: { dailyBudget: updates.dailyBudget } }) });
     }
     return { success: true, data: null, latencyMs: 0 };
   }

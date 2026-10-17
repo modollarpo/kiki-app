@@ -107,7 +107,7 @@ export class MetaConnector extends BaseConnector {
 
     if (codeVerifier) params.set("code_verifier", codeVerifier);
 
-    const result = await fetch(`${this.config.oauth.tokenUrl}?${params.toString()}`);
+    const result = await fetch(`${this.config.oauth.tokenUrl}?${params.toString()}`, { signal: AbortSignal.timeout(15000), });
     if (!result.ok) {
       const error = await result.text();
       throw new Error(`Meta OAuth failed: ${error}`);
@@ -130,7 +130,7 @@ export class MetaConnector extends BaseConnector {
       fb_exchange_token: refreshToken,
     });
 
-    const result = await fetch(`${this.config.oauth.tokenUrl}?${params.toString()}`);
+    const result = await fetch(`${this.config.oauth.tokenUrl}?${params.toString()}`, { signal: AbortSignal.timeout(15000), });
     if (!result.ok) throw new Error("Meta token refresh failed");
 
     const data = await result.json();

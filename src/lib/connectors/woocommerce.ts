@@ -144,7 +144,7 @@ export class WooCommerceConnector extends BaseConnector {
     const [key, secret] = Buffer.from(accessToken, "base64").toString().split(":");
     const auth = Buffer.from(`${key}:${secret}`).toString("base64");
     const url = `${storeUrl}/wp-json/wc/v3/system_status`;
-    const res = await fetch(url, { headers: { Authorization: `Basic ${auth}` } });
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000),  headers: { Authorization: `Basic ${auth}` } });
     if (!res.ok) return { success: false, latencyMs: 0, error: `HTTP ${res.status}`, httpStatus: res.status };
 
     const data = (await res.json()) as WooSystemStatus;
