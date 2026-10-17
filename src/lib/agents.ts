@@ -36,7 +36,12 @@ async function callAI(prompt: string, systemPrompt: string, tier: ModelTier = "m
       logger.warn("[Agent] Groq not configured, falling back to Azure mini");
       tier = "mini";
     } else {
-      return callGroq(prompt, systemPrompt, { maxTokens: 512, temperature: 0.3 });
+      const fast = await callGroq(prompt, systemPrompt, { maxTokens: 512, temperature: 0.3 });
+      // Runtime failure (429 quota, timeout, transient error) must not silently
+      // degrade the agent to an empty response — fall back to Azure mini.
+      if (fast) return fast;
+      logger.warn("[Agent] Groq fast call returned empty, falling back to Azure mini");
+      tier = "mini";
     }
   }
 
