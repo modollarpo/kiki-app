@@ -14,6 +14,7 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useAuthSync } from "@/hooks/useAuthSync";
 import { useAuth } from "@/hooks/useAuth";
+import { useSSE } from "@/hooks/useSSE";
 import Image from "next/image";
 
 // ── Navigation Configuration ────────────────────────────────
@@ -345,6 +346,7 @@ const SidebarContent = memo(function SidebarContent({
   toggleSidebar,
   setMobileSidebarOpen,
   onSignOut,
+  sseConnected,
 }: {
   sidebarCollapsed: boolean;
   isMobile: boolean;
@@ -355,6 +357,7 @@ const SidebarContent = memo(function SidebarContent({
   toggleSidebar: () => void;
   setMobileSidebarOpen: (v: boolean) => void;
   onSignOut: () => void;
+  sseConnected: boolean;
 }) {
   return (
     <>
@@ -466,9 +469,11 @@ const SidebarContent = memo(function SidebarContent({
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname?.startsWith(item.href));
-              const badgeText = item.badgeSelector
-                ? item.badgeSelector()
-                : item.badge;
+              const badgeText = item.href === "/dashboard/signals"
+                ? (sseConnected ? "LIVE" : "STANDBY")
+                : item.badgeSelector
+                  ? item.badgeSelector()
+                  : item.badge;
               return (
                 <button
                   key={item.href}
@@ -518,7 +523,11 @@ const SidebarContent = memo(function SidebarContent({
                         {item.label}
                       </span>
                       {badgeText !== undefined && (
-                        <Badge color={item.bc || K.t3} dot={item.pulse} pulse={item.pulse}>
+                        <Badge
+                          color={item.href === "/dashboard/signals" ? (sseConnected ? K.mint : K.t3) : (item.bc || K.t3)}
+                          dot={item.pulse}
+                          pulse={item.href === "/dashboard/signals" ? sseConnected : item.pulse}
+                        >
                           {badgeText}
                         </Badge>
                       )}
@@ -660,6 +669,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const unread = useUnreadCount();
   const running = useRunningAgents();
   const systemStatus = useSystemStatus();
+  const { connected: sseConnected } = useSSE("/api/events", token ?? undefined);
   const router = useRouter();
   const pathname = usePathname();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -764,9 +774,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           pathname={pathname}
           router={router}
           toggleSidebar={toggleSidebar}
-          setMobileSidebarOpen={setMobileSidebarOpen}
-          onSignOut={handleSignOut}
-        />
+        setMobileSidebarOpen={setMobileSidebarOpen}
+        onSignOut={handleSignOut}
+        sseConnected={sseConnected}
+      />
       </aside>
 
       {/* Main content */}

@@ -219,3 +219,37 @@ export const KAFKA_TOPICS = {
 } as const;
 
 export type KafkaTopic = (typeof KAFKA_TOPICS)[keyof typeof KAFKA_TOPICS];
+
+// ── Canonical Event Names (shared contract for app + SSE) ──
+export const EVENTS = {
+  // Campaign lifecycle
+  CAMPAIGN_CREATED: "campaign:created",
+  CAMPAIGN_UPDATED: "campaign:updated",
+  CAMPAIGN_PAUSED: "campaign:paused",
+  // Bidding
+  BID_PLACED: "bid:placed",
+  BID_APPROVED: "bid:approved",
+  BID_REJECTED: "bid:rejected",
+  // Signals
+  SIGNAL_CAPTURED: "signal:captured",
+  SIGNAL_INGESTED: "signal:ingested",
+  SIGNAL_ENRICHED: "signal:enriched",
+  SIGNAL_DELIVERED: "signal:delivered",
+  // LTV
+  LTV_PREDICTION: "ltv:prediction",
+  LTV_PREDICTED: "ltv:predicted",
+  LTV_RETRAINED: "ltv:retrained",
+  // Connectors
+  CONNECTOR_SYNCED: "connector:synced",
+  CONNECTOR_ERROR: "connector:error",
+  // System
+  SYSTEM_ALERT: "system:alert",
+  SYSTEM_METRIC: "system:metric",
+  SYSTEM_HEALTH: "system:health",
+  // Agent
+  AGENT_STARTED: "agent:started",
+  AGENT_COMPLETED: "agent:completed",
+  AGENT_ERROR: "agent:error",
+} as const;
+
+export type KikiEventName = (typeof EVENTS)[keyof typeof EVENTS];

@@ -279,7 +279,7 @@ function heuristicScoreBid(
     finalBid = adjustedBid * 0.3;
     reason = `STOP-LOSS: ${stopLoss.reason}`;
 
-    eventBus.emit("bidding.stop_loss", {
+    eventBus.emit(EVENTS.BIDDING_STOP_LOSS, {
       tenantId: metrics.tenantId,
       campaignId: metrics.campaignId,
       reason: stopLoss.reason,
@@ -394,7 +394,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
         reason = `STOP-LOSS: ${stopLoss.reason}`;
         confidence = 0.9;
 
-        eventBus.emit("bidding.stop_loss", {
+        eventBus.emit(EVENTS.BIDDING_STOP_LOSS, {
           tenantId,
           campaignId: metrics.campaignId,
           reason: stopLoss.reason,
@@ -622,6 +622,25 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
       }),
     );
 
+    // Broadcast the outcome to the tenant's live dashboards.
+    if (pushApplied) {
+      eventBus.emit(EVENTS.BID_PLACED, {
+        tenantId,
+        campaignId: decision.campaignId,
+        platform: decision.platform,
+        currentBid: decision.currentBid,
+        newBid: decision.newBid,
+        changePercent: decision.changePercent,
+      });
+    } else {
+      eventBus.emit(EVENTS.BID_REJECTED, {
+        tenantId,
+        campaignId: decision.campaignId,
+        platform: decision.platform,
+        reason: pushError || decision.reason,
+      });
+    }
+
     // Log the decision
     await db.prepare(`
       INSERT INTO agent_actions
@@ -647,7 +666,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
   try {
     const fatigued = await detectCreativeFatigue(tenantId);
     for (const ctx of fatigued) {
-      eventBus.emit("creative.fatigue_detected", {
+      eventBus.emit(EVENTS.CREATIVE_FATIGUE_DETECTED, {
         tenantId,
         campaignId: ctx.campaignId,
         campaignName: ctx.campaignName,
@@ -670,7 +689,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
   }
 
   // 7. Emit cycle complete event
-  eventBus.emit("bidding.cycle_complete", {
+  eventBus.emit(EVENTS.BIDDING_CYCLE_COMPLETE, {
     tenantId,
     campaignCount: campaigns.length,
     decisions: decisions.length,
@@ -859,7 +878,7 @@ export function initBiddingEventWiring() {
     }
   });
 
-  eventBus.on("creative.fatigue_detected", async (_event: string, data: unknown) => {
+  eventBus.on(EVENTS.CREATIVE_FATIGUE_DETECTED, async (_event: string, data: unknown) => {
     const payload = data as { platform: string; tenantId: string; creativeId?: string };
     logger.info(`[BiddingEngine] Creative fatigue detected on ${payload.platform}. Triggering GenAI creative replacement...`);
     try {

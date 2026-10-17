@@ -1,4 +1,5 @@
 import { logger } from "./logger";
+import { EVENTS as SHARED_EVENTS } from "../../packages/shared/src/events";
 // ============================================================
 // Real-time Event System — Server-Sent Events for live updates
 // ============================================================
@@ -90,30 +91,32 @@ class EventBus {
 export const eventBus = new EventBus();
 
 // ── Predefined event types ────────────────────────────────
+// Canonical names come from the shared event contract (packages/shared).
+// App-only aliases are layered on top so the in-memory bus and Kafka bridge
+// share one vocabulary instead of drifting.
 export const EVENTS = {
-  // Agent events
-  AGENT_STARTED: "agent:started",
-  AGENT_COMPLETED: "agent:completed",
-  AGENT_ERROR: "agent:error",
+  ...SHARED_EVENTS,
 
-  // Signal events
+  // Signal
   SIGNAL_INGESTED: "signal:ingested",
-  SIGNAL_ENRICHED: "signal:enriched",
 
-  // Campaign events
-  CAMPAIGN_UPDATED: "campaign:updated",
+  // Campaign
   CAMPAIGN_BUDGET_CHANGED: "campaign:budget_changed",
 
-  // LTV events
+  // LTV
   LTV_PREDICTION: "ltv:prediction",
 
-  // Fraud events
+  // Fraud
   FRAUD_DETECTED: "fraud:detected",
   FRAUD_BLOCKED: "fraud:blocked",
 
-  // System events
+  // Bidding (internal lifecycle)
+  BIDDING_STOP_LOSS: "bidding.stop_loss",
+  BIDDING_CYCLE_COMPLETE: "bidding.cycle_complete",
+  CREATIVE_FATIGUE_DETECTED: "creative.fatigue_detected",
+
+  // System
   SYSTEM_METRIC: "system:metric",
-  SYSTEM_ALERT: "system:alert",
   WALLET_UPDATED: "wallet:updated",
 
   // Wallet card lifecycle

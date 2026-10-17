@@ -7,6 +7,8 @@ import { useKikiStore } from "@/store";
 import { useAuth } from "@/hooks/useAuth";
 import { wallet as walletApi, isNotConfigured, type WalletData } from "@/lib/api";
 import { K } from "@/lib/kdls";
+import { useSSE } from "@/hooks/useSSE";
+import { EVENTS } from "@/lib/events";
 
 const fmt = (n: number) => n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : n.toLocaleString();
 
@@ -31,6 +33,20 @@ export default function WalletPage() {
     if (status === "success") addToast("success", "Payment received — your wallet will be credited once Stripe confirms.");
     else if (status === "cancelled") addToast("info", "Top-up cancelled.");
   }, [addToast]);
+
+  const { subscribe } = useSSE("/api/events", token ?? undefined);
+
+  useEffect(() => {
+    if (!token) return;
+    const refresh = () => walletApi.get(token).then(d => setData(d)).catch(() => {});
+    const unsubs = [
+      subscribe(EVENTS.WALLET_UPDATED, refresh),
+      subscribe(EVENTS.WALLET_CARD_FROZEN, refresh),
+      subscribe(EVENTS.WALLET_CARD_UNFROZEN, refresh),
+      subscribe(EVENTS.WALLET_UNFREEZE_REQUESTED, refresh),
+    ];
+    return () => unsubs.forEach(u => u());
+  }, [token, subscribe]);
 
   const handleTopUp = async () => {
     if (!token) return;
