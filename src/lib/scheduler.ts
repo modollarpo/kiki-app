@@ -23,6 +23,7 @@ import { collectCampaignMetrics } from "./campaign-metrics-collector";
 import { syncAudienceSegments } from "./audience-portability";
 import { checkFrequencyGovernor } from "./frequency-governor";
 import { runArbitrageCycle } from "./platform-arbitrage";
+import { runNightlyReconciliation } from "./reconciliation";
 import { isGroqConfigured } from "./groq";
 
 let schedulerRunning = false;
@@ -161,6 +162,10 @@ export async function startScheduler(): Promise<void> {
     await runArbitrageCycle();
   }, ARBITRAGE_INTERVAL));
   logger.info("[Scheduler] Platform arbitrage started (every 6h)");
+
+  // ── Nightly Wallet Reconciliation (every day at 00:00 UTC) ──
+  scheduleNightlyReconciliation();
+  logger.info("[Scheduler] Nightly wallet reconciliation scheduled (00:00 UTC)");
 
   // Run each agent on its own interval
   for (const [type, intervalSec] of Object.entries(AGENT_INTERVALS)) {
@@ -417,6 +422,29 @@ async function checkFrequencyForAllTenants(): Promise<void> {
       logger.error(`[Scheduler] Frequency governor failed for tenant ${tenant_id}:`, { error: e instanceof Error ? (e).message : String(e) });
     }
   }
+}
+
+// ── Nightly Wallet Reconciliation (00:00 UTC) ──────────────
+function msUntilNextUtcMidnight(): number {
+  const now = new Date();
+  const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0);
+  return next - now.getTime();
+}
+
+function scheduleNightlyReconciliation(): void {
+  const run = async () => {
+    if (schedulerRunning) {
+      try {
+        await runNightlyReconciliation();
+      } catch (e) {
+        logger.error("[Scheduler] Reconciliation failed:", { error: e instanceof Error ? (e).message : String(e) });
+      }
+    }
+    if (schedulerRunning) {
+      intervals.push(setTimeout(run, msUntilNextUtcMidnight()));
+    }
+  };
+  intervals.push(setTimeout(run, msUntilNextUtcMidnight()));
 }
 
 // ── Stop the scheduler ────────────────────────────────────

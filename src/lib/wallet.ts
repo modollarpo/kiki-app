@@ -310,6 +310,72 @@ export async function unfreezeCard(
   return { success: true };
 }
 
+// ── Spend From Wallet (atomic + idempotent) ────────────────
+// Single choke point for every wallet debit. Guarantees:
+//   1. idempotency — a repeated key is applied at most once.
+//   2. atomicity — the debit is a conditional UPDATE guarded by
+//      `balance >= amount`, so it can never drive the balance
+//      negative, even if two debits run concurrently.
+export interface SpendResult {
+  success: boolean;
+  transactionId?: string;
+  balanceAfter?: number;
+  alreadyApplied?: boolean;
+  error?: string;
+}
+
+export async function spendFromWallet(
+  tenantId: string,
+  amount: number,
+  description: string,
+  idempotencyKey: string,
+  options?: { campaign?: string | null; type?: string }
+): Promise<SpendResult> {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { success: false, error: "INVALID_AMOUNT" };
+  }
+
+  const db = await getDb();
+
+  // 1. Idempotency — a replay of the same key returns the original outcome.
+  const prior = await db.prepare(
+    "SELECT id, status FROM wallet_transactions WHERE idempotency_key = ?"
+  ).get<{ id: string; status: string }>(idempotencyKey);
+  if (prior) {
+    const bal = await getWalletBalance(tenantId);
+    return {
+      success: prior.status !== "failed",
+      transactionId: prior.id,
+      balanceAfter: bal.balance,
+      alreadyApplied: true,
+    };
+  }
+
+  const wallet = await db.prepare(
+    "SELECT id, balance FROM wallets WHERE tenant_id = ?"
+  ).get<WalletRow>(tenantId);
+  if (!wallet) return { success: false, error: "WALLET_NOT_FOUND" };
+
+  // 2. Atomic conditional debit.
+  const res = await db.prepare(
+    "UPDATE wallets SET balance = balance - ? WHERE id = ? AND balance >= ?"
+  ).run(amount, wallet.id, amount);
+  if (!res.changes) {
+    return { success: false, error: "INSUFFICIENT_BALANCE" };
+  }
+
+  // 3. Record the transaction. ON CONFLICT DO NOTHING (INSERT OR IGNORE)
+  //    keeps a concurrent duplicate key from double-counting.
+  const txId = `tx_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+  await db.prepare(`
+    INSERT OR IGNORE INTO wallet_transactions
+      (id, wallet_id, type, amount, description, campaign, status, idempotency_key, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, 'settled', ?, datetime('now'))
+  `).run(txId, wallet.id, options?.type ?? "debit", amount, description, options?.campaign ?? null, idempotencyKey);
+
+  return { success: true, transactionId: txId, balanceAfter: wallet.balance - amount };
+}
+
 // ── Record Card Transaction ────────────────────────────────
 
 export async function recordCardTransaction(
@@ -326,19 +392,15 @@ export async function recordCardTransaction(
     return { success: false, error: "Card not found or frozen" };
   }
 
-  // Check wallet balance
-  const wallet = await db.prepare(`
-    SELECT balance FROM wallets WHERE id = ?
-  `).get<WalletRow>(card.wallet_id);
+  // Atomic debit — the conditional WHERE prevents any overdraft even under
+  // concurrent charges (the previous read-then-write could go negative).
+  const res = await db.prepare(`
+    UPDATE wallets SET balance = balance - ? WHERE id = ? AND balance >= ?
+  `).run(amount, card.wallet_id, amount);
 
-  if (!wallet || wallet.balance < amount) {
+  if (!res.changes) {
     return { success: false, error: "Insufficient wallet balance" };
   }
-
-  // Debit wallet
-  await db.prepare(`
-    UPDATE wallets SET balance = balance - ? WHERE id = ?
-  `).run(amount, card.wallet_id);
 
   // Update card spent
   await db.prepare(`
@@ -670,38 +732,32 @@ export async function deductAdSpend(
   tenantId: string,
   amount: number,
   campaignId: string,
-  description: string
+  description: string,
+  idempotencyKey?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const db = await getDb();
-  const wallet =   await db.prepare(`
-    SELECT id, balance FROM wallets WHERE tenant_id = ?
-  `).get<WalletRow>(tenantId);
+  const result = await spendFromWallet(
+    tenantId,
+    amount,
+    description,
+    idempotencyKey ?? `adspend_${campaignId}_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`,
+    { campaign: campaignId, type: "debit" }
+  );
 
-  if (!wallet || wallet.balance < amount) {
-    return { success: false, error: "Insufficient wallet balance" };
+  if (!result.success) {
+    return {
+      success: false,
+      error: result.error === "INSUFFICIENT_BALANCE" ? "Insufficient wallet balance" : result.error,
+    };
   }
-
-  // Deduct from wallet
-  await db.prepare(`
-    UPDATE wallets SET balance = balance - ? WHERE id = ?
-  `).run(amount, wallet.id);
-
-  // Record transaction
-  const txId = `tx_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
-  await db.prepare(`
-    INSERT INTO wallet_transactions (id, wallet_id, type, amount, description, campaign, status, created_at)
-    VALUES (?, ?, 'debit', ?, ?, ?, 'settled', datetime('now'))
-  `).run(txId, wallet.id, amount, description, campaignId);
 
   // Check if wallet needs auto-freeze
   await checkAllWalletCards(tenantId);
 
   eventBus.emit(EVENTS.WALLET_UPDATED, {
-    walletId: wallet.id,
     amount: -amount,
     type: "ad_spend",
     campaignId,
-    balance: wallet.balance - amount,
+    balance: result.balanceAfter,
   });
 
   return { success: true };

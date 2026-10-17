@@ -182,8 +182,12 @@ export async function POST(req: NextRequest) {
         const failedInvoice = event.data.object as Stripe.Invoice;
         const failTenantId = failedInvoice.metadata?.tenantId || failedInvoice.subscription_details?.metadata?.tenantId;
         if (failTenantId) {
-          await handlePaymentFailure(failTenantId, failedInvoice.id, 1);
-          eventBus.emit("billing.payment_failed", { tenantId: failTenantId, invoiceId: failedInvoice.id });
+          // Use Stripe's real attempt counter so the dunning ladder
+          // (>= 4 attempts → suspension) actually escalates instead of
+          // always being treated as the first failure.
+          const attempts = Math.max(1, failedInvoice.attempt_count ?? 1);
+          await handlePaymentFailure(failTenantId, failedInvoice.id, attempts);
+          eventBus.emit("billing.payment_failed", { tenantId: failTenantId, invoiceId: failedInvoice.id, attempts });
           logger.warn("Payment failed", { tenantId: failTenantId, invoiceId: failedInvoice.id });
         }
         break;
