@@ -7,6 +7,8 @@ import { StatCard, Card, Badge } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 import { useInsights } from "@/hooks/useInsights";
+import { useSSE } from "@/hooks/useSSE";
+import { EVENTS } from "@/lib/events";
 
 interface AgentModel {
   id: string; name: string; type: string; status: string;
@@ -47,6 +49,24 @@ export default function AIOpsPage() {
       .catch((err) => { setError(err?.message || "Failed to load AI Ops data"); setLoading(false); })
       .finally(() => setLoading(false));
   }, [token]);
+
+  const { connected, subscribe } = useSSE("/api/events", token ?? undefined);
+
+  useEffect(() => {
+    if (!token) return;
+    const reload = () => {
+      fetch("/api/aiops", { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d?.data) { setAgents(d.data.agents ?? []); setRecentActions(d.data.recentActions ?? []); } })
+        .catch(() => {});
+    };
+    const unsubs = [
+      subscribe(EVENTS.AGENT_STARTED, reload),
+      subscribe(EVENTS.AGENT_COMPLETED, reload),
+      subscribe(EVENTS.AGENT_ERROR, reload),
+    ];
+    return () => unsubs.forEach(u => u());
+  }, [token, subscribe]);
 
   const deployed = agents.filter(a => a.status === "running").length;
 
@@ -109,7 +129,7 @@ export default function AIOpsPage() {
           </Card>
 
           <Card accent={K.blue}>
-            <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Recent Agent Actions <Badge color={K.blue} className="text-[10px]">LIVE</Badge></h3>
+            <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Recent Agent Actions <Badge color={connected ? K.blue : K.warn} className="text-[10px]">{connected ? "LIVE" : "OFFLINE"}</Badge></h3>
             {recentActions.map((a, i) => (
               <div key={i} className="px-3 py-[10px] mb-2 bg-g850 rounded-kdls" style={{ border: `1px solid ${K.g700}` }}>
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-1">

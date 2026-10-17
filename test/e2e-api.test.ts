@@ -139,7 +139,10 @@ vi.mock("@/lib/bidding", () => ({
   initBiddingEventWiring: vi.fn(),
 }));
 
-vi.mock("@/lib/events", () => ({ eventBus: { emit: vi.fn(), on: vi.fn() } }));
+vi.mock("@/lib/events", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/events")>();
+  return { ...actual, eventBus: { emit: vi.fn(), on: vi.fn() } };
+});
 
 // ── Helper ─────────────────────────────────────────────────
 const H = { authorization: "Bearer fake-token" };

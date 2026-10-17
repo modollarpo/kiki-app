@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useKikiStore } from "@/store";
 import { agents as agentsApi, type Agent } from "@/lib/api";
 import { K } from "@/lib/kdls";
+import { useSSE } from "@/hooks/useSSE";
+import { EVENTS } from "@/lib/events";
 
 interface AgentWithActions extends Agent {
   latestAction?: {
@@ -48,6 +50,21 @@ export default function AgentsPage() {
     }, 15000);
     return () => clearInterval(iv);
   }, [token]);
+
+  const { connected, subscribe } = useSSE("/api/events", token ?? undefined);
+
+  useEffect(() => {
+    if (!token) return;
+    const refresh = () => {
+      agentsApi.list(token).then(d => { setAgentList(d.agents as AgentWithActions[]); if (d.guardrails) setGuardrails(d.guardrails); }).catch(() => {});
+    };
+    const unsubs = [
+      subscribe(EVENTS.AGENT_STARTED, refresh),
+      subscribe(EVENTS.AGENT_COMPLETED, refresh),
+      subscribe(EVENTS.AGENT_ERROR, refresh),
+    ];
+    return () => unsubs.forEach(u => u());
+  }, [token, subscribe]);
 
   const visibleAgents = isStarter ? agentList.filter(a => !advancedAgentTypes.includes(a.type)) : agentList;
   const running = visibleAgents.filter(a => a.status === "running");
@@ -102,7 +119,7 @@ export default function AgentsPage() {
               {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `${visibleAgents.length} agents · ${running.length} running · ${totalActions.toLocaleString()} total actions`}
             </p>
           </div>
-          <Badge color={K.mint} dot pulse>LIVE</Badge>
+          <Badge color={connected ? K.mint : K.warn} dot pulse={connected}>{connected ? "LIVE" : "OFFLINE"}</Badge>
           {isStarter && (
             <a
               href="/dashboard/billing"

@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { campaigns as campaignsApi, type Campaign } from "@/lib/api";
 import { K } from "@/lib/kdls";
 import { useRouter } from "next/navigation";
+import { useSSE } from "@/hooks/useSSE";
+import { EVENTS } from "@/lib/events";
 
 const PLATFORM_COLORS: Record<string,string> = { meta:"#1877F2", google:"#4285F4", tiktok:"#FF0050", linkedin:"#0A66C2", youtube:"#FF0000", pinterest:"#E60023" };
 
@@ -25,6 +27,22 @@ export default function CampaignsPage() {
     if (!token) { router.push("/auth/login"); return; }
     campaignsApi.list(token).then(d => { setCampaignList(d.campaigns); setLoading(false); }).catch(() => setLoading(false));
   }, [token, router]);
+
+  const { subscribe } = useSSE("/api/events", token ?? undefined);
+
+  useEffect(() => {
+    if (!token) return;
+    const refresh = () => campaignsApi.list(token).then(d => setCampaignList(d.campaigns)).catch(() => {});
+    const unsubs = [
+      subscribe(EVENTS.CAMPAIGN_CREATED, refresh),
+      subscribe(EVENTS.CAMPAIGN_UPDATED, refresh),
+      subscribe(EVENTS.CAMPAIGN_PAUSED, refresh),
+      subscribe(EVENTS.BID_PLACED, refresh),
+      subscribe(EVENTS.BID_APPROVED, refresh),
+      subscribe(EVENTS.BID_REJECTED, refresh),
+    ];
+    return () => unsubs.forEach(u => u());
+  }, [token, subscribe]);
 
   const active = campaignList.filter(c => c.status === "active");
   const bestRoas = campaignList.length ? Math.max(...campaignList.map(c => c.roas)) : 0;

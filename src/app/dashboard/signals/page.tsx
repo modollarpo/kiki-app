@@ -4,6 +4,8 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, Badge, Button, StatCard, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { K } from "@/lib/kdls";
+import { useSSE } from "@/hooks/useSSE";
+import { EVENTS } from "@/lib/events";
 
 interface Signal {
   id: string;
@@ -64,6 +66,18 @@ export default function SignalsPage() {
     };
   }, [autoRefresh, fetchSignals]);
 
+  const { connected, subscribe } = useSSE("/api/events", token ?? undefined);
+
+  useEffect(() => {
+    if (!token) return;
+    const unsubs = [
+      subscribe(EVENTS.SIGNAL_ENRICHED, fetchSignals),
+      subscribe(EVENTS.SIGNAL_INGESTED, fetchSignals),
+      subscribe(EVENTS.SIGNAL_CAPTURED, fetchSignals),
+    ];
+    return () => unsubs.forEach(u => u());
+  }, [token, subscribe, fetchSignals]);
+
   const platformColors: Record<string, string> = {
     meta: K.blue,
     google: K.mint,
@@ -95,6 +109,9 @@ export default function SignalsPage() {
               }`}>
               {autoRefresh ? "● LIVE" : "○ PAUSED"}
             </button>
+            {!connected && (
+              <span className="px-3 py-[6px] font-mono text-[10px] font-semibold rounded-kdls bg-g900 border border-g800 text-t4">○ DISCONNECTED</span>
+            )}
             <Button onClick={fetchSignals} variant="ghost" size="sm">Refresh</Button>
           </div>
         </div>

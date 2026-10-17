@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSSE } from "@/hooks/useSSE";
 import { dashboard, type DashboardData } from "@/lib/api";
 import { K } from "@/lib/kdls";
+import { EVENTS } from "@/lib/events";
 import { useRouter } from "next/navigation";
 
 interface SyncBrainStats {
@@ -97,21 +98,23 @@ export default function DashboardPage() {
     if (!token) return;
     const refresh = () => dashboard.get(token).then(d => { setData(d); setLastUpdate(new Date()); }).catch(() => {});
     const unsubs = [
-      subscribe("agent:started", (payload) => {
+      subscribe(EVENTS.AGENT_STARTED, (payload) => {
         const p = payload as { agentType?: string };
         addToast("info", `${p?.agentType || "Agent"} started`);
         refresh();
       }),
-      subscribe("agent:completed", (payload) => {
+      subscribe(EVENTS.AGENT_COMPLETED, (payload) => {
         const p = payload as { agentType?: string };
         addToast("info", `${p?.agentType || "Agent"} cycle completed`);
         refresh();
       }),
-      subscribe("agent:error", (payload) => {
+      subscribe(EVENTS.AGENT_ERROR, (payload) => {
         const p = payload as { agentType?: string };
         addToast("error", `${p?.agentType || "Agent"} error`);
         refresh();
       }),
+      subscribe(EVENTS.BID_PLACED, () => refresh()),
+      subscribe(EVENTS.SIGNAL_ENRICHED, () => refresh()),
     ];
     return () => unsubs.forEach(u => u?.());
   }, [token, subscribe, addToast]);

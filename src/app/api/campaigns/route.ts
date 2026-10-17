@@ -5,6 +5,7 @@ import { logger, handleApiError } from "@/lib/logger";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { validateSearchParams, validateBody, campaignCreateSchema, campaignQuerySchema } from "@/lib/validation";
 import { checkEnforcement, checkPlanLimit } from "@/lib/tenant";
+import { eventBus, EVENTS } from "@/lib/events";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
@@ -106,6 +107,7 @@ export async function POST(req: Request) {
     `)).run(id, user.tenantId, sanitizeString(name, 200), platform, budget || 10000);
 
     const campaign = await (await db.prepare("SELECT * FROM campaigns WHERE id = ?")).get(id);
+    eventBus.emit(EVENTS.CAMPAIGN_CREATED, { tenantId: user.tenantId, campaignId: id, name: sanitizeString(name, 200), platform });
     return json(campaign, 201);
   } catch (e) {
     return handleApiError(e, "campaigns/POST failed");

@@ -4,6 +4,7 @@ import { getUserFromRequest, json, jsonError, sanitizeString } from "@/lib/auth"
 import { checkEnforcement } from "@/lib/tenant";
 import { logger, handleApiError } from "@/lib/logger";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { eventBus, EVENTS } from "@/lib/events";
 
 interface CampaignRow {
   id: string; tenant_id: string; name: string; platform: string; status: string;
@@ -111,6 +112,9 @@ export async function PUT(
       "SELECT * FROM campaigns WHERE id = ? AND tenant_id = ?"
     )).get(id, user.tenantId) as CampaignRow;
 
+    eventBus.emit(updated.status === "paused" ? EVENTS.CAMPAIGN_PAUSED : EVENTS.CAMPAIGN_UPDATED, {
+      tenantId: user.tenantId, campaignId: id, status: updated.status,
+    });
     return json({ ok: true, campaign: mapCampaign(updated) });
   } catch (error) {
     return handleApiError(error, "campaigns/[id]/PUT failed");
@@ -176,6 +180,9 @@ export async function PATCH(
       "SELECT * FROM campaigns WHERE id = ? AND tenant_id = ?"
     )).get(id, user.tenantId) as CampaignRow;
 
+    eventBus.emit(updated.status === "paused" ? EVENTS.CAMPAIGN_PAUSED : EVENTS.CAMPAIGN_UPDATED, {
+      tenantId: user.tenantId, campaignId: id, status: updated.status,
+    });
     return json({ ok: true, campaign: mapCampaign(updated) });
   } catch (error) {
     return handleApiError(error, "campaigns/[id]/PATCH failed");
@@ -208,6 +215,7 @@ export async function DELETE(
       "UPDATE campaigns SET status = 'deleted', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?"
     )).run(id, user.tenantId);
 
+    eventBus.emit(EVENTS.CAMPAIGN_PAUSED, { tenantId: user.tenantId, campaignId: id, status: "deleted" });
     return json({ ok: true, message: "Campaign deleted" });
   } catch (error) {
     return handleApiError(error, "campaigns/[id]/DELETE failed");
