@@ -16,6 +16,7 @@ import {
   type OAuthTokens,
   type PlatformCampaign,
   type PlatformCampaignMetrics,
+  type AdSet,
   type ConversionEvent,
   type ConversionDeliveryResult,
   type PlatformApiResponse,
@@ -457,6 +458,51 @@ export class PinterestConnector extends BaseConnector {
     } catch (error) {
       return { success: false, error: String(error), latencyMs: 0 };
     }
+  }
+
+  async getAdSets(accessToken: string, campaignId: string): Promise<PlatformApiResponse<AdSet[]>> {
+    try {
+      const accountId = process.env.PINTEREST_AD_ACCOUNT_ID || "";
+      if (!accountId) {
+        return { success: false, error: "PINTEREST_AD_ACCOUNT_ID not configured", latencyMs: 0 };
+      }
+
+      const result = await this.get<{
+        items: Array<{ id: string; name: string; status: string; bid_in_micro_currency?: number; budget_in_micro_currency?: number }>;
+      }>(`/ad_accounts/${accountId}/ad_groups`, accessToken, {
+        campaign_ids: campaignId,
+        page_size: "100",
+      });
+
+      if (!result.success || !result.data?.items) {
+        return { ...result, data: undefined };
+      }
+
+      const adSets: AdSet[] = result.data.items.map(g => ({
+        id: g.id,
+        campaignId,
+        name: g.name,
+        status: g.status,
+        bidAmount: g.bid_in_micro_currency !== undefined ? g.bid_in_micro_currency / 1_000_000 : undefined,
+        dailyBudget: g.budget_in_micro_currency !== undefined ? g.budget_in_micro_currency / 1_000_000 : undefined,
+      }));
+
+      return { success: true, data: adSets, latencyMs: result.latencyMs };
+    } catch (error) {
+      return { success: false, error: String(error), latencyMs: 0 };
+    }
+  }
+
+  async updateAdSet(
+    accessToken: string,
+    adSetId: string,
+    updates: { bidAmount?: number; dailyBudget?: number; status?: string }
+  ): Promise<PlatformApiResponse<{ id: string }>> {
+    // Pinterest bids live on ad groups.
+    if (updates.bidAmount !== undefined) {
+      return this.setBid(accessToken, adSetId, updates.bidAmount);
+    }
+    return { success: false, error: "Pinterest ad group update requires bidAmount", latencyMs: 0 };
   }
 
   // ── CAPI (Conversions API) ─────────────────────────────

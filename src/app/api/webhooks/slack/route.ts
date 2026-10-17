@@ -69,30 +69,65 @@ async function executeBidChange(approvalId: string): Promise<{ ok: boolean; erro
 
   // Push to platform connector if integration exists
   const integration = await db.prepare(
-    `SELECT access_token FROM tenant_integrations
+    `SELECT access_token, config FROM tenant_integrations
      WHERE tenant_id = ? AND platform = ? AND status = 'active'`
-  ).get(approval.tenantId, approval.platform) as { access_token: string } | undefined;
+  ).get(approval.tenantId, approval.platform) as { access_token: string; config: string | null } | undefined;
+
+  let pushApplied = false;
+  let pushError: string | null = null;
+  let pushPlatformCampaignId: string | null = null;
 
   if (integration) {
     try {
-      const { getConnector, isPlatformSupported } = await import("@/lib/connectors");
-      if (isPlatformSupported(approval.platform)) {
-        const connector = getConnector(approval.platform as Parameters<typeof getConnector>[0]);
-        const token = decryptToken(integration.access_token);
-        if (typeof connector.updateCampaign === "function") {
-          const result = await connector.updateCampaign(token, approval.campaignId, {
-            dailyBudget: approval.newBid,
-          });
-          if (!result.success) {
-            throw new Error(result.error ?? "updateCampaign failed");
-          }
-        }
+      const { applyBidDecision } = await import("@/lib/bidding");
+      const campaign = await db.prepare(
+        `SELECT platform_campaign_id FROM campaigns WHERE id = ?`
+      ).get(approval.campaignId) as { platform_campaign_id: string | null } | undefined;
+
+      const token = decryptToken(integration.access_token);
+      const pushResult = await applyBidDecision({
+        platform: approval.platform,
+        accessToken: token,
+        internalCampaignId: approval.campaignId,
+        platformCampaignId: campaign?.platform_campaign_id ?? null,
+        newBid: approval.newBid,
+        integrationConfig: integration.config,
+      });
+      pushApplied = pushResult.applied;
+      pushPlatformCampaignId = pushResult.platformCampaignId;
+      if (!pushResult.applied) {
+        pushError = pushResult.error ?? pushResult.skippedReason ?? "platform push not applied";
+        console.error("[Slack] Platform push not applied after approval:", pushError);
       }
     } catch (err) {
+      pushError = String(err);
       // Log failure but don't block — the DB is already updated
       console.error("[Slack] Platform push failed after approval:", err);
     }
   }
+
+  // Audit trail: the approved decision and whether it reached the platform.
+  await db.prepare(`
+    INSERT INTO bid_history
+    (id, tenant_id, campaign_id, platform, platform_campaign_id, action_type,
+     current_bid, new_bid, change_percent, status, applied, reason, error, details, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+  `).run(
+    `bh_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    approval.tenantId,
+    approval.campaignId,
+    approval.platform,
+    pushPlatformCampaignId,
+    "bid_adjustment",
+    approval.currentBid,
+    approval.newBid,
+    approval.changePercent,
+    pushApplied ? "applied" : (pushError ? "failed" : "local_only"),
+    pushApplied ? 1 : 0,
+    `[Slack-approved] ${approval.reason}`,
+    pushError,
+    JSON.stringify({ approvalId, confidence: approval.confidence }),
+  );
 
   // Log in agent_actions
   await db.prepare(`

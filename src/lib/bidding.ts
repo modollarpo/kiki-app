@@ -1,5 +1,5 @@
-// ============================================================
-// KIKI Agent Platform — Autonomous Bidding Orchestrator
+﻿// ============================================================
+// KIKI Agent Platform â€” Autonomous Bidding Orchestrator
 // Runs on configurable interval (default 5 min), evaluates
 // LTV/CAC, day-parting, stop-loss, and cross-platform budget
 // arbitrage. Uses Groq for fast batch scoring with heuristic
@@ -16,12 +16,12 @@ import { dispatchApprovalRequest, APPROVAL_TTL_MS } from "./slack";
 import { detectCreativeFatigue } from "./creative";
 import { logger } from "./logger";
 
-// ── Circuit-breaker threshold ──────────────────────────────
+// â”€â”€ Circuit-breaker threshold â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Any bid change beyond this % (or any stop-loss) is sent to
 // Slack for human approval before hitting the ad platform.
 const APPROVAL_THRESHOLD_PCT = 20;
 
-// ── Types ──────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface BidDecision {
   campaignId: string;
@@ -35,6 +35,8 @@ export interface BidDecision {
   ltvRatio: number;
   dayPartWeight: number;
   stopLossTriggered: boolean;
+  platformCampaignId?: string | null;
+  platformAdSetId?: string | null;
 }
 
 export interface DayPartWeight {
@@ -58,6 +60,8 @@ export interface CampaignMetrics {
   ltvCacRatio: number;
   bidAmount: number;
   status: string;
+  platformCampaignId?: string | null;
+  platformAdSetId?: string | null;
 }
 
 interface CampaignRow {
@@ -72,6 +76,8 @@ interface CampaignRow {
   target_roas: number | null;
   bid: number | null;
   status: string;
+  platform_campaign_id?: string | null;
+  platform_ad_set_id?: string | null;
 }
 
 interface AvgLtvRow {
@@ -94,8 +100,8 @@ interface AgentActionRow {
   created_at: string;
 }
 
-// ── Day-Parting Weights ────────────────────────────────────
-// 24 hourly weights × 7 daily weights = 168 weight values
+// â”€â”€ Day-Parting Weights â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 24 hourly weights Ã— 7 daily weights = 168 weight values
 
 const HOURLY_WEIGHTS: number[] = [
   0.4, 0.3, 0.2, 0.2, 0.3, 0.5,  // 00-05: night (low)
@@ -120,7 +126,7 @@ export function getDayPartWeight(date: Date = new Date()): number {
   return HOURLY_WEIGHTS[hour] * DAILY_WEIGHTS[dayOfWeek];
 }
 
-// ── LTV/CAC Ratio Evaluation ──────────────────────────────
+// â”€â”€ LTV/CAC Ratio Evaluation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function evaluateLtvCacRatio(
   campaign: CampaignMetrics,
@@ -140,7 +146,7 @@ function evaluateLtvCacRatio(
   }
 }
 
-// ── Stop-Loss Evaluation ──────────────────────────────────
+// â”€â”€ Stop-Loss Evaluation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function evaluateStopLoss(
   campaign: CampaignMetrics,
@@ -158,20 +164,20 @@ function evaluateStopLoss(
     };
   }
 
-  // Trigger 2: CPA exceeds 2.5× target
+  // Trigger 2: CPA exceeds 2.5Ã— target
   if (campaign.cpa > campaign.targetCpa * 2.5) {
     return {
       triggered: true,
-      reason: `CPA $${campaign.cpa.toFixed(2)} exceeds 2.5× target $${campaign.targetCpa.toFixed(2)}`,
+      reason: `CPA $${campaign.cpa.toFixed(2)} exceeds 2.5Ã— target $${campaign.targetCpa.toFixed(2)}`,
       action: "freeze_card",
     };
   }
 
-  // Trigger 3: ROAS below 0.5× target
+  // Trigger 3: ROAS below 0.5Ã— target
   if (campaign.roas < campaign.targetRoas * 0.5 && campaign.conversions > 10) {
     return {
       triggered: true,
-      reason: `ROAS ${campaign.roas.toFixed(2)}× below 0.5× target ${campaign.targetRoas.toFixed(2)}×`,
+      reason: `ROAS ${campaign.roas.toFixed(2)}Ã— below 0.5Ã— target ${campaign.targetRoas.toFixed(2)}Ã—`,
       action: "pause_campaign",
     };
   }
@@ -180,7 +186,7 @@ function evaluateStopLoss(
   if (campaign.ltvCacRatio < 1.0 && campaign.conversions > 5) {
     return {
       triggered: true,
-      reason: `LTV/CAC ratio ${campaign.ltvCacRatio.toFixed(2)} below 1.0 — losing money`,
+      reason: `LTV/CAC ratio ${campaign.ltvCacRatio.toFixed(2)} below 1.0 â€” losing money`,
       action: "freeze_card",
     };
   }
@@ -188,7 +194,7 @@ function evaluateStopLoss(
   return { triggered: false, reason: "", action: "reduce_bid" };
 }
 
-// ── Cross-Platform Budget Arbitrage ────────────────────────
+// â”€â”€ Cross-Platform Budget Arbitrage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function evaluateBudgetArbitrage(
   campaigns: CampaignMetrics[]
@@ -205,7 +211,7 @@ function evaluateBudgetArbitrage(
   const best = sorted[0];
   const worst = sorted[sorted.length - 1];
 
-  // If best ROAS is 2×+ worse than worst, reallocate
+  // If best ROAS is 2Ã—+ worse than worst, reallocate
   if (best.roas > worst.roas * 2 && best.platform !== worst.platform) {
     const shiftAmount = Math.min(
       worst.dailyBudget * 0.2, // Max 20% shift
@@ -217,13 +223,13 @@ function evaluateBudgetArbitrage(
         campaignId: best.campaignId,
         action: "increase",
         amount: shiftAmount,
-        reason: `Best performer (${best.platform}) ROAS ${best.roas.toFixed(1)}× vs worst ${worst.roas.toFixed(1)}×`,
+        reason: `Best performer (${best.platform}) ROAS ${best.roas.toFixed(1)}Ã— vs worst ${worst.roas.toFixed(1)}Ã—`,
       });
       decisions.push({
         campaignId: worst.campaignId,
         action: "decrease",
         amount: shiftAmount,
-        reason: `Worst performer (${worst.platform}) ROAS ${worst.roas.toFixed(1)}× — shifting budget`,
+        reason: `Worst performer (${worst.platform}) ROAS ${worst.roas.toFixed(1)}Ã— â€” shifting budget`,
       });
     }
   }
@@ -231,7 +237,7 @@ function evaluateBudgetArbitrage(
   return decisions;
 }
 
-// ── Main Bidding Cycle ─────────────────────────────────────
+// â”€â”€ Main Bidding Cycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PROFIT_MARGIN_URL = process.env.PROFIT_MARGIN_URL || "http://localhost:3024";
 
@@ -248,7 +254,7 @@ async function fetchPortfolioMargin(tenantId: string): Promise<number> {
   }
 }
 
-// ── Heuristic bid scoring (fallback when Groq unavailable) ─
+// â”€â”€ Heuristic bid scoring (fallback when Groq unavailable) â”€
 function heuristicScoreBid(
   metrics: CampaignMetrics,
   avgLtv: number,
@@ -267,7 +273,7 @@ function heuristicScoreBid(
   }
 
   let finalBid = adjustedBid;
-  let reason = `LTV/CAC ${ltvEvaluation.ratio.toFixed(1)}× (${ltvEvaluation.signal}) + day-part ${dayPartWeight.toFixed(2)}`;
+  let reason = `LTV/CAC ${ltvEvaluation.ratio.toFixed(1)}Ã— (${ltvEvaluation.signal}) + day-part ${dayPartWeight.toFixed(2)}`;
 
   if (stopLoss.triggered) {
     finalBid = adjustedBid * 0.3;
@@ -337,10 +343,12 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
       ltvCacRatio,
       bidAmount: campaign.bid || cpa * 0.8,
       status: campaign.status,
+      platformCampaignId: campaign.platform_campaign_id ?? null,
+      platformAdSetId: campaign.platform_ad_set_id ?? null,
     });
   }
 
-  // 3. Score bids — Groq batch (fast path) or heuristic (fallback)
+  // 3. Score bids â€” Groq batch (fast path) or heuristic (fallback)
   const useGroq = isGroqConfigured() && campaignMetrics.length > 0;
   let groqResults: Awaited<ReturnType<typeof scoreBidsBatch>> = [];
 
@@ -370,12 +378,12 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
     groqResults = await scoreBidsBatch(groqInput);
   }
 
-  // 4. Build decisions — use Groq results where available, fallback to heuristic
+  // 4. Build decisions â€” use Groq results where available, fallback to heuristic
   for (const metrics of campaignMetrics) {
     const groqResult = groqResults.find(r => r.campaignId === metrics.campaignId);
 
     if (groqResult) {
-      // Groq fast path — apply result with stop-loss safety net
+      // Groq fast path â€” apply result with stop-loss safety net
       const stopLoss = evaluateStopLoss(metrics, now.getHours());
       let finalBid = groqResult.newBid;
       let reason = groqResult.reason;
@@ -410,6 +418,8 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
         ltvRatio: metrics.ltvCacRatio,
         dayPartWeight,
         stopLossTriggered: stopLoss.triggered,
+        platformCampaignId: metrics.platformCampaignId ?? null,
+        platformAdSetId: metrics.platformAdSetId ?? null,
       });
     } else {
       // Heuristic fallback
@@ -432,6 +442,8 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
         ltvRatio: metrics.ltvCacRatio,
         dayPartWeight,
         stopLossTriggered: result.reason.startsWith("STOP-LOSS"),
+        platformCampaignId: metrics.platformCampaignId ?? null,
+        platformAdSetId: metrics.platformAdSetId ?? null,
       });
     }
   }
@@ -455,7 +467,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
   `).all<IntegrationRow>(tenantId);
 
   for (const decision of decisions) {
-    // ── Circuit breaker: hold high-impact decisions for human review ──
+    // â”€â”€ Circuit breaker: hold high-impact decisions for human review â”€â”€
     const needsApproval =
       Math.abs(decision.changePercent) >= APPROVAL_THRESHOLD_PCT ||
       decision.stopLossTriggered;
@@ -489,49 +501,126 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
         JSON.stringify({ ...decision, status: "awaiting_approval" }),
       );
 
+      // Audit trail: held for human approval, not yet applied.
+      await db.prepare(`
+        INSERT INTO bid_history
+        (id, tenant_id, campaign_id, platform, platform_campaign_id, action_type,
+         current_bid, new_bid, change_percent, status, applied, reason, details, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'awaiting_approval', 0, ?, ?, datetime('now'))
+      `).run(
+        `bh_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        tenantId,
+        decision.campaignId,
+        decision.platform,
+        decision.platformCampaignId ?? null,
+        decision.stopLossTriggered ? "stop_loss" : "bid_adjustment",
+        decision.currentBid,
+        decision.newBid,
+        decision.changePercent,
+        decision.reason,
+        JSON.stringify({
+          confidence: decision.confidence,
+          ltvRatio: decision.ltvRatio,
+          dayPartWeight: decision.dayPartWeight,
+          approvalId,
+        }),
+      );
+
       // Skip immediate execution — wait for Slack approval webhook
       continue;
     }
 
-    // ── Auto-execute: small / routine bid change ───────────────────
+    // â”€â”€ Auto-execute: small / routine bid change â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Update local database
     await db.prepare(`
       UPDATE campaigns SET bid = ?, updated_at = datetime('now')
       WHERE id = ? AND tenant_id = ?
     `).run(decision.newBid, decision.campaignId, tenantId);
 
-    // Push bid change to real platform (if connector exists)
+    // Push bid change to the real ad sets on the platform (if connected).
+    // Bids live on ad sets, never on campaign daily budgets.
     const platformInteg = integrations.find(i => i.platform === decision.platform);
+    const bidHistoryId = `bh_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    let pushApplied = false;
+    let pushError: string | null = null;
+    let pushPlatformCampaignId: string | null = decision.platformCampaignId ?? null;
+    let pushStatus = "local_only";
+
     if (platformInteg && isPlatformSupported(decision.platform)) {
       try {
-        const connector = getConnector(decision.platform);
         const accessToken = decryptToken(platformInteg.access_token);
-        if (typeof connector.updateCampaign === "function") {
-          const result = await connector.updateCampaign(accessToken, decision.campaignId, {
-            dailyBudget: decision.newBid,
-          });
-          if (result.success) {
-            await db.prepare(`
-              INSERT INTO system_metrics (tenant_id, metric_name, metric_value, tags, created_at)
-              VALUES (?, 'bidding.platform_push_success', ?, ?, datetime('now'))
-            `).run(tenantId, decision.newBid, JSON.stringify({
-              platform: decision.platform,
-              campaignId: decision.campaignId,
-              currentBid: decision.currentBid,
-              newBid: decision.newBid,
-              reason: decision.reason,
-            }));
-          } else {
-            throw new Error(result.error || "updateCampaign returned success=false");
-          }
+        const pushResult = await applyBidDecision({
+          platform: decision.platform,
+          accessToken,
+          internalCampaignId: decision.campaignId,
+          platformCampaignId: decision.platformCampaignId ?? null,
+          newBid: decision.newBid,
+          integrationConfig: platformInteg.config,
+        });
+        pushApplied = pushResult.applied;
+        pushPlatformCampaignId = pushResult.platformCampaignId;
+
+        if (pushResult.applied) {
+          pushStatus = "applied";
+          await db.prepare(`
+            INSERT INTO system_metrics (tenant_id, metric_name, metric_value, tags, created_at)
+            VALUES (?, 'bidding.platform_push_success', ?, ?, datetime('now'))
+          `).run(tenantId, decision.newBid, JSON.stringify({
+            platform: decision.platform,
+            campaignId: decision.campaignId,
+            platformCampaignId: pushResult.platformCampaignId,
+            currentBid: decision.currentBid,
+            newBid: decision.newBid,
+            reason: decision.reason,
+          }));
+        } else {
+          pushStatus = pushResult.attempted ? "failed" : "skipped";
+          pushError = pushResult.error || pushResult.skippedReason || "platform push not applied";
+          await db.prepare(`
+            INSERT INTO system_metrics (tenant_id, metric_name, metric_value, tags, created_at)
+            VALUES (?, 'bidding.platform_push_failed', 1, ?, datetime('now'))
+          `).run(tenantId, JSON.stringify({
+            platform: decision.platform,
+            campaignId: decision.campaignId,
+            error: pushError,
+          }));
         }
       } catch (e) {
+        pushStatus = "failed";
+        pushError = String(e);
         await db.prepare(`
           INSERT INTO system_metrics (tenant_id, metric_name, metric_value, tags, created_at)
           VALUES (?, 'bidding.platform_push_failed', 1, ?, datetime('now'))
         `).run(tenantId, JSON.stringify({ platform: decision.platform, error: String(e) }));
       }
     }
+
+    // Audit trail: record the computed decision and whether it was applied.
+    await db.prepare(`
+      INSERT INTO bid_history
+      (id, tenant_id, campaign_id, platform, platform_campaign_id, action_type,
+       current_bid, new_bid, change_percent, status, applied, reason, error, details, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `).run(
+      bidHistoryId,
+      tenantId,
+      decision.campaignId,
+      decision.platform,
+      pushPlatformCampaignId,
+      decision.stopLossTriggered ? "stop_loss" : "bid_adjustment",
+      decision.currentBid,
+      decision.newBid,
+      decision.changePercent,
+      pushStatus,
+      pushApplied ? 1 : 0,
+      decision.reason,
+      pushError,
+      JSON.stringify({
+        confidence: decision.confidence,
+        ltvRatio: decision.ltvRatio,
+        dayPartWeight: decision.dayPartWeight,
+      }),
+    );
 
     // Log the decision
     await db.prepare(`
@@ -577,7 +666,7 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
       );
     }
   } catch {
-    // Non-fatal — don't break the bidding cycle
+    // Non-fatal â€” don't break the bidding cycle
   }
 
   // 7. Emit cycle complete event
@@ -593,7 +682,127 @@ export async function runBiddingCycle(tenantId: string): Promise<BidDecision[]> 
   return decisions;
 }
 
-// ── Bidding Stats ──────────────────────────────────────────
+// â”€â”€ Bidding Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+export interface BidPushResult {
+  attempted: boolean;
+  applied: boolean;
+  platformCampaignId: string | null;
+  adSetResults: Array<{ id: string; success: boolean; error?: string }>;
+  error?: string;
+  skippedReason?: string;
+}
+
+const PLATFORM_PUSH_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(label + " timed out after " + ms + "ms")), ms);
+    p.then(v => { clearTimeout(timer); resolve(v); }).catch(e => { clearTimeout(timer); reject(e); });
+  });
+}
+
+// Push a single bid decision to the real ad platform. Bids live on ad sets
+// (ad groups / ad squads), so we resolve the platform campaign id, list its ad
+// sets, and set the bid on each one. We NEVER touch campaign daily budgets.
+export async function applyBidDecision(params: {
+  platform: string;
+  accessToken: string;
+  internalCampaignId: string;
+  platformCampaignId?: string | null;
+  newBid: number;
+  integrationConfig?: string | null;
+}): Promise<BidPushResult> {
+  const { getConnector, isPlatformSupported } = await import("./connectors");
+  const { platform, accessToken, internalCampaignId, newBid } = params;
+
+  if (!isPlatformSupported(platform)) {
+    return {
+      attempted: false,
+      applied: false,
+      platformCampaignId: null,
+      adSetResults: [],
+      skippedReason: "platform " + platform + " not supported",
+    };
+  }
+
+  let platformCampaignId = params.platformCampaignId ?? null;
+  if (!platformCampaignId && params.integrationConfig) {
+    try {
+      const cfg = JSON.parse(params.integrationConfig) as { campaignIds?: Record<string, string> };
+      platformCampaignId = cfg?.campaignIds?.[internalCampaignId] ?? null;
+    } catch {
+      // malformed config — fall through and skip below
+    }
+  }
+  if (!platformCampaignId) {
+    return {
+      attempted: false,
+      applied: false,
+      platformCampaignId: null,
+      adSetResults: [],
+      skippedReason: "no platform campaign mapping for " + internalCampaignId,
+    };
+  }
+
+  const connector = getConnector(platform);
+  const getAdSets = connector.getAdSets;
+  const updateAdSet = connector.updateAdSet;
+  if (typeof getAdSets !== "function" || typeof updateAdSet !== "function") {
+    return {
+      attempted: false,
+      applied: false,
+      platformCampaignId,
+      adSetResults: [],
+      skippedReason: "connector " + platform + " has no ad-set API",
+    };
+  }
+
+  let adSetsResult;
+  try {
+    adSetsResult = await withTimeout(
+      getAdSets.call(connector, accessToken, platformCampaignId),
+      PLATFORM_PUSH_TIMEOUT_MS,
+      "getAdSets"
+    );
+  } catch (e) {
+    return { attempted: true, applied: false, platformCampaignId, adSetResults: [], error: String(e) };
+  }
+
+  if (!adSetsResult.success || !adSetsResult.data || adSetsResult.data.length === 0) {
+    return {
+      attempted: true,
+      applied: false,
+      platformCampaignId,
+      adSetResults: [],
+      error: adSetsResult.error || "no ad sets returned",
+    };
+  }
+
+  const adSetResults: Array<{ id: string; success: boolean; error?: string }> = [];
+  for (const adSet of adSetsResult.data) {
+    try {
+      const r = await withTimeout(
+        updateAdSet.call(connector, accessToken, adSet.id, { bidAmount: newBid }),
+        PLATFORM_PUSH_TIMEOUT_MS,
+        "updateAdSet"
+      );
+      adSetResults.push({ id: adSet.id, success: r.success, error: r.success ? undefined : r.error });
+    } catch (e) {
+      adSetResults.push({ id: adSet.id, success: false, error: String(e) });
+    }
+  }
+
+  const applied = adSetResults.some(r => r.success);
+  const allFailed = adSetResults.every(r => !r.success);
+  return {
+    attempted: true,
+    applied,
+    platformCampaignId,
+    adSetResults,
+    error: allFailed ? (adSetResults[0]?.error || "all ad set updates failed") : undefined,
+  };
+}
 
 export async function getBiddingStats(tenantId: string) {
   const db = await getDb();
@@ -621,7 +830,7 @@ export async function getBiddingStats(tenantId: string) {
   };
 }
 
-// ── Day-Parting Analysis ───────────────────────────────────
+// â”€â”€ Day-Parting Analysis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function getDayPartingWeights(): { hour: number; dayOfWeek: number; weight: number }[] {
   const weights: { hour: number; dayOfWeek: number; weight: number }[] = [];
@@ -637,7 +846,7 @@ export function getDayPartingWeights(): { hour: number; dayOfWeek: number; weigh
   return weights;
 }
 
-// ── Event Wiring (Phase 2 & 3 Loop) ────────────────────────
+// â”€â”€ Event Wiring (Phase 2 & 3 Loop) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function initBiddingEventWiring() {
   eventBus.on("competitor.price_drop", async (_event: string, data: unknown) => {
@@ -651,18 +860,11 @@ export function initBiddingEventWiring() {
   });
 
   eventBus.on("creative.fatigue_detected", async (_event: string, data: unknown) => {
-    const payload = data as { platform: string; tenantId: string; creativeId: string };
+    const payload = data as { platform: string; tenantId: string; creativeId?: string };
     logger.info(`[BiddingEngine] Creative fatigue detected on ${payload.platform}. Triggering GenAI creative replacement...`);
     try {
       const db = await getDb();
-      await db.prepare(`
-        INSERT INTO agent_actions (id, tenant_id, agent_role, action_type, description, confidence, timestamp)
-        VALUES (?, ?, 'creative', 'generate_replacement', ?, 0.95, datetime('now'))
-      `).run(
-        `act_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        payload.tenantId,
-        `Generate new DALL-E 3 creative for fatigued ad ${payload.creativeId} on ${payload.platform}`
-      );
+      await db.prepare(`INSERT INTO agent_actions (id, tenant_id, agent_type, action_type, details, created_at) VALUES (?, ?, "bidding", "generate_replacement", ?, datetime("now"))`).run(`act_${Date.now()}_${Math.random().toString(36).slice(2,8)}`, payload.tenantId, JSON.stringify({ platform: payload.platform, creativeId: payload.creativeId }));
     } catch (e) {
       logger.error("[BiddingEngine] Failed to dispatch creative generation task", { error: e });
     }

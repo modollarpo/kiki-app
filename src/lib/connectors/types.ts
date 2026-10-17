@@ -86,6 +86,18 @@ export interface PlatformCampaign {
   updatedAt: string;
 }
 
+// An ad set / ad group / ad squad — the level at which bids actually live on
+// every ad platform. Bidding decisions are applied here, never to campaign
+// daily budgets.
+export interface AdSet {
+  id: string;
+  campaignId: string;
+  name: string;
+  status: string;
+  bidAmount?: number;   // account currency (dollars)
+  dailyBudget?: number; // account currency (dollars)
+}
+
 export interface PlatformCampaignMetrics {
   campaignId: string;
   platformId: PlatformId;
@@ -241,6 +253,11 @@ export interface IPlatformConnector {
   resumeCampaign?(accessToken: string, campaignId: string): Promise<PlatformApiResponse<unknown>>;
   setBid?(accessToken: string, adGroupId: string, bidAmount: number): Promise<PlatformApiResponse<unknown>>;
   updateCampaign?(accessToken: string, campaignId: string, updates: { dailyBudget?: number; status?: string; name?: string }): Promise<PlatformApiResponse<unknown>>;
+
+  // Ad-set level operations — where bidding decisions are actually applied.
+  // Bids belong to ad sets/ad groups, NOT campaign daily budgets.
+  getAdSets?(accessToken: string, campaignId: string): Promise<PlatformApiResponse<AdSet[]>>;
+  updateAdSet?(accessToken: string, adSetId: string, updates: { bidAmount?: number; dailyBudget?: number; status?: string }): Promise<PlatformApiResponse<unknown>>;
 
   // Audience Operations
   createCustomAudience?(accessToken: string, params: { name: string; users?: unknown }): Promise<PlatformApiResponse<unknown>>;

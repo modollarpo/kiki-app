@@ -78,8 +78,8 @@ export async function syncPlatformCampaigns(tenantId: string, platform: string):
         const campaignId = `imp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
         await db.prepare(`
-          INSERT INTO campaigns (id, tenant_id, name, platform, status, budget, bid, spend, conversions, revenue, target_cpa, target_roas, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+          INSERT INTO campaigns (id, tenant_id, name, platform, status, budget, bid, spend, conversions, revenue, target_cpa, target_roas, platform_campaign_id, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         `).run(
           campaignId,
           tenantId,
@@ -92,7 +92,8 @@ export async function syncPlatformCampaigns(tenantId: string, platform: string):
           metrics?.conversions || 0,
           metrics?.revenue || 0,
           metrics?.cpc || 50,
-          metrics?.roas || 4.0
+          metrics?.roas || 4.0,
+          pc.id
         );
 
         // Track the mapping in config
