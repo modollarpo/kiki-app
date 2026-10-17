@@ -1762,6 +1762,19 @@ async function seedBillingIfEmpty(db: PgDb) {
 const globalForDb = globalThis as unknown as { __kikiDb?: PgDb | SqliteDb | MemoryDb };
 
 export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
+  // Dev/diagnostic escape hatch: run entirely against the in-memory backend,
+  // even when PostgreSQL is reachable. Used to measure/verify fallback parity.
+  if (!globalForDb.__kikiDb && process.env.FORCE_MEMORY_DB === "true") {
+    const mem = createMemoryDb();
+    mem.exec(SQLITE_SCHEMA);
+    if (process.env.SEED_DEMO_DATA === "true") {
+      await seedIfEmpty(mem as unknown as PgDb);
+      await seedBillingIfEmpty(mem as unknown as PgDb);
+      await seedFeatureDemoIfEmpty(mem as unknown as PgDb);
+    }
+    logger.warn("[DB] FORCE_MEMORY_DB=true — using in-memory DB (no persistence).");
+    globalForDb.__kikiDb = mem as unknown as PgDb;
+  }
   if (!globalForDb.__kikiDb) {
     let useSqlite = false;
     try {
