@@ -1,6 +1,6 @@
 # KIKI Agent™ — Enterprise Platform
 
-**Autonomous LTV Campaign Execution Platform** · v2.4.0 · SOC2 Type II · GDPR Compliant
+**Autonomous LTV Campaign Execution Platform** · v2.0.0
 
 ---
 

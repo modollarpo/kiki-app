@@ -38,12 +38,13 @@ describe("mobile auth — refresh secret resolution", () => {
     delete process.env.MOBILE_REFRESH_SECRET;
     delete process.env.REFRESH_SECRET;
     delete process.env.JWT_SECRET;
-    const prev = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
+    const env = process.env as Record<string, string | undefined>;
+    const prev = env.NODE_ENV;
+    env.NODE_ENV = "production";
     try {
       expect(() => refreshSecret()).toThrow(/MOBILE_REFRESH_SECRET/);
     } finally {
-      process.env.NODE_ENV = prev;
+      env.NODE_ENV = prev;
     }
   });
 

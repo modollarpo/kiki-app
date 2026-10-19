@@ -108,7 +108,7 @@ describe("handleWebhook integration", () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
-    process.env.NODE_ENV = "development";
+    (process.env as Record<string, string | undefined>).NODE_ENV = "development";
     vi.resetModules();
   });
 
@@ -138,7 +138,7 @@ describe("handleWebhook integration", () => {
 
   it("allows request in dev mode when no secret is set", async () => {
     delete process.env.META_APP_SECRET;
-    process.env.NODE_ENV = "development";
+    (process.env as Record<string, string | undefined>).NODE_ENV = "development";
     // This will fail at DB query stage, but shouldn't fail at signature check
     const res = await callWebhook("meta", '{"event":"test"}');
     // Should NOT be 401 (signature check passed), will be 500 (no DB)
