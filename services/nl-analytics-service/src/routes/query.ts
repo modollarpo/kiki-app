@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ServiceContext } from "../../../../packages/shared/src/service-template";
 import { publishEvent } from "../../../../packages/shared/src/service-template";
+import { tenantOf } from "../../../../packages/shared/src/service-template/security";
 
 type Intent = "cac_spike" | "top_campaign" | "budget_waste" | "signal_performance" | "platform_comparison" | "ltv_segment" | "creative_performance" | "time_comparison" | "anomaly_detection";
 
@@ -135,7 +136,8 @@ export function nlRoutes(ctx: ServiceContext): Router {
   router.post("/query", async (req: Request, res: Response) => {
     const queryId = `nq_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     try {
-      const { tenantId, question } = req.body;
+      const { question } = req.body;
+      const tenantId = tenantOf(req, req.body.tenantId);
       if (!tenantId || !question) return res.status(400).json({ error: "tenantId and question required" });
 
       const intent = classifyIntent(question);
@@ -162,7 +164,8 @@ export function nlRoutes(ctx: ServiceContext): Router {
   // GET /api/suggestions — Contextual question prompts
   router.get("/suggestions", async (req: Request, res: Response) => {
     try {
-      const { tenantId } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const suggestions: string[] = [];
 
       const lowRoas = await ctx.db.query(

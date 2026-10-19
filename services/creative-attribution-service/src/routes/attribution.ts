@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ServiceContext } from "../../../../packages/shared/src/service-template";
 import { publishEvent } from "../../../../packages/shared/src/service-template";
+import { tenantOf, parsePositiveInt } from "../../../../packages/shared/src/service-template/security";
 function genId(): string {
   return `attr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -12,10 +13,12 @@ export function attributionRoutes(ctx: ServiceContext): Router {
   router.post("/attributions", async (req: Request, res: Response) => {
     try {
       const {
-        tenantId, signalId, creativeId, adId, adsetId, campaignId,
+        signalId, creativeId, adId, adsetId, campaignId,
         platform, model, attributedRevenue, attributedLtv,
         conversionValue, impressionTime, conversionTime, attributionWindow
       } = req.body;
+      const tenantId = tenantOf(req, req.body.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
 
       const id = genId();
       await ctx.db.query(`
@@ -44,12 +47,16 @@ export function attributionRoutes(ctx: ServiceContext): Router {
   // GET /api/attributions/breakdown — Signal-to-variant breakdown
   router.get("/attributions/breakdown", async (req: Request, res: Response) => {
     try {
-      const { tenantId, campaignId, platform, days = "30" } = req.query;
+      const { campaignId, platform } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
+      const days = parsePositiveInt(req.query.days, 30, 365);
       let where = "WHERE tenant_id = $1";
-      const params: any[] = [tenantId];
+      const params: unknown[] = [tenantId];
       if (campaignId) { where += ` AND campaign_id = $${params.length + 1}`; params.push(campaignId); }
       if (platform) { where += ` AND platform = $${params.length + 1}`; params.push(platform); }
-      where += ` AND created_at >= NOW() - INTERVAL '${parseInt(days as string)} days'`;
+      where += ` AND created_at >= NOW() - ($${params.length + 1} * INTERVAL '1 day')`;
+      params.push(days);
 
       const rows = await ctx.db.query(`
         SELECT creative_id, ad_id, platform, attribution_model,
@@ -71,7 +78,10 @@ export function attributionRoutes(ctx: ServiceContext): Router {
   // GET /api/attributions/compare — A/B variant comparison
   router.get("/attributions/compare", async (req: Request, res: Response) => {
     try {
-      const { tenantId, creativeA, creativeB, days = "30" } = req.query;
+      const { creativeA, creativeB } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
+      const days = parsePositiveInt(req.query.days, 30, 365);
       const results = [];
       for (const creativeId of [creativeA, creativeB]) {
         const row = await ctx.db.query(`
@@ -82,9 +92,9 @@ export function attributionRoutes(ctx: ServiceContext): Router {
                  COALESCE(AVG(conversion_value), 0) as avg_conversion
           FROM signal_attribution_records
           WHERE tenant_id = $1 AND creative_id = $2
-            AND created_at >= NOW() - INTERVAL '${parseInt(days as string)} days'
+            AND created_at >= NOW() - ($3 * INTERVAL '1 day')
           GROUP BY creative_id
-        `, [tenantId, creativeId]);
+        `, [tenantId, creativeId, days]);
         results.push(row.rows[0] || { creative_id: creativeId, attributions: 0, total_revenue: 0, total_ltv: 0, avg_conversion: 0 });
       }
       const [a, b] = results;
@@ -105,9 +115,12 @@ export function attributionRoutes(ctx: ServiceContext): Router {
   // GET /api/attributions/top-performers — Top creatives by LTV
   router.get("/attributions/top-performers", async (req: Request, res: Response) => {
     try {
-      const { tenantId, platform, limit = "20" } = req.query;
+      const { platform } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
+      const limit = parsePositiveInt(req.query.limit, 20, 500);
       let where = "WHERE tenant_id = $1";
-      const params: any[] = [tenantId];
+      const params: unknown[] = [tenantId];
       if (platform) { where += ` AND platform = $${params.length + 1}`; params.push(platform); }
 
       const rows = await ctx.db.query(`
@@ -121,7 +134,7 @@ export function attributionRoutes(ctx: ServiceContext): Router {
         GROUP BY creative_id, platform
         ORDER BY total_ltv DESC
         LIMIT $${params.length + 1}
-      `, [...params, parseInt(limit as string)]);
+      `, [...params, limit]);
 
       res.json({ success: true, data: rows.rows });
     } catch (e: any) {
@@ -132,7 +145,8 @@ export function attributionRoutes(ctx: ServiceContext): Router {
   // GET /api/attributions/settings — Model settings
   router.get("/attributions/settings", async (req: Request, res: Response) => {
     try {
-      const { tenantId } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const row = await ctx.db.query(
         `SELECT * FROM attribution_settings WHERE tenant_id = $1`, [tenantId]
       );
@@ -145,7 +159,9 @@ export function attributionRoutes(ctx: ServiceContext): Router {
   // PUT /api/attributions/settings — Update model settings
   router.put("/attributions/settings", async (req: Request, res: Response) => {
     try {
-      const { tenantId, defaultModel, metaWindowHours, googleWindowDays, tiktokWindowHours, positionWeights, decayHalfLifeDays } = req.body;
+      const { defaultModel, metaWindowHours, googleWindowDays, tiktokWindowHours, positionWeights, decayHalfLifeDays } = req.body;
+      const tenantId = tenantOf(req, req.body.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       await ctx.db.query(`
         INSERT INTO attribution_settings (tenant_id, default_model, meta_window_hours, google_window_days, tiktok_window_hours, position_weights, decay_half_life_days)
         VALUES ($1,$2,$3,$4,$5,$6,$7)

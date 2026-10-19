@@ -15,6 +15,7 @@ import { decryptToken } from "./connectors/base";
 import { dispatchApprovalRequest, APPROVAL_TTL_MS } from "./slack";
 import { detectCreativeFatigue } from "./creative";
 import { logger } from "./logger";
+import { serviceAuthHeaders } from "./service-token";
 
 // â”€â”€ Circuit-breaker threshold â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Any bid change beyond this % (or any stop-loss) is sent to
@@ -244,6 +245,7 @@ const PROFIT_MARGIN_URL = process.env.PROFIT_MARGIN_URL || "http://localhost:302
 async function fetchPortfolioMargin(tenantId: string): Promise<number> {
   try {
     const res = await fetch(`${PROFIT_MARGIN_URL}/api/margins/portfolio?tenantId=${tenantId}`, {
+      headers: serviceAuthHeaders(tenantId),
       signal: AbortSignal.timeout(3000),
     });
     if (!res.ok) return 50;
