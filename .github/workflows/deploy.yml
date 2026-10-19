@@ -1,5 +1,8 @@
 name: Deploy to Production
 
+# The single authoritative production pipeline. Runs on every push to `main`
+# (and on demand): checks → build/push images → deploy → sync env vars.
+# CI.yml intentionally does NOT deploy, so `main` is only built once here.
 on:
   push:
     branches: [main]
@@ -18,32 +21,33 @@ env:
   ACR_NAME: kikiagentacrchrdtvff
   CONTAINER_APP: kiki-app
   IMAGE: kiki-app
+  PUPPETEER_SKIP_DOWNLOAD: "true"
 
 jobs:
-  build-and-deploy:
-    name: Type-check, test & deploy to Container App
+  check:
+    name: Type-check, lint & test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci --engine-strict=false
+      - run: npm ci --engine-strict=false
+      - run: npm run type-check
+      - run: npm run lint
+      - run: npm run test
 
-      - name: Type-check
-        run: npm run type-check
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm run test
+  build-and-deploy:
+    name: Build & deploy to Container App
+    needs: check
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Azure Login
         uses: azure/login@v2
@@ -52,22 +56,55 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Build and push image to ACR
+      - name: Build and push images to ACR
         # Remote build (no runner Docker needed). Tags: latest + immutable commit sha.
         run: |
+          TAG="${{ github.sha }}"
           az acr build \
-            -r ${{ env.ACR_NAME }} \
+            -r "${{ env.ACR_NAME }}" \
             -t "${{ env.IMAGE }}:latest" \
-            -t "${{ env.IMAGE }}:${{ github.sha }}" \
+            -t "${{ env.IMAGE }}:$TAG" \
             --build-arg NEXT_PUBLIC_API_URL=https://keekii.net \
             --build-arg NEXT_PUBLIC_SITE_URL=https://keekii.net \
             -f Dockerfile .
+          az acr build \
+            -r "${{ env.ACR_NAME }}" \
+            -t "ml-service:latest" \
+            -t "ml-service:$TAG" \
+            -f python-ml-service/Dockerfile python-ml-service/
 
       - name: Deploy to Container App
         # Unique immutable tag forces a fresh image pull + new revision.
         run: |
+          TAG="${{ github.sha }}"
           az containerapp update \
-            -g ${{ env.RESOURCE_GROUP }} \
-            -n ${{ env.CONTAINER_APP }} \
+            -g "${{ env.RESOURCE_GROUP }}" \
+            -n "${{ env.CONTAINER_APP }}" \
             --container-name kiki-web \
-            --image "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE }}:${{ github.sha }}"
+            --image "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE }}:$TAG"
+
+      - name: Sync environment variables
+        # Resolve the app FQDN at runtime instead of hardcoding it, and only
+        # set SMTP vars when the corresponding secret is configured.
+        run: |
+          FQDN=$(az containerapp show \
+            -g "${{ env.RESOURCE_GROUP }}" \
+            -n "${{ env.CONTAINER_APP }}" \
+            --query properties.configuration.ingress.fqdn -o tsv)
+          ENV_VARS=("NEXT_PUBLIC_BASE_URL=https://$FQDN")
+          for pair in \
+            "SMTP_HOST=${{ secrets.SMTP_HOST }}" \
+            "SMTP_PORT=${{ secrets.SMTP_PORT }}" \
+            "SMTP_USER=${{ secrets.SMTP_USER }}" \
+            "SMTP_PASS=${{ secrets.SMTP_PASS }}" \
+            "SMTP_FROM=${{ secrets.SMTP_FROM }}" \
+            "SMTP_FROM_NAME=${{ secrets.SMTP_FROM_NAME }}"; do
+            if [ -n "${pair#*=}" ]; then
+              ENV_VARS+=("$pair")
+            fi
+          done
+          az containerapp update \
+            -g "${{ env.RESOURCE_GROUP }}" \
+            -n "${{ env.CONTAINER_APP }}" \
+            --container-name kiki-web \
+            --set-env-vars "${ENV_VARS[@]}"
