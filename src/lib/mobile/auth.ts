@@ -1,17 +1,25 @@
 // Mobile API Authentication
 import { NextRequest } from 'next/server';
+import crypto from 'crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import { getDb } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 
 // Resolve a signing secret lazily so we can fail loud in production rather
 // than silently signing tokens with a well-known development default.
-// Resolution order (access):  MOBILE_JWT_SECRET → JWT_SECRET → dev fallback.
-// Resolution order (refresh): MOBILE_REFRESH_SECRET → REFRESH_SECRET → JWT_SECRET → dev fallback.
+// Resolution order (access):  MOBILE_JWT_SECRET → JWT_SECRET.
+// Resolution order (refresh): MOBILE_REFRESH_SECRET → REFRESH_SECRET → JWT_SECRET.
+// In non-production, when nothing is configured, a random per-process secret
+// is generated — there is no committed, guessable fallback constant.
+let devSecretCache: string | null = null;
+function devSecret(): string {
+  if (!devSecretCache) devSecretCache = crypto.randomBytes(32).toString('hex');
+  return devSecretCache;
+}
+
 function resolveSecret(
   primary: string | undefined,
   secondary: string | undefined,
-  devFallback: string,
   label: string
 ): Uint8Array {
   const value = primary || secondary || process.env.JWT_SECRET;
@@ -19,7 +27,7 @@ function resolveSecret(
     if (process.env.NODE_ENV === "production") {
       throw new Error(`${label} (or JWT_SECRET) must be set in production`);
     }
-    return new TextEncoder().encode(devFallback);
+    return new TextEncoder().encode(devSecret());
   }
   return new TextEncoder().encode(value);
 }
@@ -28,7 +36,6 @@ function accessSecret(): Uint8Array {
   return resolveSecret(
     process.env.MOBILE_JWT_SECRET,
     process.env.JWT_SECRET,
-    "kiki-mobile-dev-secret",
     "MOBILE_JWT_SECRET"
   );
 }
@@ -39,7 +46,6 @@ export function refreshSecret(): Uint8Array {
   return resolveSecret(
     process.env.MOBILE_REFRESH_SECRET,
     process.env.REFRESH_SECRET,
-    "kiki-refresh-dev-secret",
     "MOBILE_REFRESH_SECRET"
   );
 }
