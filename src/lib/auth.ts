@@ -3,24 +3,34 @@ import { getDb } from "./db";
 import type { AuthUser, SessionPayload } from "@/types";
 
 // ── Configuration ──────────────────────────────────────────
-// In production, JWT_SECRET MUST be set via environment variable.
-// The fallback is for development only and MUST NOT be used in production.
-// We check lazily (at first use) rather than at module load so that
-// `next build` (which sets NODE_ENV=production) doesn't crash.
-let _secretChecked = false;
-function getSecret(): string {
+// In production JWT_SECRET MUST be set and sufficiently strong. We validate
+// lazily (at first use) rather than at module load so that `next build`
+// (which sets NODE_ENV=production) doesn't crash, but the check runs on EVERY
+// call — it must never silently fall back to the dev secret in production.
+const DEV_SECRET = "kiki-dev-secret-DO-NOT-USE-IN-PRODUCTION";
+const MIN_SECRET_LENGTH = 32;
+
+export function getSecret(): string {
   const secret = process.env.JWT_SECRET;
-  if (!secret && process.env.NODE_ENV === "production" && !_secretChecked) {
-    _secretChecked = true;
-    throw new Error(
-      "JWT_SECRET environment variable is required in production. " +
-      "Generate one with: openssl rand -hex 32"
-    );
+  if (process.env.NODE_ENV === "production") {
+    if (!secret) {
+      throw new Error(
+        "JWT_SECRET environment variable is required in production. " +
+        "Generate one with: openssl rand -hex 32"
+      );
+    }
+    if (secret.length < MIN_SECRET_LENGTH) {
+      throw new Error(
+        `JWT_SECRET must be at least ${MIN_SECRET_LENGTH} characters in production.`
+      );
+    }
+    return secret;
   }
-  return secret || "kiki-dev-secret-DO-NOT-USE-IN-PRODUCTION";
+  return secret || DEV_SECRET;
 }
 const EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 const ALGORITHM = "HS256";
+const TOKEN_TYPE = "JWT";
 
 // ── JWT Helpers ────────────────────────────────────────────
 function base64url(buf: Buffer | string): string {
@@ -29,7 +39,7 @@ function base64url(buf: Buffer | string): string {
 
 function sign(payload: SessionPayload): string {
   const secret = getSecret();
-  const header = base64url(JSON.stringify({ alg: ALGORITHM, typ: "JWT" }));
+  const header = base64url(JSON.stringify({ alg: ALGORITHM, typ: TOKEN_TYPE }));
   const body = base64url(JSON.stringify(payload));
   const sig = base64url(
     crypto.createHmac("sha256", secret).update(`${header}.${body}`).digest()
@@ -43,20 +53,32 @@ export function verifyToken(token: string): SessionPayload | null {
     if (parts.length !== 3) return null;
     const [header, body, sig] = parts;
 
-    // Verify signature
+    // Reject any token whose header algorithm/type we did not issue. This
+    // prevents "alg:none" and algorithm-confusion attacks.
+    const decodedHeader = JSON.parse(
+      Buffer.from(header, "base64url").toString()
+    ) as { alg?: string; typ?: string };
+    if (decodedHeader.alg !== ALGORITHM || decodedHeader.typ !== TOKEN_TYPE) {
+      return null;
+    }
+
+    // Verify signature (timing-safe, length-checked).
     const secret = getSecret();
     const expected = base64url(
       crypto.createHmac("sha256", secret).update(`${header}.${body}`).digest()
     );
-    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
-      return null;
-    }
+    const sigBuf = Buffer.from(sig, "base64url");
+    const expectedBuf = Buffer.from(expected, "base64url");
+    if (sigBuf.length !== expectedBuf.length) return null;
+    if (!crypto.timingSafeEqual(sigBuf, expectedBuf)) return null;
 
-    // Decode and verify expiry
+    // Decode and verify expiry.
     const payload: SessionPayload = JSON.parse(
       Buffer.from(body, "base64url").toString()
     );
-    if (payload.exp * 1000 < Date.now()) return null;
+    if (typeof payload.exp !== "number" || payload.exp * 1000 < Date.now()) {
+      return null;
+    }
 
     // Validate required fields
     if (!payload.sub || !payload.email || !payload.tenantId) return null;
