@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 import { getDb } from "@/lib/db";
 import { verifyPassword, createSession, json, jsonError } from "@/lib/auth";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { loginSchema } from "@/lib/validation";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
 import { ZodError } from "zod";
@@ -9,7 +10,7 @@ import { ZodError } from "zod";
 export async function POST(req: Request) {
   setRequestId(generateRequestId());
   try {
-    const rl = checkRateLimit(`login:${getClientIp(req)}`, { maxRequests: 10, windowMs: 60_000 });
+    const rl = await checkRateLimitDistributed(`login:${getClientIp(req)}`, { maxRequests: 10, windowMs: 60_000 });
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const body = await req.json();

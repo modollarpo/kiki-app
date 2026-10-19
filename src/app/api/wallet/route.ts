@@ -4,7 +4,8 @@ import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
 import { createVirtualCard, topUpWallet } from "@/lib/wallet";
 import { isStripeIssuingEnabled, SERVICE_NOT_CONFIGURED } from "@/lib/card-issuer";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { validateBody, walletTopUpSchema } from "@/lib/validation";
 import { logger } from "@/lib/logger";
 
@@ -13,7 +14,7 @@ export async function GET(req: Request) {
   if (!user) return jsonError("Unauthorized", 401);
 
   try {
-    const rl = checkRateLimit(`wallet:GET:${getClientIp(req)}`, { maxRequests: 60 });
+    const rl = await checkRateLimitDistributed(`wallet:GET:${getClientIp(req)}`, { maxRequests: 60 });
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const db = await getDb();
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
   const enf = await checkEnforcement(user.tenantId);
   if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
 
-  const rl = checkRateLimit(`wallet:POST:${getClientIp(req)}`, { maxRequests: 30 });
+  const rl = await checkRateLimitDistributed(`wallet:POST:${getClientIp(req)}`, { maxRequests: 30 });
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {

@@ -11,14 +11,15 @@ export const dynamic = "force-dynamic";
 
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { getPendingApprovals, resolveApproval, getApproval } from "@/lib/slack";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const rl = checkRateLimit(`approvals:GET:${getClientIp(req)}`, { maxRequests: 30, windowMs: 60_000 });
+  const rl = await checkRateLimitDistributed(`approvals:GET:${getClientIp(req)}`, { maxRequests: 30, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
 
   const pending = await getPendingApprovals(user.tenantId);
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
   const enf = await checkEnforcement(user.tenantId);
   if (!enf.allowed) return jsonError(enf.reason || "Access denied", 403);
 
-  const rl = checkRateLimit(`approvals:POST:${getClientIp(req)}`, { maxRequests: 30, windowMs: 60_000 });
+  const rl = await checkRateLimitDistributed(`approvals:POST:${getClientIp(req)}`, { maxRequests: 30, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl);
 
   let body: { approvalId: string; resolution: string };

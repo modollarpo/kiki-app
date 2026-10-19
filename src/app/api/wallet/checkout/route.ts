@@ -3,7 +3,8 @@ import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
 import { createTopUpCheckoutSession } from "@/lib/wallet";
 import { stripeEnabled } from "@/lib/stripe";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
     return json({ ok: false, error: "Stripe is not configured", code: "SERVICE_NOT_CONFIGURED" }, 503);
   }
 
-  const rl = checkRateLimit(`wallet:checkout:${getClientIp(req)}`, { maxRequests: 20 });
+  const rl = await checkRateLimitDistributed(`wallet:checkout:${getClientIp(req)}`, { maxRequests: 20 });
   if (!rl.allowed) return rateLimitResponse(rl);
 
   let amount: number;

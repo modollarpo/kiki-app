@@ -10,7 +10,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { runBiddingCycle, getBiddingStats, getDayPartingWeights, initBiddingEventWiring } from "@/lib/bidding";
 import { getUserFromRequest } from "@/lib/auth";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { logger, handleApiError } from "@/lib/logger";
 import { checkEnforcement } from "@/lib/tenant";
 
@@ -19,7 +20,7 @@ initBiddingEventWiring();
 
 export async function GET(req: NextRequest) {
   try {
-    const rl = checkRateLimit(`bidding:GET:${getClientIp(req)}`, { maxRequests: 60, windowMs: 60_000 });
+    const rl = await checkRateLimitDistributed(`bidding:GET:${getClientIp(req)}`, { maxRequests: 60, windowMs: 60_000 });
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const user = getUserFromRequest(req);
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const rl = checkRateLimit(`bidding:POST:${getClientIp(req)}`, { maxRequests: 60, windowMs: 60_000 });
+    const rl = await checkRateLimitDistributed(`bidding:POST:${getClientIp(req)}`, { maxRequests: 60, windowMs: 60_000 });
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const user = getUserFromRequest(req);

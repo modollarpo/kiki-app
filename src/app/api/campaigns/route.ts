@@ -2,7 +2,8 @@ export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError, sanitizeString } from "@/lib/auth";
 import { logger, handleApiError } from "@/lib/logger";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { validateSearchParams, validateBody, campaignCreateSchema, campaignQuerySchema } from "@/lib/validation";
 import { checkEnforcement, checkPlanLimit } from "@/lib/tenant";
 import { eventBus, EVENTS } from "@/lib/events";
@@ -12,7 +13,7 @@ export async function GET(req: Request) {
   if (!user) return jsonError("Unauthorized", 401);
 
   try {
-    const rl = checkRateLimit(`campaigns:GET:${getClientIp(req)}`, { maxRequests: 120 });
+    const rl = await checkRateLimitDistributed(`campaigns:GET:${getClientIp(req)}`, { maxRequests: 120 });
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const parsed = validateSearchParams(req, campaignQuerySchema);
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
   const enforcement = await checkEnforcement(user.tenantId);
   if (!enforcement.allowed) return jsonError(enforcement.reason!, 403);
 
-  const rl = checkRateLimit(`campaigns:POST:${getClientIp(req)}`, { maxRequests: 20 });
+  const rl = await checkRateLimitDistributed(`campaigns:POST:${getClientIp(req)}`, { maxRequests: 20 });
   if (!rl.allowed) return rateLimitResponse(rl);
 
   // Count existing campaigns and enforce limit
