@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     await (
       await db.prepare(`
         INSERT INTO wallets (id, tenant_id, balance, currency)
-        VALUES (?, ?, 1000, 'USD')
+        VALUES (?, ?, 0, 'USD')
       `)
     ).run(genId("wlt"), tenantId);
 
