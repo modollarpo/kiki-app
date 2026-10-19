@@ -8,6 +8,7 @@ import { logger } from "./logger";
 
 import { Pool, types } from "pg";
 import { hashPassword } from "./auth";
+import { shouldSeedDemoData, demoSeedPassword } from "./env";
 import { recordLatency, dbKind, nowMs } from "./metrics";
 
 // Record the duration of every DB statement so /api/status can report real
@@ -1689,8 +1690,8 @@ async function seedIfEmpty(db: PgDb) {
     INSERT INTO users (id, email, name, password, role, tenant_id, tenant_name, plan, avatar_initials, trial_ends_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  await insertUser.run("u1", "demo@keekii.net", "Demo User", hashPassword("password123"), "advertiser", "t1", "Demo Workspace", "growth", "DU", trialEnd);
-  await insertUser.run("u2", "admin@keekii.net", "Admin User", hashPassword("admin123"), "superadmin", "t2", "KIKI Inc.", "enterprise", "AU", trialEnd);
+  await insertUser.run("u1", "demo@keekii.net", "Demo User", hashPassword(demoSeedPassword("user")), "advertiser", "t1", "Demo Workspace", "growth", "DU", trialEnd);
+  await insertUser.run("u2", "admin@keekii.net", "Admin User", hashPassword(demoSeedPassword("admin")), "superadmin", "t2", "KIKI Inc.", "enterprise", "AU", trialEnd);
 
   const insertCampaign = db.prepare(`
     INSERT INTO campaigns (id, tenant_id, name, platform, status, roas, spend, budget, impressions, clicks, conversions, cpa, ltv_predicted, revenue)
@@ -1902,7 +1903,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
   if (!globalForDb.__kikiDb && process.env.FORCE_MEMORY_DB === "true") {
     const mem = createMemoryDb();
     mem.exec(SQLITE_SCHEMA);
-    if (process.env.SEED_DEMO_DATA === "true") {
+    if (shouldSeedDemoData()) {
       await seedIfEmpty(mem as unknown as PgDb);
       await seedBillingIfEmpty(mem as unknown as PgDb);
       await seedFeatureDemoIfEmpty(mem as unknown as PgDb);
@@ -1928,7 +1929,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
         const db = await createSqliteDb();
         db.exec(SQLITE_SCHEMA);
         await runMigrations(db as unknown as PgDb);
-        if (process.env.SEED_DEMO_DATA === "true") {
+        if (shouldSeedDemoData()) {
           await seedIfEmpty(db as unknown as PgDb);
           await seedBillingIfEmpty(db as unknown as PgDb);
           await seedFeatureDemoIfEmpty(db as unknown as PgDb);
@@ -1946,7 +1947,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
         );
         const mem = createMemoryDb();
         mem.exec(SQLITE_SCHEMA);
-        if (process.env.SEED_DEMO_DATA === "true") {
+        if (shouldSeedDemoData()) {
           await seedIfEmpty(mem as unknown as PgDb);
           await seedBillingIfEmpty(mem as unknown as PgDb);
           await seedFeatureDemoIfEmpty(mem as unknown as PgDb);
@@ -1967,7 +1968,7 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
       logger.warn("[DB] timestamp cast setup skipped:", { error: (e as Error).message });
     }
     await runMigrations(db);
-    if (process.env.SEED_DEMO_DATA === "true") {
+    if (shouldSeedDemoData()) {
       await seedIfEmpty(db);
       await seedBillingIfEmpty(db);
       await seedFeatureDemoIfEmpty(db);

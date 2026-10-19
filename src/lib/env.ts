@@ -29,11 +29,16 @@ const OPTIONAL_VARS = [
 
 let validated = false;
 let validationErrors: string[] = [];
+let validationWarnings: string[] = [];
 
 // ── Validate Environment ──────────────────────────────────
 
 export function validateEnvironment(): { valid: boolean; errors: string[]; warnings: string[] } {
-  if (validated) return { valid: validationErrors.length === 0, errors: validationErrors, warnings: [] };
+  if (validated) {
+    const result = { valid: validationErrors.length === 0, errors: validationErrors, warnings: validationWarnings };
+    assertProductionReady(result.errors);
+    return result;
+  }
 
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -105,6 +110,7 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
 
   validated = true;
   validationErrors = errors;
+  validationWarnings = warnings;
 
   if (errors.length > 0) {
     logger.error("[ENV VALIDATION] FAILED:");
@@ -118,7 +124,42 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
     logger.info("[ENV VALIDATION] All checks passed");
   }
 
+  assertProductionReady(errors);
+
   return { valid: errors.length === 0, errors, warnings };
+}
+
+// Production must never boot with an invalid security/auth configuration.
+// This is what makes a missing or default JWT_SECRET a hard startup failure
+// rather than a silent fallback to a well-known development secret.
+function assertProductionReady(errors: string[]): void {
+  if (process.env.NODE_ENV !== "production" || process.env.NEXT_PHASE) return;
+  if (errors.length === 0) return;
+  throw new Error(
+    "Environment validation failed in production: " + errors.join("; ")
+  );
+}
+
+// ── Demo Seed Policy ──────────────────────────────────────
+// Demo data (including the demo/admin accounts) must never be written to a
+// production database. Enabling SEED_DEMO_DATA there is ignored, not obeyed.
+export function shouldSeedDemoData(env: Record<string, string | undefined> = process.env): boolean {
+  if (env.SEED_DEMO_DATA !== "true") return false;
+  if (env.NODE_ENV === "production") {
+    logger.warn("[SEED] SEED_DEMO_DATA=true is ignored in production — demo users are never seeded.");
+    return false;
+  }
+  return true;
+}
+
+// Demo credentials are supplied by the environment. When absent (or too short)
+// a random password is generated so no predictable default ever ships.
+export function demoSeedPassword(kind: "user" | "admin", env: Record<string, string | undefined> = process.env): string {
+  const name = kind === "admin" ? "DEMO_ADMIN_PASSWORD" : "DEMO_USER_PASSWORD";
+  const value = env[name];
+  if (value && value.length >= 8) return value;
+  logger.warn(`[SEED] ${name} is not set (or shorter than 8 chars) — generating a random demo password.`);
+  return crypto.randomBytes(24).toString("base64url");
 }
 
 // ── Get Encryption Key (stable across restarts) ───────────

@@ -12,6 +12,8 @@ export default function LoginPage() {
   const { addToast } = useKikiStore();
   const { login, loading: authLoading, error: authError } = useAuth();
   const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+  const demoEmail = process.env.NEXT_PUBLIC_DEMO_USER_EMAIL;
+  const demoPassword = process.env.NEXT_PUBLIC_DEMO_USER_PASSWORD;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [screen, setScreen] = useState<"login"|"forgot"|"sso">("login");
@@ -120,8 +122,8 @@ export default function LoginPage() {
               <span className="font-sans text-[12px] text-t3">Keep me signed in for 30 days</span>
             </div>
             <Button full size="lg" loading={authLoading} onClick={handleLogin}>Sign In →</Button>
-            {DEMO_MODE && (
-              <Button full variant="ghost" size="sm" onClick={() => { setEmail("demo@keekii.net"); setPassword("password123"); setTimeout(() => handleLogin(), 100); }} className="mt-3">🚀 Demo Login (demo@keekii.net)</Button>
+            {DEMO_MODE && demoEmail && demoPassword && (
+              <Button full variant="ghost" size="sm" onClick={() => { setEmail(demoEmail); setPassword(demoPassword); setTimeout(() => handleLogin(), 100); }} className="mt-3">🚀 Demo Login ({demoEmail})</Button>
             )}
             <div className="my-3 h-px" style={{ background:`linear-gradient(90deg,transparent,${K.g700},transparent)` }} />
             <Button full variant="secondary" size="md" onClick={() => setScreen("sso")} icon={<span>⬡</span>}>Sign in with SSO</Button>

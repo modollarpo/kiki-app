@@ -44,7 +44,6 @@ if ($LASTEXITCODE -ne 0) { throw "Container App update failed (exit $LASTEXITCOD
 # Ensure required env vars are set (idempotent)
 Write-Host "Setting environment variables..."
 $envVars = @(
-  "SEED_DEMO_DATA=true",
   "NEXT_PUBLIC_BASE_URL=https://$APP.purplesky-3fddb402.swedencentral.azurecontainerapps.io"
 )
 # Pass through SMTP vars if set in local env (for CI/CD pipelines)
