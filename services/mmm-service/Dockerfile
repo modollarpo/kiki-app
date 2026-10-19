@@ -12,10 +12,11 @@ RUN cd services/mmm-service && npm install && npm run build
 
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/packages/shared/dist ./packages/shared/dist
-COPY --from=build /app/services/mmm-service/dist ./services/mmm-service/dist
-COPY --from=build /app/services/mmm-service/package.json ./services/mmm-service/
+COPY --from=build --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/packages/shared/dist ./packages/shared/dist
+COPY --from=build --chown=node:node /app/services/mmm-service/dist ./services/mmm-service/dist
+COPY --from=build --chown=node:node /app/services/mmm-service/package.json ./services/mmm-service/
 ENV NODE_ENV=production
+USER node
 EXPOSE 3022
 CMD ["node", "services/mmm-service/dist/index.js"]
