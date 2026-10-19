@@ -17,6 +17,11 @@ RUN pip install --no-cache-dir --progress-bar off -r requirements.txt
 
 COPY . .
 
+# Run as an unprivileged user (defense-in-depth: never run the app as root).
+RUN useradd --system --uid 1001 --no-create-home appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8000
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

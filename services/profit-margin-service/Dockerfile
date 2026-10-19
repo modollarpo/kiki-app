@@ -12,10 +12,11 @@ RUN cd services/profit-margin-service && npm install && npm run build
 
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/packages/shared/dist ./packages/shared/dist
-COPY --from=build /app/services/profit-margin-service/dist ./services/profit-margin-service/dist
-COPY --from=build /app/services/profit-margin-service/package.json ./services/profit-margin-service/
+COPY --from=build --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/packages/shared/dist ./packages/shared/dist
+COPY --from=build --chown=node:node /app/services/profit-margin-service/dist ./services/profit-margin-service/dist
+COPY --from=build --chown=node:node /app/services/profit-margin-service/package.json ./services/profit-margin-service/
 ENV NODE_ENV=production
+USER node
 EXPOSE 3024
 CMD ["node", "services/profit-margin-service/dist/index.js"]

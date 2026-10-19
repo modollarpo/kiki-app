@@ -10,6 +10,13 @@ build
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
+!.env.template
+*.log
+*.tmp
+scratch
+deliverables
 *.db
 *.db-journal
 *.db-wal

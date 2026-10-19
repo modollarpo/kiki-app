@@ -12,10 +12,11 @@ RUN cd services/creative-attribution-service && npm install && npm run build
 
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/packages/shared/dist ./packages/shared/dist
-COPY --from=build /app/services/creative-attribution-service/dist ./services/creative-attribution-service/dist
-COPY --from=build /app/services/creative-attribution-service/package.json ./services/creative-attribution-service/
+COPY --from=build --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/packages/shared/dist ./packages/shared/dist
+COPY --from=build --chown=node:node /app/services/creative-attribution-service/dist ./services/creative-attribution-service/dist
+COPY --from=build --chown=node:node /app/services/creative-attribution-service/package.json ./services/creative-attribution-service/
 ENV NODE_ENV=production
+USER node
 EXPOSE 3021
 CMD ["node", "services/creative-attribution-service/dist/index.js"]
