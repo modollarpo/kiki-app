@@ -1,16 +1,38 @@
 export const dynamic = "force-dynamic";
+import { NextResponse } from "next/server";
 import { getDb, genId } from "@/lib/db";
-import { createSession, json, jsonError } from "@/lib/auth";
+import { createSession, jsonError } from "@/lib/auth";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
+import {
+  getCookieValue,
+  isVerifiedGoogleEmail,
+  safeEqual,
+  clearSetCookie,
+  GOOGLE_SSO_STATE_COOKIE,
+  GOOGLE_SSO_VERIFIER_COOKIE,
+} from "@/lib/google-sso";
 
 export async function GET(req: Request) {
   setRequestId(generateRequestId());
   try {
     const { searchParams } = new URL(req.url);
     const code = searchParams.get("code");
+    const state = searchParams.get("state");
     const error = searchParams.get("error");
     if (error) return jsonError(`Google SSO error: ${error}`, 400);
-    if (!code) return jsonError("Missing authorization code", 400);
+    if (!code || !state) return jsonError("Missing authorization code or state", 400);
+
+    // Verify the state parameter against the cookie set when the flow started
+    // (CSRF protection) and recover the PKCE verifier.
+    const cookieHeader = req.headers.get("cookie");
+    const expectedState = getCookieValue(cookieHeader, GOOGLE_SSO_STATE_COOKIE);
+    const codeVerifier = getCookieValue(cookieHeader, GOOGLE_SSO_VERIFIER_COOKIE);
+    if (!expectedState || !safeEqual(state, expectedState)) {
+      return jsonError("Invalid OAuth state", 400);
+    }
+    if (!codeVerifier) {
+      return jsonError("Missing PKCE verifier", 400);
+    }
 
     const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
@@ -23,6 +45,7 @@ export async function GET(req: Request) {
       body: new URLSearchParams({
         code, client_id: clientId, client_secret: clientSecret,
         redirect_uri: redirectUri, grant_type: "authorization_code",
+        code_verifier: codeVerifier,
       }),
     });
     if (!tokenRes.ok) return jsonError("Failed to exchange authorization code", 400);
@@ -34,8 +57,14 @@ export async function GET(req: Request) {
     if (!profileRes.ok) return jsonError("Failed to fetch user profile", 400);
     const profile = await profileRes.json();
 
+    // Only trust an email that Google reports as verified.
+    if (!isVerifiedGoogleEmail(profile)) {
+      logger.warn("[Auth] Google SSO rejected: unverified or missing email");
+      return jsonError("Google account email is not verified", 403);
+    }
+
     const db = await getDb();
-    const email = profile.email as string;
+    const email = profile.email;
     let user = await (await db.prepare("SELECT * FROM users WHERE email = ?")).get(email) as Record<string, unknown> | undefined;
 
     if (!user) {
@@ -51,8 +80,9 @@ export async function GET(req: Request) {
         VALUES (?, ?, ?, '', 'advertiser', ?, ?, 'growth', ?, ?, CURRENT_TIMESTAMP)
       `)).run(userId, email, name, tenantId, tenantName, initials, trialEndsAt);
 
+      // New accounts start with a zero balance — no fabricated credit.
       await (await db.prepare(`
-        INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, 1000, 'USD')
+        INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, 0, 'USD')
       `)).run(genId("wlt"), tenantId);
 
       user = { id: userId, email, name, role: "advertiser", tenant_id: tenantId, tenant_name: tenantName, plan: "growth", avatar_initials: initials };
@@ -72,7 +102,11 @@ export async function GET(req: Request) {
     });
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    return Response.redirect(`${baseUrl}/dashboard?token=${encodeURIComponent(sessionToken)}`, 302);
+    const res = NextResponse.redirect(`${baseUrl}/dashboard?token=${encodeURIComponent(sessionToken)}`, 302);
+    // One-shot cookies — clear them after use.
+    res.headers.append("Set-Cookie", clearSetCookie(GOOGLE_SSO_STATE_COOKIE));
+    res.headers.append("Set-Cookie", clearSetCookie(GOOGLE_SSO_VERIFIER_COOKIE));
+    return res;
   } catch (e) {
     logger.error("Google SSO callback failed", { message: e instanceof Error ? e.message : String(e) });
     return jsonError("SSO authentication failed", 500);
