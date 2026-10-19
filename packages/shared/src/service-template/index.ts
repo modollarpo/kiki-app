@@ -7,6 +7,19 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { Pool } from "pg";
 import { Kafka, Producer, Consumer, EachMessagePayload } from "kafkajs";
+import { createServiceAuthMiddleware, corsAllowedOrigins } from "./security";
+import type { ServiceTokenPayload } from "./security";
+
+// Attach the verified token claims to the Express request so route handlers
+// can scope queries to the authenticated tenant.
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      auth?: ServiceTokenPayload;
+    }
+  }
+}
 
 export interface ServiceConfig {
   name: string;
@@ -30,8 +43,12 @@ export interface ServiceContext {
 
 export function createService(config: ServiceConfig): ServiceContext {
   const app = express();
-  app.use(cors());
+  // Internal services are not browser-facing. Only origins explicitly listed in
+  // CORS_ALLOWED_ORIGINS are permitted; the default denies all cross-origin use.
+  const allowedOrigins = corsAllowedOrigins();
+  app.use(cors({ origin: allowedOrigins.length > 0 ? allowedOrigins : false }));
   app.use(express.json({ limit: "10mb" }));
+  app.use(createServiceAuthMiddleware({ healthPath: config.healthCheckPath }));
 
   const db = new Pool({ connectionString: config.databaseUrl, max: 20 });
   const kafka = new Kafka({
@@ -65,8 +82,9 @@ export function createService(config: ServiceConfig): ServiceContext {
     await producer.connect();
     console.log(`[${config.name}] Kafka producer connected`);
 
-    app.listen(config.port, () => {
-      console.log(`[${config.name}] Listening on port ${config.port}`);
+    const host = process.env.HOST && process.env.HOST.length > 0 ? process.env.HOST : "0.0.0.0";
+    app.listen(config.port, host, () => {
+      console.log(`[${config.name}] Listening on ${host}:${config.port}`);
     });
   }
 

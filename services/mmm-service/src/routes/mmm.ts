@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ServiceContext } from "../../../../packages/shared/src/service-template";
 import { publishEvent } from "../../../../packages/shared/src/service-template";
+import { tenantOf, parsePositiveInt } from "../../../../packages/shared/src/service-template/security";
 
 function genId(): string {
   return `mmm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -37,10 +38,13 @@ export function mmmRoutes(ctx: ServiceContext): Router {
   // POST /api/runs — Trigger MMM analysis
   router.post("/runs", async (req: Request, res: Response) => {
     try {
-      const { tenantId, weeks = 52 } = req.body;
+      const tenantId = tenantOf(req, req.body.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
+      const weeks = parsePositiveInt(req.body.weeks, 52, 520);
       const runId = genId();
 
-      // Collect weekly spend+revenue per channel from wallet transactions
+      // Collect weekly spend+revenue per channel from wallet transactions.
+      // `weeks` is constrained to a positive integer before interpolation.
       const rawData = await ctx.db.query(`
         SELECT
           COALESCE(campaign_id, 'unknown') as channel,
@@ -48,10 +52,10 @@ export function mmmRoutes(ctx: ServiceContext): Router {
           SUM(CASE WHEN type = 'debit' THEN ABS(amount) ELSE 0 END) as spend,
           SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) as revenue
         FROM wallet_transactions
-        WHERE tenant_id = $1 AND created_at >= NOW() - INTERVAL '${weeks} weeks'
+        WHERE tenant_id = $1 AND created_at >= NOW() - ($2 * INTERVAL '1 week')
         GROUP BY channel, DATE_TRUNC('week', created_at)
         ORDER BY week
-      `, [tenantId]);
+      `, [tenantId, weeks]);
 
       // Group by channel
       const channelData: Record<string, { spend: number[]; revenue: number[] }> = {};
@@ -128,7 +132,9 @@ export function mmmRoutes(ctx: ServiceContext): Router {
   // GET /api/runs/:id/results
   router.get("/runs/:id/results", async (req: Request, res: Response) => {
     try {
-      const row = await ctx.db.query(`SELECT * FROM mmm_runs WHERE id = $1`, [req.params.id]);
+      const row = await ctx.db.query(
+        `SELECT * FROM mmm_runs WHERE id = $1 AND tenant_id = $2`, [req.params.id, tenantOf(req, req.query.tenantId)]
+      );
       if (!row.rows[0]) return res.status(404).json({ error: "Run not found" });
       res.json({ success: true, data: row.rows[0] });
     } catch (e: any) {

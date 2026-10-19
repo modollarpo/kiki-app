@@ -14,6 +14,7 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit
 import { logger } from "@/lib/logger";
 import { isOpenCodeConfigured, chat as opencodeChat, type OpenCodeMessage } from "@/lib/opencode";
 import { checkEnforcement, checkPlanLimit } from "@/lib/tenant";
+import { serviceAuthHeaders } from "@/lib/service-token";
 
 const NL_SERVICE_URL = process.env.NL_ANALYTICS_URL || "http://localhost:3025";
 
@@ -112,7 +113,7 @@ export async function POST(req: NextRequest) {
       try {
         const nlRes = await fetch(`${NL_SERVICE_URL}/api/query`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...serviceAuthHeaders(user.tenantId) },
           body: JSON.stringify({ tenantId: user.tenantId, question: lastUserMsg.content }),
           signal: AbortSignal.timeout(5000),
         });

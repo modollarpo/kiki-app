@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ServiceContext } from "../../../../packages/shared/src/service-template";
 import { publishEvent } from "../../../../packages/shared/src/service-template";
+import { tenantOf, parsePositiveInt } from "../../../../packages/shared/src/service-template/security";
 
 function genId(): string {
   return `inf_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -17,7 +18,9 @@ export function influencerRoutes(ctx: ServiceContext): Router {
   // POST /api/creators — Register creator
   router.post("/creators", async (req: Request, res: Response) => {
     try {
-      const { tenantId, name, handle, platform } = req.body;
+      const { name, handle, platform } = req.body;
+      const tenantId = tenantOf(req, req.body.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const id = genId();
       const promoCode = generatePromoCode(name);
       const utmSource = handle.replace("@", "").replace(/\s/g, "_").toLowerCase();
@@ -43,7 +46,8 @@ export function influencerRoutes(ctx: ServiceContext): Router {
   // GET /api/creators — List creators
   router.get("/creators", async (req: Request, res: Response) => {
     try {
-      const { tenantId } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const rows = await ctx.db.query(
         `SELECT * FROM influencer_creators WHERE tenant_id = $1 ORDER BY total_revenue DESC`, [tenantId]
       );
@@ -56,20 +60,24 @@ export function influencerRoutes(ctx: ServiceContext): Router {
   // GET /api/creators/:id/performance — Creator performance
   router.get("/creators/:id/performance", async (req: Request, res: Response) => {
     try {
-      const creator = await ctx.db.query(`SELECT * FROM influencer_creators WHERE id = $1`, [req.params.id]);
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
+      const creator = await ctx.db.query(
+        `SELECT * FROM influencer_creators WHERE id = $1 AND tenant_id = $2`, [req.params.id, tenantId]
+      );
       if (!creator.rows[0]) return res.status(404).json({ error: "Creator not found" });
 
       const conversions = await ctx.db.query(`
         SELECT mechanism, COUNT(*) as count, SUM(revenue) as revenue, AVG(predicted_ltv) as avg_ltv
-        FROM influencer_conversions WHERE creator_id = $1
+        FROM influencer_conversions WHERE creator_id = $1 AND tenant_id = $2
         GROUP BY mechanism
-      `, [req.params.id]);
+      `, [req.params.id, tenantId]);
 
       const dailyConversions = await ctx.db.query(`
         SELECT DATE(attributed_at) as day, COUNT(*) as conversions, SUM(revenue) as revenue
-        FROM influencer_conversions WHERE creator_id = $1
+        FROM influencer_conversions WHERE creator_id = $1 AND tenant_id = $2
         GROUP BY DATE(attributed_at) ORDER BY day DESC LIMIT 30
-      `, [req.params.id]);
+      `, [req.params.id, tenantId]);
 
       res.json({
         success: true,
@@ -87,7 +95,9 @@ export function influencerRoutes(ctx: ServiceContext): Router {
   // POST /api/conversions/attribute — Attribute conversion to creator
   router.post("/conversions/attribute", async (req: Request, res: Response) => {
     try {
-      const { tenantId, orderId, revenue, predictedLtv, ltvSegment, promoCode, utmSource, referrerDomain } = req.body;
+      const { orderId, revenue, predictedLtv, ltvSegment, promoCode, utmSource, referrerDomain } = req.body;
+      const tenantId = tenantOf(req, req.body.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       let creatorId: string | null = null;
       let mechanism: string = "utm";
 
@@ -124,14 +134,14 @@ export function influencerRoutes(ctx: ServiceContext): Router {
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
       `, [id, creatorId, tenantId, mechanism, orderId, revenue || 0, predictedLtv || 0, ltvSegment || "mid"]);
 
-      // Update creator totals
+      // Update creator totals (tenant-scoped so a crossed id cannot update)
       await ctx.db.query(`
         UPDATE influencer_creators SET
           total_conversions = total_conversions + 1,
           total_revenue = total_revenue + $2,
           total_ltv = total_ltv + $3
-        WHERE id = $1
-      `, [creatorId, revenue || 0, predictedLtv || 0]);
+        WHERE id = $1 AND tenant_id = $4
+      `, [creatorId, revenue || 0, predictedLtv || 0, tenantId]);
 
       await publishEvent(ctx.producer, "kiki.influencer", {
         eventId: id, eventType: "influencer.conversion.attributed", topic: "kiki.influencer",
@@ -148,14 +158,16 @@ export function influencerRoutes(ctx: ServiceContext): Router {
   // GET /api/dark-social/analysis
   router.get("/dark-social/analysis", async (req: Request, res: Response) => {
     try {
-      const { tenantId, days = "30" } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
+      const days = parsePositiveInt(req.query.days, 30, 365);
       const rows = await ctx.db.query(`
         SELECT referrer_domain, SUM(unattributed_conversions) as conversions, SUM(total_revenue) as revenue
         FROM dark_social_groups
-        WHERE tenant_id = $1 AND period_start >= NOW() - INTERVAL '${parseInt(days as string)} days'
+        WHERE tenant_id = $1 AND period_start >= NOW() - ($2 * INTERVAL '1 day')
         GROUP BY referrer_domain
         ORDER BY revenue DESC LIMIT 20
-      `, [tenantId]);
+      `, [tenantId, days]);
 
       const totalUnattributed = rows.rows.reduce((s: number, r: any) => s + parseInt(r.conversions || "0"), 0);
       const totalRevenue = rows.rows.reduce((s: number, r: any) => s + parseFloat(r.revenue || "0"), 0);

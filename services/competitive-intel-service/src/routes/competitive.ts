@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ServiceContext } from "../../../../packages/shared/src/service-template";
 import { publishEvent } from "../../../../packages/shared/src/service-template";
+import { tenantOf } from "../../../../packages/shared/src/service-template/security";
 
 const CPM_BENCHMARKS: Record<string, Record<string, { p50: number; p75: number; p90: number }>> = {
   meta: {
@@ -43,7 +44,9 @@ export function competitiveRoutes(ctx: ServiceContext): Router {
   // POST /api/competitors — Add competitor to track
   router.post("/competitors", async (req: Request, res: Response) => {
     try {
-      const { tenantId, name, domain, platforms, industry } = req.body;
+      const { name, domain, platforms, industry } = req.body;
+      const tenantId = tenantOf(req, req.body.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const id = genId();
       await ctx.db.query(`
         INSERT INTO competitor_tracks (id, tenant_id, name, domain, platforms, industry)
@@ -60,7 +63,8 @@ export function competitiveRoutes(ctx: ServiceContext): Router {
   // GET /api/competitors — List tracked competitors
   router.get("/competitors", async (req: Request, res: Response) => {
     try {
-      const { tenantId } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const rows = await ctx.db.query(
         `SELECT * FROM competitor_tracks WHERE tenant_id = $1 ORDER BY created_at DESC`, [tenantId]
       );
@@ -74,13 +78,17 @@ export function competitiveRoutes(ctx: ServiceContext): Router {
   router.get("/competitors/:id/ads", async (req: Request, res: Response) => {
     try {
       const { platform, limit = "50" } = req.query;
-      let where = "WHERE competitor_id = $1";
-      const params: any[] = [req.params.id];
-      if (platform) { where += ` AND platform = $${params.length + 1}`; params.push(platform); }
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
+      let where = "WHERE s.competitor_id = $1 AND ct.tenant_id = $2";
+      const params: unknown[] = [req.params.id, tenantId];
+      if (platform) { where += ` AND s.platform = $${params.length + 1}`; params.push(platform); }
 
       const rows = await ctx.db.query(`
-        SELECT * FROM competitor_ad_snapshots ${where}
-        ORDER BY last_seen DESC LIMIT $${params.length + 1}
+        SELECT s.* FROM competitor_ad_snapshots s
+        JOIN competitor_tracks ct ON ct.id = s.competitor_id
+        ${where}
+        ORDER BY s.last_seen DESC LIMIT $${params.length + 1}
       `, [...params, parseInt(limit as string)]);
 
       res.json({ success: true, data: rows.rows });
@@ -113,13 +121,16 @@ export function competitiveRoutes(ctx: ServiceContext): Router {
   // GET /api/analysis — AI-powered creative strategy analysis
   router.get("/analysis", async (req: Request, res: Response) => {
     try {
-      const { tenantId, competitorId } = req.query;
+      const { competitorId } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const ads = await ctx.db.query(`
-        SELECT headline, body, creative_type, platform, ai_analysis
-        FROM competitor_ad_snapshots
-        WHERE competitor_id = $1
-        ORDER BY last_seen DESC LIMIT 20
-      `, [competitorId]);
+        SELECT s.headline, s.body, s.creative_type, s.platform, s.ai_analysis
+        FROM competitor_ad_snapshots s
+        JOIN competitor_tracks ct ON ct.id = s.competitor_id
+        WHERE s.competitor_id = $1 AND ct.tenant_id = $2
+        ORDER BY s.last_seen DESC LIMIT 20
+      `, [competitorId, tenantId]);
 
       // Generate analysis from ad data
       const headlines = ads.rows.map((r: any) => r.headline).filter(Boolean);
@@ -155,7 +166,8 @@ export function competitiveRoutes(ctx: ServiceContext): Router {
   // GET /api/share-of-voice
   router.get("/share-of-voice", async (req: Request, res: Response) => {
     try {
-      const { tenantId } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const ourSpend = await ctx.db.query(
         `SELECT SUM(spend) as total FROM campaigns WHERE tenant_id = $1`, [tenantId]
       );

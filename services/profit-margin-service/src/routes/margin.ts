@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ServiceContext } from "../../../../packages/shared/src/service-template";
 import { publishEvent } from "../../../../packages/shared/src/service-template";
+import { tenantOf } from "../../../../packages/shared/src/service-template/security";
 
 export function marginRoutes(ctx: ServiceContext): Router {
   const router = Router();
@@ -8,7 +9,8 @@ export function marginRoutes(ctx: ServiceContext): Router {
   // POST /api/margins — Bulk upsert product margins (max 5000)
   router.post("/margins", async (req: Request, res: Response) => {
     try {
-      const { tenantId, products } = req.body;
+      const tenantId = tenantOf(req, req.body.tenantId);
+      const { products } = req.body;
       if (!tenantId || !Array.isArray(products)) return res.status(400).json({ error: "tenantId and products[] required" });
       const items = products.slice(0, 5000);
 
@@ -45,7 +47,8 @@ export function marginRoutes(ctx: ServiceContext): Router {
   // GET /api/margins/portfolio — Portfolio summary
   router.get("/margins/portfolio", async (req: Request, res: Response) => {
     try {
-      const { tenantId } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const summary = await ctx.db.query(`
         SELECT
           COUNT(*) as total_skus,
@@ -84,7 +87,8 @@ export function marginRoutes(ctx: ServiceContext): Router {
   // GET /api/margins/campaign/:id — Profit-adjusted metrics for a campaign
   router.get("/margins/campaign/:id", async (req: Request, res: Response) => {
     try {
-      const { tenantId } = req.query;
+      const tenantId = tenantOf(req, req.query.tenantId);
+      if (!tenantId) return res.status(400).json({ error: "tenantId is required" });
       const campaign = await ctx.db.query(
         `SELECT * FROM campaigns WHERE id = $1 AND tenant_id = $2`, [req.params.id, tenantId]
       );
