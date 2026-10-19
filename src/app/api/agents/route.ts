@@ -3,14 +3,15 @@ import { getDb } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { runAgent } from "@/lib/agents";
 import { logger, handleApiError } from "@/lib/logger";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 
 export async function GET(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
   try {
-    const rl = checkRateLimit(`agents:GET:${getClientIp(req)}`, { maxRequests: 60 });
+    const rl = await checkRateLimitDistributed(`agents:GET:${getClientIp(req)}`, { maxRequests: 60 });
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const db = await getDb();
@@ -79,7 +80,7 @@ export async function PATCH(req: Request) {
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const rl = checkRateLimit(`agents:PATCH:${getClientIp(req)}`, { maxRequests: 20 });
+  const rl = await checkRateLimitDistributed(`agents:PATCH:${getClientIp(req)}`, { maxRequests: 20 });
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {

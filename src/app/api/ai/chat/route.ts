@@ -10,7 +10,8 @@ import {
 } from "@/lib/azure-openai";
 import { getDb } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { logger } from "@/lib/logger";
 import { isOpenCodeConfigured, chat as opencodeChat, type OpenCodeMessage } from "@/lib/opencode";
 import { checkEnforcement, checkPlanLimit } from "@/lib/tenant";
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Abuse protection: 30 chat requests per IP per minute.
-  const rl = checkRateLimit(`chat:${getClientIp(req)}`, { maxRequests: 30 });
+  const rl = await checkRateLimitDistributed(`chat:${getClientIp(req)}`, { maxRequests: 30 });
   if (!rl.allowed) {
     return rateLimitResponse(rl);
   }

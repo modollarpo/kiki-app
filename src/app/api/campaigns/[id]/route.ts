@@ -3,7 +3,8 @@ import { getDb, genId, type SqlParam } from "@/lib/db";
 import { getUserFromRequest, json, jsonError, sanitizeString } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
 import { logger, handleApiError } from "@/lib/logger";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { eventBus, EVENTS } from "@/lib/events";
 
 interface CampaignRow {
@@ -34,7 +35,7 @@ export async function GET(
 
   try {
     const { id } = await params;
-    const rl = checkRateLimit(`campaigns:GET:${getClientIp(_req)}`, { maxRequests: 120 });
+    const rl = await checkRateLimitDistributed(`campaigns:GET:${getClientIp(_req)}`, { maxRequests: 120 });
     if (!rl.allowed) return rateLimitResponse(rl);
 
     const db = await getDb();
@@ -57,7 +58,7 @@ export async function PUT(
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const rl = checkRateLimit(`campaigns:PUT:${getClientIp(req)}`, { maxRequests: 20 });
+  const rl = await checkRateLimitDistributed(`campaigns:PUT:${getClientIp(req)}`, { maxRequests: 20 });
   if (!rl.allowed) return rateLimitResponse(rl);
 
   const enf = await checkEnforcement(user.tenantId);
@@ -128,7 +129,7 @@ export async function PATCH(
   const user = getUserFromRequest(req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const rl = checkRateLimit(`campaigns:PATCH:${getClientIp(req)}`, { maxRequests: 30 });
+  const rl = await checkRateLimitDistributed(`campaigns:PATCH:${getClientIp(req)}`, { maxRequests: 30 });
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {
@@ -196,7 +197,7 @@ export async function DELETE(
   const user = getUserFromRequest(_req);
   if (!user) return jsonError("Unauthorized", 401);
 
-  const rl = checkRateLimit(`campaigns:DELETE:${getClientIp(_req)}`, { maxRequests: 10 });
+  const rl = await checkRateLimitDistributed(`campaigns:DELETE:${getClientIp(_req)}`, { maxRequests: 10 });
   if (!rl.allowed) return rateLimitResponse(rl);
 
   const enf = await checkEnforcement(user.tenantId);
