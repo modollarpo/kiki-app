@@ -1497,6 +1497,88 @@ const SCHEMA = `
   );
   CREATE INDEX IF NOT EXISTS idx_bid_history_tenant ON bid_history(tenant_id);
   CREATE INDEX IF NOT EXISTS idx_bid_history_campaign ON bid_history(tenant_id, campaign_id);
+
+  -- ── Ad Network (supply-side serving) ──────────────────────
+  -- Publishers are the streaming properties the network serves into
+  -- (play.keekii.net / music.keekii.net). Slots are the per-property
+  -- placements an ad request targets.
+  CREATE TABLE IF NOT EXISTS ad_publishers (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    property TEXT NOT NULL,
+    domain TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_ad_publishers_tenant ON ad_publishers(tenant_id, property);
+
+  CREATE TABLE IF NOT EXISTS ad_slots (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    publisher_id TEXT NOT NULL,
+    slug TEXT NOT NULL,
+    format TEXT NOT NULL DEFAULT 'video',
+    default_width INTEGER NOT NULL DEFAULT 0,
+    default_height INTEGER NOT NULL DEFAULT 0,
+    floor_cpm REAL NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_ad_slots_publisher ON ad_slots(tenant_id, publisher_id, slug);
+
+  -- Serveable creatives. campaign_id links back to a demand campaign so
+  -- delivery can be billed and attributed. Media is a CDN URL (video/audio)
+  -- so the same row serves both VAST and JSON consumers.
+  CREATE TABLE IF NOT EXISTS ad_creatives (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    campaign_id TEXT,
+    name TEXT NOT NULL DEFAULT '',
+    format TEXT NOT NULL DEFAULT 'video',
+    media_url TEXT,
+    image_url TEXT,
+    voiceover_url TEXT,
+    click_url TEXT,
+    duration_seconds INTEGER NOT NULL DEFAULT 15,
+    skip_after_seconds INTEGER,
+    width INTEGER NOT NULL DEFAULT 0,
+    height INTEGER NOT NULL DEFAULT 0,
+    weight INTEGER NOT NULL DEFAULT 1,
+    status TEXT NOT NULL DEFAULT 'active',
+    starts_at TEXT,
+    ends_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_ad_creatives_tenant ON ad_creatives(tenant_id, format, status);
+
+  -- One row per filled ad response. id doubles as the signed impression id.
+  CREATE TABLE IF NOT EXISTS ad_impressions (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    publisher_id TEXT,
+    slot_id TEXT,
+    creative_id TEXT,
+    campaign_id TEXT,
+    format TEXT NOT NULL DEFAULT 'video',
+    price_cpm REAL NOT NULL DEFAULT 0,
+    user_hash TEXT,
+    request_id TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_ad_impressions_tenant ON ad_impressions(tenant_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_ad_impressions_user ON ad_impressions(user_hash, created_at);
+
+  -- Append-only serving event log (VAST tracking + JSON beacons).
+  CREATE TABLE IF NOT EXISTS ad_events (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    impression_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    value REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_ad_events_impression ON ad_events(impression_id);
+  CREATE INDEX IF NOT EXISTS idx_ad_events_type ON ad_events(tenant_id, event_type, created_at);
 `;
 
 // SQLite-compatible variant of SCHEMA for the local `node:sqlite` fallback.
@@ -1855,6 +1937,64 @@ async function seedFeatureDemoIfEmpty(db: PgDb) {
   logger.info("[DB] Seeded feature demo data (margins, creators, attribution, dark social)");
 }
 
+// Ensures the supply-side placements referenced by the property ad tags
+// (property=play|music, slot=preroll) exist. Placements are network
+// infrastructure, not demo content, so this runs on every backend regardless of
+// the demo-seed policy. Idempotent per row.
+async function ensureAdNetworkPlacements(db: PgDb) {
+  const tid = "t1";
+  const publishers = [
+    { id: "pub_play", property: "play", domain: "play.keekii.net" },
+    { id: "pub_music", property: "music", domain: "music.keekii.net" },
+  ];
+  for (const p of publishers) {
+    const row = (await db
+      .prepare("SELECT COUNT(*) as c FROM ad_publishers WHERE id = ?")
+      .get(p.id)) as { c: number };
+    if (Number(row.c) === 0) {
+      await db
+        .prepare("INSERT INTO ad_publishers (id, tenant_id, property, domain) VALUES (?, ?, ?, ?)")
+        .run(p.id, tid, p.property, p.domain);
+    }
+  }
+
+  const slots = [
+    { id: "slot_play_preroll", publisherId: "pub_play", slug: "preroll", format: "video", width: 1920, height: 1080, floor: 3.5 },
+    { id: "slot_music_preroll", publisherId: "pub_music", slug: "preroll", format: "audio", width: 0, height: 0, floor: 2.0 },
+  ];
+  for (const s of slots) {
+    const row = (await db
+      .prepare("SELECT COUNT(*) as c FROM ad_slots WHERE id = ?")
+      .get(s.id)) as { c: number };
+    if (Number(row.c) === 0) {
+      await db
+        .prepare(
+          "INSERT INTO ad_slots (id, tenant_id, publisher_id, slug, format, default_width, default_height, floor_cpm) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        )
+        .run(s.id, tid, s.publisherId, s.slug, s.format, s.width, s.height, s.floor);
+    }
+  }
+}
+
+// Demo-only serveable creatives so a fresh demo install fills immediately.
+// Idempotent: only runs when ad_creatives is empty.
+async function seedAdNetworkCreativesIfEmpty(db: PgDb) {
+  const count = (await db.prepare("SELECT COUNT(*) as c FROM ad_creatives").get()) as { c: number };
+  if (Number(count.c) > 0) return;
+
+  const tid = "t1";
+  const insertCreative = db.prepare(`
+    INSERT INTO ad_creatives
+    (id, tenant_id, campaign_id, name, format, media_url, image_url, voiceover_url, click_url, duration_seconds, skip_after_seconds, width, height, weight)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  await insertCreative.run("adc_video_1", tid, "c1", "Play Preroll — Fitness", "video", "https://cdn.keekii.net/ads/fitness-15s.mp4", null, null, "https://keekii.net", 15, 5, 1920, 1080, 10);
+  await insertCreative.run("adc_video_2", tid, "c2", "Play Preroll — Retargeting", "video", "https://cdn.keekii.net/ads/retarget-30s.mp4", null, null, "https://keekii.net", 30, 5, 1280, 720, 5);
+  await insertCreative.run("adc_audio_1", tid, "c3", "Music Preroll — Audio", "audio", "https://cdn.keekii.net/ads/audio-15s.mp3", null, null, "https://keekii.net", 15, null, 0, 0, 10);
+
+  logger.info("[DB] Seeded ad-network demo creatives");
+}
+
 async function seedBillingIfEmpty(db: PgDb) {
   const subCount = (await db.prepare("SELECT COUNT(*) as c FROM subscriptions").get()) as { c: number };
   if (subCount.c > 0) return;
@@ -1903,10 +2043,12 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
   if (!globalForDb.__kikiDb && process.env.FORCE_MEMORY_DB === "true") {
     const mem = createMemoryDb();
     mem.exec(SQLITE_SCHEMA);
+    await ensureAdNetworkPlacements(mem as unknown as PgDb);
     if (shouldSeedDemoData()) {
       await seedIfEmpty(mem as unknown as PgDb);
       await seedBillingIfEmpty(mem as unknown as PgDb);
       await seedFeatureDemoIfEmpty(mem as unknown as PgDb);
+      await seedAdNetworkCreativesIfEmpty(mem as unknown as PgDb);
     }
     logger.warn("[DB] FORCE_MEMORY_DB=true — using in-memory DB (no persistence).");
     globalForDb.__kikiDb = mem as unknown as PgDb;
@@ -1929,10 +2071,12 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
         const db = await createSqliteDb();
         db.exec(SQLITE_SCHEMA);
         await runMigrations(db as unknown as PgDb);
+        await ensureAdNetworkPlacements(db as unknown as PgDb);
         if (shouldSeedDemoData()) {
           await seedIfEmpty(db as unknown as PgDb);
           await seedBillingIfEmpty(db as unknown as PgDb);
           await seedFeatureDemoIfEmpty(db as unknown as PgDb);
+          await seedAdNetworkCreativesIfEmpty(db as unknown as PgDb);
         }
         logger.info("[DB] Using local SQLite fallback at " + (process.env.DATABASE_PATH || "./data/kiki-local.sqlite"));
         globalForDb.__kikiDb = db as unknown as PgDb;
@@ -1947,10 +2091,12 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
         );
         const mem = createMemoryDb();
         mem.exec(SQLITE_SCHEMA);
+        await ensureAdNetworkPlacements(mem as unknown as PgDb);
         if (shouldSeedDemoData()) {
           await seedIfEmpty(mem as unknown as PgDb);
           await seedBillingIfEmpty(mem as unknown as PgDb);
           await seedFeatureDemoIfEmpty(mem as unknown as PgDb);
+          await seedAdNetworkCreativesIfEmpty(mem as unknown as PgDb);
         }
         globalForDb.__kikiDb = mem as unknown as PgDb;
         return globalForDb.__kikiDb;
@@ -1968,10 +2114,12 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
       logger.warn("[DB] timestamp cast setup skipped:", { error: (e as Error).message });
     }
     await runMigrations(db);
+    await ensureAdNetworkPlacements(db);
     if (shouldSeedDemoData()) {
       await seedIfEmpty(db);
       await seedBillingIfEmpty(db);
       await seedFeatureDemoIfEmpty(db);
+      await seedAdNetworkCreativesIfEmpty(db);
     }
     globalForDb.__kikiDb = db;
   }
