@@ -1,3 +1,5 @@
+import type { AdServeResponse } from "@/types";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 interface FetchOptions extends RequestInit {
@@ -731,4 +733,25 @@ export const translate = {
     request<{ translatedText: string; detectedLanguage?: string; source: string }>("/api/translate", {
       method: "POST", token, body: JSON.stringify(data),
     }),
+};
+
+// ── Ad Network ──────────────────────────────────────────
+export const ads = {
+  request: (
+    token: string,
+    data: {
+      property: "play" | "music";
+      slot?: string;
+      placementId?: string;
+      format?: string;
+      user?: { id?: string };
+      cap?: { impressions: number; windowHours: number };
+    }
+  ) => request<AdServeResponse>("/api/ads/request", { method: "POST", token, body: JSON.stringify(data) }),
+  vastUrl: (params: { property?: string; slot?: string; placementId?: string; format?: string }) => {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) q.set(k, String(v));
+    const qs = q.toString();
+    return `${API_BASE}/api/ads/vast${qs ? `?${qs}` : ""}`;
+  },
 };

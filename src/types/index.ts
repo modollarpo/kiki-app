@@ -286,3 +286,74 @@ export interface DashboardData {
   notifications: { unread: number; total: number };
   system: { status: string; agentsRunning: number; eventsToday: number; signalsTotal: number; fraudBlocked: number };
 }
+
+// ── Ad Network (supply-side serving) ─────────────────────
+export type AdFormat = "video" | "audio" | "image" | "imageWithVoice";
+export type AdPublisherProperty = "play" | "music" | "keekii";
+
+export interface AdPublisher {
+  id: string;
+  tenantId: string;
+  property: string;
+  domain: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface AdSlot {
+  id: string;
+  tenantId: string;
+  publisherId: string;
+  slug: string;
+  format: AdFormat;
+  defaultWidth: number;
+  defaultHeight: number;
+  floorCpm: number;
+  active: boolean;
+}
+
+export interface AdCreativeRecord {
+  id: string;
+  tenantId: string;
+  campaignId: string | null;
+  name: string;
+  format: AdFormat;
+  mediaUrl: string | null;
+  imageUrl: string | null;
+  voiceoverUrl: string | null;
+  clickUrl: string | null;
+  durationSeconds: number;
+  skipAfterSeconds: number | null;
+  width: number;
+  height: number;
+  weight: number;
+  status: string;
+}
+
+export interface AdServeResponse {
+  ok: boolean;
+  impressionId: string | null;
+  adId?: string;
+  price?: { cpm: number; currency: string };
+  creative: {
+    type: AdFormat;
+    mediaUrl: string | null;
+    imageUrl: string | null;
+    voiceoverUrl: string | null;
+    clickThroughUrl: string;
+    duration: number;
+    skipAfterSeconds: number | null;
+    width: number;
+    height: number;
+  } | null;
+  tracking?: {
+    impression: string;
+    complete?: string;
+    skip?: string;
+    error: string;
+    firstQuartile?: string;
+    midpoint?: string;
+    thirdQuartile?: string;
+  };
+  vastUrl?: string;
+}

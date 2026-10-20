@@ -1,6 +1,6 @@
 // ============================================================
 // KIKI Agent™ — Kafka Event Definitions
-// 82 events across 14 topics
+// 88 events across 15 topics
 // ============================================================
 
 import { PlatformId, LtvSegment, AttributionModel } from "./types";
@@ -197,6 +197,54 @@ export interface CompetitorPriceDropPayload {
   affectedPlatforms: string[];
 }
 
+// ── Topic: ad (network supply-side serving) ────────────────
+// Emitted by the ad server when it serves into the network's own
+// properties (play.keekii.net video / music.keekii.net audio).
+export interface AdRequestedPayload {
+  tenantId: string;
+  property: string;
+  slotId: string;
+  format: string;
+  requestId?: string;
+}
+
+export interface AdFilledPayload {
+  tenantId: string;
+  impressionId: string;
+  creativeId: string;
+  campaignId: string | null;
+  property: string;
+  slotId: string;
+  priceCpm: number;
+}
+
+export interface AdNoFillPayload {
+  tenantId: string;
+  property: string;
+  slotId: string;
+  format: string;
+  reason: string;
+}
+
+export interface AdImpressionPayload {
+  tenantId: string;
+  impressionId: string;
+  creativeId: string | null;
+  eventType: string;
+}
+
+export interface AdQuartilePayload {
+  tenantId: string;
+  impressionId: string;
+  quartile: "start" | "q1" | "mid" | "q3" | "complete";
+}
+
+export interface AdClickedPayload {
+  tenantId: string;
+  impressionId: string;
+  creativeId: string | null;
+}
+
 // ── All Topics ─────────────────────────────────────────────
 export const KAFKA_TOPICS = {
   ATTRIBUTION: "kiki.attribution",
@@ -208,6 +256,7 @@ export const KAFKA_TOPICS = {
   INFLUENCER: "kiki.influencer",
   APPROVALS: "kiki.approvals",
   CREATIVE: "kiki.creative",
+  AD: "kiki.ad",
   // Existing topics
   SIGNAL: "kiki.signal",
   CAMPAIGN: "kiki.campaign",
@@ -250,6 +299,13 @@ export const EVENTS = {
   AGENT_STARTED: "agent:started",
   AGENT_COMPLETED: "agent:completed",
   AGENT_ERROR: "agent:error",
+  // Ad network (supply-side serving)
+  AD_REQUESTED: "ad:requested",
+  AD_FILLED: "ad:filled",
+  AD_IMPRESSION: "ad:impression",
+  AD_QUARTILE: "ad:quartile",
+  AD_CLICKED: "ad:clicked",
+  AD_NOFILL: "ad:nofill",
 } as const;
 
 export type KikiEventName = (typeof EVENTS)[keyof typeof EVENTS];
