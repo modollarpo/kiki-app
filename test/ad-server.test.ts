@@ -136,6 +136,13 @@ describe("ad-server — CORS", () => {
     expect(isAllowedAdOrigin("")).toBe(false);
   });
 
+  it("allows the Google IMA SDK host so the VAST fetch is not CORS-blocked", () => {
+    // IMA fetches the tag from its own bridge iframe; the Origin is Google's
+    // SDK host, not the property. Allowing it is required for VAST playback.
+    expect(isAllowedAdOrigin("https://imasdk.googleapis.com")).toBe(true);
+    expect(isAllowedAdOrigin("https://imasdk.googleapis.com.evil.com")).toBe(false);
+  });
+
   it("echoes an allowed origin and never a wildcard", () => {
     const headers = adCorsHeaders("https://music.keekii.net");
     expect(headers["Access-Control-Allow-Origin"]).toBe("https://music.keekii.net");

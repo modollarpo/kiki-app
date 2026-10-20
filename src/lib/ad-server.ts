@@ -263,6 +263,13 @@ const STATIC_AD_ORIGINS = [
   "https://music.keekii.net",
   "https://keekii.net",
   "https://www.keekii.net",
+  // The Google IMA SDK fetches the VAST tag from inside its own bridge
+  // iframe, so the request Origin is Google's SDK host rather than the
+  // property. Without this the fetch is blocked by CORS and no ad plays,
+  // even though the tag URL itself is correct. This is the conventional
+  // allowance for VAST serving; the tag has no secrets and every response
+  // is already cache-busted and property-scoped.
+  "https://imasdk.googleapis.com",
   "http://localhost:3000",
 ];
 
