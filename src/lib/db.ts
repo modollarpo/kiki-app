@@ -1976,23 +1976,34 @@ async function ensureAdNetworkPlacements(db: PgDb) {
   }
 }
 
-// Demo-only serveable creatives so a fresh demo install fills immediately.
-// Idempotent: only runs when ad_creatives is empty.
-async function seedAdNetworkCreativesIfEmpty(db: PgDb) {
-  const count = (await db.prepare("SELECT COUNT(*) as c FROM ad_creatives").get()) as { c: number };
-  if (Number(count.c) > 0) return;
-
+// Baseline serveable creative inventory. Like the placements above this runs
+// on every backend regardless of the demo policy: a network with no creatives
+// can only ever answer no-fill, so an empty inventory is a broken deployment,
+// not an empty demo. Media is served from the app's own /public so it works
+// with no external CDN; real campaigns replace these rows via the admin.
+// Idempotent per row.
+async function ensureAdNetworkCreatives(db: PgDb) {
   const tid = "t1";
   const insertCreative = db.prepare(`
     INSERT INTO ad_creatives
     (id, tenant_id, campaign_id, name, format, media_url, image_url, voiceover_url, click_url, duration_seconds, skip_after_seconds, width, height, weight)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  await insertCreative.run("adc_video_1", tid, "c1", "Play Preroll — Fitness", "video", "https://cdn.keekii.net/ads/fitness-15s.mp4", null, null, "https://keekii.net", 15, 5, 1920, 1080, 10);
-  await insertCreative.run("adc_video_2", tid, "c2", "Play Preroll — Retargeting", "video", "https://cdn.keekii.net/ads/retarget-30s.mp4", null, null, "https://keekii.net", 30, 5, 1280, 720, 5);
-  await insertCreative.run("adc_audio_1", tid, "c3", "Music Preroll — Audio", "audio", "https://cdn.keekii.net/ads/audio-15s.mp3", null, null, "https://keekii.net", 15, null, 0, 0, 10);
-
-  logger.info("[DB] Seeded ad-network demo creatives");
+  const creatives = [
+    { id: "adc_video_1", name: "Play Preroll — Demo", format: "video", media: "/demo/test.mp4", duration: 15, skip: 5, w: 1920, h: 1080, weight: 10, campaign: "c1" },
+    { id: "adc_video_2", name: "Play Preroll — House", format: "video", media: "/demo/kiki-demo.mp4", duration: 30, skip: 5, w: 1280, h: 720, weight: 5, campaign: "c2" },
+    { id: "adc_audio_1", name: "Music Preroll — Audio", format: "audio", media: "/demo/ad-audio.mp3", duration: 15, skip: null, w: 0, h: 0, weight: 10, campaign: "c3" },
+  ];
+  for (const c of creatives) {
+    const row = (await db
+      .prepare("SELECT COUNT(*) as c FROM ad_creatives WHERE id = ?")
+      .get(c.id)) as { c: number };
+    if (Number(row.c) > 0) continue;
+    await insertCreative.run(
+      c.id, tid, c.campaign, c.name, c.format, c.media, null, null,
+      "https://keekii.net", c.duration, c.skip, c.w, c.h, c.weight
+    );
+  }
 }
 
 async function seedBillingIfEmpty(db: PgDb) {
@@ -2044,11 +2055,11 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
     const mem = createMemoryDb();
     mem.exec(SQLITE_SCHEMA);
     await ensureAdNetworkPlacements(mem as unknown as PgDb);
+    await ensureAdNetworkCreatives(mem as unknown as PgDb);
     if (shouldSeedDemoData()) {
       await seedIfEmpty(mem as unknown as PgDb);
       await seedBillingIfEmpty(mem as unknown as PgDb);
       await seedFeatureDemoIfEmpty(mem as unknown as PgDb);
-      await seedAdNetworkCreativesIfEmpty(mem as unknown as PgDb);
     }
     logger.warn("[DB] FORCE_MEMORY_DB=true — using in-memory DB (no persistence).");
     globalForDb.__kikiDb = mem as unknown as PgDb;
@@ -2072,11 +2083,11 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
         db.exec(SQLITE_SCHEMA);
         await runMigrations(db as unknown as PgDb);
         await ensureAdNetworkPlacements(db as unknown as PgDb);
+        await ensureAdNetworkCreatives(db as unknown as PgDb);
         if (shouldSeedDemoData()) {
           await seedIfEmpty(db as unknown as PgDb);
           await seedBillingIfEmpty(db as unknown as PgDb);
           await seedFeatureDemoIfEmpty(db as unknown as PgDb);
-          await seedAdNetworkCreativesIfEmpty(db as unknown as PgDb);
         }
         logger.info("[DB] Using local SQLite fallback at " + (process.env.DATABASE_PATH || "./data/kiki-local.sqlite"));
         globalForDb.__kikiDb = db as unknown as PgDb;
@@ -2092,11 +2103,11 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
         const mem = createMemoryDb();
         mem.exec(SQLITE_SCHEMA);
         await ensureAdNetworkPlacements(mem as unknown as PgDb);
+        await ensureAdNetworkCreatives(mem as unknown as PgDb);
         if (shouldSeedDemoData()) {
           await seedIfEmpty(mem as unknown as PgDb);
           await seedBillingIfEmpty(mem as unknown as PgDb);
           await seedFeatureDemoIfEmpty(mem as unknown as PgDb);
-          await seedAdNetworkCreativesIfEmpty(mem as unknown as PgDb);
         }
         globalForDb.__kikiDb = mem as unknown as PgDb;
         return globalForDb.__kikiDb;
@@ -2115,11 +2126,11 @@ export async function getDb(): Promise<PgDb | SqliteDb | MemoryDb> {
     }
     await runMigrations(db);
     await ensureAdNetworkPlacements(db);
+    await ensureAdNetworkCreatives(db);
     if (shouldSeedDemoData()) {
       await seedIfEmpty(db);
       await seedBillingIfEmpty(db);
       await seedFeatureDemoIfEmpty(db);
-      await seedAdNetworkCreativesIfEmpty(db);
     }
     globalForDb.__kikiDb = db;
   }

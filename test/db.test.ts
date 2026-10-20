@@ -30,6 +30,25 @@ describe.skipIf(!dbAvailable)("db — initialization & seed", () => {
     const w = (await db.prepare("SELECT balance FROM wallets WHERE tenant_id='t1'").get()) as { balance: number };
     expect(w.balance).toBeGreaterThan(0);
   });
+
+  // The ad network's baseline inventory is infrastructure, not demo data: a
+  // deployed network that can only answer no-fill is broken, so these rows are
+  // created regardless of the demo-seed policy (which is off in production).
+  it("always creates the ad network placements and creatives", async () => {
+    const pubs = (await db.prepare("SELECT COUNT(*) as c FROM ad_publishers").get()) as { c: number };
+    const slots = (await db.prepare("SELECT COUNT(*) as c FROM ad_slots").get()) as { c: number };
+    expect(pubs.c).toBeGreaterThanOrEqual(2);
+    expect(slots.c).toBeGreaterThanOrEqual(2);
+
+    const creds = (await db.prepare("SELECT COUNT(*) as c FROM ad_creatives").get()) as { c: number };
+    expect(creds.c).toBeGreaterThan(0);
+
+    const served = (await db
+      .prepare("SELECT COUNT(*) as c FROM ad_creatives WHERE status='active' AND media_url IS NOT NULL")
+      .get()) as { c: number };
+    // Every seeded creative must point at real, servable media.
+    expect(served.c).toBe(creds.c);
+  });
 });
 
 describe.skipIf(!dbAvailable)("tenant — plan limits", () => {
