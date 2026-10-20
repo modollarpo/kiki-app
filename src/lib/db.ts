@@ -1990,9 +1990,9 @@ async function ensureAdNetworkCreatives(db: PgDb) {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const creatives = [
-    { id: "adc_video_1", name: "Play Preroll — Demo", format: "video", media: "/demo/test.mp4", duration: 15, skip: 5, w: 1920, h: 1080, weight: 10, campaign: "c1" },
-    { id: "adc_video_2", name: "Play Preroll — House", format: "video", media: "/demo/kiki-demo.mp4", duration: 30, skip: 5, w: 1280, h: 720, weight: 5, campaign: "c2" },
-    { id: "adc_audio_1", name: "Music Preroll — Audio", format: "audio", media: "/demo/ad-audio.mp3", duration: 15, skip: null, w: 0, h: 0, weight: 10, campaign: "c3" },
+    { id: "adc_video_1", name: "Play Preroll — Demo", format: "video", media: "https://keekii.net/demo/test.mp4", duration: 15, skip: 5, w: 1920, h: 1080, weight: 10, campaign: "c1" },
+    { id: "adc_video_2", name: "Play Preroll — House", format: "video", media: "https://keekii.net/demo/kiki-demo.mp4", duration: 30, skip: 5, w: 1280, h: 720, weight: 5, campaign: "c2" },
+    { id: "adc_audio_1", name: "Music Preroll — Audio", format: "audio", media: "https://keekii.net/demo/ad-audio.mp3", duration: 15, skip: null, w: 0, h: 0, weight: 10, campaign: "c3" },
   ];
   for (const c of creatives) {
     const row = (await db
