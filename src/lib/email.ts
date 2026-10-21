@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 import { logger } from "./logger";
 
 interface EmailConfig {
@@ -21,9 +21,9 @@ function getConfig(): EmailConfig | null {
   return { host, port, user, pass, from, fromName };
 }
 
-let _transporter: nodemailer.Transporter | null = null;
+let _transporter: Transporter | null = null;
 
-function getTransporter(config: EmailConfig): nodemailer.Transporter {
+function getTransporter(config: EmailConfig): Transporter {
   if (!_transporter) {
     _transporter = nodemailer.createTransport({
       host: config.host,
