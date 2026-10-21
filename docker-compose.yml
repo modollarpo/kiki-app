@@ -70,7 +70,7 @@ services:
     environment:
       PORT: "3021"
       NODE_ENV: development
-      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:-kiki_dev_2024}@postgres:5432/kiki
+      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/kiki
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
     depends_on:
@@ -90,7 +90,7 @@ services:
     environment:
       PORT: "3022"
       NODE_ENV: development
-      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:-kiki_dev_2024}@postgres:5432/kiki
+      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/kiki
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
     depends_on:
@@ -108,7 +108,7 @@ services:
     environment:
       PORT: "3023"
       NODE_ENV: development
-      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:-kiki_dev_2024}@postgres:5432/kiki
+      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/kiki
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
       META_AD_LIBRARY_TOKEN: ""
@@ -128,7 +128,7 @@ services:
     environment:
       PORT: "3024"
       NODE_ENV: development
-      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:-kiki_dev_2024}@postgres:5432/kiki
+      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/kiki
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
     depends_on:
@@ -146,7 +146,7 @@ services:
     environment:
       PORT: "3025"
       NODE_ENV: development
-      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:-kiki_dev_2024}@postgres:5432/kiki
+      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/kiki
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -167,7 +167,7 @@ services:
     environment:
       PORT: "3026"
       NODE_ENV: development
-      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:-kiki_dev_2024}@postgres:5432/kiki
+      DATABASE_URL: postgresql://kiki:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/kiki
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
     depends_on:

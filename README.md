@@ -22,6 +22,17 @@ npm run build
 npm run start
 ```
 
+### Local infrastructure (Docker Compose)
+
+`docker-compose.yml` provisions Postgres, Kafka and Redis for local development.
+It has **no default database password** — set `POSTGRES_PASSWORD` in your `.env`
+(or export it) before starting, or Compose will fail fast:
+
+```bash
+echo "POSTGRES_PASSWORD=$(openssl rand -hex 16)" >> .env
+docker compose up -d
+```
+
 ---
 
 ## Architecture Overview
