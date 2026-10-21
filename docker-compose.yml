@@ -2,7 +2,7 @@ version: "3.9"
 
 # Local development only. Every published port is bound to loopback
 # (127.0.0.1) so Postgres/Kafka/Redis are never exposed on the network.
-# Override POSTGRES_PASSWORD via the environment for non-default setups.
+# POSTGRES_PASSWORD must be set in the environment/.env — there is no default.
 
 services:
   # ── Infrastructure ──────────────────────────────────────
@@ -11,7 +11,7 @@ services:
     environment:
       POSTGRES_DB: kiki
       POSTGRES_USER: kiki
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kiki_dev_2024}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
