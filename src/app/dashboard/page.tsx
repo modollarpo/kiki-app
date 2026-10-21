@@ -50,7 +50,11 @@ export default function DashboardPage() {
     if (!token) return;
     setSeeding(true);
     try {
-      const res = await fetch("/api/seed", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch("/api/seed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ confirm: true }),
+      });
       const d = await res.json();
       if (d.ok) {
         addToast("success", "Demo data loaded! Refreshing...");

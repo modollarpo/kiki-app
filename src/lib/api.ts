@@ -360,6 +360,7 @@ export const seed = {
     request<{ ok: boolean; message: string; campaigns: number; signals: number }>("/api/seed", {
       method: "POST",
       token,
+      body: JSON.stringify({ confirm: true }),
     }),
 };
 
