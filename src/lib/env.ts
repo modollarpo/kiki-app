@@ -72,16 +72,23 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
     }
   }
 
-  // Service-to-service auth: production must never boot without it, or the
-  // ad service and microservices would accept unauthenticated internal calls.
-  // SERVICE_JWT_SECRET (or the JWT_SECRET compat fallback outside hard failure).
-  const serviceSecret = process.env.SERVICE_JWT_SECRET || process.env.JWT_SECRET;
-  if (process.env.NODE_ENV === "production" && !serviceSecret) {
-    errors.push(
-      "SERVICE_JWT_SECRET is required in production (generate with: openssl rand -hex 32)"
-    );
+  // Service-to-service auth: production must never boot without a DEDICATED
+  // service secret, or the ad service and microservices would accept
+  // unauthenticated internal calls. The session JWT_SECRET is deliberately
+  // NOT accepted as a fallback in production (separating the two secrets means
+  // leaking the session secret cannot mint microservice tokens).
+  const serviceSecret = process.env.SERVICE_JWT_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    if (!serviceSecret) {
+      errors.push(
+        "SERVICE_JWT_SECRET is required in production (generate with: openssl rand -hex 32)"
+      );
+    } else if (serviceSecret.length < 32) {
+      errors.push("SERVICE_JWT_SECRET must be at least 32 characters in production");
+    }
+  } else if (!serviceSecret && !process.env.JWT_SECRET) {
+    warnings.push("SERVICE_JWT_SECRET not set — internal service calls are unauthenticated in this environment");
   }
-
 
   // Validate ENCRYPTION_KEY
   const encKey = process.env.ENCRYPTION_KEY;

@@ -16,39 +16,39 @@ afterEach(() => {
 });
 
 describe("verifyAdServiceRequest — no secret configured", () => {
-  it("rejects in production (fail closed)", () => {
+  it("rejects in production (fail closed)", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("SERVICE_JWT_SECRET", "");
     vi.stubEnv("JWT_SECRET", "");
-    const result = verifyAdServiceRequest(req());
+    const result = await verifyAdServiceRequest(req());
     expect(result.ok).toBe(false);
     expect(result.required).toBe(true);
   });
 
-  it("allows in development", () => {
+  it("allows in development", async () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("SERVICE_JWT_SECRET", "");
     vi.stubEnv("JWT_SECRET", "");
-    const result = verifyAdServiceRequest(req());
+    const result = await verifyAdServiceRequest(req());
     expect(result.ok).toBe(true);
     expect(result.required).toBe(false);
   });
 
-  it("allows in test", () => {
+  it("allows in test", async () => {
     vi.stubEnv("NODE_ENV", "test");
     vi.stubEnv("SERVICE_JWT_SECRET", "");
     vi.stubEnv("JWT_SECRET", "");
-    const result = verifyAdServiceRequest(req());
+    const result = await verifyAdServiceRequest(req());
     expect(result.ok).toBe(true);
     expect(result.required).toBe(false);
   });
 });
 
 describe("verifyAdServiceRequest — secret configured", () => {
-  it("rejects a request with no bearer token", () => {
+  it("rejects a request with no bearer token", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("SERVICE_JWT_SECRET", "a-secret-at-least-32-characters-long!!");
-    const result = verifyAdServiceRequest(req());
+    const result = await verifyAdServiceRequest(req());
     expect(result.ok).toBe(false);
     expect(result.required).toBe(true);
   });

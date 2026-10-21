@@ -350,7 +350,9 @@ export function adServiceAuthIsFailClosed(
   return env.NODE_ENV === "production";
 }
 
-export function verifyAdServiceRequest(req: Request): { ok: boolean; tenantId?: string; required: boolean } {
+export async function verifyAdServiceRequest(
+  req: Request
+): Promise<{ ok: boolean; tenantId?: string; required: boolean }> {
   const secret = serviceTokenSecret();
   if (!secret) {
     if (adServiceAuthIsFailClosed()) {
@@ -367,7 +369,7 @@ export function verifyAdServiceRequest(req: Request): { ok: boolean; tenantId?: 
   }
   const header = req.headers.get("authorization") || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : "";
-  const payload = token ? verifyServiceToken(token, secret) : null;
+  const payload = token ? await verifyServiceToken(token, secret) : null;
   if (!payload || typeof payload.tenantId !== "string" || payload.tenantId.length === 0) {
     return { ok: false, required: true };
   }

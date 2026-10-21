@@ -52,7 +52,7 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = verifyAdServiceRequest(req);
+  const auth = await verifyAdServiceRequest(req);
   if (!auth.ok) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
