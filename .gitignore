@@ -52,3 +52,7 @@ next-env.d.ts
 # Workbox output
 public/sw.js
 public/workbox-*.js
+
+# Ad-hoc scratch scripts and generated investor deliverables — never commit
+scratch/
+deliverables/
