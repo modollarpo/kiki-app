@@ -338,10 +338,31 @@ export function buildTrackUrls(baseUrl: string, impressionId: string, token: str
 }
 
 // ── Service auth (server-to-server) ────────────────────────
+// Mirrors the microservice middleware (packages/shared …/security.ts): a
+// missing secret is a hard failure in production (fail closed), never a
+// silent "allow". Only development/test may run unconfigured so local work
+// keeps functioning.
+let serviceSecretMissingLogged = false;
+
+export function adServiceAuthIsFailClosed(
+  env: Record<string, string | undefined> = process.env
+): boolean {
+  return env.NODE_ENV === "production";
+}
+
 export function verifyAdServiceRequest(req: Request): { ok: boolean; tenantId?: string; required: boolean } {
   const secret = serviceTokenSecret();
   if (!secret) {
-    // Unconfigured (local dev): services allow the request through.
+    if (adServiceAuthIsFailClosed()) {
+      if (!serviceSecretMissingLogged) {
+        serviceSecretMissingLogged = true;
+        logger.error(
+          "[AdServer] SERVICE_JWT_SECRET is not configured — ad service auth is failing closed in production."
+        );
+      }
+      return { ok: false, required: true };
+    }
+    // Unconfigured (local dev/test): allow the request through.
     return { ok: true, required: false };
   }
   const header = req.headers.get("authorization") || "";

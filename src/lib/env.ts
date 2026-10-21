@@ -72,6 +72,17 @@ export function validateEnvironment(): { valid: boolean; errors: string[]; warni
     }
   }
 
+  // Service-to-service auth: production must never boot without it, or the
+  // ad service and microservices would accept unauthenticated internal calls.
+  // SERVICE_JWT_SECRET (or the JWT_SECRET compat fallback outside hard failure).
+  const serviceSecret = process.env.SERVICE_JWT_SECRET || process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === "production" && !serviceSecret) {
+    errors.push(
+      "SERVICE_JWT_SECRET is required in production (generate with: openssl rand -hex 32)"
+    );
+  }
+
+
   // Validate ENCRYPTION_KEY
   const encKey = process.env.ENCRYPTION_KEY;
   if (encKey) {
