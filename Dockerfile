@@ -2,7 +2,7 @@
 # Node 24 ships the `node:sqlite` built-in (used by the SQLite persistence
 # fallback when DATABASE_URL is unset). Node 20 does NOT have node:sqlite, which
 # silently forced an in-memory DB and wiped all accounts on every restart.
-FROM node:24-bookworm-slim AS base
+FROM node:25-bookworm-slim AS base
 ENV NODE_ENV=production
 WORKDIR /app
 
