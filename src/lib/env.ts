@@ -201,6 +201,18 @@ export function seedRouteShouldHide(env: Record<string, string | undefined> = pr
   return env.NODE_ENV === "production" && env.ALLOW_TENANT_SEED !== "true";
 }
 
+// Demo seeding must never fabricate money. A seed call must not create a
+// wallet with a made-up balance, and must never modify an existing wallet row
+// (a tenant's balance is real financial state). Returns the balance to use for
+// a newly created wallet, or null to skip wallet creation entirely — in
+// production no wallet is created at all.
+export function seedWalletBalance(
+  env: Record<string, string | undefined> = process.env
+): number | null {
+  if (env.NODE_ENV === "production") return null;
+  return 0;
+}
+
 // ── Get Encryption Key (stable across restarts) ───────────
 
 export function getEncryptionKey(): Buffer {

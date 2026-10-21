@@ -5,7 +5,7 @@ import { checkEnforcement } from "@/lib/tenant";
 import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
-import { seedRouteEnabled, seedRouteShouldHide } from "@/lib/env";
+import { seedRouteEnabled, seedRouteShouldHide, seedWalletBalance } from "@/lib/env";
 
 export async function POST(req: Request) {
   setRequestId(generateRequestId());
@@ -85,13 +85,25 @@ export async function POST(req: Request) {
     }
 
     const walletExists = await (await db.prepare("SELECT id FROM wallets WHERE tenant_id = ?")).get(tid);
-    if (!walletExists) {
-      await db.prepare("INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, 5000, 'USD')")
-        .run(genId("wlt"), tid);
+    // Demo seeding must never fabricate money. Only create a wallet when the
+    // policy allows it (dev/test), and then with a ZERO balance. Existing
+    // wallet rows are never touched. In production no wallet is created.
+    const seedBalance = seedWalletBalance();
+    let walletCreated = false;
+    if (seedBalance !== null) {
+      const walletExists = await (await db.prepare("SELECT id FROM wallets WHERE tenant_id = ?")).get(tid);
+      if (!walletExists) {
+        await db.prepare("INSERT INTO wallets (id, tenant_id, balance, currency) VALUES (?, ?, ?, 'USD')")
+          .run(genId("wlt"), tid, seedBalance);
+        walletCreated = true;
+      }
     }
 
     const insertNotif = db.prepare("INSERT INTO notifications (id, tenant_id, user_id, severity, title, body, read, link) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    await insertNotif.run(genId("ntf"), tid, user.id, "success", "Demo data loaded!", "Campaigns, signals, and wallet have been updated.", 0, "/dashboard");
+    const notifBody = walletCreated
+      ? "Demo campaigns and signals have been loaded. Your wallet balance was not changed."
+      : "Demo campaigns and signals have been loaded.";
+    await insertNotif.run(genId("ntf"), tid, user.id, "success", "Demo data loaded!", notifBody, 0, "/dashboard");
 
     // Audit trail: record the destructive seed action.
     await db.prepare(`
