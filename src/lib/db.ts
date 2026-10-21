@@ -10,6 +10,7 @@ import { Pool, types } from "pg";
 import { hashPassword } from "./auth";
 import { shouldSeedDemoData, demoSeedPassword } from "./env";
 import { recordLatency, dbKind, nowMs } from "./metrics";
+import { sanitizeClickUrl } from "./click-url";
 
 // Record the duration of every DB statement so /api/status can report real
 // per-operation latency percentiles instead of nulls.
@@ -1999,12 +2000,15 @@ async function ensureAdNetworkCreatives(db: PgDb) {
       .prepare("SELECT COUNT(*) as c FROM ad_creatives WHERE id = ?")
       .get(c.id)) as { c: number };
     if (Number(row.c) > 0) continue;
+    // click_url is a redirect target — validate before it ever reaches the DB,
+    // so a future admin write path that reuses this cannot store a
+    // javascript:/data: URL. Invalid values fall back to the safe default.
+    const clickUrl = sanitizeClickUrl("https://keekii.net") ?? "https://keekii.net";
     await insertCreative.run(
       c.id, tid, c.campaign, c.name, c.format, c.media, null, null,
-      "https://keekii.net", c.duration, c.skip, c.w, c.h, c.weight
+      clickUrl, c.duration, c.skip, c.w, c.h, c.weight
     );
-  }
-}
+  }}
 
 async function seedBillingIfEmpty(db: PgDb) {
   const subCount = (await db.prepare("SELECT COUNT(*) as c FROM subscriptions").get()) as { c: number };
