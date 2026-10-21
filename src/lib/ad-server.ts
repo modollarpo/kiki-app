@@ -293,8 +293,11 @@ export function isAllowedAdOrigin(origin: string): boolean {
 export function adCorsHeaders(origin: string): Record<string, string> {
   const headers: Record<string, string> = { Vary: "Origin" };
   if (isAllowedAdOrigin(origin)) {
+    // Echo the specific allowed origin and never send
+    // Access-Control-Allow-Credentials: the ad endpoints are public
+    // (tracking is authenticated by a signed token, not cookies), so there is
+    // no reason to grant credentialed cross-origin access.
     headers["Access-Control-Allow-Origin"] = origin;
-    headers["Access-Control-Allow-Credentials"] = "true";
   }
   return headers;
 }
