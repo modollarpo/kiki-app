@@ -180,6 +180,27 @@ export function demoSeedPassword(kind: "user" | "admin", env: Record<string, str
   return crypto.randomBytes(24).toString("base64url");
 }
 
+// ── Manual Seed Route Policy ──────────────────────────────
+// POST /api/seed wipes a tenant's campaigns/signals/agents and writes demo
+// rows. It must never be reachable in production by accident, so it is locked
+// behind BOTH a superadmin role AND an explicit ALLOW_TENANT_SEED=true opt-in.
+// In production a missing opt-in is reported as "not found" (404) rather than
+// forbidden so the endpoint's existence is not disclosed.
+export function seedRouteEnabled(
+  role: string | undefined,
+  env: Record<string, string | undefined> = process.env
+): boolean {
+  if (role !== "superadmin") return false;
+  if (env.ALLOW_TENANT_SEED !== "true") return false;
+  return true;
+}
+
+export function seedRouteShouldHide(env: Record<string, string | undefined> = process.env): boolean {
+  // Production hides the endpoint entirely unless it has been explicitly
+  // enabled for deliberate demo provisioning.
+  return env.NODE_ENV === "production" && env.ALLOW_TENANT_SEED !== "true";
+}
+
 // ── Get Encryption Key (stable across restarts) ───────────
 
 export function getEncryptionKey(): Buffer {
