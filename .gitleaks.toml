@@ -1,0 +1,25 @@
+# gitleaks configuration for KIKI.
+# Extends the built-in rule set and allow-lists known non-secret test fixtures
+# and placeholders so the scan stays actionable.
+title = "KIKI gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known test fixtures / placeholders that are not real secrets"
+paths = [
+  # Test fixtures and pure unit tests use obviously-fake credentials.
+  '''test/''',
+  '''^.*\.test\.ts$''',
+  '''^.*\.md$''',
+  '''\.env\.example$''',
+  '''\.env\.template$''',
+]
+regexes = [
+  # Demo capture / seed passwords used only in test scripts.
+  '''DeckCapture!2026''',
+  # Obvious stub tokens.
+  '''mock_meta_token''',
+  '''test@example\.com''',
+]

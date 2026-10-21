@@ -1,15 +1,16 @@
 name: Deploy to Production
 
 # The single authoritative production pipeline. Runs on every push to `main`
-# (and on demand): checks → build/push images → deploy → sync env vars.
+# (and on demand): checks -> build/push images -> deploy -> sync env vars.
 # CI.yml intentionally does NOT deploy, so `main` is only built once here.
 on:
   push:
     branches: [main]
   workflow_dispatch: {}
 
+# Top-level: read-only. The deploy job elevates to id-token: write so only the
+# step that authenticates to Azure can mint an OIDC token.
 permissions:
-  id-token: write
   contents: read
 
 concurrency:
@@ -17,10 +18,13 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RESOURCE_GROUP: kiki-agent-rg
-  ACR_NAME: kikiagentacrchrdtvff
-  CONTAINER_APP: kiki-app
-  IMAGE: kiki-app
+  # Azure identifiers come from repository/environment variables so no
+  # subscription-specific names are hardcoded in the workflow. The inline
+  # fallbacks preserve the previous behaviour if the vars are not yet set.
+  RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP || 'kiki-agent-rg' }}
+  ACR_NAME: ${{ vars.ACR_NAME || 'kikiagentacrchrdtvff' }}
+  CONTAINER_APP: ${{ vars.CONTAINER_APP || 'kiki-app' }}
+  IMAGE: ${{ vars.IMAGE || 'kiki-app' }}
   PUPPETEER_SKIP_DOWNLOAD: "true"
 
 jobs:
@@ -28,9 +32,9 @@ jobs:
     name: Type-check, lint & test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: "24"
           cache: npm
@@ -45,12 +49,15 @@ jobs:
     needs: check
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Azure Login
-        uses: azure/login@v2
+        uses: azure/login@d19a4f1b3c068b799dff7574ac265b0144f415fe # v2.2.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}

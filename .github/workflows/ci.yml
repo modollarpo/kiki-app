@@ -8,6 +8,11 @@ on:
   push:
     branches-ignore: [main]
 
+# Least privilege: CI only ever reads the repository. Actions are pinned to
+# full commit SHAs so a compromised/moved tag cannot inject code.
+permissions:
+  contents: read
+
 env:
   PUPPETEER_SKIP_DOWNLOAD: "true"
 
@@ -16,9 +21,9 @@ jobs:
     name: Type-check, lint & test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: '24'
           cache: 'npm'
@@ -27,3 +32,33 @@ jobs:
       - run: npm run type-check
       - run: npm run lint
       - run: npm run test
+
+  audit:
+    name: Dependency audit (non-blocking)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - run: npm ci --engine-strict=false
+      # Surfaces high/critical advisories without blocking merges while the
+      # remaining dev-only advisories are triaged.
+      - run: npm audit --audit-level=high
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
