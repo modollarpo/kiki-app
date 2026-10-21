@@ -302,6 +302,11 @@ export function adCorsHeaders(origin: string): Record<string, string> {
 export const AD_CORS_METHODS = "GET, POST, OPTIONS";
 export const AD_CORS_ALLOW_HEADERS = "Content-Type, Authorization, X-Request-ID";
 
+// Click-through URL validation lives in a dependency-free module so the DB
+// write path can reuse it without importing the ad server (and creating a
+// cycle). Re-exported here for callers that already import from ad-server.
+export { sanitizeClickUrl, defaultClickUrl, MAX_CLICK_URL_LENGTH } from "./click-url";
+
 // ── URL building ───────────────────────────────────────────
 const TRACKED_EVENTS: AdEventType[] = [
   "start",

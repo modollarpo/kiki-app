@@ -3,11 +3,13 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { recordAdEvent, resolveClickTarget, verifyAdToken, adCorsHeaders } from "@/lib/ad-server";
-
-function defaultClickUrl(): string {
-  return (process.env.AD_DEFAULT_CLICK_URL || "https://keekii.net").trim();
-}
+import {
+  recordAdEvent,
+  resolveClickTarget,
+  verifyAdToken,
+  adCorsHeaders,
+} from "@/lib/ad-server";
+import { sanitizeClickUrl, defaultClickUrl } from "@/lib/click-url";
 
 function redirectTo(req: NextRequest, destination: string): NextResponse {
   const origin = req.headers.get("origin") || "";
@@ -34,7 +36,10 @@ export async function GET(req: NextRequest) {
     const db = await getDb();
     await recordAdEvent(db, { tenantId: payload.t, impressionId, eventType: "click" });
     const target = await resolveClickTarget(db, impressionId);
-    return redirectTo(req, target.url || defaultClickUrl());
+    // The stored creative click_url is tenant-supplied and untrusted: a
+    // javascript:/data: value or an arbitrary host must never reach Location.
+    const safe = sanitizeClickUrl(target.url);
+    return redirectTo(req, safe || defaultClickUrl());
   } catch (e) {
     logger.warn("[AdServer] click failed:", { error: (e as Error).message });
     return redirectTo(req, defaultClickUrl());
