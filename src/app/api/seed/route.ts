@@ -84,7 +84,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const walletExists = await (await db.prepare("SELECT id FROM wallets WHERE tenant_id = ?")).get(tid);
     // Demo seeding must never fabricate money. Only create a wallet when the
     // policy allows it (dev/test), and then with a ZERO balance. Existing
     // wallet rows are never touched. In production no wallet is created.
