@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
       try {
         const nlRes = await fetch(`${NL_SERVICE_URL}/api/query`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", ...serviceAuthHeaders(user.tenantId) },
+          headers: { "Content-Type": "application/json", ...(await serviceAuthHeaders(user.tenantId)) },
           body: JSON.stringify({ tenantId: user.tenantId, question: lastUserMsg.content }),
           signal: AbortSignal.timeout(5000),
         });

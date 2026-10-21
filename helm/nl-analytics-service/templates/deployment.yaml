@@ -33,6 +33,11 @@ spec:
                   key: pg-connection
             - name: KAFKA_BROKERS
               value: "{{ .Values.env.KAFKA_BROKERS }}"
+            - name: SERVICE_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: kiki-secrets
+                  key: service-jwt-secret
           resources:
             requests:
               cpu: {{ .Values.resources.requests.cpu }}

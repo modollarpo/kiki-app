@@ -97,6 +97,14 @@ NEXT_PUBLIC_WS_URL=wss://ws.kiki.ai
 # Database
 PG_CONNECTION_STRING=postgresql://user:pass@host:5432/kiki_prod
 
+# Auth / internal service tokens
+# JWT_SECRET signs user session tokens (required in production).
+JWT_SECRET=
+# SERVICE_JWT_SECRET signs app→microservice tokens. Required (>=32 chars) in
+# production and MUST be distinct from JWT_SECRET. Dev/test falls back to
+# JWT_SECRET when this is unset.
+SERVICE_JWT_SECRET=
+
 # Cache
 REDIS_URL=rediss://host:6380
 

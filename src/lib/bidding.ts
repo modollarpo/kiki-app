@@ -245,7 +245,7 @@ const PROFIT_MARGIN_URL = process.env.PROFIT_MARGIN_URL || "http://localhost:302
 async function fetchPortfolioMargin(tenantId: string): Promise<number> {
   try {
     const res = await fetch(`${PROFIT_MARGIN_URL}/api/margins/portfolio?tenantId=${tenantId}`, {
-      headers: serviceAuthHeaders(tenantId),
+      headers: await serviceAuthHeaders(tenantId),
       signal: AbortSignal.timeout(3000),
     });
     if (!res.ok) return 50;

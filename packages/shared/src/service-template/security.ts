@@ -7,7 +7,7 @@
 // Kept free of Express imports so it can be unit-tested directly.
 // ============================================================
 
-import crypto from "crypto";
+import { SignJWT, jwtVerify } from "jose";
 
 export interface ServiceTokenPayload {
   sub?: string;
@@ -35,54 +35,47 @@ export interface AuthResponseLike {
 type NextFunctionLike = (err?: unknown) => void;
 
 // ── JWT (HS256) ────────────────────────────────────────────
+// Signing and verification both go through `jose`, so the header/claims
+// encoding is standard and cannot drift from the app's minter.
 
-function b64urlJson(value: unknown): string {
-  return Buffer.from(JSON.stringify(value)).toString("base64url");
-}
+export const SERVICE_TOKEN_ISSUER = "kiki-app";
 
-export function signServiceToken(
+export async function signServiceToken(
   payload: ServiceTokenPayload,
   secret: string,
   ttlSeconds = 60
-): string {
+): Promise<string> {
+  const key = new TextEncoder().encode(secret);
   const now = Math.floor(Date.now() / 1000);
-  const header = b64urlJson({ alg: "HS256", typ: "JWT" });
-  const body = b64urlJson({ iat: now, exp: now + ttlSeconds, ...payload });
-  const sig = crypto.createHmac("sha256", secret).update(`${header}.${body}`).digest("base64url");
-  return `${header}.${body}.${sig}`;
+  return await new SignJWT(payload as Record<string, unknown>)
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setIssuer(payload.iss ?? SERVICE_TOKEN_ISSUER)
+    .setIssuedAt(now)
+    .setExpirationTime(now + ttlSeconds)
+    .sign(key);
 }
 
-export function verifyServiceToken(token: string, secret: string): ServiceTokenPayload | null {
+export async function verifyServiceToken(
+  token: string,
+  secret: string,
+  options: { issuer?: string } = {}
+): Promise<ServiceTokenPayload | null> {
   if (!token || !secret) return null;
-  const parts = token.split(".");
-  if (parts.length !== 3) return null;
-  const [encodedHeader, encodedPayload, signature] = parts;
-
-  let header: { alg?: string };
   try {
-    header = JSON.parse(Buffer.from(encodedHeader, "base64url").toString("utf8")) as { alg?: string };
+    const key = new TextEncoder().encode(secret);
+    // Pin the algorithm so a `none`-alg or asymmetric token cannot pass, and
+    // verify issuer + expiry (jose enforces `exp` automatically).
+    const { payload } = await jwtVerify(token, key, {
+      algorithms: ["HS256"],
+      issuer: options.issuer ?? SERVICE_TOKEN_ISSUER,
+    });
+    if (typeof payload.tenantId !== "string" || payload.tenantId.length === 0) {
+      return null;
+    }
+    return payload as ServiceTokenPayload;
   } catch {
     return null;
   }
-  if (header.alg !== "HS256") return null;
-
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(`${encodedHeader}.${encodedPayload}`)
-    .digest();
-  const provided = Buffer.from(signature, "base64url");
-  if (provided.length !== expected.length || !crypto.timingSafeEqual(provided, expected)) {
-    return null;
-  }
-
-  let payload: ServiceTokenPayload;
-  try {
-    payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as ServiceTokenPayload;
-  } catch {
-    return null;
-  }
-  if (typeof payload.exp === "number" && payload.exp * 1000 <= Date.now()) return null;
-  return payload;
 }
 
 // ── Config helpers ─────────────────────────────────────────
@@ -90,8 +83,17 @@ export function verifyServiceToken(token: string, secret: string): ServiceTokenP
 export function serviceJwtSecret(
   env: Record<string, string | undefined> = process.env
 ): string | undefined {
-  const secret = env.SERVICE_JWT_SECRET || env.JWT_SECRET;
-  return secret && secret.length > 0 ? secret : undefined;
+  const dedicated = env.SERVICE_JWT_SECRET;
+  if (dedicated && dedicated.length >= 32) return dedicated;
+
+  // Development/test only: fall back to the session secret for convenience.
+  // In production a missing/weak SERVICE_JWT_SECRET is a hard error — the
+  // session secret must never double as the service secret.
+  if (env.NODE_ENV !== "production") {
+    const fallback = env.JWT_SECRET;
+    if (fallback && fallback.length >= 32) return fallback;
+  }
+  return undefined;
 }
 
 export function serviceDatabaseUrl(
@@ -133,11 +135,11 @@ export function createServiceAuthMiddleware(options: ServiceAuthOptions = {}) {
   const secret = serviceJwtSecret(env);
   const isProduction = env.NODE_ENV === "production";
 
-  return function serviceAuth(
+  return async function serviceAuth(
     req: AuthRequestLike,
     res: AuthResponseLike,
     next: NextFunctionLike
-  ): void {
+  ): Promise<void> {
     const path = req.path ?? req.url ?? req.originalUrl ?? "";
     if (path === healthPath) {
       next();
@@ -156,7 +158,7 @@ export function createServiceAuthMiddleware(options: ServiceAuthOptions = {}) {
     const headerValue = req.headers["authorization"];
     const header = Array.isArray(headerValue) ? headerValue[0] : headerValue;
     const token = header && header.startsWith("Bearer ") ? header.slice(7) : "";
-    const payload = verifyServiceToken(token, secret);
+    const payload = await verifyServiceToken(token, secret);
     if (!payload || typeof payload.tenantId !== "string" || payload.tenantId.length === 0) {
       res.status(401).json({ error: "Unauthorized" });
       return;

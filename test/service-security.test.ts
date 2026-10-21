@@ -11,47 +11,67 @@ import {
   type AuthRequestLike,
 } from "../packages/shared/src/service-template/security";
 
+const SECRET = "test-service-secret-at-least-32-characters!!";
+
 // ── Token round-trip ───────────────────────────────────────
 describe("service JWT", () => {
-  const secret = "test-service-secret";
-
-  it("round-trips a signed token and preserves claims", () => {
-    const token = signServiceToken({ tenantId: "t1", sub: "u1" }, secret, 60);
-    const payload = verifyServiceToken(token, secret);
+  it("round-trips a signed token and preserves claims", async () => {
+    const token = await signServiceToken({ tenantId: "t1", sub: "u1" }, SECRET, 60);
+    const payload = await verifyServiceToken(token, SECRET);
     expect(payload?.tenantId).toBe("t1");
     expect(payload?.sub).toBe("u1");
   });
 
-  it("rejects a token signed with a different secret", () => {
-    const token = signServiceToken({ tenantId: "t1" }, secret, 60);
-    expect(verifyServiceToken(token, "other-secret")).toBeNull();
+  it("rejects a token signed with a different secret", async () => {
+    const token = await signServiceToken({ tenantId: "t1" }, SECRET, 60);
+    expect(await verifyServiceToken(token, "other-secret-at-least-32-characters-long")).toBeNull();
   });
 
-  it("rejects a tampered payload", () => {
-    const token = signServiceToken({ tenantId: "t1" }, secret, 60);
+  it("rejects a tampered payload", async () => {
+    const token = await signServiceToken({ tenantId: "t1" }, SECRET, 60);
     const [h, , s] = token.split(".");
     const forged = Buffer.from(JSON.stringify({ tenantId: "t2", exp: 9999999999 })).toString("base64url");
-    expect(verifyServiceToken(`${h}.${forged}.${s}`, secret)).toBeNull();
+    expect(await verifyServiceToken(`${h}.${forged}.${s}`, SECRET)).toBeNull();
   });
 
-  it("rejects an expired token", () => {
-    const token = signServiceToken({ tenantId: "t1" }, secret, -10);
-    expect(verifyServiceToken(token, secret)).toBeNull();
+  it("rejects an expired token", async () => {
+    const token = await signServiceToken({ tenantId: "t1" }, SECRET, -10);
+    expect(await verifyServiceToken(token, SECRET)).toBeNull();
   });
 
-  it("rejects an unsigned (alg=none) token", () => {
+  it("rejects an unsigned (alg=none) token", async () => {
     const header = Buffer.from(JSON.stringify({ alg: "none", typ: "JWT" })).toString("base64url");
     const body = Buffer.from(JSON.stringify({ tenantId: "t1" })).toString("base64url");
-    expect(verifyServiceToken(`${header}.${body}.`, secret)).toBeNull();
+    expect(await verifyServiceToken(`${header}.${body}.`, SECRET)).toBeNull();
+  });
+
+  it("rejects a token with the wrong issuer", async () => {
+    const token = await signServiceToken({ tenantId: "t1", iss: "someone-else" }, SECRET, 60);
+    expect(await verifyServiceToken(token, SECRET)).toBeNull();
+  });
+
+  it("rejects a token missing the tenantId claim", async () => {
+    const token = await signServiceToken({ sub: "u1" }, SECRET, 60);
+    expect(await verifyServiceToken(token, SECRET)).toBeNull();
   });
 });
 
 // ── Config helpers ─────────────────────────────────────────
 describe("config helpers", () => {
-  it("prefers SERVICE_JWT_SECRET over JWT_SECRET", () => {
-    expect(serviceJwtSecret({ SERVICE_JWT_SECRET: "a", JWT_SECRET: "b" })).toBe("a");
-    expect(serviceJwtSecret({ JWT_SECRET: "b" })).toBe("b");
-    expect(serviceJwtSecret({})).toBeUndefined();
+  it("requires a dedicated SERVICE_JWT_SECRET in production", () => {
+    const strong = "a".repeat(32);
+    expect(serviceJwtSecret({ NODE_ENV: "production", SERVICE_JWT_SECRET: strong })).toBe(strong);
+    // No JWT_SECRET fallback in production.
+    expect(serviceJwtSecret({ NODE_ENV: "production", JWT_SECRET: strong })).toBeUndefined();
+    // Too-short secrets are rejected.
+    expect(serviceJwtSecret({ NODE_ENV: "production", SERVICE_JWT_SECRET: "short" })).toBeUndefined();
+  });
+
+  it("falls back to JWT_SECRET outside production", () => {
+    const strong = "b".repeat(32);
+    expect(serviceJwtSecret({ NODE_ENV: "development", SERVICE_JWT_SECRET: strong, JWT_SECRET: "c".repeat(32) })).toBe(strong);
+    expect(serviceJwtSecret({ NODE_ENV: "development", JWT_SECRET: strong })).toBe(strong);
+    expect(serviceJwtSecret({ NODE_ENV: "development" })).toBeUndefined();
   });
 
   it("requires DATABASE_URL and never falls back to hardcoded credentials", () => {
@@ -86,52 +106,54 @@ describe("service auth middleware", () => {
     return res;
   }
 
-  const secret = "mw-secret";
-
-  it("always allows the health probe", () => {
+  it("always allows the health probe", async () => {
     const mw = createServiceAuthMiddleware({ env: { NODE_ENV: "production" } });
     const res = makeRes();
     let called = false;
-    mw({ path: "/health", headers: {} }, res, () => { called = true; });
+    await mw({ path: "/health", headers: {} }, res, () => { called = true; });
     expect(called).toBe(true);
   });
 
-  it("returns 503 in production when no secret is configured", () => {
+  it("returns 503 in production when no secret is configured", async () => {
     const mw = createServiceAuthMiddleware({ env: { NODE_ENV: "production" } });
     const res = makeRes();
-    mw({ path: "/api/x", headers: {} }, res, () => {});
+    await mw({ path: "/api/x", headers: {} }, res, () => {});
     expect(res.statusCode).toBe(503);
   });
 
-  it("allows unauthenticated access in non-production when unconfigured", () => {
+  it("allows unauthenticated access in non-production when unconfigured", async () => {
     const mw = createServiceAuthMiddleware({ env: { NODE_ENV: "development" } });
     const res = makeRes();
     let called = false;
-    mw({ path: "/api/x", headers: {} }, res, () => { called = true; });
+    await mw({ path: "/api/x", headers: {} }, res, () => { called = true; });
     expect(called).toBe(true);
   });
 
-  it("rejects missing or invalid tokens once a secret is set", () => {
-    const mw = createServiceAuthMiddleware({ env: { NODE_ENV: "production", JWT_SECRET: secret } });
+  it("rejects missing or invalid tokens once a secret is set", async () => {
+    const mw = createServiceAuthMiddleware({
+      env: { NODE_ENV: "production", SERVICE_JWT_SECRET: SECRET },
+    });
     const missing = makeRes();
-    mw({ path: "/api/x", headers: {} }, missing, () => {});
+    await mw({ path: "/api/x", headers: {} }, missing, () => {});
     expect(missing.statusCode).toBe(401);
 
     const bad = makeRes();
-    mw({ path: "/api/x", headers: { authorization: "Bearer not-a-token" } }, bad, () => {});
+    await mw({ path: "/api/x", headers: { authorization: "Bearer not-a-token" } }, bad, () => {});
     expect(bad.statusCode).toBe(401);
   });
 
-  it("accepts a valid token and attaches claims to req.auth", () => {
-    const mw = createServiceAuthMiddleware({ env: { NODE_ENV: "production", JWT_SECRET: secret } });
-    const token = signServiceToken({ tenantId: "tenant-42" }, secret, 60);
+  it("accepts a valid token and attaches claims to req.auth", async () => {
+    const mw = createServiceAuthMiddleware({
+      env: { NODE_ENV: "production", SERVICE_JWT_SECRET: SECRET },
+    });
+    const token = await signServiceToken({ tenantId: "tenant-42" }, SECRET, 60);
     const res = makeRes();
     const req: AuthRequestLike = {
       path: "/api/x",
       headers: { authorization: `Bearer ${token}` },
     };
     let called = false;
-    mw(req, res, () => { called = true; });
+    await mw(req, res, () => { called = true; });
     expect(called).toBe(true);
     expect(req.auth?.tenantId).toBe("tenant-42");
   });
