@@ -151,6 +151,11 @@ describe("ad-server — CORS", () => {
     expect(denied["Access-Control-Allow-Origin"]).toBeUndefined();
     expect(denied["Vary"]).toBe("Origin");
   });
+
+  it("never grants credentialed cross-origin access", () => {
+    expect(adCorsHeaders("https://play.keekii.net")["Access-Control-Allow-Credentials"]).toBeUndefined();
+    expect(adCorsHeaders("https://evil.com")["Access-Control-Allow-Credentials"]).toBeUndefined();
+  });
 });
 
 describe("ad-server — tracking URLs", () => {
