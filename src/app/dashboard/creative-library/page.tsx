@@ -75,7 +75,7 @@ export default function CreativeLibraryPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Creative Library</h1>
-          <p className="font-mono text-[11px] text-t3">Manage and analyze your creative assets across all platforms</p>
+          <p className="font-mono text-caption text-t3">Manage and analyze your creative assets across all platforms</p>
         </div>
 
         {loading ? (
@@ -87,7 +87,7 @@ export default function CreativeLibraryPage() {
             <div className="flex flex-wrap gap-1.5 mb-4">
               {typeFilters.map((f) => (
                 <button key={f} onClick={() => setFilter(f)}
-                  className="font-mono text-[10px] font-semibold px-4 py-1.5 rounded-sm cursor-pointer"
+                  className="font-mono text-caption font-semibold px-4 py-1.5 rounded-sm cursor-pointer"
                   style={{ border: `1px solid ${filter === f ? K.blue + "40" : K.g700}`, background: filter === f ? K.blue + "20" : K.g900, color: filter === f ? K.blue : K.t3 }}>
                   {f}
                 </button>
@@ -109,24 +109,24 @@ export default function CreativeLibraryPage() {
                 {filtered.map(asset => (
                   <Card key={asset.id} accent={platformColors[asset.platform] || K.t3}>
                     <div className="h-[100px] rounded-sm flex items-center justify-center mb-3" style={{ background: (platformColors[asset.platform] || K.t3) + "15" }}>
-                      <span className="font-mono text-[11px]" style={{ color: platformColors[asset.platform] || K.t3 }}>{asset.name}</span>
+                      <span className="font-mono text-caption" style={{ color: platformColors[asset.platform] || K.t3 }}>{asset.name}</span>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                      <span className="font-mono text-[11px] font-semibold text-t1 truncate max-w-full">{asset.name}</span>
+                      <span className="font-mono text-caption font-semibold text-t1 truncate max-w-full">{asset.name}</span>
                       <Badge color={K.t3}>{asset.type}</Badge>
                     </div>
                     <Badge color={platformColors[asset.platform] || K.t3}>{asset.platform}</Badge>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
                       <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
-                        <div className="font-mono text-[10px] text-t4">CTR</div>
+                        <div className="font-mono text-caption text-t4">CTR</div>
                         <div className="font-mono text-xs font-bold text-kmint">{asset.ctr === "—" ? "—" : `${asset.ctr}%`}</div>
                       </div>
                       <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
-                        <div className="font-mono text-[10px] text-t4">Conv.</div>
+                        <div className="font-mono text-caption text-t4">Conv.</div>
                         <div className="font-mono text-xs font-bold text-kblue">{asset.conversions.toLocaleString()}</div>
                       </div>
                       <div className="py-2 px-2.5 rounded-sm text-center bg-g900">
-                        <div className="font-mono text-[10px] text-t4">ROAS</div>
+                        <div className="font-mono text-caption text-t4">ROAS</div>
                         <div className="font-mono text-xs font-bold text-kgold">{asset.roas}x</div>
                       </div>
                     </div>

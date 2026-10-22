@@ -36,7 +36,7 @@ export default function OaaSAgreementPage() {
         <div className="mb-9">
           <Badge color={K.oaas} className="mb-[14px]">OAAS MASTER SERVICES AGREEMENT</Badge>
           <h1 className="font-mono font-bold text-[clamp(22px,4vw,34px)] text-t1 tracking-[-0.025em] mb-2">Optimization as a Service</h1>
-          <p className="font-sans text-[15px] text-t3 leading-[1.7] max-w-[600px]">
+          <p className="font-sans text-lead text-t3 leading-[1.7] max-w-[600px]">
             KIKI's AI agents run your campaigns autonomously — with a dedicated CSM and contractual ROAS uplift targets. This is the agreement that governs that engagement.
           </p>
         </div>
@@ -47,10 +47,10 @@ export default function OaaSAgreementPage() {
             <div key={t.name} onClick={() => setSelected(t.name)}
               style={{ padding:20, background:selected===t.name?`${t.color}10`:K.g900, border:`${selected===t.name?2:1}px solid ${selected===t.name?t.color:K.g800}`, borderRadius:2, cursor:"pointer", transition:"all 0.15s" }}>
               <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background:`linear-gradient(90deg,transparent,${t.color}60,transparent)` }}/>
-              <p className="font-mono font-bold text-[14px] text-t1 mb-1">{t.name}</p>
+              <p className="font-mono font-bold text-body text-t1 mb-1">{t.name}</p>
               <p className="font-mono font-bold mb-1.5" style={{ fontSize:t.price?22:18, color:t.color }}>{t.price?`$${t.price.toLocaleString()}/mo`:"Custom"}</p>
-              <p className="font-mono text-[10px] text-kmint mb-1.5">Target: {t.upliftTarget} ROAS uplift</p>
-              <p className="font-mono text-[9px] text-t3">{t.budgetRange}</p>
+              <p className="font-mono text-caption text-kmint mb-1.5">Target: {t.upliftTarget} ROAS uplift</p>
+              <p className="font-mono text-caption text-t3">{t.budgetRange}</p>
             </div>
           ))}
         </div>
@@ -59,7 +59,7 @@ export default function OaaSAgreementPage() {
         <div className="flex gap-0 mb-7">
           {(["scope","sign","done"] as const).map((s,i) => (
             <div key={s} className="flex items-center">
-              <div className="py-2 px-5 font-mono font-bold text-[10px] tracking-[0.08em] cursor-pointer" style={{ background:step===s?K.blueD:"transparent", border:`1px solid ${step===s?K.blue:K.g700}`, color:step===s?K.blue4:K.t3, borderRadius:i===0?"2px 0 0 2px":i===2?"0 2px 2px 0":"0", borderLeft:i>0?"none":undefined }} onClick={() => step!=="done"&&setStep(s)}>
+              <div className="py-2 px-5 font-mono font-bold text-caption tracking-[0.08em] cursor-pointer" style={{ background:step===s?K.blueD:"transparent", border:`1px solid ${step===s?K.blue:K.g700}`, color:step===s?K.blue4:K.t3, borderRadius:i===0?"2px 0 0 2px":i===2?"0 2px 2px 0":"0", borderLeft:i>0?"none":undefined }} onClick={() => step!=="done"&&setStep(s)}>
                 {i+1}. {s.charAt(0).toUpperCase()+s.slice(1)}
               </div>
             </div>
@@ -68,25 +68,25 @@ export default function OaaSAgreementPage() {
 
         {step === "scope" && (
           <div>
-            <h2 className="font-mono font-bold text-[16px] text-t1 mb-5">Scope of Services — {selected}</h2>
+            <h2 className="font-mono font-bold text-lead text-t1 mb-5">Scope of Services — {selected}</h2>
             <div className="border border-g800 rounded-sm overflow-hidden mb-6">
               <div className="overflow-x-auto">
                 <div className="min-w-[400px]">
                   <div className="grid grid-cols-[200px_1fr] py-2 px-4 bg-g950 border-b border-g800">
-                    {["SERVICE AREA","DELIVERABLE"].map(h => <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>)}
+                    {["SERVICE AREA","DELIVERABLE"].map(h => <span key={h} className="font-mono text-caption tracking-widest text-t4">{h}</span>)}
                   </div>
                   {SCOPE.map((r,i) => (
                     <div key={i} className="grid grid-cols-[200px_1fr] py-[13px] px-4 bg-g900 items-start gap-4" style={{ borderBottom:i<SCOPE.length-1?`1px solid ${K.g900}`:"none" }}>
-                      <span className="font-mono font-bold text-[11px]" style={{ color:tier.color }}>{r.area}</span>
-                      <span className="font-sans text-[13px] text-t2 leading-[1.6]">{r.deliverable}</span>
+                      <span className="font-mono font-bold text-caption" style={{ color:tier.color }}>{r.area}</span>
+                      <span className="font-sans text-small text-t2 leading-[1.6]">{r.deliverable}</span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
             <div className="p-4 rounded-sm mb-5" style={{ background:K.oaasT, border:`1px solid ${K.oaas}25` }}>
-              <p className="font-mono font-bold text-[12px] mb-1.5" style={{ color:K.oaas }}>⬡ Performance Guarantee</p>
-              <p className="font-sans text-[13px] text-t2 leading-[1.6]">KIKI guarantees a minimum {tier.upliftTarget} ROAS improvement within 90 days of full onboarding, or we provide a credit equal to 2 months of service fees. Applies to accounts with ≥90 days of historical data.</p>
+              <p className="font-mono font-bold text-caption mb-1.5" style={{ color:K.oaas }}>⬡ Performance Guarantee</p>
+              <p className="font-sans text-small text-t2 leading-[1.6]">KIKI guarantees a minimum {tier.upliftTarget} ROAS improvement within 90 days of full onboarding, or we provide a credit equal to 2 months of service fees. Applies to accounts with ≥90 days of historical data.</p>
             </div>
             <Button size="lg" onClick={() => setStep("sign")}>Continue to Sign →</Button>
           </div>
@@ -94,20 +94,20 @@ export default function OaaSAgreementPage() {
 
         {step === "sign" && (
           <div>
-            <h2 className="font-mono font-bold text-[16px] text-t1 mb-5">Sign OaaS Agreement</h2>
+            <h2 className="font-mono font-bold text-lead text-t1 mb-5">Sign OaaS Agreement</h2>
             <div className="p-4 rounded-sm mb-5" style={{ background:K.goldT, border:`1px solid ${K.gold}25` }}>
-              <p className="font-mono font-bold text-[12px] text-kgold mb-1">You are signing: {selected}</p>
-              <p className="font-sans text-[13px] text-t2">Monthly fee: {tier.price?`$${tier.price.toLocaleString()}`:"Custom"} · Term: 12 months · Auto-renews with 60-day notice period</p>
+              <p className="font-mono font-bold text-caption text-kgold mb-1">You are signing: {selected}</p>
+              <p className="font-sans text-small text-t2">Monthly fee: {tier.price?`$${tier.price.toLocaleString()}`:"Custom"} · Term: 12 months · Auto-renews with 60-day notice period</p>
             </div>
             <div className="mb-3.5">
-              <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">AUTHORISED SIGNATORY NAME</p>
-              <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full legal name" style={{ width:"100%", maxWidth:400, background:K.g800, border:`1px solid ${K.g700}`, borderRadius:2, padding:"11px 14px", fontFamily:"Inter,sans-serif", fontSize:14, color:K.t1, outline:"none" }}/>
+              <p className="font-mono text-caption tracking-[0.08em] text-t3 mb-1.5">AUTHORISED SIGNATORY NAME</p>
+              <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full legal name" style={{ width:"100%", maxWidth:400, background:K.g800, border:`1px solid ${K.g700}`, borderRadius:2, padding:"11px 14px", fontFamily:"Inter,sans-serif", fontSize: "var(--fs-body)", color:K.t1, outline:"none" }}/>
             </div>
             <div className="mb-5">
-              <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">TITLE</p>
-              <input value={role} onChange={e=>setRole(e.target.value)} placeholder="e.g. VP Marketing" style={{ width:"100%", maxWidth:400, background:K.g800, border:`1px solid ${K.g700}`, borderRadius:2, padding:"11px 14px", fontFamily:"Inter,sans-serif", fontSize:14, color:K.t1, outline:"none" }}/>
+              <p className="font-mono text-caption tracking-[0.08em] text-t3 mb-1.5">TITLE</p>
+              <input value={role} onChange={e=>setRole(e.target.value)} placeholder="e.g. VP Marketing" style={{ width:"100%", maxWidth:400, background:K.g800, border:`1px solid ${K.g700}`, borderRadius:2, padding:"11px 14px", fontFamily:"Inter,sans-serif", fontSize: "var(--fs-body)", color:K.t1, outline:"none" }}/>
             </div>
-            {name && <div className="px-4 py-3 bg-g850 rounded-sm mb-5 font-[Georgia,serif] text-[20px] text-t2" style={{ borderLeft:`3px solid ${K.oaas}` }}>{name}</div>}
+            {name && <div className="px-4 py-3 bg-g850 rounded-sm mb-5 font-[Georgia,serif] text-h3 text-t2" style={{ borderLeft:`3px solid ${K.oaas}` }}>{name}</div>}
             <div className="flex gap-2.5">
               <Button variant="ghost" size="md" onClick={() => setStep("scope")}>← Back</Button>
               <Button variant="violet" size="lg" disabled={!name.trim()||!role.trim()} onClick={() => setStep("done")}>✓ Execute Agreement</Button>
@@ -117,9 +117,9 @@ export default function OaaSAgreementPage() {
 
         {step === "done" && (
           <div className="text-center py-10">
-            <div className="text-[48px] mb-4">🤝</div>
-            <h2 className="font-mono font-bold text-[24px] text-kmint mb-3">Agreement Executed!</h2>
-            <p className="font-sans text-[15px] text-t3 leading-[1.7] max-w-[480px] mx-auto mb-6">
+            <div className="text-display mb-4">🤝</div>
+            <h2 className="font-mono font-bold text-h2 text-kmint mb-3">Agreement Executed!</h2>
+            <p className="font-sans text-lead text-t3 leading-[1.7] max-w-[480px] mx-auto mb-6">
               Your OaaS agreement has been signed and recorded. Your dedicated CSM will reach out within 4 hours to begin onboarding. Welcome to KIKI OaaS.
             </p>
             <div className="flex gap-2.5 justify-center flex-wrap">

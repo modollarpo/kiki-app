@@ -200,7 +200,7 @@ function CommandPalette({
             borderBottom: `1px solid ${K.g800}`,
           }}
         >
-          <span style={{ color: K.t3, fontFamily: K.mono, fontSize: 14, flexShrink: 0 }}>⌕</span>
+          <span style={{ color: K.t3, fontFamily: K.mono, fontSize: "var(--fs-body)", flexShrink: 0 }}>⌕</span>
           <input
             ref={inputRef}
             value={q}
@@ -212,7 +212,7 @@ function CommandPalette({
               background: "none",
               border: "none",
               fontFamily: K.mono,
-              fontSize: 13,
+              fontSize: "var(--fs-small)",
               color: K.t1,
               outline: "none",
             }}
@@ -221,7 +221,7 @@ function CommandPalette({
             onClick={onClose}
             style={{
               fontFamily: K.mono,
-              fontSize: 10,
+              fontSize: "var(--fs-micro)",
               color: K.t4,
               background: K.g850,
               border: `1px solid ${K.g700}`,
@@ -240,7 +240,7 @@ function CommandPalette({
                 style={{
                   padding: "6px 16px",
                   fontFamily: K.mono,
-                  fontSize: 10,
+                  fontSize: "var(--fs-micro)",
                   letterSpacing: "0.14em",
                   color: K.t3,
                 }}
@@ -275,7 +275,7 @@ function CommandPalette({
                     <span
                       style={{
                         fontFamily: K.mono,
-                        fontSize: 14,
+                        fontSize: "var(--fs-body)",
                         color: K.t3,
                         width: 20,
                         textAlign: "center",
@@ -287,7 +287,7 @@ function CommandPalette({
                     <span
                       style={{
                         fontFamily: K.mono,
-                        fontSize: 12,
+                        fontSize: "var(--fs-caption)",
                         fontWeight: 600,
                         color: K.t1,
                         flex: 1,
@@ -295,7 +295,7 @@ function CommandPalette({
                     >
                       {item.label}
                     </span>
-                    <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t3 }}>
+                    <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3 }}>
                       {group}
                     </span>
                   </button>
@@ -308,7 +308,7 @@ function CommandPalette({
                 padding: "20px 16px",
                 textAlign: "center",
                 fontFamily: K.mono,
-                fontSize: 12,
+                fontSize: "var(--fs-caption)",
                 color: K.t4,
               }}
             >
@@ -325,7 +325,7 @@ function CommandPalette({
           }}
         >
           {["↑↓ navigate", "↵ select", "esc close"].map((h) => (
-            <span key={h} style={{ fontFamily: K.mono, fontSize: 10, color: K.t3 }}>
+            <span key={h} style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3 }}>
               {h}
             </span>
           ))}
@@ -393,7 +393,7 @@ const SidebarContent = memo(function SidebarContent({
               style={{
                 fontFamily: K.mono,
                 fontWeight: 700,
-                fontSize: 15,
+                fontSize: "var(--fs-body)",
                 color: K.t1,
                 lineHeight: 1,
               }}
@@ -403,7 +403,7 @@ const SidebarContent = memo(function SidebarContent({
             <p
               style={{
                 fontFamily: K.mono,
-                fontSize: 10,
+                fontSize: "var(--fs-micro)",
                 letterSpacing: "0.12em",
                 color: K.t3,
                 marginTop: 2,
@@ -437,7 +437,7 @@ const SidebarContent = memo(function SidebarContent({
               display: "inline-block",
             }}
           />
-          <span style={{ fontFamily: K.mono, fontSize: 10, color: K.mint }}>
+          <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.mint }}>
             {running} agents running
           </span>
         </div>
@@ -455,7 +455,7 @@ const SidebarContent = memo(function SidebarContent({
               <p
                 style={{
                   fontFamily: K.mono,
-                  fontSize: 10,
+                  fontSize: "var(--fs-micro)",
                   letterSpacing: "0.18em",
                   color: K.t3,
                   padding: "0 8px",
@@ -506,19 +506,20 @@ const SidebarContent = memo(function SidebarContent({
                     if (!isActive) e.currentTarget.style.background = "transparent";
                   }}
                 >
-                  <span style={{ fontSize: 12, flexShrink: 0 }}>{item.icon}</span>
+                  <span style={{ fontSize: "var(--fs-caption)", flexShrink: 0 }}>{item.icon}</span>
                   {(!sidebarCollapsed || isMobile) && (
                     <>
                       <span
                         style={{
                           fontFamily: K.mono,
-                          fontSize: 11,
+                          fontSize: "var(--fs-micro)",
                           fontWeight: 600,
                           flex: 1,
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                         }}
+                        title={item.label}
                       >
                         {item.label}
                       </span>
@@ -572,7 +573,7 @@ const SidebarContent = memo(function SidebarContent({
                 justifyContent: "center",
                 fontFamily: K.mono,
                 fontWeight: 700,
-                fontSize: 10,
+                fontSize: "var(--fs-micro)",
                 color: K.blue4,
                 flexShrink: 0,
               }}
@@ -583,7 +584,7 @@ const SidebarContent = memo(function SidebarContent({
               <p
                 style={{
                   fontFamily: K.mono,
-                  fontSize: 11,
+                  fontSize: "var(--fs-micro)",
                   fontWeight: 600,
                   color: K.t1,
                   overflow: "hidden",
@@ -593,7 +594,7 @@ const SidebarContent = memo(function SidebarContent({
               >
                 {user?.name || "User"}
               </p>
-              <p style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>
+              <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3 }}>
                 {user?.plan || "free"} plan
               </p>
             </div>
@@ -614,7 +615,7 @@ const SidebarContent = memo(function SidebarContent({
               background: "none",
               color: K.danger,
               cursor: "pointer",
-              fontSize: 14,
+              fontSize: "var(--fs-body)",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.background = K.g850)}
             onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
@@ -639,7 +640,7 @@ const SidebarContent = memo(function SidebarContent({
             background: K.g700,
             border: `1px solid ${K.g600}`,
             color: K.t3,
-            fontSize: 10,
+            fontSize: "var(--fs-micro)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -820,7 +821,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <span
               style={{
                 fontFamily: K.mono,
-                fontSize: 10,
+                fontSize: "var(--fs-micro)",
                 letterSpacing: "0.1em",
                 color: K.t4,
                 whiteSpace: "nowrap",
@@ -828,6 +829,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 textOverflow: "ellipsis",
                 display: "block",
               }}
+              title={breadcrumb}
             >
               KIKI.AGENT / {breadcrumb}
             </span>
@@ -847,7 +849,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               borderRadius: 2,
               color: K.t3,
               fontFamily: K.mono,
-              fontSize: 11,
+              fontSize: "var(--fs-micro)",
               cursor: "pointer",
               minWidth: isMobile ? 120 : 200,
               maxWidth: 260,
@@ -870,7 +872,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <kbd
                 style={{
                   fontFamily: K.mono,
-                  fontSize: 10,
+                  fontSize: "var(--fs-micro)",
                   color: K.t3,
                   background: K.g900,
                   border: `1px solid ${K.g700}`,
@@ -905,7 +907,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <span
                 style={{
                   fontFamily: K.mono,
-                  fontSize: 11,
+                  fontSize: "var(--fs-micro)",
                   letterSpacing: "0.1em",
                   color: statusColor,
                   whiteSpace: "nowrap",
@@ -932,7 +934,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
-              fontSize: 14,
+              fontSize: "var(--fs-body)",
               position: "relative",
               flexShrink: 0,
             }}
@@ -949,7 +951,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   background: K.danger,
                   borderRadius: "50%",
                   fontFamily: K.mono,
-                  fontSize: 10,
+                  fontSize: "var(--fs-micro)",
                   fontWeight: 700,
                   color: "white",
                   display: "flex",

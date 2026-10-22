@@ -83,7 +83,7 @@ export default function AgencyPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Agency View</h1>
-          <p className="font-mono text-[11px] text-t3">Cross-platform campaign management · Real data from your connected platforms</p>
+          <p className="font-mono text-caption text-t3">Cross-platform campaign management · Real data from your connected platforms</p>
         </div>
 
         {loading ? (
@@ -94,7 +94,7 @@ export default function AgencyPage() {
           <Card>
             <div className="p-10 text-center">
               <p className="font-mono text-xs text-t4 mb-3">No platform data available yet.</p>
-              <p className="font-mono text-[11px] text-t3">Connect platforms and create campaigns to see agency data here.</p>
+              <p className="font-mono text-caption text-t3">Connect platforms and create campaigns to see agency data here.</p>
             </div>
           </Card>
         ) : (
@@ -112,23 +112,23 @@ export default function AgencyPage() {
                   className={selectedPlatform && selectedPlatform !== p.name ? "opacity-50" : ""}
                   style={{ cursor: "pointer" }}
                   onClick={() => setSelectedPlatform(selectedPlatform === p.name ? null : p.name)}>
-                  <p className="font-mono text-[10px] tracking-[0.1em] text-t4 mb-1.5">PLATFORM</p>
+                  <p className="font-mono text-micro tracking-[0.1em] text-t4 mb-1.5">PLATFORM</p>
                   <p className="font-mono text-sm font-bold capitalize mb-2" style={{ color: platformColors[p.name] || K.t1 }}>{p.name}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
-                      <p className="font-mono text-[10px] text-t4">Campaigns</p>
+                      <p className="font-mono text-caption text-t4">Campaigns</p>
                       <p className="font-mono text-xs font-bold text-t1">{p.campaignCount}</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-t4">Spend</p>
+                      <p className="font-mono text-caption text-t4">Spend</p>
                       <p className="font-mono text-xs font-bold text-t1">${fmt.compact(p.totalSpend)}</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-t4">ROAS</p>
+                      <p className="font-mono text-caption text-t4">ROAS</p>
                       <p className="font-mono text-xs font-bold" style={{ color: p.avgRoas >= 4 ? K.mint : p.avgRoas >= 2 ? K.gold : K.warn }}>{p.avgRoas.toFixed(1)}x</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-t4">Conv.</p>
+                      <p className="font-mono text-caption text-t4">Conv.</p>
                       <p className="font-mono text-xs font-bold text-t1">{p.totalConversions}</p>
                     </div>
                   </div>
@@ -139,11 +139,11 @@ export default function AgencyPage() {
             {selected && (
               <Card accent={platformColors[selected.name] || K.t3}>
                 <div className="px-5 py-3.5" style={{ borderBottom: `1px solid ${K.g800}` }}>
-                  <h2 className="font-mono font-bold text-[13px] text-t1 capitalize">{selected.name} Campaigns</h2>
+                  <h2 className="font-mono font-bold text-small text-t1 capitalize">{selected.name} Campaigns</h2>
                 </div>
                 {selected.campaigns.length === 0 ? (
                   <div className="p-6 text-center">
-                    <p className="font-mono text-[11px] text-t4">No campaigns on this platform yet.</p>
+                    <p className="font-mono text-caption text-t4">No campaigns on this platform yet.</p>
                   </div>
                 ) : (
                   <ScrollableTable>
@@ -151,12 +151,12 @@ export default function AgencyPage() {
                     <div key={c.id} className="grid grid-cols-[1fr_100px_100px_80px] gap-3 px-5 py-3 items-center min-w-[500px]"
                       style={{ borderBottom: i < selected.campaigns.length - 1 ? `1px solid ${K.g900}` : undefined }}>
                       <div>
-                        <p className="font-mono text-[11px] font-semibold text-t1">{c.name}</p>
+                        <p className="font-mono text-caption font-semibold text-t1">{c.name}</p>
                         <Badge color={c.status === "active" ? K.mint : K.t3} dot>{c.status}</Badge>
                       </div>
-                      <span className="font-mono text-[11px] text-t2">${fmt.compact(c.spend)}</span>
-                      <span className="font-mono text-[11px] font-bold" style={{ color: c.roas >= 4 ? K.mint : c.roas >= 2 ? K.gold : K.warn }}>{c.roas.toFixed(1)}x</span>
-                      <span className="font-mono text-[11px] text-t2">{c.conversions}</span>
+                      <span className="font-mono text-caption text-t2">${fmt.compact(c.spend)}</span>
+                      <span className="font-mono text-caption font-bold" style={{ color: c.roas >= 4 ? K.mint : c.roas >= 2 ? K.gold : K.warn }}>{c.roas.toFixed(1)}x</span>
+                      <span className="font-mono text-caption text-t2">{c.conversions}</span>
                     </div>
                   ))}
                   </ScrollableTable>

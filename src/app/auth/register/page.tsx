@@ -94,26 +94,26 @@ export default function RegisterPage() {
           }}
         />
         </div>
-        <p className="font-mono font-bold text-[18px] text-t1">
+        <p className="font-mono font-bold text-h4 text-t1">
           KIKI<span className="text-kblue">.</span>Agent
         </p>
-        <p className="font-mono text-[11px] tracking-[0.14em] text-t3 mt-1">
+        <p className="font-mono text-caption tracking-[0.14em] text-t3 mt-1">
           AUTONOMOUS LTV CAMPAIGN PLATFORM
         </p>
       </div>
 
       <div className="relative w-full max-w-[400px]">
         <Card accent={K.blue}>
-          <p className="font-sans font-bold text-[18px] text-t1 mb-1.5">
+          <p className="font-sans font-bold text-h4 text-t1 mb-1.5">
             Create your account
           </p>
-          <p className="font-sans text-[13px] text-t3 mb-[22px]">
+          <p className="font-sans text-small text-t3 mb-[22px]">
             14-day free trial. No credit card required.
           </p>
 
           {authError && (
             <div className="px-3.5 py-2.5 rounded-sm mb-4" style={{ background: K.dangerT, border: `1px solid ${K.danger}40` }}>
-              <p className="font-mono text-[11px] text-kdanger">{authError}</p>
+              <p className="font-mono text-caption text-kdanger">{authError}</p>
             </div>
           )}
 
@@ -166,7 +166,7 @@ export default function RegisterPage() {
             Create Account →
           </Button>
 
-          <p className="font-mono text-[10px] text-t4 text-center mt-4">
+          <p className="font-mono text-caption text-t4 text-center mt-4">
             Already have an account?{" "}
             <span style={{ color: K.blue4, cursor: "pointer" }} onClick={() => router.push("/auth/login")}>
               Sign in →
@@ -175,7 +175,7 @@ export default function RegisterPage() {
         </Card>
       </div>
 
-      <p className="relative mt-8 font-mono text-[11px] tracking-widest text-t3">
+      <p className="relative mt-8 font-mono text-caption tracking-widest text-t3">
         BY CREATING AN ACCOUNT YOU AGREE TO OUR{" "}
         <span style={{ color: K.t3, cursor: "pointer" }} onClick={() => router.push("/terms")}>
           TERMS OF SERVICE

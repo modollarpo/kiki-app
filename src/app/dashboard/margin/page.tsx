@@ -46,12 +46,12 @@ export default function ProfitMarginPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-t1">
         <div className="mb-5">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Profit Margin Center</h1>
-          <p className="font-mono text-[11px] text-t3">Channel-level margins and profit-adjusted acquisition costs</p>
+          <p className="font-mono text-caption text-t3">Channel-level margins and profit-adjusted acquisition costs</p>
         </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -63,7 +63,7 @@ export default function ProfitMarginPage() {
         </div>
 
         <Card accent={K.mint} className="mb-4">
-          <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Channel Margins</h3>
+          <h3 className="font-mono font-bold text-small text-t1 mb-3.5">Channel Margins</h3>
           {channels.length === 0 ? (
             <EmptyState icon="💰" title="No channel data" body="Channel margin data will appear once campaigns are running." />
           ) : (
@@ -72,26 +72,26 @@ export default function ProfitMarginPage() {
             {channels.map((ch, i) => (
               <div key={i} className="flex items-center gap-3 p-3 px-3.5 rounded-sm bg-g900">
                 <div className="min-w-[100px]">
-                  <span className="font-mono text-[11px] font-semibold text-t1">{ch.name}</span>
+                  <span className="font-mono text-caption font-semibold text-t1">{ch.name}</span>
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between mb-[3px]">
-                    <span className="font-mono text-[10px] text-t4">MARGIN</span>
-                    <span className="font-mono text-[11px] font-bold" style={{ color: ch.margin > 75 ? K.mint : ch.margin > 60 ? K.gold : K.danger }}>{ch.margin}%</span>
+                    <span className="font-mono text-caption text-t4">MARGIN</span>
+                    <span className="font-mono text-caption font-bold" style={{ color: ch.margin > 75 ? K.mint : ch.margin > 60 ? K.gold : K.danger }}>{ch.margin}%</span>
                   </div>
                   <ProgressBar value={ch.margin} color={ch.margin > 75 ? K.mint : ch.margin > 60 ? K.gold : K.danger} height={4} />
                 </div>
                 <div className="text-right min-w-[70px]">
-                  <p className="font-mono text-[11px] font-semibold text-t1">${(ch.spend / 1000).toFixed(0)}K</p>
-                  <p className="font-mono text-[10px] text-t4">spend</p>
+                  <p className="font-mono text-caption font-semibold text-t1">${(ch.spend / 1000).toFixed(0)}K</p>
+                  <p className="font-mono text-caption text-t4">spend</p>
                 </div>
                 <div className="text-right min-w-[70px]">
-                  <p className="font-mono text-[11px] font-semibold text-kmint">${(ch.revenue / 1000).toFixed(0)}K</p>
-                  <p className="font-mono text-[10px] text-t4">revenue</p>
+                  <p className="font-mono text-caption font-semibold text-kmint">${(ch.revenue / 1000).toFixed(0)}K</p>
+                  <p className="font-mono text-caption text-t4">revenue</p>
                 </div>
                 <div className="text-right min-w-[50px]">
-                  <p className="font-mono text-[11px] font-semibold text-kblue">${ch.cac}</p>
-                  <p className="font-mono text-[10px] text-t4">CAC</p>
+                  <p className="font-mono text-caption font-semibold text-kblue">${ch.cac}</p>
+                  <p className="font-mono text-caption text-t4">CAC</p>
                 </div>
               </div>
             ))}
@@ -101,15 +101,15 @@ export default function ProfitMarginPage() {
         </Card>
 
         <Card accent={K.teal}>
-          <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Margin Trend (Last 6 Months)</h3>
+          <h3 className="font-mono font-bold text-small text-t1 mb-3.5">Margin Trend (Last 6 Months)</h3>
           <div className="flex flex-col gap-1.5">
             {trend.map((t, i) => (
               <div key={i} className="flex items-center gap-3 py-2 px-3 rounded-sm bg-g850">
-                <span className="font-mono text-[10px] text-t3 min-w-[30px]">{t.month}</span>
+                <span className="font-mono text-caption text-t3 min-w-[30px]">{t.month}</span>
                 <div className="flex-1">
                   <ProgressBar value={t.margin} color={K.mint} height={4} />
                 </div>
-                <span className="font-mono text-[11px] font-bold min-w-[40px] text-right text-kmint">{t.margin}%</span>
+                <span className="font-mono text-caption font-bold min-w-[40px] text-right text-kmint">{t.margin}%</span>
               </div>
             ))}
           </div>

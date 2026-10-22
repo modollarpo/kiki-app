@@ -53,7 +53,7 @@ export default function AnalyticsPage() {
         <div className="flex justify-between items-start mb-5 gap-3 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Performance Analytics</h1>
-            <p className="font-mono text-[11px] text-t3">Cross-platform attribution · ROAS by channel · Conversion funnel</p>
+            <p className="font-mono text-caption text-t3">Cross-platform attribution · ROAS by channel · Conversion funnel</p>
           </div>
         </div>
 
@@ -73,13 +73,13 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-3 mb-4">
               <Card padding={0}>
                 <div className="px-5 py-3.5" style={{ borderBottom: `1px solid ${K.g800}` }}>
-                  <h2 className="font-mono font-bold text-[13px] text-t1">ROAS by Channel</h2>
+                  <h2 className="font-mono font-bold text-small text-t1">ROAS by Channel</h2>
                 </div>
                 <ScrollableTable>
                   <div className="min-w-[600px]">
                     <div className="grid grid-cols-[140px_80px_90px_100px_90px_80px] gap-3 px-5 py-2" style={{ borderBottom: `1px solid ${K.g800}`, background: K.g950 }}>
                   {["CHANNEL", "ROAS", "CPA", "CONVERSIONS", "SPEND", "SHARE"].map(h => (
-                    <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-t4">{h}</span>
+                    <span key={h} className="font-mono text-micro tracking-[0.1em] text-t4">{h}</span>
                   ))}
                 </div>
                 {channels.length === 0 ? (
@@ -92,14 +92,14 @@ export default function AnalyticsPage() {
                         style={{ borderBottom: `1px solid ${K.g900}` }}>
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: pc }} />
-                          <span className="font-mono text-[11px] font-semibold text-t1">{ch.name}</span>
+                          <span className="font-mono text-caption font-semibold text-t1">{ch.name}</span>
                         </div>
-                        <span className="font-mono text-[13px] font-bold" style={{ color: ch.roas >= 4 ? K.mint : ch.roas >= 2.5 ? K.warn : K.danger }}>{fmt.roas(ch.roas)}</span>
-                        <span className="font-mono text-[11px] text-t2">${ch.cpa.toFixed(2)}</span>
-                        <span className="font-mono text-[11px] font-semibold text-t1">{fmt.compact(ch.conversions)}</span>
-                        <span className="font-mono text-[11px] text-t2">{fmt.currency(ch.spend)}</span>
+                        <span className="font-mono text-small font-bold" style={{ color: ch.roas >= 4 ? K.mint : ch.roas >= 2.5 ? K.warn : K.danger }}>{fmt.roas(ch.roas)}</span>
+                        <span className="font-mono text-caption text-t2">${ch.cpa.toFixed(2)}</span>
+                        <span className="font-mono text-caption font-semibold text-t1">{fmt.compact(ch.conversions)}</span>
+                        <span className="font-mono text-caption text-t2">{fmt.currency(ch.spend)}</span>
                         <div>
-                          <span className="font-mono text-[10px] text-t3 block mb-1">{(ch.share * 100).toFixed(1)}%</span>
+                          <span className="font-mono text-caption text-t3 block mb-1">{(ch.share * 100).toFixed(1)}%</span>
                           <ProgressBar value={ch.share * 100} color={pc} height={3} />
                         </div>
                       </div>
@@ -111,16 +111,16 @@ export default function AnalyticsPage() {
             </Card>
 
               <Card>
-                <h2 className="font-mono font-bold text-[13px] text-t1 mb-4">Conversion Funnel</h2>
+                <h2 className="font-mono font-bold text-small text-t1 mb-4">Conversion Funnel</h2>
                 {funnel.map((f, i) => (
                   <div key={i} className="mb-3.5">
                     <div className="flex justify-between mb-1">
-                      <span className="font-mono text-[10px] text-t2">{f.stage}</span>
-                      <span className="font-mono text-[11px] font-bold text-t1">{fmt.compact(f.value)}</span>
+                      <span className="font-mono text-caption text-t2">{f.stage}</span>
+                      <span className="font-mono text-caption font-bold text-t1">{fmt.compact(f.value)}</span>
                     </div>
                     <ProgressBar value={f.pct} color={i < 2 ? K.blue : i < 4 ? K.teal : K.mint} height={6} glow />
                     {i < funnel.length - 1 && funnel[i + 1].value > 0 && (
-                      <div className="font-mono text-[10px] text-t4 text-center my-0.5">
+                      <div className="font-mono text-caption text-t4 text-center my-0.5">
                         ↓ {((funnel[i + 1].value / f.value) * 100).toFixed(1)}% conversion
                       </div>
                     )}
@@ -131,14 +131,14 @@ export default function AnalyticsPage() {
 
             <Card>
               <div className="flex justify-between items-center mb-3.5">
-                <h2 className="font-mono font-bold text-[13px] text-t1">Conversions by Channel</h2>
+                <h2 className="font-mono font-bold text-small text-t1">Conversions by Channel</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                 {attribution.map((m, i) => (
                   <div key={i} className="p-3 px-3.5 rounded-sm" style={{ background: K.g850, border: `1px solid ${K.g800}` }}>
-                    <p className="font-mono text-[10px] text-t3 mb-1">{m.model}</p>
+                    <p className="font-mono text-caption text-t3 mb-1">{m.model}</p>
                     <p className="font-mono text-lg font-bold" style={{ color: colorMap[m.c] || K.t1 }}>{fmt.compact(m.conversions)}</p>
-                    <p className="font-mono text-[10px] text-t4 mt-0.5">{m.share} of total</p>
+                    <p className="font-mono text-caption text-t4 mt-0.5">{m.share} of total</p>
                   </div>
                 ))}
               </div>

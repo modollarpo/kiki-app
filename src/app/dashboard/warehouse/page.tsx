@@ -20,7 +20,7 @@ export default function WarehousePage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Feature Store & Data Warehouse</h1>
-          <p className="font-mono text-[11px] text-t3">Feature snapshots · Model training data · Sync status</p>
+          <p className="font-mono text-caption text-t3">Feature snapshots · Model training data · Sync status</p>
         </div>
 
         {loading ? (
@@ -44,25 +44,25 @@ export default function WarehousePage() {
               </Card>
             ) : (
               <Card accent={K.teal}>
-                <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Feature Store ({features.length})</h3>
+                <h3 className="font-mono font-bold text-small text-t1 mb-3.5">Feature Store ({features.length})</h3>
                 <ScrollableTable>
                   <table className="w-full border-collapse min-w-[600px]">
                     <thead>
                       <tr>
                         {["Feature", "Value", "Samples", "Mean", "Std Dev", "Updated"].map(h => (
-                          <th key={h} className="font-mono text-[10px] tracking-[0.1em] uppercase text-left py-2 px-3 text-t4 border-b border-g800">{h}</th>
+                          <th key={h} className="font-mono text-micro tracking-[0.1em] uppercase text-left py-2 px-3 text-t4 border-b border-g800">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {features.map((f: { name: string; value: string; samples: number; mean: number | null; stddev: number | null; updated: string }, i: number) => (
                         <tr key={i}>
-                          <td className="font-mono text-[11px] font-semibold text-t1 py-2.5 px-3 border-b border-g800">{f.name}</td>
-                          <td className="font-mono text-[11px] text-t2 py-2.5 px-3 border-b border-g800">{f.value ?? "—"}</td>
-                          <td className="font-mono text-[11px] text-t2 py-2.5 px-3 border-b border-g800">{fmt.compact(f.samples)}</td>
-                          <td className="font-mono text-[11px] text-t2 py-2.5 px-3 border-b border-g800">{f.mean?.toFixed?.(2) ?? "—"}</td>
-                          <td className="font-mono text-[11px] text-t2 py-2.5 px-3 border-b border-g800">{f.stddev?.toFixed?.(2) ?? "—"}</td>
-                          <td className="font-mono text-[11px] text-t3 py-2.5 px-3 border-b border-g800">{new Date(f.updated).toLocaleDateString()}</td>
+                          <td className="font-mono text-caption font-semibold text-t1 py-2.5 px-3 border-b border-g800">{f.name}</td>
+                          <td className="font-mono text-caption text-t2 py-2.5 px-3 border-b border-g800">{f.value ?? "—"}</td>
+                          <td className="font-mono text-caption text-t2 py-2.5 px-3 border-b border-g800">{fmt.compact(f.samples)}</td>
+                          <td className="font-mono text-caption text-t2 py-2.5 px-3 border-b border-g800">{f.mean?.toFixed?.(2) ?? "—"}</td>
+                          <td className="font-mono text-caption text-t2 py-2.5 px-3 border-b border-g800">{f.stddev?.toFixed?.(2) ?? "—"}</td>
+                          <td className="font-mono text-caption text-t3 py-2.5 px-3 border-b border-g800">{new Date(f.updated).toLocaleDateString()}</td>
                         </tr>
                       ))}
                     </tbody>

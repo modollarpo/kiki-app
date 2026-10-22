@@ -17,23 +17,23 @@ export default function ChangelogPage() {
     <MarketingLayout>
       <div className="bg-void py-20 px-12 max-w-[720px] mx-auto">
         <div className="mb-12">
-          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3.5">CHANGELOG</p>
+          <p className="font-mono text-micro tracking-[0.18em] text-t4 mb-3.5">CHANGELOG</p>
           <h1 className="font-mono font-bold text-t1 tracking-[-0.03em]" style={{ fontSize:"clamp(28px,5vw,44px)" }}>What's new in KIKI Agent™</h1>
-          <p className="font-sans text-[15px] text-t3 mt-2.5">Platform updates, new features, and bug fixes.</p>
+          <p className="font-sans text-lead text-t3 mt-2.5">Platform updates, new features, and bug fixes.</p>
         </div>
         {RELEASES.map((r,i)=>(
           <div key={r.version} className="mb-10 pl-5 relative" style={{ borderLeft:`2px solid ${i===0?K.blue:K.g700}` }}>
             <div className="absolute left-[-6px] top-1 w-2.5 h-2.5 rounded-full" style={{ background:i===0?K.blue:K.g700 }} />
             <div className="flex items-center gap-2.5 mb-3.5">
-              <p className="font-mono font-bold text-[18px] text-t1">{r.version}</p>
+              <p className="font-mono font-bold text-h4 text-t1">{r.version}</p>
               <Badge color={TAG_COLORS[r.tag]||K.t3}>{r.tag.toUpperCase()}</Badge>
-              <span className="font-mono text-[11px] text-t4">{r.date}</span>
+              <span className="font-mono text-caption text-t4">{r.date}</span>
             </div>
             <div className="px-5 py-4 bg-g900 border border-g800 rounded-sm">
               {r.highlights.map(h=>(
                 <div key={h} className="flex gap-2 mb-2 items-start">
                   <span className="font-mono text-xs shrink-0 mt-px" style={{ color:i===0?K.mint:K.t3 }}>{h.startsWith("Fixed")||h.startsWith("Improved")?"✦":"+"}</span>
-                  <span className="font-sans text-[13px] leading-[1.4]" style={{ color:i===0?K.t2:K.t3 }}>{h}</span>
+                  <span className="font-sans text-small leading-[1.4]" style={{ color:i===0?K.t2:K.t3 }}>{h}</span>
                 </div>
               ))}
             </div>

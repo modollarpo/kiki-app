@@ -109,7 +109,7 @@ export default function OAuthCallbackPage() {
         <p
           style={{
             fontFamily: "'Inter',system-ui,sans-serif",
-            fontSize: 11,
+            fontSize: "var(--fs-micro)",
             letterSpacing: "0.14em",
             color: K.t3,
             textTransform: "uppercase",
@@ -120,7 +120,7 @@ export default function OAuthCallbackPage() {
         </p>
         <h1
           style={{
-            fontSize: 18,
+            fontSize: "var(--fs-h4)",
             fontWeight: 700,
             color: K.t1,
             marginBottom: 24,
@@ -142,7 +142,7 @@ export default function OAuthCallbackPage() {
                 animation: "spin 0.8s linear infinite",
               }}
             />
-            <p style={{ fontSize: 14, color: K.t2 }}>
+            <p style={{ fontSize: "var(--fs-body)", color: K.t2 }}>
               Connecting to {platformLabel}...
             </p>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
@@ -162,15 +162,15 @@ export default function OAuthCallbackPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 22,
+                fontSize: "var(--fs-h3)",
               }}
             >
               ✓
             </div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: K.mint }}>
+            <p style={{ fontSize: "var(--fs-body)", fontWeight: 600, color: K.mint }}>
               Connected to {platformLabel}
             </p>
-            <p style={{ fontSize: 12, color: K.t3 }}>
+            <p style={{ fontSize: "var(--fs-caption)", color: K.t3 }}>
               Redirecting to your dashboard...
             </p>
           </div>
@@ -189,16 +189,16 @@ export default function OAuthCallbackPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 22,
+                fontSize: "var(--fs-h3)",
                 color: K.danger,
               }}
             >
               ✕
             </div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: K.danger }}>
+            <p style={{ fontSize: "var(--fs-body)", fontWeight: 600, color: K.danger }}>
               Connection Failed
             </p>
-            <p style={{ fontSize: 12, color: K.t3, lineHeight: 1.6 }}>
+            <p style={{ fontSize: "var(--fs-caption)", color: K.t3, lineHeight: 1.6 }}>
               {error}
             </p>
             <Link
@@ -207,7 +207,7 @@ export default function OAuthCallbackPage() {
                 display: "inline-block",
                 marginTop: 8,
                 padding: "8px 20px",
-                fontSize: 12,
+                fontSize: "var(--fs-caption)",
                 fontWeight: 600,
                 color: K.t1,
                 background: K.g850,

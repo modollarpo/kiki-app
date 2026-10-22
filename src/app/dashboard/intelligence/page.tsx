@@ -49,12 +49,12 @@ export default function IntelligencePage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-t1">
         <div className="mb-5">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">AI Intelligence</h1>
-          <p className="font-mono text-[11px] text-t3">AI-powered insights, predictions, and optimization recommendations</p>
+          <p className="font-mono text-caption text-t3">AI-powered insights, predictions, and optimization recommendations</p>
         </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -67,7 +67,7 @@ export default function IntelligencePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-3 mb-4">
           <Card accent={K.blue}>
-            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">AI Insights</h3>
+            <h3 className="font-mono font-bold text-small text-t1 mb-3.5">AI Insights</h3>
             <div className="flex flex-col gap-2">
               {insights.length === 0 ? (
                 <EmptyState icon="💡" title="No insights yet" body="Insights will appear once campaigns have sufficient data." />
@@ -80,27 +80,27 @@ export default function IntelligencePage() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Badge color={getImpactColor(insight.impact)}>{insight.impact} impact</Badge>
-                      {insight.confidence != null && <span className="font-mono text-[10px] text-t3">{insight.confidence}% conf</span>}
+                      {insight.confidence != null && <span className="font-mono text-caption text-t3">{insight.confidence}% conf</span>}
                     </div>
                   </div>
-                  <p className="font-mono text-[11px] text-t2 leading-relaxed">{insight.description}</p>
+                  <p className="font-mono text-caption text-t2 leading-relaxed">{insight.description}</p>
                 </div>
               ))}
             </div>
           </Card>
 
           <Card accent={K.teal}>
-            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Predictions</h3>
+            <h3 className="font-mono font-bold text-small text-t1 mb-3.5">Predictions</h3>
             {predictions.length === 0 ? (
               <EmptyState icon="🔮" title="No predictions yet" body="Predictions will be generated as data accumulates." />
             ) : predictions.map((pred, i) => (
               <div key={i} className="p-3.5 mb-2 rounded-sm bg-g850">
                 <div className="flex flex-wrap justify-between items-center gap-2 mb-1.5">
-                  <span className="font-mono text-[11px] text-t2">{pred.metric}</span>
-                  <span className="font-mono text-[10px] text-t3">{pred.confidence}% conf</span>
+                  <span className="font-mono text-caption text-t2">{pred.metric}</span>
+                  <span className="font-mono text-caption text-t3">{pred.confidence}% conf</span>
                 </div>
                 <p className="font-mono text-lg font-bold mb-1 text-kmint">{pred.value}</p>
-                <p className="font-mono text-[10px] text-t3">Range: {pred.range}</p>
+                <p className="font-mono text-caption text-t3">Range: {pred.range}</p>
               </div>
             ))}
           </Card>

@@ -75,7 +75,7 @@ export default function ConsentPrivacyPage() {
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -107,7 +107,7 @@ export default function ConsentPrivacyPage() {
                 </div>
               );
             }) : (
-              <p className="font-mono text-[11px] text-t3 py-4 text-center">No user data yet.</p>
+              <p className="font-mono text-caption text-t3 py-4 text-center">No user data yet.</p>
             )}
           </div>
         </Card>
@@ -122,7 +122,7 @@ export default function ConsentPrivacyPage() {
                   <span className="text-sm font-semibold" style={{ color: a.color }}>{a.value.toLocaleString()}</span>
                 </div>
               )) : (
-                <p className="font-mono text-[11px] text-t3 py-4 text-center">No consent actions recorded yet. Consent events will appear here as they are captured.</p>
+                <p className="font-mono text-caption text-t3 py-4 text-center">No consent actions recorded yet. Consent events will appear here as they are captured.</p>
               )}
             </div>
           </Card>
@@ -142,7 +142,7 @@ export default function ConsentPrivacyPage() {
                 <span className="text-sm text-t2">Address Match Rate</span>
                 <span className="text-sm font-semibold text-kteal">—</span>
               </div>
-              <p className="font-mono text-[11px] text-t4">No UID2 match data available yet. Connect an identity partner to populate match rates.</p>
+              <p className="font-mono text-caption text-t4">No UID2 match data available yet. Connect an identity partner to populate match rates.</p>
             </div>
           </Card>
         </div>

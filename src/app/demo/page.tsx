@@ -129,7 +129,7 @@ export default function DemoPage() {
             <span className="text-xs font-bold" style={{ color: K.mint, fontFamily: "var(--font-mono)" }}>
               LIVE ENRICHMENT
             </span>
-            <span className="text-[10px]" style={{ color: K.t4, fontFamily: "var(--font-mono)" }}>
+            <span className="text-caption" style={{ color: K.t4, fontFamily: "var(--font-mono)" }}>
               real /api/capi/enrich pipeline · sample event · no account needed
             </span>
           </div>
@@ -137,7 +137,7 @@ export default function DemoPage() {
           <div className="p-5 md:p-7" style={{ background: K.g950 }}>
             <div className="flex items-end gap-4 flex-wrap mb-6">
               <div>
-                <label className="block text-[10px] mb-1.5" style={{ color: K.t4, fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>
+                <label className="block text-caption mb-1.5" style={{ color: K.t4, fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>
                   ORDER VALUE (USD)
                 </label>
                 <input
@@ -154,7 +154,7 @@ export default function DemoPage() {
                 {running ? "Running…" : "Run enrichment →"}
               </Button>
               {clientLatency !== null && (
-                <span className="text-[11px] pb-2" style={{ color: K.t3, fontFamily: "var(--font-mono)" }}>
+                <span className="text-caption pb-2" style={{ color: K.t3, fontFamily: "var(--font-mono)" }}>
                   end-to-end {clientLatency}ms
                   {r ? ` · pipeline ${r.latencyMs}ms (server)` : ""}
                 </span>
@@ -172,7 +172,7 @@ export default function DemoPage() {
                       className={state === "running" ? "animate-kdls-pulse" : ""}
                       style={{ width: 7, height: 7, borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }}
                     />
-                    <span className="text-[12px]" style={{ color: state === "pending" ? K.t4 : K.t2, fontFamily: "var(--font-mono)" }}>
+                    <span className="text-caption" style={{ color: state === "pending" ? K.t4 : K.t2, fontFamily: "var(--font-mono)" }}>
                       {s.label}
                     </span>
                   </div>
@@ -181,7 +181,7 @@ export default function DemoPage() {
             </div>
 
             {error && (
-              <div className="p-4 rounded-sm text-[12px]" style={{ background: `${K.danger}14`, border: `1px solid ${K.danger}40`, color: K.t2, fontFamily: "var(--font-mono)" }}>
+              <div className="p-4 rounded-sm text-caption" style={{ background: `${K.danger}14`, border: `1px solid ${K.danger}40`, color: K.t2, fontFamily: "var(--font-mono)" }}>
                 Enrichment failed: {error}
               </div>
             )}
@@ -199,13 +199,13 @@ export default function DemoPage() {
                     { l: "SEGMENT", v: r.enriched.ltvSegment.toUpperCase(), c: seg },
                   ].map(x => (
                     <div key={x.l}>
-                      <p className="text-[9px] mb-1" style={{ color: K.t4, fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>{x.l}</p>
-                      <p className="text-[17px] font-bold" style={{ color: x.c, fontFamily: "var(--font-mono)" }}>{x.v}</p>
+                      <p className="text-caption mb-1" style={{ color: K.t4, fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>{x.l}</p>
+                      <p className="text-lead font-bold" style={{ color: x.c, fontFamily: "var(--font-mono)" }}>{x.v}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="text-[11px] leading-[1.9]" style={{ color: K.t3, fontFamily: "var(--font-mono)" }}>
+                <div className="text-caption leading-[1.9]" style={{ color: K.t3, fontFamily: "var(--font-mono)" }}>
                   <div>value sent to platforms&nbsp; → &nbsp;<span style={{ color: K.mint, fontWeight: 700 }}>${r.enriched.valueToSend.toFixed(2)}</span></div>
                   <div>enrichment method&nbsp;&nbsp;&nbsp;&nbsp; → &nbsp;<span style={{ color: K.t2 }}>{r.enriched.enrichmentMethod}</span></div>
                   <div>fraud score&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → &nbsp;<span style={{ color: K.t2 }}>{r.fraudScore}</span> {r.fraudBlocked ? "(blocked)" : "(passed)"}</div>
@@ -214,14 +214,14 @@ export default function DemoPage() {
                   <div>bid multiplier&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → &nbsp;<span style={{ color: K.gold }}>{r.enriched.recommendedBidMultiplier.toFixed(2)}×</span></div>
                 </div>
 
-                <p className="mt-4 text-[10px]" style={{ color: K.t4, fontFamily: "var(--font-mono)" }}>
+                <p className="mt-4 text-caption" style={{ color: K.t4, fontFamily: "var(--font-mono)" }}>
                   Demo tenant · platform delivery simulated — no live ad accounts are connected. Sign up to deliver enriched signals to Meta, Google, TikTok, and more.
                 </p>
               </div>
             )}
 
             {!r && !error && !running && (
-              <p className="text-[11px]" style={{ color: K.t4, fontFamily: "var(--font-mono)" }}>
+              <p className="text-caption" style={{ color: K.t4, fontFamily: "var(--font-mono)" }}>
                 Run a sample $149 order through the pipeline to see it become an LTV signal.
               </p>
             )}

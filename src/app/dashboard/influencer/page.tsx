@@ -59,9 +59,9 @@ export default function InfluencerPage() {
         <div className="flex justify-between items-center mb-5 gap-3 flex-wrap">
           <div className="min-w-0">
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Influencer & Dark Social</h1>
-            <p className="font-mono text-[11px] text-t3">Track creator ROI, promo codes, and unattributed conversions</p>
+            <p className="font-mono text-caption text-t3">Track creator ROI, promo codes, and unattributed conversions</p>
           </div>
-          <button onClick={() => setShowForm(!showForm)} className="font-mono text-[11px] font-semibold px-5 py-2 rounded-sm cursor-pointer"
+          <button onClick={() => setShowForm(!showForm)} className="font-mono text-caption font-semibold px-5 py-2 rounded-sm cursor-pointer"
             style={{ border: `1px solid ${K.blue}40`, background: K.blue + "20", color: K.blue }}>
             {showForm ? "Cancel" : "+ Add Creator"}
           </button>
@@ -76,36 +76,36 @@ export default function InfluencerPage() {
 
         {showForm && (
           <Card accent={K.blue} className="mb-4">
-            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3">Register Creator</h3>
+            <h3 className="font-mono font-bold text-small text-t1 mb-3">Register Creator</h3>
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
               <div>
-                <label className="font-mono text-[11px] text-t3 block mb-1">Name</label>
+                <label className="font-mono text-caption text-t3 block mb-1">Name</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                   className="w-full py-2 px-2.5 font-mono text-xs rounded-sm"
                   style={{ background: K.inputBg, border: `1px solid ${K.inputBorder}`, color: K.t1 }} />
               </div>
               <div>
-                <label className="font-mono text-[11px] text-t3 block mb-1">Handle</label>
+                <label className="font-mono text-caption text-t3 block mb-1">Handle</label>
                 <input value={form.handle} onChange={e => setForm({ ...form, handle: e.target.value })} placeholder="@username"
                   className="w-full py-2 px-2.5 font-mono text-xs rounded-sm"
                   style={{ background: K.inputBg, border: `1px solid ${K.inputBorder}`, color: K.t1 }} />
               </div>
               <div>
-                <label className="font-mono text-[11px] text-t3 block mb-1">Platform</label>
+                <label className="font-mono text-caption text-t3 block mb-1">Platform</label>
                 <select value={form.platform} onChange={e => setForm({ ...form, platform: e.target.value })}
                   className="w-full py-2 px-2.5 font-mono text-xs rounded-sm"
                   style={{ background: K.inputBg, border: `1px solid ${K.inputBorder}`, color: K.t1 }}>
                   <option value="meta">Meta</option><option value="tiktok">TikTok</option><option value="youtube">YouTube</option><option value="instagram">Instagram</option>
                 </select>
               </div>
-              <button onClick={registerCreator} className="font-mono text-[11px] font-semibold px-4 py-2 rounded-sm cursor-pointer"
+              <button onClick={registerCreator} className="font-mono text-caption font-semibold px-4 py-2 rounded-sm cursor-pointer"
                 style={{ border: `1px solid ${K.mint}40`, background: K.mint + "20", color: K.mint }}>Register</button>
             </div>
           </Card>
         )}
 
         <Card accent={K.mint}>
-          <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Creators</h3>
+          <h3 className="font-mono font-bold text-small text-t1 mb-3.5">Creators</h3>
           {creators.length === 0 ? (
             <EmptyState icon="🎤" title="No creators registered" body="Add your first creator to start tracking ROI." />
           ) : (
@@ -118,19 +118,19 @@ export default function InfluencerPage() {
                         <span className="font-mono text-xs font-semibold text-t1">{c.name}</span>
                         <Badge color={K.t3}>{c.platform}</Badge>
                       </div>
-                      <span className="font-mono text-[11px] text-t3">{c.handle} · Code: {c.promoCode}</span>
+                      <span className="font-mono text-caption text-t3">{c.handle} · Code: {c.promoCode}</span>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="font-mono text-xs font-bold text-kmint">${c.totalRevenue?.toLocaleString() || 0}</p>
-                      <p className="font-mono text-[11px] text-t3">revenue</p>
+                      <p className="font-mono text-caption text-t3">revenue</p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="font-mono text-xs font-bold text-kblue">{c.totalConversions || 0}</p>
-                      <p className="font-mono text-[11px] text-t3">conv.</p>
+                      <p className="font-mono text-caption text-t3">conv.</p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="font-mono text-xs font-bold" style={{ color: c.roi >= 2 ? K.mint : K.danger }}>{c.roi?.toFixed(1) || "0.0"}×</p>
-                      <p className="font-mono text-[11px] text-t3">ROI</p>
+                      <p className="font-mono text-caption text-t3">ROI</p>
                     </div>
                   </div>
                 ))}

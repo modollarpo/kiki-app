@@ -1,0 +1,14 @@
+# Font-size allowlist
+#
+# Files listed here are exempt from the sub-12px / px-font-size audit
+# (scripts/audit-type.mjs). Every entry MUST have a justification.
+#
+# Format: one glob (relative to repo root) per line, followed by a `#` comment.
+#
+# Rationale for the only entry:
+#   src/lib/email.ts and src/lib/billing.ts build transactional HTML EMAIL
+#   bodies. Email clients do not support CSS custom properties (var(--fs-*)),
+#   external stylesheets, or rem-based scaling, so inline px font sizes are the
+#   only correct choice. These files render no part of the web UI.
+src/lib/email.ts      # transactional HTML email template (px required by email clients)
+src/lib/billing.ts    # transactional HTML email templates (px required by email clients)

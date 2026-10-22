@@ -143,10 +143,10 @@ function CookieConsentBannerInner({ showBanner }: { showBanner: boolean }) {
         border: "1px solid #2A2A4A", borderRadius: 12,
         boxShadow: "0 -4px 30px rgba(0,0,0,0.5)", padding: "20px 24px",
       }}>
-        <h3 style={{ color: "#F0F0FF", fontSize: 15, fontWeight: 600, marginBottom: 8, marginTop: 0 }}>
+        <h3 style={{ color: "#F0F0FF", fontSize: "var(--fs-body)", fontWeight: 600, marginBottom: 8, marginTop: 0 }}>
           We value your privacy
         </h3>
-        <p style={{ color: "#8888AA", fontSize: 13, lineHeight: 1.6, margin: 0 }}>
+        <p style={{ color: "#8888AA", fontSize: "var(--fs-small)", lineHeight: 1.6, margin: 0 }}>
           We use cookies to enhance your experience, analyze site traffic, and personalize content.
           You can manage your preferences or accept all cookies.{" "}
           <a href="/privacy" style={{ color: "#005CFF", textDecoration: "underline" }}>Privacy Policy</a>
@@ -156,7 +156,7 @@ function CookieConsentBannerInner({ showBanner }: { showBanner: boolean }) {
         <button
           onClick={() => setShowDetails(!showDetails)}
           style={{
-            color: "#005CFF", fontSize: 12, marginTop: 8, background: "none",
+            color: "#005CFF", fontSize: "var(--fs-caption)", marginTop: 8, background: "none",
             border: "none", cursor: "pointer", padding: 0,
           }}
         >
@@ -173,11 +173,11 @@ function CookieConsentBannerInner({ showBanner }: { showBanner: boolean }) {
             ].map((item) => (
               <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0" }}>
                 <div>
-                  <div style={{ color: "#F0F0FF", fontSize: 13, fontWeight: 500 }}>{item.label}</div>
-                  <div style={{ color: "#666688", fontSize: 11 }}>{item.desc}</div>
+                  <div style={{ color: "#F0F0FF", fontSize: "var(--fs-small)", fontWeight: 500 }}>{item.label}</div>
+                  <div style={{ color: "#666688", fontSize: "var(--fs-micro)" }}>{item.desc}</div>
                 </div>
                 {item.locked ? (
-                  <span style={{ color: "#31F3C3", fontSize: 11, fontWeight: 500 }}>Always on</span>
+                  <span style={{ color: "#31F3C3", fontSize: "var(--fs-micro)", fontWeight: 500 }}>Always on</span>
                 ) : (
                   <button
                     onClick={item.onChange}
@@ -205,7 +205,7 @@ function CookieConsentBannerInner({ showBanner }: { showBanner: boolean }) {
               onClick={() => updateConsent({ analytics, marketing, thirdParty })}
               style={{
                 padding: "10px 20px", borderRadius: 8, border: "none", cursor: "pointer",
-                background: "#005CFF", color: "white", fontSize: 13, fontWeight: 600,
+                background: "#005CFF", color: "white", fontSize: "var(--fs-small)", fontWeight: 600,
               }}
             >
               Save preferences
@@ -215,7 +215,7 @@ function CookieConsentBannerInner({ showBanner }: { showBanner: boolean }) {
               onClick={acceptAll}
               style={{
                 padding: "10px 20px", borderRadius: 8, border: "none", cursor: "pointer",
-                background: "#005CFF", color: "white", fontSize: 13, fontWeight: 600,
+                background: "#005CFF", color: "white", fontSize: "var(--fs-small)", fontWeight: 600,
               }}
             >
               Accept all
@@ -225,7 +225,7 @@ function CookieConsentBannerInner({ showBanner }: { showBanner: boolean }) {
             onClick={rejectAll}
             style={{
               padding: "10px 20px", borderRadius: 8, border: "1px solid #333355",
-              cursor: "pointer", background: "transparent", color: "#8888AA", fontSize: 13,
+              cursor: "pointer", background: "transparent", color: "#8888AA", fontSize: "var(--fs-small)",
             }}
           >
             Reject all

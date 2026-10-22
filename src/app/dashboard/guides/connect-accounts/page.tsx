@@ -26,12 +26,12 @@ export default function ConnectAccountsGuide() {
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[800px]">
-        <Link href="/dashboard/guides" className="inline-block font-mono text-[10px] text-t3 no-underline mb-4">
+        <Link href="/dashboard/guides" className="inline-block font-mono text-caption text-t3 no-underline mb-4">
           ← Back to Guides
         </Link>
 
         <h1 className="font-mono font-bold text-lg text-t1 mb-2">Connect your ad accounts</h1>
-        <p className="font-mono text-[11px] text-t3 mb-6 leading-relaxed">
+        <p className="font-mono text-caption text-t3 mb-6 leading-relaxed">
           KIKI needs read access to your ad accounts to pull metrics and optimise bids, plus write access to send LTV-enriched conversion events via CAPI. Here&apos;s exactly what happens at each step.
         </p>
 
@@ -54,8 +54,8 @@ export default function ConnectAccountsGuide() {
           <Card padding={0}>
             <div className="grid grid-cols-1 sm:grid-cols-2">
               <div className="px-4 py-3 border-b border-g800 border-r border-r-g800">
-                <div className="font-mono text-[10px] text-kmint font-bold mb-2">✓ KIKI DOES</div>
-                <ul className="font-mono text-[10px] text-t2 leading-loose pl-[14px] m-0">
+                <div className="font-mono text-caption text-kmint font-bold mb-2">✓ KIKI DOES</div>
+                <ul className="font-mono text-caption text-t2 leading-loose pl-[14px] m-0">
                   <li>Pull campaign metrics every 15 minutes</li>
                   <li>Send LTV-enriched conversion events</li>
                   <li>Adjust bids and budgets (autonomously)</li>
@@ -65,8 +65,8 @@ export default function ConnectAccountsGuide() {
                 </ul>
               </div>
               <div className="px-4 py-3 border-b border-g800">
-                <div className="font-mono text-[10px] text-kdanger font-bold mb-2">✗ KIKI DOES NOT</div>
-                <ul className="font-mono text-[10px] text-t2 leading-loose pl-[14px] m-0">
+                <div className="font-mono text-caption text-kdanger font-bold mb-2">✗ KIKI DOES NOT</div>
+                <ul className="font-mono text-caption text-t2 leading-loose pl-[14px] m-0">
                   <li>Access your personal social media</li>
                   <li>Post organic content on your behalf</li>
                   <li>Access billing or payment methods</li>
@@ -86,12 +86,12 @@ export default function ConnectAccountsGuide() {
                 <div className="px-4 py-3 flex items-start gap-3">
                   <div className="w-1 h-1 rounded-full shrink-0 mt-[5px]" style={{ background: p.color }} />
                   <div className="flex-1">
-                    <div className="font-mono text-[11px] font-bold text-t1">{p.name}</div>
-                    <div className="font-mono text-[10px] text-t3 mt-[2px]">
+                    <div className="font-mono text-caption font-bold text-t1">{p.name}</div>
+                    <div className="font-mono text-caption text-t3 mt-[2px]">
                       Permissions: {p.permissions.join(", ")}
                     </div>
                   </div>
-                  <div className="font-mono text-[10px] text-t4 text-right shrink-0">
+                  <div className="font-mono text-caption text-t4 text-right shrink-0">
                     {p.time}
                   </div>
                 </div>
@@ -101,7 +101,7 @@ export default function ConnectAccountsGuide() {
         </Section>
 
         <Section title="What happens after you connect">
-          <div className="font-mono text-[11px] text-t2 leading-loose">
+          <div className="font-mono text-caption text-t2 leading-loose">
             <p><strong className="text-t1">Minute 0:</strong> KIKI pulls your campaign structure — campaigns, ad sets, creatives, targeting.</p>
             <p><strong className="text-t1">Minute 1:</strong> The metrics collector starts pulling performance data (impressions, clicks, conversions, spend).</p>
             <p><strong className="text-t1">Hour 1:</strong> The token refresh watchdog verifies your token is valid and schedules proactive refresh 1 hour before expiry.</p>
@@ -112,7 +112,7 @@ export default function ConnectAccountsGuide() {
         </Section>
 
         <Section title="Troubleshooting">
-          <div className="font-mono text-[11px] text-t2 leading-loose">
+          <div className="font-mono text-caption text-t2 leading-loose">
             <p><strong className="text-t1">Token expired:</strong> KIKI&apos;s watchdog refreshes tokens 1 hour before expiry automatically. If it fails, the integration shows &quot;expired&quot; status — click Reconnect.</p>
             <p><strong className="text-t1">No campaigns showing:</strong> Verify you selected the correct ad account during OAuth. Some users have test accounts and production accounts under the same login.</p>
             <p><strong className="text-t1">CAPI events failing:</strong> Check that your pixel/conversion API is set up on the platform side. KIKI sends events, but the platform needs to accept them.</p>
@@ -127,7 +127,7 @@ export default function ConnectAccountsGuide() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-7">
-      <h2 className="font-mono text-[13px] font-bold text-t1 mb-3 pb-2 border-b border-g800">
+      <h2 className="font-mono text-small font-bold text-t1 mb-3 pb-2 border-b border-g800">
         {title}
       </h2>
       {children}
@@ -138,12 +138,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-3 mb-3">
-      <div className="w-[22px] h-[22px] rounded-kdls bg-kblue flex items-center justify-center shrink-0 font-mono text-[10px] font-bold text-white">
+      <div className="w-[22px] h-[22px] rounded-kdls bg-kblue flex items-center justify-center shrink-0 font-mono text-caption font-bold text-white">
         {n}
       </div>
       <div>
-        <div className="font-mono text-[11px] font-bold text-t1 mb-[2px]">{title}</div>
-        <div className="font-mono text-[10px] text-t3 leading-relaxed">{children}</div>
+        <div className="font-mono text-caption font-bold text-t1 mb-[2px]">{title}</div>
+        <div className="font-mono text-caption text-t3 leading-relaxed">{children}</div>
       </div>
     </div>
   );

@@ -106,7 +106,7 @@ export default function ConsentPage() {
           <h1 className="font-mono font-bold text-[clamp(22px,4vw,34px)] text-t1 tracking-[-0.025em] mb-2">
             Cookie & Privacy Settings
           </h1>
-          <p className="font-sans text-[15px] text-t3 leading-[1.7] max-w-[600px]">
+          <p className="font-sans text-lead text-t3 leading-[1.7] max-w-[600px]">
             Manage how KIKI Agent uses cookies and processes your data. You can update your preferences at any time.
           </p>
         </div>
@@ -114,10 +114,10 @@ export default function ConsentPage() {
         {/* Current Status */}
         <div className="p-4 bg-g900 border border-g800 rounded-sm mb-8 flex items-center justify-between flex-wrap gap-3">
           <div>
-            <p className="font-mono font-bold text-[12px] text-t1 mb-1">
+            <p className="font-mono font-bold text-caption text-t1 mb-1">
               {consent ? "Your preferences are saved" : "No preferences saved yet"}
             </p>
-            <p className="font-mono text-[10px] text-t3">
+            <p className="font-mono text-caption text-t3">
               {consent ? `Analytics: ${consent.analytics ? "On" : "Off"} · Marketing: ${consent.marketing ? "On" : "Off"} · Third-Party: ${consent.thirdParty ? "On" : "Off"}` : "Click below to configure your preferences"}
             </p>
           </div>
@@ -126,7 +126,7 @@ export default function ConsentPage() {
 
         {/* Cookie Categories */}
         <div className="mb-10">
-          <h2 className="font-mono font-bold text-[16px] text-t1 mb-4">Cookie Categories</h2>
+          <h2 className="font-mono font-bold text-lead text-t1 mb-4">Cookie Categories</h2>
           <div className="flex flex-col gap-3">
             {COOKIE_CATEGORIES.map((cat) => (
               <div key={cat.id} className="p-5 bg-g900 rounded-sm cursor-pointer transition-colors duration-200" style={{ border: `1px solid ${activeCategory === cat.id ? cat.color + "60" : K.g800}` }}
@@ -135,8 +135,8 @@ export default function ConsentPage() {
                   <div className="flex items-center gap-2.5">
                     <div className="w-2 h-2 rounded-sm" style={{ background: cat.color }} />
                     <div>
-                      <p className="font-mono font-bold text-[13px] text-t1 mb-0.5">{cat.title}</p>
-                      <p className="font-sans text-[12px] text-t3">{cat.desc}</p>
+                      <p className="font-mono font-bold text-small text-t1 mb-0.5">{cat.title}</p>
+                      <p className="font-sans text-caption text-t3">{cat.desc}</p>
                     </div>
                   </div>
                   <div onClick={(e) => e.stopPropagation()}>
@@ -159,10 +159,10 @@ export default function ConsentPage() {
                 </div>
                 {activeCategory === cat.id && (
                   <div className="mt-3 p-3 bg-g850 rounded-sm">
-                    <p className="font-mono text-[10px] text-t4 mb-1.5 tracking-[0.08em]">COOKIES IN THIS CATEGORY</p>
+                    <p className="font-mono text-micro text-t4 mb-1.5 tracking-[0.08em]">COOKIES IN THIS CATEGORY</p>
                     <div className="flex flex-wrap gap-1.5">
                       {cat.examples.map((ex) => (
-                        <Badge key={ex} color={cat.color} className="text-[10px]">{ex}</Badge>
+                        <Badge key={ex} color={cat.color} className="text-caption">{ex}</Badge>
                       ))}
                     </div>
                   </div>
@@ -174,14 +174,14 @@ export default function ConsentPage() {
 
         {/* Data Retention */}
         <div className="mb-10">
-          <h2 className="font-mono font-bold text-[16px] text-t1 mb-4">Data Retention Policy</h2>
+          <h2 className="font-mono font-bold text-lead text-t1 mb-4">Data Retention Policy</h2>
           <div className="border border-g800 rounded-sm overflow-hidden">
             <div className="overflow-x-auto">
               <div className="min-w-[400px]">
                 {DATA_RETENTION.map((item, i) => (
                   <div key={i} className="grid grid-cols-[200px_1fr] py-3 px-4 bg-g900" style={{ borderBottom: i < DATA_RETENTION.length - 1 ? `1px solid ${K.g900}` : "none" }}>
-                    <span className="font-mono font-semibold text-[12px] text-t1">{item.category}</span>
-                    <span className="font-sans text-[12px] text-t3">{item.retention}</span>
+                    <span className="font-mono font-semibold text-caption text-t1">{item.category}</span>
+                    <span className="font-sans text-caption text-t3">{item.retention}</span>
                   </div>
                 ))}
               </div>
@@ -191,13 +191,13 @@ export default function ConsentPage() {
 
         {/* Your Rights */}
         <div className="mb-10">
-          <h2 className="font-mono font-bold text-[16px] text-t1 mb-4">Your Data Rights (GDPR/CCPA)</h2>
+          <h2 className="font-mono font-bold text-lead text-t1 mb-4">Your Data Rights (GDPR/CCPA)</h2>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3">
             {YOUR_RIGHTS.map((item) => (
               <div key={item.right} className="p-4 bg-g900 border border-g800 rounded-sm">
-                <span className="text-[20px] block mb-2">{item.icon}</span>
-                <p className="font-mono font-bold text-[12px] text-t1 mb-1">{item.right}</p>
-                <p className="font-sans text-[12px] text-t3 leading-[1.6]">{item.desc}</p>
+                <span className="text-h3 block mb-2">{item.icon}</span>
+                <p className="font-mono font-bold text-caption text-t1 mb-1">{item.right}</p>
+                <p className="font-sans text-caption text-t3 leading-[1.6]">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -205,8 +205,8 @@ export default function ConsentPage() {
 
         {/* Actions */}
         <div className="p-5 bg-g900 border border-g800 rounded-sm">
-          <h2 className="font-mono font-bold text-[14px] text-t1 mb-3">Data Requests</h2>
-          <p className="font-sans text-[13px] text-t3 mb-4">
+          <h2 className="font-mono font-bold text-body text-t1 mb-3">Data Requests</h2>
+          <p className="font-sans text-small text-t3 mb-4">
             Exercise your data rights. Requests are processed within 72 hours as required by GDPR Article 12.
           </p>
           <div className="flex gap-2.5 flex-wrap">
@@ -233,7 +233,7 @@ export default function ConsentPage() {
               {deleteRequested ? "✓ Deletion Requested" : "🗑️ Delete My Data"}
             </Button>
           </div>
-          <p className="font-mono text-[10px] text-t4 mt-3">
+          <p className="font-mono text-caption text-t4 mt-3">
             For questions, contact <span style={{ color: K.blue4 }}>privacy@keekii.net</span>
           </p>
         </div>

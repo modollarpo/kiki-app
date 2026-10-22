@@ -94,18 +94,18 @@ export function KikiTooltip({ term, children }: { term: string; children?: React
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => { setOpen(false); setExpanded(false); }}
         >
-          <div style={{ fontFamily: K.mono, fontSize: 11, color: K.t1, lineHeight: 1.5, marginBottom: expanded ? 8 : 0 }}>
+          <div style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t1, lineHeight: 1.5, marginBottom: expanded ? 8 : 0 }}>
             {data.short}
           </div>
           {expanded && (
             <>
-              <div style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, lineHeight: 1.6, marginBottom: 8 }}>
+              <div style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3, lineHeight: 1.6, marginBottom: 8 }}>
                 {data.full}
               </div>
               {data.guide && (
                 <a
                   href={`/dashboard/guides/${data.guide}`}
-                  style={{ fontFamily: K.mono, fontSize: 10, color: K.blue, textDecoration: "none" }}
+                  style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.blue, textDecoration: "none" }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   Read the full guide →
@@ -114,7 +114,7 @@ export function KikiTooltip({ term, children }: { term: string; children?: React
             </>
           )}
           {!expanded && (
-            <div style={{ fontFamily: K.mono, fontSize: 9, color: K.t4, marginTop: 4, textAlign: "right" }}>
+            <div style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t4, marginTop: 4, textAlign: "right" }}>
               click for more
             </div>
           )}

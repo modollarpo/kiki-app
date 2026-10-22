@@ -46,8 +46,8 @@ export default function NotificationsPage() {
         <div className="mb-[22px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Notifications</h1>
-            <p className="font-mono text-[11px] text-t3">
-              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `${items.length} total · ${unread} unread`}
+            <p className="font-mono text-caption text-t3">
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-caption text-t3">Loading...</span></span> : `${items.length} total · ${unread} unread`}
             </p>
           </div>
           <div className="flex gap-2 items-center">
@@ -71,13 +71,13 @@ export default function NotificationsPage() {
                     <p className="font-mono text-xs font-bold text-t1">{n.title}</p>
                     <Badge color={severityColor(n.severity)}>{n.severity.toUpperCase()}</Badge>
                   </div>
-                  <p className="font-sans text-[13px] text-t3 leading-relaxed mb-1">{n.body}</p>
-                  <p className="font-mono text-[10px] text-t4">{new Date(n.time).toLocaleString()}</p>
+                  <p className="font-sans text-small text-t3 leading-relaxed mb-1">{n.body}</p>
+                  <p className="font-mono text-caption text-t4">{new Date(n.time).toLocaleString()}</p>
                 </div>
                 {!n.read && (
                   <button
                     onClick={e => { e.stopPropagation(); handleMarkRead(n.id); }}
-                    className="font-mono text-[10px] text-kblue bg-transparent border-none cursor-pointer shrink-0"
+                    className="font-mono text-caption text-kblue bg-transparent border-none cursor-pointer shrink-0"
                   >
                     Mark read
                   </button>

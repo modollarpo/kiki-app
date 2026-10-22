@@ -33,12 +33,12 @@ export default function ToastProvider() {
             className="w-1.5 h-1.5 rounded-full flex-shrink-0"
             style={{ background: COLORS[t.type] || K.blue }}
           />
-          <span className="flex-1 font-mono text-[12px]" style={{ color: K.t1 }}>
+          <span className="flex-1 font-mono text-caption" style={{ color: K.t1 }}>
             {t.message}
           </span>
           <button
             onClick={() => removeToast(t.id)}
-            className="text-[16px] leading-none p-0.5"
+            className="text-lead leading-none p-0.5"
             style={{ color: K.t3, background: "none", border: "none", cursor: "pointer" }}
           >
             ×

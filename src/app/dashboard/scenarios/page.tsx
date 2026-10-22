@@ -40,12 +40,12 @@ export default function ScenariosPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Scenario Planner</h1>
-          <p className="font-mono text-[11px] text-t3">Budget allocation scenarios · Projected ROAS · Risk assessment</p>
+          <p className="font-mono text-caption text-t3">Budget allocation scenarios · Projected ROAS · Risk assessment</p>
         </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -73,24 +73,24 @@ export default function ScenariosPage() {
                     <Badge color={getRiskColor(sc.risk)}>{sc.risk.toUpperCase()} RISK</Badge>
                     <Badge color={sc.confidence != null ? K.t3 : K.warn}>{sc.confidence != null ? `${sc.confidence}% CONF` : "NO MODEL"}</Badge>
                   </div>
-                  <p className="font-mono text-[11px] text-t3 mb-3">{sc.description}</p>
+                  <p className="font-mono text-caption text-t3 mb-3">{sc.description}</p>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
                     <div>
-                      <p className="font-mono text-[10px] text-t4 mb-0.5">BUDGET CHANGE</p>
-                      <p className="font-mono text-[13px] font-bold" style={{ color: sc.budgetChange > 0 ? K.mint : sc.budgetChange < 0 ? K.danger : K.t2 }}>{sc.budgetChange > 0 ? "+" : ""}{sc.budgetChange}%</p>
+                      <p className="font-mono text-caption text-t4 mb-0.5">BUDGET CHANGE</p>
+                      <p className="font-mono text-small font-bold" style={{ color: sc.budgetChange > 0 ? K.mint : sc.budgetChange < 0 ? K.danger : K.t2 }}>{sc.budgetChange > 0 ? "+" : ""}{sc.budgetChange}%</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-t4 mb-0.5">PROJECTED ROAS</p>
-                      <p className="font-mono text-[13px] font-bold text-kmint">{sc.projectedRoas}×</p>
+                      <p className="font-mono text-caption text-t4 mb-0.5">PROJECTED ROAS</p>
+                      <p className="font-mono text-small font-bold text-kmint">{sc.projectedRoas}×</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-t4 mb-0.5">PROJECTED REVENUE</p>
-                      <p className="font-mono text-[13px] font-bold text-t1">{fmt.currency(sc.projectedRevenue)}</p>
+                      <p className="font-mono text-caption text-t4 mb-0.5">PROJECTED REVENUE</p>
+                      <p className="font-mono text-small font-bold text-t1">{fmt.currency(sc.projectedRevenue)}</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-t4 mb-0.5">CONFIDENCE</p>
-                      <p className="font-mono text-[13px] font-bold text-kblue">{sc.confidence != null ? `${sc.confidence}%` : "—"}</p>
+                      <p className="font-mono text-caption text-t4 mb-0.5">CONFIDENCE</p>
+                      <p className="font-mono text-small font-bold text-kblue">{sc.confidence != null ? `${sc.confidence}%` : "—"}</p>
                     </div>
                   </div>
                 </div>

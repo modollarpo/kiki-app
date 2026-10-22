@@ -4,9 +4,9 @@ export default function OfflinePage() {
   return (
     <div className="min-h-screen bg-void flex items-center justify-center py-12 px-6 text-center">
       <div>
-        <div className="text-[56px] mb-5">📡</div>
-        <h1 className="font-mono font-bold text-[28px] text-t1 tracking-tight mb-3">No connection</h1>
-        <p className="font-sans text-[15px] text-t3 leading-[1.7] max-w-[360px] mx-auto mb-7">
+        <div className="text-display mb-5">📡</div>
+        <h1 className="font-mono font-bold text-h1 text-t1 tracking-tight mb-3">No connection</h1>
+        <p className="font-sans text-lead text-t3 leading-[1.7] max-w-[360px] mx-auto mb-7">
           You're offline. KIKI Agent is available offline — some features require a connection to sync live data.
         </p>
         <button
@@ -15,11 +15,11 @@ export default function OfflinePage() {
           RETRY CONNECTION →
         </button>
         <div className="mt-8 p-4 bg-g900 border border-g800 rounded-sm inline-block">
-          <p className="font-mono text-[10px] text-t3 mb-2">Available offline:</p>
+          <p className="font-mono text-caption text-t3 mb-2">Available offline:</p>
           {["Dashboard overview","Cached campaigns","Recent signal data","Wallet balance"].map(f => (
             <div key={f} className="flex items-center gap-2 mb-[5px]">
-              <span className="text-kmint text-[11px]">✓</span>
-              <span className="font-mono text-[11px] text-t2">{f}</span>
+              <span className="text-kmint text-caption">✓</span>
+              <span className="font-mono text-caption text-t2">{f}</span>
             </div>
           ))}
         </div>

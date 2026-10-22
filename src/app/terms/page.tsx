@@ -18,15 +18,15 @@ export default function TermsPage() {
     <MarketingLayout>
       <div className="bg-void max-w-[840px] mx-auto" style={{ padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
         <div className="mb-9">
-          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3">LEGAL</p>
+          <p className="font-mono text-micro tracking-[0.18em] text-t4 mb-3">LEGAL</p>
           <h1 className="font-mono font-bold text-t1 tracking-tight mb-2" style={{ fontSize:"clamp(22px,4vw,34px)" }}>Terms of Service</h1>
-          <p className="font-mono text-[11px] text-t3">Last updated: March 20, 2026 · Version 2.4</p>
+          <p className="font-mono text-caption text-t3">Last updated: March 20, 2026 · Version 2.4</p>
         </div>
         <div className="prose">
           {S.map((s,i) => (
             <div key={i} className={`mb-7 pb-7 ${i<S.length-1?"border-b border-g800":""}`}>
               <h2 className="font-mono font-bold text-base text-t1 mb-2.5">{s.h}</h2>
-              <p className="font-sans text-[13px] text-t2 leading-[1.75]">{s.b}</p>
+              <p className="font-sans text-small text-t2 leading-[1.75]">{s.b}</p>
             </div>
           ))}
         </div>

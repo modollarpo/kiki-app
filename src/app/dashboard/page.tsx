@@ -160,8 +160,8 @@ export default function DashboardPage() {
         <div className="page-header-row">
           <div className="min-w-0">
             <h1 className="font-mono font-bold text-[clamp(16px,2.5vw,20px)] text-t1 tracking-tight mb-1">Command Center</h1>
-            <p className="font-mono text-[11px] text-t3 overflow-hidden text-ellipsis whitespace-nowrap">
-              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `Live · ${data?.system?.status || "nominal"} · ${data?.system?.agentsRunning || 0} agents · ${lastUpdate.toLocaleTimeString()}`}
+            <p className="font-mono text-caption text-t3 overflow-hidden text-ellipsis whitespace-nowrap">
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-caption text-t3">Loading...</span></span> : `Live · ${data?.system?.status || "nominal"} · ${data?.system?.agentsRunning || 0} agents · ${lastUpdate.toLocaleTimeString()}`}
             </p>
           </div>
           <div className="page-header-actions">
@@ -172,7 +172,7 @@ export default function DashboardPage() {
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -193,7 +193,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] gap-3 mb-3">
           <Card padding={0}>
             <div className="px-5 py-[14px] border-b border-kcardborder flex items-center justify-between gap-2 flex-wrap">
-              <h2 className="font-mono font-bold text-[13px] text-t1">Active Campaigns</h2>
+              <h2 className="font-mono font-bold text-small text-t1">Active Campaigns</h2>
               <Button size="sm" onClick={() => router.push("/dashboard/campaigns")}>View All →</Button>
             </div>
             {/* Table header */}
@@ -201,7 +201,7 @@ export default function DashboardPage() {
               <div className="min-w-[500px]">
                 <div className="grid grid-cols-[1fr_65px_65px_65px] gap-2 px-5 py-2 border-b border-kcardborder bg-g950">
               {["NAME", "STATUS", "ROAS", "SPEND"].map(h => (
-                <span key={h} className="font-mono text-[10px] tracking-widest text-t3">{h}</span>
+                <span key={h} className="font-mono text-caption tracking-widest text-t3">{h}</span>
               ))}
             </div>
             {/* Table rows */}
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                 </div>
                 <StatusBadge status={c.status} />
                 <span className={`font-mono text-xs font-bold ${c.roas >= 4 ? "text-kmint" : c.roas >= 2 ? "text-kwarn" : "text-kdanger"}`}>{c.roas}×</span>
-                <span className="font-mono text-[11px] text-t2">${fmt(c.spend)}</span>
+                <span className="font-mono text-caption text-t2">${fmt(c.spend)}</span>
               </div>
             ))}
             {loading && [1, 2, 3].map(i => (
@@ -229,7 +229,7 @@ export default function DashboardPage() {
 
           <Card accent={K.blue}>
             <div className="page-header-row">
-              <h2 className="font-mono font-bold text-[13px] text-t1">AI Agents</h2>
+              <h2 className="font-mono font-bold text-small text-t1">AI Agents</h2>
               <Badge color={K.mint} dot pulse>{agents.filter((a: Record<string, unknown>) => a.status === "running").length} RUNNING</Badge>
             </div>
             {agents.map((agent: Record<string, unknown>) => (
@@ -239,9 +239,9 @@ export default function DashboardPage() {
                   <span className="font-mono text-xs font-bold text-t1">{agent.name as string}</span>
                   <StatusBadge status={agent.status as string} />
                 </div>
-                <p className="font-mono text-[11px] text-t3 mb-[6px] overflow-hidden text-ellipsis whitespace-nowrap">{agent.task as string}</p>
+                <p className="font-mono text-caption text-t3 mb-[6px] overflow-hidden text-ellipsis whitespace-nowrap">{agent.task as string}</p>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] font-bold" style={{ color: agent.color as string }}>{agent.metric as string}</span>
+                  <span className="font-mono text-caption font-bold" style={{ color: agent.color as string }}>{agent.metric as string}</span>
                   <Button size="xs" variant="ghost" onClick={() => handleToggleAgent(agent.id as string, agent.status as string)}>{agent.status === "running" ? "Pause" : "Resume"}</Button>
                 </div>
               </div>
@@ -256,13 +256,13 @@ export default function DashboardPage() {
           <Card accent={K.green}>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xl text-kgreen">⬡</span>
-              <h3 className="font-mono font-bold text-[13px] text-t1">SyncBrain™</h3>
+              <h3 className="font-mono font-bold text-small text-t1">SyncBrain™</h3>
               <Badge color={connected ? K.green : K.t3} dot pulse={connected}>{connected ? "LIVE" : "STANDBY"}</Badge>
             </div>
             {connected ? (
               <AIThinking label="Routing AI tasks across GPT-4o-mini and GPT-4o..." />
             ) : (
-              <p className="font-mono text-[11px] text-t3">Stream standby — connect to view live routing.</p>
+              <p className="font-mono text-caption text-t3">Stream standby — connect to view live routing.</p>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
               {[
@@ -271,7 +271,7 @@ export default function DashboardPage() {
                 { l: "Tokens today", v: syncbrainStats ? fmt(syncbrainStats.totalTokens ?? 0) : "—" },
               ].map(m => (
                 <div key={m.l} className="p-2 bg-g850 rounded-kdls">
-                  <p className="font-mono text-[11px] text-t3 mb-[3px]">{m.l}</p>
+                  <p className="font-mono text-caption text-t3 mb-[3px]">{m.l}</p>
                   <p className="font-mono text-xs font-bold text-kgreen">{m.v}</p>
                 </div>
               ))}
@@ -281,7 +281,7 @@ export default function DashboardPage() {
 
           <Card accent={K.teal}>
             <div className="page-header-row">
-              <h3 className="font-mono font-bold text-[13px] text-t1">Signal Quality</h3>
+              <h3 className="font-mono font-bold text-small text-t1">Signal Quality</h3>
               <Badge color={connected ? K.teal : K.t3} dot pulse={connected}>{connected ? "LIVE" : "STANDBY"}</Badge>
             </div>
             {[
@@ -292,7 +292,7 @@ export default function DashboardPage() {
             ].map(m => (
               <div key={m.l} className="mb-[10px]">
                 <div className="flex justify-between mb-[3px]">
-                  <span className="font-mono text-[11px] text-t3">{m.l}</span>
+                  <span className="font-mono text-caption text-t3">{m.l}</span>
                   <span className="font-mono text-xs font-bold" style={{ color: m.c }}>{m.display}</span>
                 </div>
                 {m.bar !== null && <ProgressBar value={Math.min(100, m.bar)} color={m.c} glow height={4} />}
@@ -302,17 +302,17 @@ export default function DashboardPage() {
 
           <Card>
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-[16px]">📖</span>
-              <p className="font-mono text-[11px] tracking-widest text-t3">QUICK START GUIDES</p>
+              <span className="text-lead">📖</span>
+              <p className="font-mono text-caption tracking-widest text-t3">QUICK START GUIDES</p>
             </div>
             <button key="seed" onClick={handleSeedDemo} disabled={seeding}
               className="w-full flex items-center gap-2 py-2 px-2 rounded-sm mb-1 cursor-pointer transition-all duration-150"
               style={{ background: "transparent", border: `1px solid ${K.gold}40`, opacity: seeding ? 0.6 : 1 }}
               onMouseEnter={e => { e.currentTarget.style.background = K.g800; e.currentTarget.style.borderColor = K.g600; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = `${K.gold}40`; }}>
-              <span className="text-[12px]">{seeding ? "⏳" : "🚀"}</span>
-              <span className="font-mono text-[10px] text-t3 flex-1 text-left">{seeding ? "Loading demo data..." : "Load demo data"}</span>
-              <span className="font-mono text-[9px]" style={{ color: K.gold }}>↻</span>
+              <span className="text-caption">{seeding ? "⏳" : "🚀"}</span>
+              <span className="font-mono text-caption text-t3 flex-1 text-left">{seeding ? "Loading demo data..." : "Load demo data"}</span>
+              <span className="font-mono text-caption" style={{ color: K.gold }}>↻</span>
             </button>
             {[
               { label: "Connect your first ad account", href: "/dashboard/guides/connect-accounts", icon: "🔗" },
@@ -324,18 +324,18 @@ export default function DashboardPage() {
                 style={{ background: "transparent", border: `1px solid ${K.g700}` }}
                 onMouseEnter={e => { e.currentTarget.style.background = K.g800; e.currentTarget.style.borderColor = K.g600; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = K.g700; }}>
-                <span className="text-[12px]">{g.icon}</span>
-                <span className="font-mono text-[10px] text-t3 flex-1 text-left">{g.label}</span>
-                <span className="font-mono text-[9px]" style={{ color: K.blue4 }}>→</span>
+                <span className="text-caption">{g.icon}</span>
+                <span className="font-mono text-caption text-t3 flex-1 text-left">{g.label}</span>
+                <span className="font-mono text-caption" style={{ color: K.blue4 }}>→</span>
               </button>
             ))}
           </Card>
 
           <Card accent={K.gold} glow={K.gold}>
             <div className="mb-[14px]">
-              <p className="font-mono text-[11px] tracking-widest text-t3 mb-[6px]">WALLET BALANCE</p>
+              <p className="font-mono text-caption tracking-widest text-t3 mb-[6px]">WALLET BALANCE</p>
               <p className="font-mono text-[clamp(24px,4vw,32px)] font-bold text-kgold">${fmt(balance)}</p>
-              <p className="font-mono text-[11px] text-t3 mt-1">{cardCount} virtual card(s) issued</p>
+              <p className="font-mono text-caption text-t3 mt-1">{cardCount} virtual card(s) issued</p>
             </div>
             <div className="mt-[14px] flex gap-2">
               <Button variant="mint" size="sm" full onClick={() => router.push("/dashboard/wallet")}>↑ Top Up</Button>

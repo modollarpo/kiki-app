@@ -214,7 +214,7 @@ export default function SyncBrainPage() {
         <div className="flex flex-col overflow-hidden">
           <div className="mb-4">
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">SyncBrain™</h1>
-            <p className="font-mono text-[11px] text-t3">AI-powered campaign intelligence · Voice input via Groq Whisper · Translation via LibreTranslate + Azure AI Translator</p>
+            <p className="font-mono text-caption text-t3">AI-powered campaign intelligence · Voice input via Groq Whisper · Translation via LibreTranslate + Azure AI Translator</p>
           </div>
 
           <Card accent={K.green} className="flex flex-col overflow-hidden flex-1">
@@ -229,19 +229,19 @@ export default function SyncBrainPage() {
                       border: `1px solid ${m.role === "user" ? K.blue + "40" : K.g700}`,
                     }}
                   >
-                    <p className="font-sans text-[13px] leading-relaxed whitespace-pre-wrap" style={{ color: m.role === "user" ? K.blue4 : K.t2 }}>{m.content}</p>
+                    <p className="font-sans text-small leading-relaxed whitespace-pre-wrap" style={{ color: m.role === "user" ? K.blue4 : K.t2 }}>{m.content}</p>
                     <div className="mt-2 flex gap-2 items-center flex-wrap">
                       {m.model && (
                         <>
                           <Badge color={m.model.includes("4o") && !m.model.includes("mini") ? K.gold : K.mint} dot>{m.model}</Badge>
-                          {m.tokens && <span className="font-mono text-[10px] text-t4">{m.tokens} tokens</span>}
+                          {m.tokens && <span className="font-mono text-caption text-t4">{m.tokens} tokens</span>}
                         </>
                       )}
                       {m.role === "assistant" && (
                         <div ref={langRef} className="relative inline-flex">
                           <button
                             onClick={() => { setTargetLang("es"); setLangOpen(prev => !prev); }}
-                            className="font-mono text-[9px] px-2 py-0.5 rounded-sm cursor-pointer whitespace-nowrap"
+                            className="font-mono text-caption px-2 py-0.5 rounded-sm cursor-pointer whitespace-nowrap"
                             style={{ background: K.g800, border: `1px solid ${K.g700}`, color: K.t3 }}
                             title="Translate"
                           >
@@ -256,7 +256,7 @@ export default function SyncBrainPage() {
                                 <button
                                   key={l.code}
                                   onClick={() => { handleTranslate(i, l.code); setLangOpen(false); }}
-                                  className="block w-full text-left font-mono text-[10px] px-3 py-1.5 cursor-pointer whitespace-nowrap"
+                                  className="block w-full text-left font-mono text-caption px-3 py-1.5 cursor-pointer whitespace-nowrap"
                                   style={{ color: l.code === targetLang ? K.mint : K.t3 }}
                                   onMouseEnter={e => (e.currentTarget.style.background = K.g800)}
                                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -271,7 +271,7 @@ export default function SyncBrainPage() {
                     </div>
                     {translations[i] && (
                       <div className="mt-1.5 pt-1.5" style={{ borderTop: `1px solid ${K.g700}40` }}>
-                        <p className="font-sans text-[12px] italic" style={{ color: K.t3 }}>{translations[i]}</p>
+                        <p className="font-sans text-caption italic" style={{ color: K.t3 }}>{translations[i]}</p>
                       </div>
                     )}
                   </div>
@@ -280,7 +280,7 @@ export default function SyncBrainPage() {
               {thinking && (
                 <div className="flex gap-[5px] py-2.5 px-3.5 w-fit rounded-sm" style={{ background: K.g850, border: `1px solid ${K.green}30` }}>
                   {[0, 1, 2].map(i => <span key={i} className="animate-kdls-pulse w-1.5 h-1.5 rounded-full" style={{ background: K.green, animationDelay: `${i * 0.2}s` }} />)}
-                  <span className="font-mono text-[10px] ml-1.5" style={{ color: K.green }}>Thinking...</span>
+                  <span className="font-mono text-caption ml-1.5" style={{ color: K.green }}>Thinking...</span>
                 </div>
               )}
               <div ref={endRef} />
@@ -290,7 +290,7 @@ export default function SyncBrainPage() {
             <div className="flex gap-1.5 overflow-x-auto py-2 px-4" style={{ borderTop: `1px solid ${K.g800}` }}>
               {quickPrompts.map(s => (
                 <button key={s} onClick={() => setInput(s)}
-                  className="font-mono text-[10px] px-3 py-[5px] rounded-full flex-shrink-0 whitespace-nowrap cursor-pointer"
+                  className="font-mono text-caption px-3 py-[5px] rounded-full flex-shrink-0 whitespace-nowrap cursor-pointer"
                   style={{ background: K.g850, border: `1px solid ${K.g700}`, color: K.t3 }}>
                   {s}
                 </button>
@@ -304,13 +304,13 @@ export default function SyncBrainPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && send()}
                 placeholder="Ask SyncBrain anything..."
-                className="flex-1 font-sans text-[13px] px-4 py-[11px] rounded-sm outline-none"
+                className="flex-1 font-sans text-small px-4 py-[11px] rounded-sm outline-none"
                 style={{ background: K.g800, border: `1px solid ${K.g700}`, color: K.t1 }}
               />
               <button
                 onClick={toggleRecording}
                 title={recording ? "Stop recording" : "Start voice input"}
-                className="font-mono text-[11px] px-3 py-[11px] rounded-sm cursor-pointer whitespace-nowrap"
+                className="font-mono text-caption px-3 py-[11px] rounded-sm cursor-pointer whitespace-nowrap"
                 style={{
                   background: recording ? K.danger : K.g850,
                   border: recording ? `1px solid ${K.danger}80` : `1px solid ${K.g700}`,
@@ -337,15 +337,15 @@ export default function SyncBrainPage() {
               const types = stats?.agentTypes ?? [];
               const total = types.reduce((s, a) => s + a.count, 0);
               if (total === 0) {
-                return <p className="font-mono text-[10px] text-t3">No agents configured</p>;
+                return <p className="font-mono text-caption text-t3">No agents configured</p>;
               }
               return types.map(a => {
                 const pct = Math.round((a.count / total) * 100);
                 return (
                   <div key={a.type} className="mb-3">
                     <div className="flex justify-between mb-[3px]">
-                      <span className="font-mono text-[10px] text-t2 capitalize">{a.type}</span>
-                      <span className="font-mono text-[10px] font-bold text-t1">{a.count} · {pct}%</span>
+                      <span className="font-mono text-caption text-t2 capitalize">{a.type}</span>
+                      <span className="font-mono text-caption font-bold text-t1">{a.count} · {pct}%</span>
                     </div>
                     <ProgressBar value={pct} max={100} color={K.blue} height={3} glow />
                   </div>
@@ -360,12 +360,12 @@ export default function SyncBrainPage() {
               stats.recentActions.slice(0, 5).map((action, i) => (
                 <div key={i} className="flex items-center gap-2 py-2" style={{ borderBottom: `1px solid ${K.g800}` }}>
                   <Badge color={K.teal} dot>{action.type}</Badge>
-                  <span className="font-mono text-[10px] text-t2 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{action.details}</span>
+                  <span className="font-mono text-caption text-t2 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{action.details}</span>
                 </div>
               ))
             ) : (
               <div className="py-3 text-center">
-                <span className="font-mono text-[10px] text-t4">No recent actions</span>
+                <span className="font-mono text-caption text-t4">No recent actions</span>
               </div>
             )}
           </Card>
@@ -381,8 +381,8 @@ export default function SyncBrainPage() {
               "Creative performance scoring",
             ].map((cap, i) => (
               <div key={i} className="flex items-center gap-2 py-1.5">
-                <span className="text-t4 text-[10px]">•</span>
-                <span className="font-mono text-[10px] text-t2">{cap}</span>
+                <span className="text-t4 text-caption">•</span>
+                <span className="font-mono text-caption text-t2">{cap}</span>
               </div>
             ))}
           </Card>

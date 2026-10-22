@@ -117,7 +117,7 @@ export default function CompetitorPage() {
             <h1 className="font-mono font-bold text-[clamp(16px,2.5vw,20px)] tracking-tight mb-1" style={{ color: K.t1 }}>
               Competitor Intelligence
             </h1>
-            <p className="font-mono text-[11px]" style={{ color: K.t3 }}>
+            <p className="font-mono text-caption" style={{ color: K.t3 }}>
               Real-time competitor price monitoring · Autonomous cross-platform defensive response
             </p>
           </div>
@@ -133,13 +133,13 @@ export default function CompetitorPage() {
         </div>
 
         {lastSummary && (
-          <div className="mb-4 px-4 py-3 rounded font-mono text-[11px]" style={{ background: K.g850, border: `1px solid ${K.mint}`, color: K.mint }}>
+          <div className="mb-4 px-4 py-3 rounded font-mono text-caption" style={{ background: K.g850, border: `1px solid ${K.mint}`, color: K.mint }}>
             ✅ {lastSummary}
           </div>
         )}
 
         {runError && (
-          <div className="mb-4 px-4 py-3 rounded font-mono text-[11px]" style={{ background: K.g850, border: `1px solid ${K.warn}`, color: K.warn }}>
+          <div className="mb-4 px-4 py-3 rounded font-mono text-caption" style={{ background: K.g850, border: `1px solid ${K.warn}`, color: K.warn }}>
             ⚠ {runError}
           </div>
         )}
@@ -155,18 +155,18 @@ export default function CompetitorPage() {
           {/* Competitors List */}
           <Card padding={0}>
             <div className="px-5 py-4 border-b" style={{ borderColor: K.cardBorder }}>
-              <h2 className="font-mono font-bold text-[13px]" style={{ color: K.t1 }}>Monitored Competitors</h2>
+              <h2 className="font-mono font-bold text-small" style={{ color: K.t1 }}>Monitored Competitors</h2>
             </div>
             {!configs.length ? (
-              <div className="px-5 py-8 text-center font-mono text-[11px]" style={{ color: K.t3 }}>
+              <div className="px-5 py-8 text-center font-mono text-caption" style={{ color: K.t3 }}>
                 No competitors added yet — add one below
               </div>
             ) : (
               configs.map(c => (
                 <div key={c.id} className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: K.g900 }}>
                   <div>
-                    <p className="font-mono text-[12px] font-semibold" style={{ color: K.t1 }}>{c.domain}</p>
-                    <p className="font-mono text-[10px]" style={{ color: K.t3 }}>
+                    <p className="font-mono text-caption font-semibold" style={{ color: K.t1 }}>{c.domain}</p>
+                    <p className="font-mono text-caption" style={{ color: K.t3 }}>
                       {c.productCategory} · alert at &gt;{c.priceDropThreshold}% drop
                       {c.lastCheckedAt ? ` · checked ${new Date(c.lastCheckedAt).toLocaleTimeString()}` : ""}
                     </p>
@@ -177,20 +177,20 @@ export default function CompetitorPage() {
             )}
             {/* Add Competitor Form */}
             <div className="px-5 py-4 border-t" style={{ borderColor: K.cardBorder }}>
-              <p className="font-mono text-[10px] mb-3" style={{ color: K.t3 }}>ADD COMPETITOR</p>
+              <p className="font-mono text-caption mb-3" style={{ color: K.t3 }}>ADD COMPETITOR</p>
               <div className="flex gap-2 flex-wrap">
                 <input
                   value={newDomain}
                   onChange={e => setNewDomain(e.target.value)}
                   placeholder="competitor-store.com"
-                  className="font-mono text-[11px] px-3 py-2 rounded flex-1 min-w-[140px]"
+                  className="font-mono text-caption px-3 py-2 rounded flex-1 min-w-[140px]"
                   style={{ background: K.g900, border: `1px solid ${K.cardBorder}`, color: K.t1, outline: "none" }}
                 />
                 <input
                   value={newCategory}
                   onChange={e => setNewCategory(e.target.value)}
                   placeholder="category"
-                  className="font-mono text-[11px] px-3 py-2 rounded w-24"
+                  className="font-mono text-caption px-3 py-2 rounded w-24"
                   style={{ background: K.g900, border: `1px solid ${K.cardBorder}`, color: K.t1, outline: "none" }}
                 />
                 <Button
@@ -207,8 +207,8 @@ export default function CompetitorPage() {
 
           {/* Defensive Response Playbook */}
           <Card>
-            <h2 className="font-mono font-bold text-[13px] mb-1" style={{ color: K.t1 }}>⚡ Defensive Response Playbook</h2>
-            <p className="font-mono text-[10px] mb-4" style={{ color: K.t3 }}>Automated cross-platform responses triggered on a competitor price drop.</p>
+            <h2 className="font-mono font-bold text-small mb-1" style={{ color: K.t1 }}>⚡ Defensive Response Playbook</h2>
+            <p className="font-mono text-caption mb-4" style={{ color: K.t3 }}>Automated cross-platform responses triggered on a competitor price drop.</p>
             <div className="space-y-3">
               {[
                 { platform: "Google", action: "Bid +15% on competitor keywords immediately", icon: "🔴", color: "#ef4444" },
@@ -221,8 +221,8 @@ export default function CompetitorPage() {
                 <div key={p.platform} className="flex items-center gap-3 py-2 border-b" style={{ borderColor: K.g900 }}>
                   <span className="text-base shrink-0">{p.icon}</span>
                   <div>
-                    <p className="font-mono text-[11px] font-bold" style={{ color: p.color }}>{p.platform}</p>
-                    <p className="font-mono text-[10px]" style={{ color: K.t3 }}>{p.action}</p>
+                    <p className="font-mono text-caption font-bold" style={{ color: p.color }}>{p.platform}</p>
+                    <p className="font-mono text-caption" style={{ color: K.t3 }}>{p.action}</p>
                   </div>
                 </div>
               ))}
@@ -234,24 +234,24 @@ export default function CompetitorPage() {
         {results.length > 0 && (
           <Card padding={0}>
             <div className="px-5 py-4 border-b" style={{ borderColor: K.cardBorder }}>
-              <h2 className="font-mono font-bold text-[13px]" style={{ color: K.t1 }}>🚨 Latest Arbitrage Actions</h2>
+              <h2 className="font-mono font-bold text-small" style={{ color: K.t1 }}>🚨 Latest Arbitrage Actions</h2>
             </div>
             {results.map((r, i) => (
               <div key={i} className="border-b" style={{ borderColor: K.g900 }}>
                 <div className="px-5 py-3" style={{ background: K.g950 }}>
                   <div className="flex flex-wrap items-center gap-3 mb-1">
-                    <span className="font-mono text-[12px] font-bold" style={{ color: K.danger }}>{r.competitorDomain}</span>
+                    <span className="font-mono text-caption font-bold" style={{ color: K.danger }}>{r.competitorDomain}</span>
                     <Badge color={K.danger}>{`-${r.priceDropPct.toFixed(1)}% price drop`}</Badge>
                     {r.creativeQueued && <Badge color={K.blue}>counter-offer queued</Badge>}
                   </div>
-                  <p className="font-mono text-[10px]" style={{ color: K.t3 }}>{r.summary}</p>
+                  <p className="font-mono text-caption" style={{ color: K.t3 }}>{r.summary}</p>
                 </div>
                 <ScrollableTable>
                   <div style={{ minWidth: 500 }}>
                     {r.defensiveActions.map((a, j) => (
                       <div key={j} className="grid px-5 py-2 border-b gap-4 items-center" style={{ gridTemplateColumns: "80px 1fr 140px 60px", borderColor: K.g900 }}>
-                        <span className="font-mono text-[10px]">{PLATFORM_EMOJI[a.platform] ?? "📢"} {a.platform}</span>
-                        <span className="font-mono text-[10px]" style={{ color: K.t2 }}>{a.campaignName || a.reason}</span>
+                        <span className="font-mono text-caption">{PLATFORM_EMOJI[a.platform] ?? "📢"} {a.platform}</span>
+                        <span className="font-mono text-caption" style={{ color: K.t2 }}>{a.campaignName || a.reason}</span>
                         <Badge color={ACTION_COLOR[a.action] ?? K.t3}>{a.action.replace(/_/g, " ")}</Badge>
                         <Badge color={a.executed ? K.mint : K.danger}>{a.executed ? "done" : "failed"}</Badge>
                       </div>

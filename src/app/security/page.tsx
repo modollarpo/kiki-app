@@ -18,25 +18,25 @@ export default function SecurityPage() {
     <MarketingLayout>
       <div className="py-[clamp(40px,6vw,80px)_clamp(16px,4vw,48px)] max-w-[960px] mx-auto" style={{ background:K.void }}>
         <div className="text-center mb-15">
-          <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center mx-auto mb-4 text-[28px]" style={{ background:K.mintD }}>🛡</div>
+          <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center mx-auto mb-4 text-h1" style={{ background:K.mintD }}>🛡</div>
           <h1 className="font-mono font-bold text-[clamp(28px,5vw,48px)] tracking-[-0.03em] text-t1 mb-4">Security at KIKI</h1>
-          <p className="font-sans text-[16px] text-t3 max-w-[500px] mx-auto">Enterprise-grade security built into every layer of the platform.</p>
+          <p className="font-sans text-lead text-t3 max-w-[500px] mx-auto">Enterprise-grade security built into every layer of the platform.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
           {CONTROLS.map(c=>(
             <div key={c.title} className="p-6 bg-g900 border border-g800 rounded-sm">
               <div className="absolute top-0 left-0 right-0 h-px" style={{ background:`linear-gradient(90deg,transparent,${c.color}60,transparent)` }} />
-              <span className="text-[28px] block mb-3">{c.icon}</span>
-              <p className="font-mono font-bold text-[14px] text-t1 mb-2">{c.title}</p>
-              <p className="font-sans text-[13px] text-t3 leading-[1.6]">{c.desc}</p>
+              <span className="text-h1 block mb-3">{c.icon}</span>
+              <p className="font-mono font-bold text-body text-t1 mb-2">{c.title}</p>
+              <p className="font-sans text-small text-t3 leading-[1.6]">{c.desc}</p>
             </div>
           ))}
         </div>
         <Card accent={K.mint} glow={K.mint}>
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <p className="font-mono font-bold text-[18px] text-t1 mb-1.5">Security whitepaper</p>
-              <p className="font-sans text-[14px] text-t3 max-w-[480px]">Detailed technical documentation of our security architecture, controls, and compliance posture.</p>
+              <p className="font-mono font-bold text-h4 text-t1 mb-1.5">Security whitepaper</p>
+              <p className="font-sans text-body text-t3 max-w-[480px]">Detailed technical documentation of our security architecture, controls, and compliance posture.</p>
             </div>
             <div className="flex gap-2.5">
               <Button variant="secondary" size="md" onClick={() => downloadSimplePDF("kiki-security-whitepaper.pdf", "Security Whitepaper", [

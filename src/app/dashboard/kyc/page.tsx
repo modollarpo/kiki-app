@@ -73,7 +73,7 @@ export default function KycPage() {
       <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
         <div className="mb-[22px]">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">KYC &amp; AML</h1>
-          <p className="font-mono text-[11px] text-t3">Entity verification · Document management · Compliance checks</p>
+          <p className="font-mono text-caption text-t3">Entity verification · Document management · Compliance checks</p>
         </div>
 
         {loading ? (
@@ -97,13 +97,13 @@ export default function KycPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               <Card accent={K.gold}>
-                <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Business Entities</h3>
+                <h3 className="font-mono text-small font-bold text-t1 mb-[14px]">Business Entities</h3>
                 {entities.map(e => (
                   <div key={e.name} className="py-[14px] border-b border-g800">
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <p className="font-mono text-xs font-bold text-t1">{e.name}</p>
-                        <p className="font-mono text-[10px] text-t2">{e.type} · {e.jurisdiction}</p>
+                        <p className="font-mono text-caption text-t2">{e.type} · {e.jurisdiction}</p>
                       </div>
                       <Badge
                         color={e.verificationStatus === "verified" ? K.mint : e.verificationStatus === "pending" ? K.warn : K.danger}
@@ -114,54 +114,54 @@ export default function KycPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
                       <div>
-                        <p className="font-mono text-[10px] text-t4">DOCUMENTS</p>
-                        <p className="font-mono text-[11px] font-bold text-t1">{e.documentsUploaded}/{e.documentsRequired}</p>
+                        <p className="font-mono text-caption text-t4">DOCUMENTS</p>
+                        <p className="font-mono text-caption font-bold text-t1">{e.documentsUploaded}/{e.documentsRequired}</p>
                       </div>
                       <div>
-                        <p className="font-mono text-[10px] text-t4">CHECKS</p>
-                        <p className="font-mono text-[11px] font-bold text-t1">{e.checksPassed}P / {e.checksFailed}F</p>
+                        <p className="font-mono text-caption text-t4">CHECKS</p>
+                        <p className="font-mono text-caption font-bold text-t1">{e.checksPassed}P / {e.checksFailed}F</p>
                       </div>
                       <div>
-                        <p className="font-mono text-[10px] text-t4">NEXT REVIEW</p>
-                        <p className="font-mono text-[11px] font-bold text-t1">{e.nextReview}</p>
+                        <p className="font-mono text-caption text-t4">NEXT REVIEW</p>
+                        <p className="font-mono text-caption font-bold text-t1">{e.nextReview}</p>
                       </div>
                     </div>
                     <ProgressBar value={e.complianceScore} max={100} color={e.complianceScore === 100 ? K.mint : e.complianceScore >= 60 ? K.warn : K.danger} height={4} glow />
-                    <p className="font-mono text-[10px] text-t4 mt-1 text-right">Compliance: {e.complianceScore}%</p>
+                    <p className="font-mono text-caption text-t4 mt-1 text-right">Compliance: {e.complianceScore}%</p>
                   </div>
                 ))}
               </Card>
 
               <div className="flex flex-col gap-3">
                 <Card accent={K.blue}>
-                  <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Documents</h3>
+                  <h3 className="font-mono text-small font-bold text-t1 mb-[14px]">Documents</h3>
                   {documents.length === 0 ? (
-                    <p className="font-mono text-[11px] text-t4">No documents uploaded.</p>
+                    <p className="font-mono text-caption text-t4">No documents uploaded.</p>
                   ) : documents.map(d => (
                     <div key={d.name} className="flex items-center gap-[10px] py-2 border-b border-g800">
                       <Badge color={d.status === "uploaded" ? K.mint : d.status === "pending" ? K.warn : K.danger}>
                         {d.status === "uploaded" ? "UPLOADED" : d.status === "pending" ? "PENDING" : "MISSING"}
                       </Badge>
                       <div className="flex-1">
-                        <p className="font-mono text-[11px] text-t1">{d.name}</p>
-                        <p className="font-mono text-[10px] text-t4">{d.entity}</p>
+                        <p className="font-mono text-caption text-t1">{d.name}</p>
+                        <p className="font-mono text-caption text-t4">{d.entity}</p>
                       </div>
                     </div>
                   ))}
                 </Card>
 
                 <Card accent={K.teal}>
-                  <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Compliance Checks</h3>
+                  <h3 className="font-mono text-small font-bold text-t1 mb-[14px]">Compliance Checks</h3>
                   {checks.map(c => (
                     <div key={c.check} className="flex items-center gap-[10px] py-2 border-b border-g800">
                       <Badge color={c.status === "passed" ? K.mint : c.status === "failed" ? K.danger : K.warn} dot>
                         {c.status === "passed" ? "PASSED" : c.status === "failed" ? "FAILED" : "PENDING"}
                       </Badge>
                       <div className="flex-1">
-                        <p className="font-mono text-[11px] text-t1">{c.check}</p>
-                        {c.entity && <p className="font-mono text-[10px] text-kdanger">{c.entity}</p>}
+                        <p className="font-mono text-caption text-t1">{c.check}</p>
+                        {c.entity && <p className="font-mono text-caption text-kdanger">{c.entity}</p>}
                       </div>
-                      <span className="font-mono text-[10px] text-t4">{c.date}</span>
+                      <span className="font-mono text-caption text-t4">{c.date}</span>
                     </div>
                   ))}
                 </Card>

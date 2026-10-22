@@ -38,8 +38,8 @@ export default function FraudIVTPage() {
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Fraud & IVT Detection</h1>
-            <p className="font-mono text-[11px] text-t3">
-              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `Invalid traffic monitoring · ${stats?.totalDetected || 0} events detected today`}
+            <p className="font-mono text-caption text-t3">
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-caption text-t3">Loading...</span></span> : `Invalid traffic monitoring · ${stats?.totalDetected || 0} events detected today`}
             </p>
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function FraudIVTPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
           <Card accent={K.danger}>
-            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Detections by Severity</h3>
+            <h3 className="font-mono font-bold text-small text-t1 mb-3.5">Detections by Severity</h3>
             {severities.length === 0 ? (
               <EmptyState icon="🛡️" title="No events detected" body="Your traffic is clean today." />
             ) : (
@@ -63,7 +63,7 @@ export default function FraudIVTPage() {
                   <div key={sev} className="py-2.5 border-b border-g800 last:border-0">
                     <div className="flex items-center justify-between mb-1.5">
                       <Badge color={severityColor(sev)} dot>{sev}</Badge>
-                      <span className="font-mono text-sm font-bold text-t1">{count} <span className="font-mono text-[10px] text-t4">events</span></span>
+                      <span className="font-mono text-sm font-bold text-t1">{count} <span className="font-mono text-caption text-t4">events</span></span>
                     </div>
                     <ProgressBar value={pct} color={severityColor(sev)} height={3} />
                   </div>
@@ -73,18 +73,18 @@ export default function FraudIVTPage() {
           </Card>
 
           <Card accent={K.gold}>
-            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Impact</h3>
+            <h3 className="font-mono font-bold text-small text-t1 mb-3.5">Impact</h3>
             <div className="p-4 rounded-sm mb-2.5 bg-g850">
               <p className="font-mono text-2xl font-bold text-kgold">{stats?.estimatedSavings != null ? `$${stats.estimatedSavings.toLocaleString()}` : "—"}</p>
-              <p className="font-mono text-[10px] text-t3 mt-1">{stats?.estimatedSavings != null ? "Estimated savings today" : "Savings unavailable (no campaign CPA data)"}</p>
+              <p className="font-mono text-caption text-t3 mt-1">{stats?.estimatedSavings != null ? "Estimated savings today" : "Savings unavailable (no campaign CPA data)"}</p>
             </div>
             <div className="p-4 rounded-sm bg-g850">
               <p className="font-mono text-2xl font-bold text-kmint">{stats?.blockRate != null ? `${stats.blockRate}%` : "—"}</p>
-              <p className="font-mono text-[10px] text-t3 mt-1">Block rate (blocked / detected)</p>
+              <p className="font-mono text-caption text-t3 mt-1">Block rate (blocked / detected)</p>
             </div>
             <div className="p-4 rounded-sm bg-g850 mt-2.5">
               <p className="font-mono text-2xl font-bold text-t1">{stats?.totalDetected || 0}</p>
-              <p className="font-mono text-[10px] text-t3 mt-1">Total events detected today</p>
+              <p className="font-mono text-caption text-t3 mt-1">Total events detected today</p>
             </div>
           </Card>
         </div>

@@ -48,7 +48,7 @@ export default function GuidesIndex() {
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[900px]">
         <h1 className="font-mono font-bold text-lg text-t1 mb-1">User Guides</h1>
-        <p className="font-mono text-[11px] text-t3 mb-6">
+        <p className="font-mono text-caption text-t3 mb-6">
           Essential reading for every KIKI user. Start with connecting your accounts.
         </p>
 
@@ -64,12 +64,12 @@ export default function GuidesIndex() {
                   <div className="px-5 py-4 flex items-start gap-[14px]">
                     <span className="text-xl leading-none">{g.icon}</span>
                     <div className="flex-1">
-                      <div className="font-mono text-[13px] font-bold text-t1 mb-1">{g.title}</div>
-                      <div className="font-mono text-[11px] text-t3 leading-relaxed">{g.description}</div>
+                      <div className="font-mono text-small font-bold text-t1 mb-1">{g.title}</div>
+                      <div className="font-mono text-caption text-t3 leading-relaxed">{g.description}</div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="font-mono text-[10px] text-t4">{g.readTime} read</div>
-                      <div className="font-mono text-[10px] mt-1" style={{ color: g.color }}>Read →</div>
+                      <div className="font-mono text-caption text-t4">{g.readTime} read</div>
+                      <div className="font-mono text-caption mt-1" style={{ color: g.color }}>Read →</div>
                     </div>
                   </div>
                 </Card>

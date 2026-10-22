@@ -8,7 +8,7 @@ export default function Loading() {
           className="mx-auto mb-4 animate-kdls-spin rounded-full"
           style={{ width: 40, height: 40, border: `3px solid ${K.g700}`, borderTopColor: K.blue }}
         />
-        <p className="font-mono text-[13px] text-t3 tracking-[0.08em]">
+        <p className="font-mono text-small text-t3 tracking-[0.08em]">
           KIKI Agent
         </p>
       </div>

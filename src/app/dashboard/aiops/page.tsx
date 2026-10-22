@@ -92,12 +92,12 @@ export default function AIOpsPage() {
         <div className="p-[clamp(14px,3vw,28px)] max-w-[1400px]">
         <div className="mb-[22px]">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">AI Ops &amp; MLOps</h1>
-          <p className="font-mono text-[11px] text-t3">Agent registry · running status · recent agent actions</p>
+          <p className="font-mono text-caption text-t3">Agent registry · running status · recent agent actions</p>
         </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -110,39 +110,39 @@ export default function AIOpsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
           <Card accent={K.mint}>
-            <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Agent Registry <Badge color={K.mint} className="text-[10px]">REGISTRY</Badge></h3>
+            <h3 className="flex items-center gap-2 font-mono text-small font-bold text-t1 mb-[14px]">Agent Registry <Badge color={K.mint} className="text-caption">REGISTRY</Badge></h3>
             {models.map((m, i) => (
               <div key={i} className="px-3 py-[10px] mb-2 bg-g850 rounded-kdls" style={{ border:`1px solid ${m.status === "running" ? K.mint + "30" : m.status === "error" ? K.danger + "30" : K.g700}` }}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-mono text-[11px] font-bold text-t1">{m.name}</span>
+                  <span className="font-mono text-caption font-bold text-t1">{m.name}</span>
                   <Badge color={statusColor(m.status)}>{m.status.toUpperCase()}</Badge>
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  <span className="font-mono text-[10px] text-t2">{m.type}</span>
-                  <span className="font-mono text-[10px] text-t2">{m.metric}</span>
-                  <span className="font-mono text-[10px] text-t4">{m.actionCount} actions</span>
+                  <span className="font-mono text-caption text-t2">{m.type}</span>
+                  <span className="font-mono text-caption text-t2">{m.metric}</span>
+                  <span className="font-mono text-caption text-t4">{m.actionCount} actions</span>
                 </div>
-                <p className="font-mono text-[10px] text-t3 mt-1">Last: {m.lastAction}</p>
+                <p className="font-mono text-caption text-t3 mt-1">Last: {m.lastAction}</p>
               </div>
             ))}
-            {models.length === 0 && <p className="font-mono text-[10px] text-t4">No agents registered yet.</p>}
+            {models.length === 0 && <p className="font-mono text-caption text-t4">No agents registered yet.</p>}
           </Card>
 
           <Card accent={K.blue}>
-            <h3 className="flex items-center gap-2 font-mono text-[13px] font-bold text-t1 mb-[14px]">Recent Agent Actions <Badge color={connected ? K.blue : K.warn} className="text-[10px]">{connected ? "LIVE" : "OFFLINE"}</Badge></h3>
+            <h3 className="flex items-center gap-2 font-mono text-small font-bold text-t1 mb-[14px]">Recent Agent Actions <Badge color={connected ? K.blue : K.warn} className="text-caption">{connected ? "LIVE" : "OFFLINE"}</Badge></h3>
             {recentActions.map((a, i) => (
               <div key={i} className="px-3 py-[10px] mb-2 bg-g850 rounded-kdls" style={{ border: `1px solid ${K.g700}` }}>
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                  <span className="font-mono text-[11px] font-bold text-t1">{a.actionType}</span>
+                  <span className="font-mono text-caption font-bold text-t1">{a.actionType}</span>
                   <Badge color={a.status === "success" ? K.mint : a.status === "error" ? K.danger : K.warn}>{a.status}</Badge>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] text-t2">{a.agentType}{a.output ? ` · ${a.output}` : ""}</span>
-                  <span className="font-mono text-[10px] text-t4">{a.durationMs != null ? `${a.durationMs}ms` : "—"}</span>
+                  <span className="font-mono text-caption text-t2">{a.agentType}{a.output ? ` · ${a.output}` : ""}</span>
+                  <span className="font-mono text-caption text-t4">{a.durationMs != null ? `${a.durationMs}ms` : "—"}</span>
                 </div>
               </div>
             ))}
-            {recentActions.length === 0 && <p className="font-mono text-[10px] text-t4">No recent agent actions.</p>}
+            {recentActions.length === 0 && <p className="font-mono text-caption text-t4">No recent agent actions.</p>}
           </Card>
         </div>
       </div>

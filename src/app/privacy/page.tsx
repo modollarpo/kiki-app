@@ -20,28 +20,28 @@ export default function PrivacyPage() {
       <div className="bg-void max-w-[840px] mx-auto" style={{ padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
         <div className="mb-9">
           <div className="flex items-center gap-2 mb-3.5 flex-wrap">
-            <span className="font-mono text-[9px] tracking-[0.18em] text-t4">LEGAL</span>
+            <span className="font-mono text-micro tracking-[0.18em] text-t4">LEGAL</span>
             <Badge color={K.mint}>GDPR</Badge>
             <Badge color={K.blue}>CCPA</Badge>
             <Badge color={K.teal}>SOC 2 IN PROGRESS</Badge>
           </div>
           <h1 className="font-mono font-bold text-t1 tracking-tight mb-2" style={{ fontSize:"clamp(22px,4vw,34px)" }}>Privacy Policy</h1>
-          <p className="font-mono text-[11px] text-t3">Last updated: March 20, 2026 · Effective: March 20, 2026</p>
+          <p className="font-mono text-caption text-t3">Last updated: March 20, 2026 · Effective: March 20, 2026</p>
         </div>
         <div className="p-3.5 mb-7 rounded-sm" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
-          <p className="font-sans text-[13px] text-t2 leading-[1.7]">This policy describes how KIKI Agent, a product of STOREGRILL INC LTD, collects, uses, and protects your information. As a data processor, we handle conversion data strictly according to your instructions.</p>
+          <p className="font-sans text-small text-t2 leading-[1.7]">This policy describes how KIKI Agent, a product of STOREGRILL INC LTD, collects, uses, and protects your information. As a data processor, we handle conversion data strictly according to your instructions.</p>
         </div>
         <div className="prose">
           {S.map((s,i) => (
             <div key={i} className={`mb-7 pb-7 ${i<S.length-1?"border-b border-g800":""}`}>
               <h2 className="font-mono font-bold text-base text-t1 mb-2.5">{s.h}</h2>
-              <p className="font-sans text-[13px] text-t2 leading-[1.75]">{s.b}</p>
+              <p className="font-sans text-small text-t2 leading-[1.75]">{s.b}</p>
             </div>
           ))}
         </div>
         <div className="mt-9 p-[18px] bg-g900 border border-g800 rounded-sm">
           <p className="font-mono font-bold text-xs text-t1 mb-1.5">Questions or data requests?</p>
-          <p className="font-sans text-[13px] text-t3">Email <span className="text-kblue4">privacy@keekii.net</span> or use Settings → Privacy → Data Requests in your dashboard.</p>
+          <p className="font-sans text-small text-t3">Email <span className="text-kblue4">privacy@keekii.net</span> or use Settings → Privacy → Data Requests in your dashboard.</p>
         </div>
       </div>
     </MarketingLayout>

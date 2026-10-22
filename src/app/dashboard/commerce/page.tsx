@@ -189,7 +189,7 @@ export default function CommercePage() {
         <div className="flex items-start justify-between gap-4 mb-5 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-2xl text-t1 tracking-tight mb-1">Commerce &amp; CRM</h1>
-            <p className="font-mono text-[11px] text-t3">Closed-loop commerce revenue &amp; realized LTV feedback</p>
+            <p className="font-mono text-caption text-t3">Closed-loop commerce revenue &amp; realized LTV feedback</p>
           </div>
           <Button variant="mint" onClick={() => document.getElementById("connect-panel")?.scrollIntoView({ behavior: "smooth" })}>
             Connect Store
@@ -198,7 +198,7 @@ export default function CommercePage() {
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -211,17 +211,17 @@ export default function CommercePage() {
 
         <div id="connect-panel">
         <Card accent={K.blue} style={{ marginBottom: 16 }}>
-          <h3 className="font-mono font-bold text-[13px] text-t1 mb-4">Connect Store</h3>
+          <h3 className="font-mono font-bold text-small text-t1 mb-4">Connect Store</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-widest mb-1.5" style={{ color: K.t3 }}>Platform</p>
+              <p className="font-mono text-caption uppercase tracking-widest mb-1.5" style={{ color: K.t3 }}>Platform</p>
               <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value)}
                 style={{
                   width: "100%", padding: "10px 14px", background: K.g800,
                   border: `1px solid ${K.g700}`, borderRadius: 2, color: K.t1,
-                  fontFamily: K.mono, fontSize: 13, outline: "none",
+                  fontFamily: K.mono, fontSize: "var(--fs-small)", outline: "none",
                 }}
               >
                 {catalog.length === 0 ? (
@@ -244,9 +244,9 @@ export default function CommercePage() {
         </div>
 
         <Card accent={K.mint} style={{ marginBottom: 16 }}>
-          <h3 className="font-mono font-bold text-[13px] text-t1 mb-4">Connected Stores</h3>
+          <h3 className="font-mono font-bold text-small text-t1 mb-4">Connected Stores</h3>
           {loading ? (
-            <p className="font-mono text-[11px] text-t3 py-4 text-center">Loading connections…</p>
+            <p className="font-mono text-caption text-t3 py-4 text-center">Loading connections…</p>
           ) : connections.length === 0 ? (
             <EmptyState icon="🛒" title="No stores connected" body="Use the Connect Store panel to connect your first store." />
           ) : (
@@ -255,22 +255,22 @@ export default function CommercePage() {
                 <div key={c.id} className="p-3 rounded-sm flex flex-wrap items-center gap-3" style={{ background: K.g850, border: `1px solid ${K.cardBorder}` }}>
                   <div className="flex-1 min-w-[180px]">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-mono text-[11px] font-semibold text-t1">{c.platformName ?? c.platform}</span>
+                      <span className="font-mono text-caption font-semibold text-t1">{c.platformName ?? c.platform}</span>
                       <Badge color={c.status === "active" ? K.mint : c.status === "revoked" ? K.danger : K.warn} dot pulse={c.status === "active"}>{c.status}</Badge>
                     </div>
-                    <span className="font-mono text-[10px] text-t3">{c.shopDomain}</span>
+                    <span className="font-mono text-caption text-t3">{c.shopDomain}</span>
                   </div>
                   <div className="text-right w-28">
-                    <div className="font-mono text-[11px] font-bold text-kmint">{(c.totalOrders || 0).toLocaleString()}</div>
-                    <div className="font-mono text-[9px] text-t3">orders</div>
+                    <div className="font-mono text-caption font-bold text-kmint">{(c.totalOrders || 0).toLocaleString()}</div>
+                    <div className="font-mono text-caption text-t3">orders</div>
                   </div>
                   <div className="text-right w-28">
-                    <div className="font-mono text-[11px] font-bold text-kgold">${(c.totalRevenue || 0).toLocaleString()}</div>
-                    <div className="font-mono text-[9px] text-t3">revenue</div>
+                    <div className="font-mono text-caption font-bold text-kgold">${(c.totalRevenue || 0).toLocaleString()}</div>
+                    <div className="font-mono text-caption text-t3">revenue</div>
                   </div>
                   <div className="text-right w-32">
-                    <div className="font-mono text-[10px] text-t2">{c.lastSyncAt ? new Date(c.lastSyncAt).toLocaleString() : "never"}</div>
-                    <div className="font-mono text-[9px] text-t3">last sync</div>
+                    <div className="font-mono text-caption text-t2">{c.lastSyncAt ? new Date(c.lastSyncAt).toLocaleString() : "never"}</div>
+                    <div className="font-mono text-caption text-t3">last sync</div>
                   </div>
                   <div className="flex gap-2">
                     <Button size="xs" variant="secondary" onClick={() => handleSync(c.id)} loading={busyId === c.id}>Sync now</Button>
@@ -283,10 +283,10 @@ export default function CommercePage() {
         </Card>
 
         <Card accent={K.gold}>
-          <h3 className="font-mono font-bold text-[13px] text-t1 mb-1">LTV Accuracy</h3>
-          <p className="font-mono text-[10px] text-t3 mb-4">Predicted vs realized LTV by segment — proof of closed-loop value</p>
+          <h3 className="font-mono font-bold text-small text-t1 mb-1">LTV Accuracy</h3>
+          <p className="font-mono text-caption text-t3 mb-4">Predicted vs realized LTV by segment — proof of closed-loop value</p>
           {loading ? (
-            <p className="font-mono text-[11px] text-t3 py-4 text-center">Loading accuracy…</p>
+            <p className="font-mono text-caption text-t3 py-4 text-center">Loading accuracy…</p>
           ) : segments.length === 0 ? (
             <EmptyState icon="📉" title="No LTV data yet" body="Connect a store and let realized revenue accumulate to populate LTV accuracy." />
           ) : (
@@ -295,18 +295,18 @@ export default function CommercePage() {
                 <thead>
                   <tr>
                     {["Segment", "Predicted LTV", "Realized LTV", "Error %", "Count"].map((h) => (
-                      <th key={h} className="font-mono text-[10px] uppercase tracking-widest text-left py-2 px-2" style={{ color: K.t4, borderBottom: `1px solid ${K.cardBorder}` }}>{h}</th>
+                      <th key={h} className="font-mono text-caption uppercase tracking-widest text-left py-2 px-2" style={{ color: K.t4, borderBottom: `1px solid ${K.cardBorder}` }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {segments.map((s) => (
                     <tr key={s.segment}>
-                      <td className="font-mono text-[11px] font-semibold text-t1 py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>{s.segment}</td>
-                      <td className="font-mono text-[11px] text-kblue py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>${s.avgPredicted.toFixed(2)}</td>
-                      <td className="font-mono text-[11px] text-kmint py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>${s.avgActual.toFixed(2)}</td>
-                      <td className="font-mono text-[11px] py-2 px-2" style={{ color: Math.abs(s.avgErrorPct) <= 10 ? K.mint : K.warn, borderBottom: `1px solid ${K.g800}` }}>{s.avgErrorPct.toFixed(1)}%</td>
-                      <td className="font-mono text-[11px] text-t2 py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>{s.count.toLocaleString()}</td>
+                      <td className="font-mono text-caption font-semibold text-t1 py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>{s.segment}</td>
+                      <td className="font-mono text-caption text-kblue py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>${s.avgPredicted.toFixed(2)}</td>
+                      <td className="font-mono text-caption text-kmint py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>${s.avgActual.toFixed(2)}</td>
+                      <td className="font-mono text-caption py-2 px-2" style={{ color: Math.abs(s.avgErrorPct) <= 10 ? K.mint : K.warn, borderBottom: `1px solid ${K.g800}` }}>{s.avgErrorPct.toFixed(1)}%</td>
+                      <td className="font-mono text-caption text-t2 py-2 px-2" style={{ borderBottom: `1px solid ${K.g800}` }}>{s.count.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>

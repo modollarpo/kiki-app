@@ -47,6 +47,22 @@ const config: Config = {
         mono:    ["Inter", "JetBrains Mono", "monospace"],
         sans:    ["Inter", "system-ui", "sans-serif"],
       },
+      fontSize: {
+        // ── Design-system type scale (rem, base 16px) ──────────
+        // caption is the minimum size for anything a user must read.
+        // micro is allowed ONLY for non-essential metadata (axis ticks,
+        // dense-table timestamps).
+        caption: ["0.75rem", { lineHeight: "1.4" }],   // 12px
+        micro:   ["0.6875rem", { lineHeight: "1.35" }], // 11px — metadata only
+        small:   ["0.8125rem", { lineHeight: "1.5" }],  // 13px — table cells
+        body:    ["0.875rem", { lineHeight: "1.55" }],  // 14px — default body
+        lead:    ["1rem", { lineHeight: "1.6" }],       // 16px
+        h4:      ["1.125rem", { lineHeight: "1.4" }],   // 18px
+        h3:      ["1.25rem", { lineHeight: "1.35" }],   // 20px
+        h2:      ["1.5rem", { lineHeight: "1.3" }],     // 24px
+        h1:      ["1.875rem", { lineHeight: "1.2", letterSpacing: "-0.02em" }], // 30px
+        display: ["2.5rem", { lineHeight: "1.1", letterSpacing: "-0.025em" }],  // 40px
+      },
       borderRadius: {
         kdls: "2px",
       },

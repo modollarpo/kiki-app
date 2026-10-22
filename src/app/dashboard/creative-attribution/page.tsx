@@ -62,15 +62,15 @@ export default function CreativeAttributionPage() {
         <div className="mb-[22px] flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Creative Attribution</h1>
-            <p className="font-mono text-[11px] text-t3">Per-signal-variant revenue attribution</p>
+            <p className="font-mono text-caption text-t3">Per-signal-variant revenue attribution</p>
           </div>
           <div className="flex gap-2 items-center shrink-0 flex-wrap">
             <select value={model} onChange={e => handleModelChange(e.target.value)}
-              className="px-[10px] py-[6px] font-mono text-[11px] bg-g850 border border-g700 rounded-kdls text-t1 min-h-[32px] outline-none">
+              className="px-[10px] py-[6px] font-mono text-caption bg-g850 border border-g700 rounded-kdls text-t1 min-h-[32px] outline-none">
               <option value="last_touch">Last Touch</option><option value="first_touch">First Touch</option><option value="linear">Linear</option><option value="position">Position (U-Shape)</option><option value="time_decay">Time Decay</option>
             </select>
             <button onClick={fetchBreakdown}
-              className="px-5 py-2 font-mono text-[11px] font-semibold rounded-kdls border border-kblue/40 bg-kblue/20 text-kblue cursor-pointer min-h-[32px]">
+              className="px-5 py-2 font-mono text-caption font-semibold rounded-kdls border border-kblue/40 bg-kblue/20 text-kblue cursor-pointer min-h-[32px]">
               Load Breakdown
             </button>
           </div>
@@ -90,7 +90,7 @@ export default function CreativeAttributionPage() {
           <div className="flex justify-center p-15"><AIThinking text="Computing attribution..." /></div>
         ) : (
           <Card accent={K.mint}>
-            <h3 className="font-mono text-[13px] font-bold text-t1 mb-[14px]">Signal-Variant Breakdown</h3>
+            <h3 className="font-mono text-small font-bold text-t1 mb-[14px]">Signal-Variant Breakdown</h3>
             {attributions.length === 0 ? (
               <div className="p-10 text-center"><p className="font-mono text-xs text-t3">No attribution data yet. Signals will be matched to creative variants.</p></div>
             ) : (
@@ -102,15 +102,15 @@ export default function CreativeAttributionPage() {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-mono text-xs font-bold text-kmint">${(a.total_revenue || 0).toLocaleString()}</p>
-                    <p className="font-mono text-[11px] text-t3">revenue</p>
+                    <p className="font-mono text-caption text-t3">revenue</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-mono text-xs font-bold text-kgold">${(a.total_ltv || 0).toLocaleString()}</p>
-                    <p className="font-mono text-[11px] text-t3">LTV</p>
+                    <p className="font-mono text-caption text-t3">LTV</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-mono text-xs font-bold text-kblue">{a.attributions || 0}</p>
-                    <p className="font-mono text-[11px] text-t3">attrib.</p>
+                    <p className="font-mono text-caption text-t3">attrib.</p>
                   </div>
                 </div>
               ))

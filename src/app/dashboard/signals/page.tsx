@@ -100,17 +100,17 @@ export default function SignalsPage() {
         <div className="flex justify-between items-start mb-[22px] gap-3 flex-wrap">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Signal Processing</h1>
-            <p className="font-mono text-[11px] text-t3">Real-time conversion signals · LTV enrichment · {recentSignals.length > 0 ? `${recentSignals.length} recent signals` : "No signals yet"}</p>
+            <p className="font-mono text-caption text-t3">Real-time conversion signals · LTV enrichment · {recentSignals.length > 0 ? `${recentSignals.length} recent signals` : "No signals yet"}</p>
           </div>
           <div className="flex gap-2 items-center">
             <button onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`px-3 py-[6px] font-mono text-[10px] font-semibold rounded-kdls cursor-pointer transition-colors ${
+              className={`px-3 py-[6px] font-mono text-caption font-semibold rounded-kdls cursor-pointer transition-colors ${
                 autoRefresh ? "bg-kgreen/20 border border-kgreen/40 text-kgreen" : "bg-g900 border border-g800 text-t3"
               }`}>
               {autoRefresh ? "● LIVE" : "○ PAUSED"}
             </button>
             {!connected && (
-              <span className="px-3 py-[6px] font-mono text-[10px] font-semibold rounded-kdls bg-g900 border border-g800 text-t4">○ DISCONNECTED</span>
+              <span className="px-3 py-[6px] font-mono text-caption font-semibold rounded-kdls bg-g900 border border-g800 text-t4">○ DISCONNECTED</span>
             )}
             <Button onClick={fetchSignals} variant="ghost" size="sm">Refresh</Button>
           </div>
@@ -136,10 +136,10 @@ export default function SignalsPage() {
                   {Object.entries(platformBreakdown).map(([platform, count]) => (
                     <div key={platform} className="p-3 bg-g850 rounded-kdls border border-g800"
                       style={{ borderColor: `${platformColors[platform] || K.t3}30` }}>
-                      <p className="font-mono text-[10px] tracking-widest text-t4 mb-[6px]">PLATFORM</p>
+                      <p className="font-mono text-caption tracking-widest text-t4 mb-[6px]">PLATFORM</p>
                       <p className="font-mono text-sm font-bold capitalize"
                         style={{ color: platformColors[platform] || K.t1 }}>{platform}</p>
-                      <p className="font-mono text-[11px] text-t2 mt-1">{count.toLocaleString()} signals</p>
+                      <p className="font-mono text-caption text-t2 mt-1">{count.toLocaleString()} signals</p>
                     </div>
                   ))}
                 </div>
@@ -148,11 +148,11 @@ export default function SignalsPage() {
 
             <Card accent={K.green}>
               <div className="px-5 py-[14px] border-b border-g800 flex justify-between items-center">
-                <h2 className="font-mono font-bold text-[13px] text-t1">Recent Signals</h2>
+                <h2 className="font-mono font-bold text-small text-t1">Recent Signals</h2>
                 {autoRefresh && (
                   <div className="flex gap-[5px] items-center">
                     {[0, 1, 2].map(i => <span key={i} className="animate-kdls-pulse" style={{ width: 5, height: 5, borderRadius: "50%", background: K.green, animationDelay: `${i * 0.2}s` }} />)}
-                    <span className="font-mono text-[10px] text-kgreen ml-1">Live</span>
+                    <span className="font-mono text-caption text-kgreen ml-1">Live</span>
                   </div>
                 )}
               </div>
@@ -170,13 +170,13 @@ export default function SignalsPage() {
                         <div>
                           <Badge color={platformColors[signal.platform] || K.t3} dot>{signal.platform}</Badge>
                         </div>
-                        <span className="font-mono text-[11px] text-t2">{signal.eventType}</span>
+                        <span className="font-mono text-caption text-t2">{signal.eventType}</span>
                         <div>
-                          <p className="font-mono text-[11px] text-t1 mb-[2px]">LTV: ${signal.ltvPredicted.toFixed(2)}</p>
-                          <p className="font-mono text-[10px] text-t4">Confidence: {(signal.ltvConfidence * 100).toFixed(1)}%</p>
+                          <p className="font-mono text-caption text-t1 mb-[2px]">LTV: ${signal.ltvPredicted.toFixed(2)}</p>
+                          <p className="font-mono text-caption text-t4">Confidence: {(signal.ltvConfidence * 100).toFixed(1)}%</p>
                         </div>
                         <Badge color={signal.segment === "high" ? K.mint : signal.segment === "medium" ? K.gold : K.t3}>{signal.segment}</Badge>
-                        <span className="font-mono text-[11px] text-t2">{signal.bidMultiplier.toFixed(2)}x</span>
+                        <span className="font-mono text-caption text-t2">{signal.bidMultiplier.toFixed(2)}x</span>
                         <Badge color={signal.enriched ? K.mint : K.warn}>{signal.enriched ? "✓" : "..."}</Badge>
                       </div>
                     ))

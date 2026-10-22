@@ -92,16 +92,16 @@ export default function ContractsPage() {
     <MarketingLayout>
       <div className="bg-void mx-auto max-w-[1040px] px-[clamp(16px,4vw,48px)] py-[clamp(40px,6vw,80px)]">
         <div className="mb-9">
-          <p className="font-mono text-[9px] tracking-[0.18em] text-t4 mb-3">COMPLIANCE HUB</p>
+          <p className="font-mono text-micro tracking-[0.18em] text-t4 mb-3">COMPLIANCE HUB</p>
           <h1 className="font-mono font-bold text-[clamp(22px,4vw,36px)] text-t1 tracking-[-0.025em] mb-2">Contracts & Downloads</h1>
-          <p className="font-sans text-[15px] text-t3 leading-[1.7] max-w-[560px]">All legal agreements, compliance documentation, and technical resources available for download. Some documents require NDA or are available upon request.</p>
+          <p className="font-sans text-lead text-t3 leading-[1.7] max-w-[560px]">All legal agreements, compliance documentation, and technical resources available for download. Some documents require NDA or are available upon request.</p>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 mb-7 bg-g850 rounded-kdls p-1 w-fit">
           {(["docs","processors"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className="px-[18px] py-[7px] font-mono text-[10px] font-semibold tracking-[0.08em] rounded-kdls border-none uppercase cursor-pointer"
+              className="px-[18px] py-[7px] font-mono text-caption font-semibold tracking-[0.08em] rounded-kdls border-none uppercase cursor-pointer"
               style={{ background: tab === t ? K.g700 : "transparent", color: tab === t ? K.t1 : K.t3 }}>
               {t === "docs" ? "Documents" : "Sub-Processors"}
             </button>
@@ -114,7 +114,7 @@ export default function ContractsPage() {
               <div key={cat.category} className="mb-8">
                 <div className="flex items-center gap-2.5 mb-3.5">
                   <div className="w-2 h-2 rounded-kdls" style={{ background: cat.color }}/>
-                  <p className="font-mono font-bold text-[11px] tracking-widest" style={{ color: cat.color }}>{cat.category.toUpperCase()}</p>
+                  <p className="font-mono font-bold text-caption tracking-widest" style={{ color: cat.color }}>{cat.category.toUpperCase()}</p>
                 </div>
                 <div className="border border-g800 rounded-kdls overflow-hidden">
                   {cat.items.map((doc, i) => (
@@ -125,13 +125,13 @@ export default function ContractsPage() {
                       <div className="w-9 h-9 rounded-kdls flex items-center justify-center text-base flex-shrink-0" style={{ background: `${cat.color}10`, color: cat.color }}>📄</div>
                       {/* Info */}
                       <div className="flex-1 min-w-[200px]">
-                        <p className="font-mono font-bold text-[12px] text-t1 mb-[3px]">{doc.name}</p>
-                        <p className="font-sans text-[12px] text-t3">{doc.desc}</p>
+                        <p className="font-mono font-bold text-caption text-t1 mb-[3px]">{doc.name}</p>
+                        <p className="font-sans text-caption text-t3">{doc.desc}</p>
                       </div>
                       {/* Meta */}
                       <div className="flex items-center gap-3.5 flex-shrink-0 flex-wrap">
-                        {doc.pages > 0 && <span className="font-mono text-[10px] text-t4">{doc.pages}p</span>}
-                        <span className="font-mono text-[10px] text-t4">{doc.updated}</span>
+                        {doc.pages > 0 && <span className="font-mono text-caption text-t4">{doc.pages}p</span>}
+                        <span className="font-mono text-caption text-t4">{doc.updated}</span>
                         {requested.includes(doc.name) ? (
                           <Badge color={K.mint}>REQUESTED ✓</Badge>
                         ) : (
@@ -153,7 +153,7 @@ export default function ContractsPage() {
         {tab === "processors" && (
           <div>
             <div className="p-[14px] rounded-kdls mb-6" style={{ background: K.blueT, border: `1px solid ${K.blue}25` }}>
-              <p className="font-sans text-[13px] text-t2 leading-[1.7]">
+              <p className="font-sans text-small text-t2 leading-[1.7]">
                 This is the complete list of sub-processors engaged by KIKI Agent Inc. to process personal data on behalf of customers. Last updated: March 20, 2026. Changes notified via email with 30 days notice.
               </p>
             </div>
@@ -162,15 +162,15 @@ export default function ContractsPage() {
                 <div className="min-w-[600px]">
                   <div className="grid grid-cols-[160px_1fr_1fr_120px] px-5 py-2 bg-g950" style={{ borderBottom: `1px solid ${K.g800}` }}>
                     {["SUB-PROCESSOR","PURPOSE","DATA REGIONS","CERTIFICATIONS"].map(h => (
-                      <span key={h} className="font-mono text-[9px] tracking-widest text-t4">{h}</span>
+                      <span key={h} className="font-mono text-caption tracking-widest text-t4">{h}</span>
                     ))}
                   </div>
                   {SUB_PROCESSORS.map((sp, i) => (
                     <div key={i} className="grid grid-cols-[160px_1fr_1fr_120px] px-5 py-[13px] items-start gap-3"
                       style={{ borderBottom: i < SUB_PROCESSORS.length - 1 ? `1px solid ${K.g900}` : "none", background: i % 2 === 0 ? K.g900 : K.g950 }}>
-                      <span className="font-mono text-[12px] font-bold text-t1">{sp.name}</span>
-                      <span className="font-sans text-[12px] text-t3 leading-[1.5]">{sp.purpose}</span>
-                      <span className="font-mono text-[11px] text-t2">{sp.region}</span>
+                      <span className="font-mono text-caption font-bold text-t1">{sp.name}</span>
+                      <span className="font-sans text-caption text-t3 leading-[1.5]">{sp.purpose}</span>
+                      <span className="font-mono text-caption text-t2">{sp.region}</span>
                       <Badge color={K.mint}>{sp.cert}</Badge>
                     </div>
                   ))}
@@ -178,7 +178,7 @@ export default function ContractsPage() {
               </div>
             </div>
             <div className="mt-5 p-4 bg-g900 rounded-kdls" style={{ border: `1px solid ${K.g800}` }}>
-              <p className="font-mono text-[11px] text-t3">To object to a new sub-processor or request the full DPA, email <span className="text-kblue4">privacy@keekii.net</span></p>
+              <p className="font-mono text-caption text-t3">To object to a new sub-processor or request the full DPA, email <span className="text-kblue4">privacy@keekii.net</span></p>
             </div>
           </div>
         )}

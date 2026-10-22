@@ -116,7 +116,7 @@ export function OnboardingChecklist() {
           cursor: "pointer", marginBottom: 16, transition: "all 0.15s",
         }}
       >
-        <span style={{ fontFamily: K.mono, fontSize: 11, color: K.t3 }}>
+        <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3 }}>
           ▸ Setup checklist · {doneCount}/{total} complete · click to expand
         </span>
         <div style={{ flex: 1, height: 3, background: K.g800, borderRadius: 2 }}>
@@ -132,10 +132,10 @@ export function OnboardingChecklist() {
         background: `${K.mint}10`, border: `1px solid ${K.mint}40`, borderRadius: 4,
         padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16,
       }}>
-        <span style={{ fontFamily: K.mono, fontSize: 12, color: K.mint }}>
+        <span style={{ fontFamily: K.mono, fontSize: "var(--fs-caption)", color: K.mint }}>
           ✓ Setup complete — all {total} steps done. KIKI is fully operational.
         </span>
-        <button onClick={dismiss} style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, background: "none", border: "none", cursor: "pointer" }}>
+        <button onClick={dismiss} style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3, background: "none", border: "none", cursor: "pointer" }}>
           dismiss
         </button>
       </div>
@@ -155,10 +155,10 @@ export function OnboardingChecklist() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontFamily: K.mono, fontSize: 12, fontWeight: 700, color: K.t1 }}>
+          <span style={{ fontFamily: K.mono, fontSize: "var(--fs-caption)", fontWeight: 700, color: K.t1 }}>
             Setup Checklist
           </span>
-          <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t3 }}>
+          <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3 }}>
             {doneCount}/{total}
           </span>
         </div>
@@ -166,7 +166,7 @@ export function OnboardingChecklist() {
           <div style={{ width: 80, height: 4, background: K.g800, borderRadius: 2 }}>
             <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? K.mint : K.blue, borderRadius: 2, transition: "width 0.3s" }} />
           </div>
-          <button onClick={(e) => { e.stopPropagation(); dismiss(); }} style={{ fontFamily: K.mono, fontSize: 10, color: K.t4, background: "none", border: "none", cursor: "pointer" }}>
+          <button onClick={(e) => { e.stopPropagation(); dismiss(); }} style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t4, background: "none", border: "none", cursor: "pointer" }}>
             {expanded ? "collapse" : "expand"}
           </button>
         </div>
@@ -196,21 +196,21 @@ export function OnboardingChecklist() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   flexShrink: 0, transition: "all 0.15s",
                 }}>
-                  {isDone && <span style={{ fontSize: 10, color: K.void, fontWeight: 700 }}>✓</span>}
+                  {isDone && <span style={{ fontSize: "var(--fs-micro)", color: K.void, fontWeight: 700 }}>✓</span>}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontFamily: K.mono, fontSize: 11, color: isDone ? K.t3 : K.t1, textDecoration: isDone ? "line-through" : "none" }}>
+                    <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: isDone ? K.t3 : K.t1, textDecoration: isDone ? "line-through" : "none" }}>
                       {step.icon} {step.label}
                     </span>
                   </div>
-                  <span style={{ fontFamily: K.mono, fontSize: 10, color: K.t4 }}>{step.description}</span>
+                  <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t4 }}>{step.description}</span>
                 </div>
                 {!isDone && (
                   <button
                     onClick={(e) => { e.stopPropagation(); router.push(step.href); }}
                     style={{
-                      fontFamily: K.mono, fontSize: 9, color: K.blue, background: "none",
+                      fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.blue, background: "none",
                       border: `1px solid ${K.blue}40`, borderRadius: 2, padding: "3px 8px",
                       cursor: "pointer", flexShrink: 0,
                     }}

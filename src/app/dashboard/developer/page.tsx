@@ -51,12 +51,12 @@ export default function DeveloperPage() {
         <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
         <div className="mb-5">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Developer Console</h1>
-          <p className="font-mono text-[11px] text-t3">API keys · Webhooks · SDK version · Rate limits · Usage</p>
+          <p className="font-mono text-caption text-t3">API keys · Webhooks · SDK version · Rate limits · Usage</p>
         </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -67,8 +67,8 @@ export default function DeveloperPage() {
             { label: "Total Cost", value: loading ? "…" : `$${totalCost.toFixed(2)}`, color: K.gold },
           ].map((s, i) => (
             <Card key={i} accent={s.color}>
-              <p className="font-mono text-[10px] tracking-[0.14em] text-t4 mb-1.5">{s.label}</p>
-              <p className="font-mono text-[22px] font-bold" style={{ color: s.color }}>{s.value}</p>
+              <p className="font-mono text-micro tracking-[0.14em] text-t4 mb-1.5">{s.label}</p>
+              <p className="font-mono text-h3 font-bold" style={{ color: s.color }}>{s.value}</p>
             </Card>
           ))}
         </div>
@@ -76,23 +76,23 @@ export default function DeveloperPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
           <Card padding={0}>
             <div className="px-5 py-3.5 flex justify-between items-center border-b border-g800">
-              <h2 className="font-mono font-bold text-[13px] text-t1 flex items-center gap-2">API Keys <Badge color={K.t3} className="text-[10px]">PENDING</Badge></h2>
+              <h2 className="font-mono font-bold text-small text-t1 flex items-center gap-2">API Keys <Badge color={K.t3} className="text-caption">PENDING</Badge></h2>
             </div>
             {loading ? (
               <div className="flex items-center justify-center py-8"><AIThinking text="Loading..." /></div>
             ) : apiKeys.length === 0 ? (
-              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">API key provisioning is not enabled for this tenant yet.</span></div>
+              <div className="px-5 py-8 text-center"><span className="font-mono text-caption text-t3">API key provisioning is not enabled for this tenant yet.</span></div>
             ) : (
               apiKeys.map((k, i) => (
                 <div key={i} className="px-5 py-3" style={{ borderBottom: i < apiKeys.length - 1 ? `1px solid ${K.g900}` : undefined }}>
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-mono text-[11px] font-semibold text-t1">{k.name}</span>
+                    <span className="font-mono text-caption font-semibold text-t1">{k.name}</span>
                     <Badge color={k.status === "active" ? K.mint : K.danger} dot pulse={k.status === "active"}>
                       {k.status.toUpperCase()}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 mb-1">
-                    <code className="font-mono text-[10px] text-t3 flex-1 py-[3px] px-2 rounded-sm bg-g800">
+                    <code className="font-mono text-caption text-t3 flex-1 py-[3px] px-2 rounded-sm bg-g800">
                       {showKey === i ? k.key : k.key.replace(/./g, "•").slice(0, 24) + "..."}
                     </code>
                     <Button variant="ghost" size="xs" onClick={() => setShowKey(showKey === i ? null : i)}>
@@ -100,9 +100,9 @@ export default function DeveloperPage() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-4">
-                    <span className="font-mono text-[10px] text-t4">Created: {k.created}</span>
-                    <span className="font-mono text-[10px] text-t4">Last used: {k.lastUsed}</span>
-                    <span className="font-mono text-[10px] text-t4">Calls: {k.calls}</span>
+                    <span className="font-mono text-caption text-t4">Created: {k.created}</span>
+                    <span className="font-mono text-caption text-t4">Last used: {k.lastUsed}</span>
+                    <span className="font-mono text-caption text-t4">Calls: {k.calls}</span>
                   </div>
                 </div>
               ))
@@ -111,22 +111,22 @@ export default function DeveloperPage() {
 
           <Card padding={0}>
             <div className="px-5 py-3.5 flex justify-between items-center border-b border-g800">
-              <h2 className="font-mono font-bold text-[13px] text-t1 flex items-center gap-2">Webhooks <Badge color={K.t3} className="text-[10px]">PENDING</Badge></h2>
+              <h2 className="font-mono font-bold text-small text-t1 flex items-center gap-2">Webhooks <Badge color={K.t3} className="text-caption">PENDING</Badge></h2>
             </div>
             {loading ? (
               <div className="flex items-center justify-center py-8"><AIThinking text="Loading..." /></div>
             ) : webhooks.length === 0 ? (
-              <div className="px-5 py-8 text-center"><span className="font-mono text-[11px] text-t3">Webhook endpoint provisioning is not enabled for this tenant yet.</span></div>
+              <div className="px-5 py-8 text-center"><span className="font-mono text-caption text-t3">Webhook endpoint provisioning is not enabled for this tenant yet.</span></div>
             ) : (
               webhooks.map((w, i) => (
                 <div key={i} className="px-5 py-3" style={{ borderBottom: i < webhooks.length - 1 ? `1px solid ${K.g900}` : undefined }}>
                   <div className="flex justify-between items-center mb-1">
                     <Badge color={w.status === "active" ? K.mint : K.t3} dot pulse={w.status === "active"}>{w.status.toUpperCase()}</Badge>
                   </div>
-                  <code className="font-mono text-[10px] text-t2 block mb-1.5 overflow-hidden text-ellipsis whitespace-nowrap">{w.url}</code>
+                  <code className="font-mono text-caption text-t2 block mb-1.5 overflow-hidden text-ellipsis whitespace-nowrap">{w.url}</code>
                   <div className="flex gap-1 flex-wrap">
                     {w.events.map((ev, j) => (
-                      <Badge key={j} color={ev === "*" ? K.gold : K.blue} className="text-[10px]">{ev}</Badge>
+                      <Badge key={j} color={ev === "*" ? K.gold : K.blue} className="text-caption">{ev}</Badge>
                     ))}
                   </div>
                 </div>
@@ -137,17 +137,17 @@ export default function DeveloperPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <Card>
-            <h2 className="font-mono font-bold text-[13px] text-t1 mb-3.5 flex items-center gap-2">Rate Limits <Badge color={K.t3} className="text-[10px]">N/A</Badge></h2>
+            <h2 className="font-mono font-bold text-small text-t1 mb-3.5 flex items-center gap-2">Rate Limits <Badge color={K.t3} className="text-caption">N/A</Badge></h2>
             {loading ? (
               <div className="flex items-center justify-center py-4"><AIThinking text="Loading..." /></div>
             ) : rateLimits.length === 0 ? (
-              <div className="py-4 text-center"><span className="font-mono text-[11px] text-t3">No rate-limit policy configured.</span></div>
+              <div className="py-4 text-center"><span className="font-mono text-caption text-t3">No rate-limit policy configured.</span></div>
             ) : (
               rateLimits.map((r, i) => (
                 <div key={i} className="mb-3">
                   <div className="flex justify-between mb-1">
-                    <code className="font-mono text-[10px] text-t2">{r.endpoint}</code>
-                    <span className="font-mono text-[10px]" style={{ color: r.pct > 80 ? K.danger : K.t3 }}>{r.used} / {r.limit}</span>
+                    <code className="font-mono text-caption text-t2">{r.endpoint}</code>
+                    <span className="font-mono text-caption" style={{ color: r.pct > 80 ? K.danger : K.t3 }}>{r.used} / {r.limit}</span>
                   </div>
                   <div className="rounded-sm h-1 overflow-hidden bg-g800">
                     <div className="h-full rounded-sm" style={{ width: `${r.pct}%`, background: r.pct > 80 ? K.danger : r.pct > 50 ? K.warn : K.blue }} />
@@ -158,22 +158,22 @@ export default function DeveloperPage() {
           </Card>
 
           <Card>
-            <h2 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Recent Actions</h2>
+            <h2 className="font-mono font-bold text-small text-t1 mb-3.5">Recent Actions</h2>
             {loading ? (
               <div className="flex items-center justify-center py-4"><AIThinking text="Loading..." /></div>
             ) : recentActions.length === 0 ? (
-              <div className="py-4 text-center"><span className="font-mono text-[11px] text-t3">No recent actions.</span></div>
+              <div className="py-4 text-center"><span className="font-mono text-caption text-t3">No recent actions.</span></div>
             ) : (
               recentActions.slice(0, 5).map((a, i) => (
                 <div key={i} className="p-2.5 px-3 mb-2 rounded-sm bg-g850" style={{ borderLeft: `3px solid ${a.status === "success" ? K.mint : a.status === "error" ? K.danger : K.warn}` }}>
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-mono text-[11px] font-semibold text-t1">{a.actionType}</span>
+                    <span className="font-mono text-caption font-semibold text-t1">{a.actionType}</span>
                     <Badge color={a.status === "success" ? K.mint : a.status === "error" ? K.danger : K.warn}>{a.status}</Badge>
                   </div>
                   <div className="flex flex-wrap gap-4">
-                    <span className="font-mono text-[10px] text-t4">Agent: {a.agentType}</span>
-                    <span className="font-mono text-[10px] text-t4">{a.durationMs}ms</span>
-                    <span className="font-mono text-[10px] text-t4">{new Date(a.createdAt).toLocaleTimeString()}</span>
+                    <span className="font-mono text-caption text-t4">Agent: {a.agentType}</span>
+                    <span className="font-mono text-caption text-t4">{a.durationMs}ms</span>
+                    <span className="font-mono text-caption text-t4">{new Date(a.createdAt).toLocaleTimeString()}</span>
                   </div>
                 </div>
               ))

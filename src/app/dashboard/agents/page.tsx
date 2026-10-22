@@ -115,15 +115,15 @@ export default function AgentsPage() {
         <div className="mb-[22px] flex items-start justify-between flex-wrap gap-3">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">AI Agents</h1>
-            <p className="font-mono text-[11px] text-t3">
-              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `${visibleAgents.length} agents · ${running.length} running · ${totalActions.toLocaleString()} total actions`}
+            <p className="font-mono text-caption text-t3">
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-caption text-t3">Loading...</span></span> : `${visibleAgents.length} agents · ${running.length} running · ${totalActions.toLocaleString()} total actions`}
             </p>
           </div>
           <Badge color={connected ? K.mint : K.warn} dot pulse={connected}>{connected ? "LIVE" : "OFFLINE"}</Badge>
           {isStarter && (
             <a
               href="/dashboard/billing"
-              className="font-mono text-[11px] text-white bg-kblue hover:bg-kblue rounded-lg px-4 py-2 transition-colors no-underline inline-block whitespace-nowrap"
+              className="font-mono text-caption text-white bg-kblue hover:bg-kblue rounded-lg px-4 py-2 transition-colors no-underline inline-block whitespace-nowrap"
             >
               Upgrade to Growth for all 6 agents
             </a>
@@ -132,7 +132,7 @@ export default function AgentsPage() {
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -156,22 +156,22 @@ export default function AgentsPage() {
                       <span className="font-mono text-xs font-bold text-t1">{agent.name}</span>
                       <StatusBadge status={agent.status} />
                     </div>
-                    <p className="font-mono text-[10px] text-t3 mb-[6px]">{agent.task}</p>
+                    <p className="font-mono text-caption text-t3 mb-[6px]">{agent.task}</p>
 
                     {agent.latestAction && (
                       <div className="p-2 bg-g900 rounded-kdls mb-2 border border-g800">
                         <div className="flex items-center justify-between mb-[3px]">
                           <Badge color={K.teal} dot>{agent.latestAction.action_type.replace(/_/g, " ")}</Badge>
-                          <span className="font-mono text-[10px] text-t4">{agent.latestAction.duration_ms}ms</span>
+                          <span className="font-mono text-caption text-t4">{agent.latestAction.duration_ms}ms</span>
                         </div>
-                        <p className="font-mono text-[10px] text-t4 overflow-hidden text-ellipsis whitespace-nowrap">
+                        <p className="font-mono text-caption text-t4 overflow-hidden text-ellipsis whitespace-nowrap">
                           {agent.latestAction.output.slice(0, 100)}
                         </p>
                       </div>
                     )}
 
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-bold" style={{ color: agent.color }}>{agent.metric}</span>
+                      <span className="font-mono text-caption font-bold" style={{ color: agent.color }}>{agent.metric}</span>
                       <div className="flex gap-[6px]">
                         <Button size="xs" variant="ghost" loading={runningAgent === agent.id} onClick={() => handleRunNow(agent.id)}>
                           ▶ Run Now
@@ -188,22 +188,22 @@ export default function AgentsPage() {
           </div>
 
           <Card accent={K.blue}>
-            <h3 className="font-mono font-bold text-[13px] text-t1 mb-[14px]">Agent Guardrails</h3>
+            <h3 className="font-mono font-bold text-small text-t1 mb-[14px]">Agent Guardrails</h3>
             {guardrails.length > 0 ? guardrails.map(r => (
               <div key={r.label} className="flex items-center justify-between py-[10px] border-b border-g800">
-                <span className="font-mono text-[11px] text-t2">{r.label}</span>
+                <span className="font-mono text-caption text-t2">{r.label}</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] font-bold text-t1">{r.value}</span>
+                  <span className="font-mono text-caption font-bold text-t1">{r.value}</span>
                   <Badge color={K.mint}>{r.status}</Badge>
                 </div>
               </div>
             )) : (
-              <p className="font-mono text-[11px] text-t3 py-2">No guardrails configured</p>
+              <p className="font-mono text-caption text-t3 py-2">No guardrails configured</p>
             )}
-            <p className="font-mono text-[10px] text-t4 mt-4">{guardrails.length} guardrail{guardrails.length === 1 ? "" : "s"} active · {running.length}/{visibleAgents.length} agents running</p>
+            <p className="font-mono text-caption text-t4 mt-4">{guardrails.length} guardrail{guardrails.length === 1 ? "" : "s"} active · {running.length}/{visibleAgents.length} agents running</p>
 
             <div className="mt-4 p-[14px] bg-g850 rounded-kdls border border-g700">
-              <h4 className="font-mono text-[11px] font-bold text-t1 mb-2">Agent Config (Azure OpenAI)</h4>
+              <h4 className="font-mono text-caption font-bold text-t1 mb-2">Agent Config (Azure OpenAI)</h4>
               {[
                 { k: "Primary Model", v: "GPT-4o-mini" },
                 { k: "Fallback Model", v: "GPT-4o" },
@@ -212,8 +212,8 @@ export default function AgentsPage() {
                 { k: "Timeout", v: "30s" },
               ].map(c => (
                 <div key={c.k} className="flex justify-between py-1">
-                  <span className="font-mono text-[10px] text-t4">{c.k}</span>
-                  <span className="font-mono text-[10px] font-bold text-t2">{c.v}</span>
+                  <span className="font-mono text-caption text-t4">{c.k}</span>
+                  <span className="font-mono text-caption font-bold text-t2">{c.v}</span>
                 </div>
               ))}
             </div>

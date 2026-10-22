@@ -64,8 +64,8 @@ export default function CampaignsPage() {
         <div className="mb-[22px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Campaigns</h1>
-            <p className="font-mono text-[11px] text-t3">
-              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-[11px] text-t3">Loading...</span></span> : `${campaignList.length} campaigns · ${active.length} active`}
+            <p className="font-mono text-caption text-t3">
+              {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-caption text-t3">Loading...</span></span> : `${campaignList.length} campaigns · ${active.length} active`}
             </p>
           </div>
           <div className="page-header-actions">
@@ -83,18 +83,18 @@ export default function CampaignsPage() {
         {creating && (
           <div className="mb-4 p-5 bg-koaas/10 border border-koaas/40 rounded-kdls">
             <div className="page-header-row">
-              <span className="font-mono text-[13px] font-bold text-koaas">⬡ New Campaign</span>
+              <span className="font-mono text-small font-bold text-koaas">⬡ New Campaign</span>
               <Button size="xs" variant="ghost" onClick={() => setCreating(false)}>✕</Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-[1fr_120px_120px] gap-[10px] mb-[10px]">
               <input placeholder="Campaign name" value={newName} onChange={e => setNewName(e.target.value)}
-                className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-sans text-[13px] text-t1 outline-none focus:border-kblue" />
+                className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-sans text-small text-t1 outline-none focus:border-kblue" />
               <select value={newPlatform} onChange={e => setNewPlatform(e.target.value)}
-                className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-[11px] text-t1 outline-none">
+                className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none">
                 {["meta","google","tiktok","linkedin","youtube","pinterest"].map(p => <option key={p} value={p}>{p}</option>)}
               </select>
               <input type="number" placeholder="Budget" value={newBudget} onChange={e => setNewBudget(Number(e.target.value))}
-                className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-[11px] text-t1 outline-none" />
+                className="bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none" />
             </div>
             <div className="page-header-actions">
               <Button variant="violet" size="md" onClick={handleCreate}>Create Campaign →</Button>
@@ -105,12 +105,12 @@ export default function CampaignsPage() {
 
         <Card padding={0}>
           <div className="px-5 py-3 border-b border-g800 flex items-center justify-between gap-2 flex-wrap">
-            <span className="font-mono text-[13px] font-bold text-t1">All Campaigns</span>
+            <span className="font-mono text-small font-bold text-t1">All Campaigns</span>
           </div>
           <ScrollableTable>
           <div className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-2 border-b border-g800 bg-g950 min-w-[700px]">
             {["NAME","STATUS","ROAS","SPEND","BUDGET","PLATFORM","CREATED"].map(h => (
-              <span key={h} className="font-mono text-[10px] tracking-widest text-t4">{h}</span>
+              <span key={h} className="font-mono text-caption tracking-widest text-t4">{h}</span>
             ))}
           </div>
           {campaignList.map(c => {
@@ -119,18 +119,18 @@ export default function CampaignsPage() {
               <div key={c.id}
                 className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-3 border-b border-g900 items-center">
                 <div>
-                  <p className="font-mono text-[11px] font-bold text-t1 mb-[3px]">{c.name}</p>
+                  <p className="font-mono text-caption font-bold text-t1 mb-[3px]">{c.name}</p>
                   {c.budget > 0 && <ProgressBar value={(c.spend / c.budget) * 100} color={K.blue} height={2} />}
                 </div>
                 <StatusBadge status={c.status} />
                 <span className={`font-mono text-xs font-bold ${rc}`}>{c.roas > 0 ? `${c.roas}×` : "—"}</span>
-                <span className="font-mono text-[11px] text-t2">{c.spend > 0 ? `$${fmt(c.spend)}` : "—"}</span>
-                <span className="font-mono text-[11px] text-t2">${fmt(c.budget)}</span>
-                <span className="w-4 h-4 rounded-kdls inline-flex items-center justify-center font-mono text-[10px] font-bold"
+                <span className="font-mono text-caption text-t2">{c.spend > 0 ? `$${fmt(c.spend)}` : "—"}</span>
+                <span className="font-mono text-caption text-t2">${fmt(c.budget)}</span>
+                <span className="w-4 h-4 rounded-kdls inline-flex items-center justify-center font-mono text-caption font-bold"
                   style={{ background: `${PLATFORM_COLORS[c.platform] || K.g800}18`, color: PLATFORM_COLORS[c.platform] || K.t2 }}>
                   {c.platform[0]?.toUpperCase()}
                 </span>
-                <span className="font-mono text-[10px] text-t4">{new Date(c.createdAt).toLocaleDateString()}</span>
+                <span className="font-mono text-caption text-t4">{new Date(c.createdAt).toLocaleDateString()}</span>
               </div>
             );
           })}

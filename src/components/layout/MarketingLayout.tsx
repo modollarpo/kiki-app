@@ -78,14 +78,14 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
         {/* Logo */}
         <div style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", flexShrink:0 }} onClick={() => router.push("/")}>
           <Image src="/images/kiki.png" alt="KIKI" width={28} height={28} style={{ borderRadius:3 }} />
-          <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontWeight:700, fontSize:15, color:K.t1 }}>KIKI<span style={{ color:K.blue }}>.</span>Agent</span>
+          <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontWeight:700, fontSize: "var(--fs-body)", color:K.t1 }}>KIKI<span style={{ color:K.blue }}>.</span>Agent</span>
         </div>
 
         {/* Desktop links */}
         <div className="nav-links" style={{ display:"flex", gap:28 }}>
           {NAV_LINKS.map(l => (
             <a key={l.href} href={l.href}
-              style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:11, letterSpacing:"0.08em", color:pathname===l.href?K.t1:K.t3, textDecoration:"none", transition:"color 0.15s" }}
+              style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", letterSpacing:"0.08em", color:pathname===l.href?K.t1:K.t3, textDecoration:"none", transition:"color 0.15s" }}
               onMouseEnter={e => (e.currentTarget.style.color=K.t2)}
               onMouseLeave={e => (e.currentTarget.style.color=pathname===l.href?K.t1:K.t3)}>
               {l.label.toUpperCase()}
@@ -95,7 +95,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
 
         {/* Desktop CTAs */}
         <div className="nav-links" style={{ display:"flex", gap:10, alignItems:"center" }}>
-          <a href="/auth/login" style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:11, letterSpacing:"0.06em", color:K.t3, textDecoration:"none" }}>SIGN IN</a>
+          <a href="/auth/login" style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", letterSpacing:"0.06em", color:K.t3, textDecoration:"none" }}>SIGN IN</a>
           <Button size="sm" onClick={() => router.push("/auth/login")}>START FREE →</Button>
         </div>
 
@@ -120,7 +120,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
           <div style={{ display:"flex", flexDirection:"column", gap:4, marginBottom:24 }}>
             {NAV_LINKS.map(l => (
               <a key={l.href} href={l.href}
-                style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:16, fontWeight:600, color:K.t1, textDecoration:"none", padding:"14px 0", borderBottom:`1px solid ${K.g800}` }}>
+                style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-lead)", fontWeight:600, color:K.t1, textDecoration:"none", padding:"14px 0", borderBottom:`1px solid ${K.g800}` }}>
                 {l.label}
               </a>
             ))}
@@ -131,7 +131,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
             {["Privacy","Terms","Security","Status","Docs","Contracts"].map(l => (
-              <a key={l} href={`/${l.toLowerCase()}`} style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:10, color:K.t3, textDecoration:"none" }}>{l}</a>
+              <a key={l} href={`/${l.toLowerCase()}`} style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color:K.t3, textDecoration:"none" }}>{l}</a>
             ))}
           </div>
         </div>
@@ -149,12 +149,12 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
             <div style={{ minWidth:180 }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, cursor:"pointer" }} onClick={() => router.push("/")}>
                 <Image src="/images/kiki.png" alt="KIKI" width={28} height={28} style={{ borderRadius:3 }} />
-                <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontWeight:700, fontSize:15, color:K.t1 }}>KIKI<span style={{color:K.blue}}>.</span>Agent</span>
+                <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontWeight:700, fontSize: "var(--fs-body)", color:K.t1 }}>KIKI<span style={{color:K.blue}}>.</span>Agent</span>
               </div>
-              <p style={{ fontFamily:"Inter,sans-serif", fontSize:13, color:K.t3, lineHeight:1.7, marginBottom:14 }}>Autonomous LTV campaign execution. Your ad platforms learn from real customer value.</p>
+              <p style={{ fontFamily:"Inter,sans-serif", fontSize: "var(--fs-small)", color:K.t3, lineHeight:1.7, marginBottom:14 }}>Autonomous LTV campaign execution. Your ad platforms learn from real customer value.</p>
               <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                 {["SOC 2 in progress","GDPR","CCPA"].map(b => (
-                  <span key={b} style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:11, letterSpacing:"0.1em", color:K.t3, background:K.g850, border:`1px solid ${K.g700}`, borderRadius:2, padding:"2px 6px" }}>{b}</span>
+                  <span key={b} style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", letterSpacing:"0.1em", color:K.t3, background:K.g850, border:`1px solid ${K.g700}`, borderRadius:2, padding:"2px 6px" }}>{b}</span>
                 ))}
               </div>
             </div>
@@ -162,10 +162,10 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
             {/* Link columns */}
             {FOOTER_COLS.map(col => (
               <div key={col.title}>
-                <p style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:11, letterSpacing:"0.14em", color:K.t3, marginBottom:14, textTransform:"uppercase" }}>{col.title}</p>
+                <p style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", letterSpacing:"0.14em", color:K.t3, marginBottom:14, textTransform:"uppercase" }}>{col.title}</p>
                 {col.links.map(l => (
                   <a key={l.label} href={l.href}
-                    style={{ display:"block", fontFamily:"'Inter',system-ui,sans-serif", fontSize:11, color:K.t3, textDecoration:"none", marginBottom:9, transition:"color 0.15s" }}
+                    style={{ display:"block", fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color:K.t3, textDecoration:"none", marginBottom:9, transition:"color 0.15s" }}
                     onMouseEnter={e => (e.currentTarget.style.color=K.t2)}
                     onMouseLeave={e => (e.currentTarget.style.color=K.t3)}>
                     {l.label}
@@ -178,25 +178,25 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
           {/* Download CTAs */}
           <div style={{ borderTop:`1px solid ${K.g800}`, paddingTop:20, marginBottom:20, display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
             <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
-              <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:11, color:K.t3 }}>DOWNLOAD THE APP</span>
+              <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color:K.t3 }}>DOWNLOAD THE APP</span>
               {[{ l:"📱 iOS", h:"/app-download" }, { l:"▶ Android", h:"/app-download" }, { l:"⬡ Install PWA", h:"/app-download" }].map(a => (
                 <a key={a.l} href={a.h}
-                  style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:10, color:K.blue4, textDecoration:"none", background:K.blueD, border:`1px solid ${K.blue}25`, padding:"4px 10px", borderRadius:2 }}>
+                  style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color:K.blue4, textDecoration:"none", background:K.blueD, border:`1px solid ${K.blue}25`, padding:"4px 10px", borderRadius:2 }}>
                   {a.l}
                 </a>
               ))}
             </div>
             <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
               {[{l:"System Status", h:"/status", c:K.mint},{l:"Developer Docs", h:"/docs", c:K.blue4},{l:"Contact Sales", h:"/contact", c:K.t3}].map(l => (
-                <a key={l.l} href={l.h} style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:10, color:l.c, textDecoration:"none" }}>{l.l}</a>
+                <a key={l.l} href={l.h} style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color:l.c, textDecoration:"none" }}>{l.l}</a>
               ))}
             </div>
           </div>
 
           {/* Bottom bar */}
           <div style={{ borderTop:`1px solid ${K.g800}`, paddingTop:20, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
-            <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:11, letterSpacing:"0.1em", color:K.t3, lineHeight:1.8 }}>KIKI AGENT™ a STOREGRILL INC LTD Company<br/>Registered in England & Wales · © 2026 All Rights Reserved</span>
-            <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize:11, color:K.t3 }}>Built with precision · v2.4.0</span>
+            <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", letterSpacing:"0.1em", color:K.t3, lineHeight:1.8 }}>KIKI AGENT™ a STOREGRILL INC LTD Company<br/>Registered in England & Wales · © 2026 All Rights Reserved</span>
+            <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color:K.t3 }}>Built with precision · v2.4.0</span>
           </div>
         </div>
       </footer>

@@ -45,12 +45,12 @@ export default function CRMPage() {
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)] text-t1">
         <div className="mb-5">
           <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">CRM</h1>
-          <p className="font-mono text-[11px] text-t3">Manage contacts, pipeline, and customer relationships</p>
+          <p className="font-mono text-caption text-t3">Manage contacts, pipeline, and customer relationships</p>
         </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-[11px]" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
           </div>
         )}
 
@@ -63,32 +63,32 @@ export default function CRMPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
           <Card accent={K.mint}>
-            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Contact Segments</h3>
+            <h3 className="font-mono font-bold text-small text-t1 mb-3.5">Contact Segments</h3>
             {buckets.length === 0 ? (
-              <p className="font-mono text-[11px] text-t3 py-2">No contacts yet.</p>
+              <p className="font-mono text-caption text-t3 py-2">No contacts yet.</p>
             ) : buckets.map((seg, i) => (
               <div key={i} className="flex justify-between items-center py-2.5" style={{ borderBottom: i < buckets.length - 1 ? `1px solid ${K.g800}` : undefined }}>
-                <span className="font-mono text-[11px] font-semibold text-t1 capitalize">{seg.status}</span>
-                <span className="font-mono text-[11px] font-bold text-kmint">{seg.count} contacts</span>
+                <span className="font-mono text-caption font-semibold text-t1 capitalize">{seg.status}</span>
+                <span className="font-mono text-caption font-bold text-kmint">{seg.count} contacts</span>
               </div>
             ))}
           </Card>
 
           <Card accent={K.blue}>
-            <h3 className="font-mono font-bold text-[13px] text-t1 mb-3.5">Recent Leads</h3>
+            <h3 className="font-mono font-bold text-small text-t1 mb-3.5">Recent Leads</h3>
             {leads.length === 0 ? (
-              <p className="font-mono text-[11px] text-t3 py-2">No new leads.</p>
+              <p className="font-mono text-caption text-t3 py-2">No new leads.</p>
             ) : leads.map((lead, i) => (
               <div key={i} className="flex flex-wrap items-center gap-2.5 py-2.5" style={{ borderBottom: i < leads.length - 1 ? `1px solid ${K.g800}` : undefined }}>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center font-mono text-[10px] font-bold flex-shrink-0 bg-g800 text-t2">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center font-mono text-caption font-bold flex-shrink-0 bg-g800 text-t2">
                   {lead.name.split(" ").map(n => n[0]).join("")}
                 </div>
                 <div className="flex-1 min-w-[120px]">
                   <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-                    <span className="font-mono text-[11px] font-semibold text-t1">{lead.name}</span>
+                    <span className="font-mono text-caption font-semibold text-t1">{lead.name}</span>
                     <Badge color={lead.status === "qualified" ? K.mint : lead.status === "contacted" ? K.gold : K.blue}>{lead.status}</Badge>
                   </div>
-                  <span className="font-mono text-[10px] text-t3">{lead.company} · {lead.email}</span>
+                  <span className="font-mono text-caption text-t3">{lead.company} · {lead.email}</span>
                 </div>
               </div>
             ))}

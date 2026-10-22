@@ -15,12 +15,12 @@ export default function FirstBidCycleGuide() {
   return (
     <DashboardLayout>
       <div className="p-[clamp(14px,3vw,28px)] max-w-[800px]">
-        <Link href="/dashboard/guides" className="inline-block font-mono text-[10px] text-t3 no-underline mb-4">
+        <Link href="/dashboard/guides" className="inline-block font-mono text-caption text-t3 no-underline mb-4">
           ← Back to Guides
         </Link>
 
         <h1 className="font-mono font-bold text-lg text-t1 mb-2">Understand your first bid cycle</h1>
-        <p className="font-mono text-[11px] text-t3 mb-6 leading-relaxed">
+        <p className="font-mono text-caption text-t3 mb-6 leading-relaxed">
           KIKI&apos;s bidding agent runs every 15 minutes, 24/7. Before your team has their morning coffee, it has already run 4 bid cycles. Here&apos;s exactly what it does.
         </p>
 
@@ -39,9 +39,9 @@ export default function FirstBidCycleGuide() {
                     {d.pct}
                   </div>
                   <div className="flex-1">
-                    <div className="font-mono text-[11px] font-bold text-t1">{d.action}</div>
-                    <div className="font-mono text-[10px] text-t4 mt-[1px]">When: {d.condition}</div>
-                    <div className="font-mono text-[10px] text-t3 leading-relaxed mt-1">{d.desc}</div>
+                    <div className="font-mono text-caption font-bold text-t1">{d.action}</div>
+                    <div className="font-mono text-caption text-t4 mt-[1px]">When: {d.condition}</div>
+                    <div className="font-mono text-caption text-t3 leading-relaxed mt-1">{d.desc}</div>
                   </div>
                 </div>
               </Card>
@@ -50,7 +50,7 @@ export default function FirstBidCycleGuide() {
         </Section>
 
         <Section title="Why the agent needs 5 conversions first">
-          <div className="font-mono text-[11px] text-t2 leading-loose">
+          <div className="font-mono text-caption text-t2 leading-loose">
             <p>The bidding agent won&apos;t touch a campaign until it has at least <strong className="text-t1">5 conversions</strong> in the last 7 days. This isn&apos;t arbitrary — it&apos;s statistical necessity.</p>
             <p>With fewer than 5 conversions, the CAC calculation is too noisy to act on. A single high-value or low-value purchase can swing the number by 40%. Acting on noisy data is worse than not acting at all.</p>
             <p>Once the agent has 5+ conversions, the CAC stabilises to within ±10% of its true value, and the agent can make confident decisions.</p>
@@ -75,10 +75,10 @@ export default function FirstBidCycleGuide() {
               ].map(([field, desc], i) => (
                 <div key={i} className="contents">
                   <div className={`px-[14px] py-2 border-b border-g900 border-r border-r-g800 ${i % 2 === 0 ? "bg-g950" : ""}`}>
-                    <span className="font-mono text-[10px] font-bold text-t1">{field}</span>
+                    <span className="font-mono text-caption font-bold text-t1">{field}</span>
                   </div>
                   <div className={`px-[14px] py-2 border-b border-g900 ${i % 2 === 0 ? "bg-g950" : ""}`}>
-                    <span className="font-mono text-[10px] text-t3">{desc}</span>
+                    <span className="font-mono text-caption text-t3">{desc}</span>
                   </div>
                 </div>
               ))}
@@ -87,14 +87,14 @@ export default function FirstBidCycleGuide() {
         </Section>
 
         <Section title="How to set a good target CAC">
-          <div className="font-mono text-[11px] text-t2 leading-loose">
+          <div className="font-mono text-caption text-t2 leading-loose">
             <p>Your target CAC determines how aggressively the bidding agent optimises. Here&apos;s a formula:</p>
             <Card padding={0}>
               <div className="px-4 py-[14px] bg-g950">
                 <div className="font-mono text-xs text-t1 text-center mb-2">
                   Target CAC = Customer LTV ÷ Desired ROI Multiplier
                 </div>
-                <div className="font-mono text-[10px] text-t3 text-center">
+                <div className="font-mono text-caption text-t3 text-center">
                   Example: If your average customer spends $400 over 90 days and you want 5× return:<br />
                   <span className="text-kmint">$400 ÷ 5 = $80 target CAC</span>
                 </div>
@@ -109,7 +109,7 @@ export default function FirstBidCycleGuide() {
         </Section>
 
         <Section title="What happens during a cycle (technical)">
-          <div className="font-mono text-[10px] text-t3 leading-loose">
+          <div className="font-mono text-caption text-t3 leading-loose">
             <p><strong className="text-t1">Every 15 minutes:</strong></p>
             <ol className="pl-[18px] my-2">
               <li>Pull 7-day metrics for all active campaigns across all tenants</li>
@@ -131,7 +131,7 @@ export default function FirstBidCycleGuide() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-7">
-      <h2 className="font-mono text-[13px] font-bold text-t1 mb-3 pb-2 border-b border-g800">
+      <h2 className="font-mono text-small font-bold text-t1 mb-3 pb-2 border-b border-g800">
         {title}
       </h2>
       {children}

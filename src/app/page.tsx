@@ -103,9 +103,9 @@ export default function HomePage() {
 
   const Check = ({v}:{v:boolean|string}) => (
     <div className="text-center">
-      {v===true ?       <span className="text-kmint text-[15px]">✓</span>
-      :v==="partial" ? <span className="font-mono text-[9px] text-kwarn">PARTIAL</span>
-      :                <span className="text-t4 text-[14px]">—</span>}
+      {v===true ?       <span className="text-kmint text-lead">✓</span>
+      :v==="partial" ? <span className="font-mono text-caption text-kwarn">PARTIAL</span>
+      :                <span className="text-t4 text-body">—</span>}
     </div>
   );
 
@@ -116,19 +116,19 @@ export default function HomePage() {
       <div className="h-8 bg-[#030308] border-b border-g800 flex items-center overflow-hidden">
         <div className="flex items-center gap-1.5 px-[18px] border-r border-g800 h-full shrink-0">
           <span className="animate-kdls-pulse" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-          <span className="font-mono text-[8px] tracking-[0.2em] text-kmint font-bold">LIVE</span>
+          <span className="font-mono text-caption tracking-[0.2em] text-kmint font-bold">LIVE</span>
         </div>
         <div className="ticker-track flex h-full items-center">
           {[...TICKER,...TICKER].map((item,i)=>(
             <div key={i} className="flex items-center gap-2.5 px-[28px] border-r border-g800 h-full shrink-0">
-              <span className="font-mono text-[9px] tracking-widest text-t4">{item.label}</span>
-              <span style={{fontFamily:K.mono,fontSize:11,fontWeight:700,color:item.color}}>{item.value}</span>
+              <span className="font-mono text-caption tracking-widest text-t4">{item.label}</span>
+              <span style={{fontFamily:K.mono,fontSize: "var(--fs-micro)",fontWeight:700,color:item.color}}>{item.value}</span>
             </div>
           ))}
         </div>
         <div className="hidden sm:flex items-center gap-[5px] px-[18px] border-l border-g800 h-full shrink-0 ml-auto">
           <span style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-          <span className="font-mono text-[8px] tracking-[0.1em] text-t4">ALL SYSTEMS NOMINAL</span>
+          <span className="font-mono text-micro tracking-[0.1em] text-t4">ALL SYSTEMS NOMINAL</span>
         </div>
       </div>
 
@@ -145,7 +145,7 @@ export default function HomePage() {
           {/* Eyebrow */}
           <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-kdls px-3 sm:px-4 py-[7px] mb-8 md:mb-10 max-w-full" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
             <span className="animate-kdls-pulse shrink-0" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-            <span className="text-center" style={{fontFamily:K.mono,fontSize:9,letterSpacing:"0.12em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · GDPR &amp; CCPA</span>
+            <span className="text-center" style={{fontFamily:K.mono,fontSize: "var(--fs-micro)",letterSpacing:"0.12em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · GDPR &amp; CCPA</span>
           </div>
 
           {/* Headline */}
@@ -168,7 +168,7 @@ export default function HomePage() {
             <Button size="xl" onClick={()=>router.push("/auth/login")}>START FREE TRIAL →</Button>
             <Button variant="secondary" size="xl" onClick={()=>router.push("/demo")}>WATCH 3-MIN DEMO ▸</Button>
           </div>
-          <p className="font-mono text-[9px] tracking-[0.12em] text-t4">
+          <p className="font-mono text-micro tracking-[0.12em] text-t4">
             NO CREDIT CARD &nbsp;·&nbsp; 14-DAY TRIAL &nbsp;·&nbsp; SOC 2 IN PROGRESS &nbsp;·&nbsp; GDPR &amp; CCPA
           </p>
         </div>
@@ -180,27 +180,27 @@ export default function HomePage() {
             <div className="flex gap-1.5">
               {[K.danger,K.warn,K.pos].map((c,i)=><div key={i} style={{width:11,height:11,borderRadius:"50%",background:c,opacity:0.75}}/>)}
             </div>
-            <span className="flex-1 text-center font-mono text-[10px] text-t4 truncate">kiki-capi-gateway<span className="hidden sm:inline"> &nbsp;·&nbsp; sample event stream</span></span>
+            <span className="flex-1 text-center font-mono text-caption text-t4 truncate">kiki-capi-gateway<span className="hidden sm:inline"> &nbsp;·&nbsp; sample event stream</span></span>
             <div className="flex items-center gap-[5px]">
               <span className="animate-kdls-pulse" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-              <span className="font-mono text-[9px] text-kmint">illustrative</span>
+              <span className="font-mono text-caption text-kmint">illustrative</span>
             </div>
           </div>
           {/* Column headers */}
           <div className="grid grid-cols-[60px_90px_50px_1fr] md:grid-cols-[100px_130px_66px_1fr] px-3 md:px-5 pt-[5px] pb-1 bg-[#060610]" style={{borderBottom:"1px solid rgba(255,255,255,0.03)"}}>
             {["TIMESTAMP","SERVICE","LEVEL","OUTPUT"].map(h=>(
-              <span key={h} className="font-mono text-[7px] md:text-[8px] tracking-[0.14em] text-t4">{h}</span>
+              <span key={h} className="font-mono text-micro md:text-micro tracking-[0.14em] text-t4">{h}</span>
             ))}
           </div>
           {/* Log lines */}
           <div className="px-3 md:px-5 pt-[14px] pb-5 min-h-[190px] overflow-x-auto">
             {TERMINAL.slice(0,termIdx).map((line,i)=>(
               <div key={i} className="grid grid-cols-[60px_90px_50px_1fr] md:grid-cols-[100px_130px_66px_1fr] items-baseline" style={{lineHeight:1.95}}>
-                <span className="font-mono text-[8px] md:text-[10px] text-[#2a2a44]">{line.ts}</span>
-                <span className="font-mono text-[8px] md:text-[10px] text-t3 truncate">{line.svc}</span>
-                <span style={{fontFamily:K.mono,fontSize:10,fontWeight:700,color:line.color}}>{line.lvl}</span>
+                <span className="font-mono text-caption md:text-caption text-[#2a2a44]">{line.ts}</span>
+                <span className="font-mono text-caption md:text-caption text-t3 truncate">{line.svc}</span>
+                <span style={{fontFamily:K.mono,fontSize: "var(--fs-micro)",fontWeight:700,color:line.color}}>{line.lvl}</span>
                 {line.special?(
-                  <span className="font-mono text-[11px]">
+                  <span className="font-mono text-caption">
                     <span style={{color:K.t3}}>order=</span><span style={{color:"#8888aa"}}>149.00</span>
                     <span style={{color:K.t4}}> → </span>
                     <span style={{color:K.mint,fontWeight:700}}>ltv_signal=639.20</span>
@@ -208,7 +208,7 @@ export default function HomePage() {
                     <span style={{color:K.gold}}>confidence=0.94</span>
                   </span>
                 ):(
-                  <span style={{fontFamily:K.mono,fontSize:11,color:i===3?K.gold:K.t3}}>{line.txt}</span>
+                  <span style={{fontFamily:K.mono,fontSize: "var(--fs-micro)",color:i===3?K.gold:K.t3}}>{line.txt}</span>
                 )}
               </div>
             ))}
@@ -221,14 +221,14 @@ export default function HomePage() {
           {[["8","PLATFORMS"],["28","SIGNAL FEATURES"],["6","AI AGENTS"],["4","LTV TIERS"],["<100ms","ENRICHMENT P99"]].map(([v,l],i,arr)=>(
             <div key={l} className="stats-bar-item flex-1 min-w-[calc(33%-1px)] sm:min-w-[140px] py-4 px-[18px] text-center" style={{borderRight:i<arr.length-1?`1px solid ${K.g800}`:"none",borderBottom:`1px solid ${K.g800}`}}>
               <div className="font-mono font-bold text-[clamp(16px,3vw,20px)] text-t1 tracking-[-0.02em]">{v}</div>
-              <div className="font-mono text-[8px] tracking-[0.14em] text-t4 mt-[5px]">{l}</div>
+              <div className="font-mono text-micro tracking-[0.14em] text-t4 mt-[5px]">{l}</div>
             </div>
           ))}
         </div>
 
         {/* Platform logos */}
         <div className="relative z-[1] mt-[clamp(20px,4vw,44px)] w-full max-w-[900px] text-center px-2">
-          <p className="font-mono text-[8px] tracking-[0.18em] text-t4 mb-4.5 break-words">ENRICHES SIGNALS ACROSS 8 AD PLATFORMS</p>
+          <p className="font-mono text-micro tracking-[0.18em] text-t4 mb-4.5 break-words">ENRICHES SIGNALS ACROSS 8 AD PLATFORMS</p>
           <div className="flex gap-2 flex-wrap justify-center">
             {PLATFORMS.map(p=>{
               const c=PLATFORM_COLORS[p]||K.t3;
@@ -236,8 +236,8 @@ export default function HomePage() {
                 <div key={p} className="flex items-center gap-[7px] py-[6px] px-3 rounded-kdls cursor-default transition-all duration-200" style={{background:`${c}08`,border:`1px solid ${c}18`}}
                   onMouseEnter={e=>{(e.currentTarget.style.background=`${c}14`);(e.currentTarget.style.borderColor=`${c}40`);}}
                   onMouseLeave={e=>{(e.currentTarget.style.background=`${c}08`);(e.currentTarget.style.borderColor=`${c}18`);}}>
-                  <span className="font-mono text-[9px] font-bold" style={{color:c}}>{p[0]}</span>
-                  <span className="font-mono text-[9px] text-[#555577]">{p}</span>
+                  <span className="font-mono text-caption font-bold" style={{color:c}}>{p[0]}</span>
+                  <span className="font-mono text-caption text-[#555577]">{p}</span>
                 </div>
               );
             })}
@@ -249,7 +249,7 @@ export default function HomePage() {
       <section className="marketing-section px-4 sm:px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`, paddingTop:"clamp(60px,8vw,100px)", paddingBottom:"clamp(60px,8vw,100px)"}}>
         <div className="max-w-[1000px] mx-auto">
           <div className="text-center mb-14">
-            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5 break-words">HOW IT WORKS</p>
+            <p className="font-mono text-micro tracking-[0.2em] text-t4 mb-3.5 break-words">HOW IT WORKS</p>
             <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em] break-words">
               From conversion to enriched signal in under 100ms.
             </h2>
@@ -258,9 +258,9 @@ export default function HomePage() {
             <div className="hidden md:block absolute top-6 left-[8%] right-[8%] h-px" style={{background:`linear-gradient(90deg,transparent,${K.g700},${K.g700},${K.g700},transparent)`}}/>
             {HOW.map((step)=>(
               <div key={step.s} className="flex-1 text-center px-[10px]">
-                <div className="w-12 h-12 rounded-kdls flex items-center justify-center mx-auto mb-4 relative z-[1] font-mono font-bold text-[13px]" style={{background:`${step.c}10`,border:`1px solid ${step.c}25`,color:step.c}}>{step.s}</div>
-                <p className="font-mono font-bold text-[12px] mb-2 tracking-[0.04em]" style={{color:step.c}}>{step.t}</p>
-                <p className="font-sans text-[12px] text-t4 leading-[1.65]">{step.b}</p>
+                <div className="w-12 h-12 rounded-kdls flex items-center justify-center mx-auto mb-4 relative z-[1] font-mono font-bold text-small" style={{background:`${step.c}10`,border:`1px solid ${step.c}25`,color:step.c}}>{step.s}</div>
+                <p className="font-mono font-bold text-caption mb-2 tracking-[0.04em]" style={{color:step.c}}>{step.t}</p>
+                <p className="font-sans text-caption text-t4 leading-[1.65]">{step.b}</p>
               </div>
             ))}
           </div>
@@ -271,9 +271,9 @@ export default function HomePage() {
       <section className="marketing-section px-4 sm:px-6 md:px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void, paddingTop:"clamp(60px,8vw,100px)", paddingBottom:"clamp(60px,8vw,100px)"}}>
         <div className="max-w-[1060px] mx-auto">
           <div className="text-center mb-14">
-            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">THE PLATFORM</p>
+            <p className="font-mono text-micro tracking-[0.2em] text-t4 mb-3.5">THE PLATFORM</p>
             <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em]">Every tool your media team needs.</h2>
-            <p className="font-sans text-[13px] text-t3 mt-3">
+            <p className="font-sans text-small text-t3 mt-3">
               <a href="/features" className="no-underline" style={{ color: K.blue4 }}>View all 25 features →</a>
             </p>
           </div>
@@ -285,21 +285,21 @@ export default function HomePage() {
                 <div className="absolute -right-5 -top-5 w-[120px] h-[120px] rounded-full" style={{background:`radial-gradient(circle,${f.accent}06 0%,transparent 70%)`}}/>
                 <div className="flex items-center gap-[10px] mb-5">
                   <div className="w-9 h-9 rounded-kdls flex items-center justify-center text-base shrink-0" style={{background:`${f.accent}12`,color:f.accent}}>{f.icon}</div>
-                  <p className="font-mono text-[8px] tracking-[0.16em] opacity-70" style={{color:f.accent}}>{f.n} · {f.tag}</p>
+                  <p className="font-mono text-caption tracking-[0.16em] opacity-70" style={{color:f.accent}}>{f.n} · {f.tag}</p>
                 </div>
                 <h3 className="font-mono font-bold text-[clamp(14px,2vw,19px)] text-t1 mb-3.5 leading-[1.2] tracking-[-0.02em] whitespace-pre-line">{f.title}</h3>
-                <p className="font-sans text-[13px] text-t3 leading-[1.75] mb-6">{f.body}</p>
+                <p className="font-sans text-small text-t3 leading-[1.75] mb-6">{f.body}</p>
                 <div className="flex gap-px bg-g800 rounded-kdls overflow-hidden mb-4">
                   {f.proof.map(p=>(
                     <div key={p.l} className="flex-1 py-[10px] px-3 bg-g850 text-center">
                       <p className="font-mono text-sm font-bold" style={{color:f.accent}}>{p.v}</p>
-                      <p className="font-mono text-[8px] text-t4 mt-[3px] tracking-[0.06em]">{p.l}</p>
+                      <p className="font-mono text-micro text-t4 mt-[3px] tracking-[0.06em]">{p.l}</p>
                     </div>
                   ))}
                 </div>
                 <button
                   onClick={() => router.push(f.href)}
-                  className="font-mono text-[11px] font-semibold tracking-[0.02em] px-4 py-2.5 rounded-sm transition-colors duration-150 cursor-pointer no-underline inline-block"
+                  className="font-mono text-caption font-semibold tracking-[0.02em] px-4 py-2.5 rounded-sm transition-colors duration-150 cursor-pointer no-underline inline-block"
                   style={{ background:`${f.accent}15`, color:f.accent, border:`1px solid ${f.accent}30` }}
                   onMouseEnter={e => { e.currentTarget.style.background = `${f.accent}25` }}
                   onMouseLeave={e => { e.currentTarget.style.background = `${f.accent}15` }}
@@ -316,7 +316,7 @@ export default function HomePage() {
       <section className="marketing-section px-4 sm:px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`, paddingTop:"clamp(60px,8vw,100px)", paddingBottom:"clamp(60px,8vw,100px)"}}>
         <div className="max-w-[960px] mx-auto">
           <div className="text-center mb-14">
-            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">RESULTS</p>
+            <p className="font-mono text-micro tracking-[0.2em] text-t4 mb-3.5">RESULTS</p>
             <h2 className="font-mono font-bold text-[clamp(24px,4vw,40px)] text-t1 tracking-[-0.03em]">Measured in revenue. Not vanity metrics.</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-g800 mb-6">
@@ -325,9 +325,9 @@ export default function HomePage() {
                 onMouseEnter={e=>{(e.currentTarget.style.background=K.g850);(e.currentTarget.style.transform="translateY(-3px)");}}
                 onMouseLeave={e=>{(e.currentTarget.style.background=K.g900);(e.currentTarget.style.transform="none");}}>
                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,transparent,${p.accent}80,transparent)`}}/>
-                <p className="font-mono text-[8px] tracking-[0.14em] text-t4 mb-3.5">{p.co}</p>
-                <p className="font-mono text-[38px] font-bold tracking-[-0.03em] leading-none mb-[10px]" style={{color:p.accent}}>{p.stat}</p>
-                <p className="font-sans text-[12px] text-t4 leading-[1.5]">{p.sub}</p>
+                <p className="font-mono text-micro tracking-[0.14em] text-t4 mb-3.5">{p.co}</p>
+                <p className="font-mono text-display font-bold tracking-[-0.03em] leading-none mb-[10px]" style={{color:p.accent}}>{p.stat}</p>
+                <p className="font-sans text-caption text-t4 leading-[1.5]">{p.sub}</p>
               </div>
             ))}
           </div>
@@ -338,25 +338,25 @@ export default function HomePage() {
       <section className="marketing-section px-4 sm:px-6 md:px-12" style={{borderTop:`1px solid ${K.g800}`,background:K.void, paddingTop:"clamp(48px,6vw,80px)", paddingBottom:"clamp(48px,6vw,80px)"}}>
         <div className="max-w-[860px] mx-auto">
           <div className="text-center mb-10">
-            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">WHY KIKI</p>
+            <p className="font-mono text-micro tracking-[0.2em] text-t4 mb-3.5">WHY KIKI</p>
             <h2 className="font-mono font-bold text-[clamp(22px,3.5vw,38px)] text-t1 tracking-[-0.03em]">What you get vs. the alternatives.</h2>
           </div>
           <div className="rounded-kdls overflow-hidden" style={{border:`1px solid ${K.g800}`}}>
             <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
               <div className="min-w-[600px]">
                 <div className="grid grid-cols-[1fr_90px_110px_90px] bg-g950">
-              <div className="py-[13px] px-5"><span className="font-mono text-[9px] tracking-widest text-t4">CAPABILITY</span></div>
+              <div className="py-[13px] px-5"><span className="font-mono text-caption tracking-widest text-t4">CAPABILITY</span></div>
               {[{l:"KIKI",c:K.blue},{l:"MANUAL",c:K.t4},{l:"BASIC TOOLS",c:K.t4}].map(h=>(
                 <div key={h.l} className="py-[13px] px-3 text-center" style={{borderLeft:`1px solid ${K.g800}`}}>
-                  <span className="font-mono text-[9px] tracking-widest" style={{color:h.c}}>{h.l}</span>
+                  <span className="font-mono text-caption tracking-widest" style={{color:h.c}}>{h.l}</span>
                 </div>
               ))}
             </div>
             {COMPARE.map((row,i)=>(
               <div key={i} className="grid grid-cols-[1fr_90px_110px_90px]" style={{background:i%2===0?K.g900:K.g950,borderTop:`1px solid ${K.g800}`}}>
                 <div className="py-[13px] px-5 flex items-center gap-[10px]">
-                  <span className="text-kmint text-[11px] shrink-0">✓</span>
-                  <span className="font-sans text-[12px] text-t2">{row.f}</span>
+                  <span className="text-kmint text-caption shrink-0">✓</span>
+                  <span className="font-sans text-caption text-t2">{row.f}</span>
                 </div>
                 {[row.k,row.m,row.b].map((v,j)=>(
                   <div key={j} className="py-[13px] px-3" style={{borderLeft:`1px solid ${K.g800}`}}>
@@ -375,11 +375,11 @@ export default function HomePage() {
       <section className="marketing-section px-4 sm:px-6 md:px-12 bg-[#04040D]" style={{borderTop:`1px solid ${K.g800}`, paddingTop:"clamp(48px,6vw,80px)", paddingBottom:"clamp(48px,6vw,80px)"}}>
         <div className="max-w-[900px] mx-auto">
           <div className="text-center mb-10">
-            <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-3.5">PRICING</p>
+            <p className="font-mono text-micro tracking-[0.2em] text-t4 mb-3.5">PRICING</p>
             <h2 className="font-mono font-bold text-[clamp(22px,3.5vw,38px)] text-t1 tracking-[-0.03em] mb-6">Simple, transparent pricing.</h2>
             <div className="inline-flex gap-1 bg-g850 rounded-kdls p-1">
               {["Annual (save 20%)","Monthly"].map((l,i)=>(
-                <button key={l} onClick={()=>setAnnual(i===0)} style={{padding:"7px 16px",fontFamily:K.mono,fontSize:10,fontWeight:600,borderRadius:2,border:"none",background:annual===(i===0)?K.g700:"transparent",color:annual===(i===0)?K.t1:K.t3,cursor:"pointer",transition:"all 0.15s"}}>{l}</button>
+                <button key={l} onClick={()=>setAnnual(i===0)} style={{padding:"7px 16px",fontFamily:K.mono,fontSize: "var(--fs-micro)",fontWeight:600,borderRadius:2,border:"none",background:annual===(i===0)?K.g700:"transparent",color:annual===(i===0)?K.t1:K.t3,cursor:"pointer",transition:"all 0.15s"}}>{l}</button>
               ))}
             </div>
           </div>
@@ -392,15 +392,15 @@ export default function HomePage() {
                 {p.hot&&<div className="absolute -top-[11px] left-1/2 -translate-x-1/2"><Badge color={K.blue}>MOST POPULAR</Badge></div>}
                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,transparent,${p.color}50,transparent)`}}/>
                 <p className="font-mono font-bold text-lg text-t1 mb-1">{p.name}</p>
-                <p className="font-sans text-[12px] text-t3 mb-5">{p.desc}</p>
+                <p className="font-sans text-caption text-t3 mb-5">{p.desc}</p>
                 {p.price!==null?(
                   <div className="mb-[22px]">
-                    <span className="font-mono text-[36px] font-bold tracking-[-0.02em]" style={{color:p.hot?K.blue4:K.t1}}>${annual?Math.round(p.price*0.8).toLocaleString():p.price.toLocaleString()}</span>
-                    <span className="font-mono text-[13px] text-t3">/mo</span>
-                    {annual&&<p className="font-mono text-[9px] text-kmint mt-[3px]">BILLED ANNUALLY · SAVE ${(p.price*0.2*12).toLocaleString()}/YR</p>}
+                    <span className="font-mono text-display font-bold tracking-[-0.02em]" style={{color:p.hot?K.blue4:K.t1}}>${annual?Math.round(p.price*0.8).toLocaleString():p.price.toLocaleString()}</span>
+                    <span className="font-mono text-small text-t3">/mo</span>
+                    {annual&&<p className="font-mono text-caption text-kmint mt-[3px]">BILLED ANNUALLY · SAVE ${(p.price*0.2*12).toLocaleString()}/YR</p>}
                   </div>
                 ):(
-                  <p className="font-mono text-[28px] font-bold text-kgold mb-[22px]">Custom</p>
+                  <p className="font-mono text-h1 font-bold text-kgold mb-[22px]">Custom</p>
                 )}
                 <Button variant={p.hot?"primary":p.price===null?"gold":"secondary"} size="md" full onClick={()=>router.push(p.price===null?"/contact":"/auth/login")}>
                   {p.cta} →
@@ -408,7 +408,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <p className="text-center font-mono text-[10px] text-t4">
+          <p className="text-center font-mono text-caption text-t4">
             All plans include signal enrichment, fraud protection, and 14-day free trial.{" "}
             <a href="/pricing" className="no-underline" style={{color:K.blue4}}>See full comparison →</a>
           </p>
@@ -420,7 +420,7 @@ export default function HomePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] blur-[80px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(0,92,255,0.10) 0%,transparent 65%)"}}/>
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] blur-[60px] pointer-events-none" style={{background:"radial-gradient(ellipse,rgba(49,243,195,0.06) 0%,transparent 70%)"}}/>
         <div className="relative z-[1] max-w-[640px] mx-auto">
-          <p className="font-mono text-[9px] tracking-[0.2em] text-t4 mb-5 break-words">GET STARTED IN UNDER 10 MINUTES</p>
+          <p className="font-mono text-micro tracking-[0.2em] text-t4 mb-5 break-words">GET STARTED IN UNDER 10 MINUTES</p>
           <h2 className="font-mono font-bold text-[clamp(24px,5.5vw,58px)] text-t1 mb-5 tracking-[-0.045em] leading-[1.02] break-words">
             Your campaigns are teaching<br className="hidden sm:block"/>platforms the <span className="text-kblue">wrong lesson.</span>
           </h2>
@@ -435,7 +435,7 @@ export default function HomePage() {
             {["SOC 2 in progress","GDPR & CCPA","14-day free trial","No credit card"].map(t=>(
               <div key={t} className="flex items-center gap-1.5">
                 <span className="text-kmint font-mono text-xs">✓</span>
-                <span className="font-mono text-[10px] text-t3 tracking-[0.04em]">{t}</span>
+                <span className="font-mono text-caption text-t3 tracking-[0.04em]">{t}</span>
               </div>
             ))}
           </div>

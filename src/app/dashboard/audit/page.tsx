@@ -39,7 +39,7 @@ export default function AuditPage() {
         <div className="flex flex-wrap justify-between items-start gap-3 mb-5">
           <div>
             <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Audit Log</h1>
-            <p className="font-mono text-[11px] text-t3">Agent actions and notifications · {loading ? "…" : `${EVENTS.length} events`}</p>
+            <p className="font-mono text-caption text-t3">Agent actions and notifications · {loading ? "…" : `${EVENTS.length} events`}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" onClick={exportCsv} disabled={EVENTS.length === 0}>Export CSV</Button>
@@ -49,22 +49,22 @@ export default function AuditPage() {
         <Card padding={0}>
           {EVENTS.length === 0 ? (
             <div className="px-5 py-10 text-center">
-              <p className="font-mono text-[11px] text-t3">No audit events recorded yet.</p>
+              <p className="font-mono text-caption text-t3">No audit events recorded yet.</p>
             </div>
           ) : (
             <ScrollableTable>
               <div className="min-w-[700px]">
                 <div className="grid grid-cols-[80px_120px_160px_1fr] gap-3 px-5 py-2 border-b border-g800 bg-g950">
                   {["TIME", "SOURCE", "ACTION", "DETAIL"].map(h => (
-                    <span key={h} className="font-mono text-[10px] tracking-[0.1em] text-t4">{h}</span>
+                    <span key={h} className="font-mono text-micro tracking-[0.1em] text-t4">{h}</span>
                   ))}
                 </div>
                 {EVENTS.map((e, i) => (
                   <div key={i} className="grid grid-cols-[80px_120px_160px_1fr] gap-3 px-5 py-2.5 items-center hover:bg-[var(--card-hover)] border-b border-g900">
-                    <span className="font-mono text-[10px] text-t4">{e.time}</span>
+                    <span className="font-mono text-caption text-t4">{e.time}</span>
                     <Badge color={e.source === "agent" ? K.blue : K.teal}>{e.source}</Badge>
-                    <span className="font-mono text-[10px] font-semibold text-t1 overflow-hidden text-ellipsis whitespace-nowrap">{e.action}</span>
-                    <span className="font-mono text-[10px] text-t3 overflow-hidden text-ellipsis whitespace-nowrap">{e.detail}</span>
+                    <span className="font-mono text-caption font-semibold text-t1 overflow-hidden text-ellipsis whitespace-nowrap">{e.action}</span>
+                    <span className="font-mono text-caption text-t3 overflow-hidden text-ellipsis whitespace-nowrap">{e.detail}</span>
                   </div>
                 ))}
               </div>

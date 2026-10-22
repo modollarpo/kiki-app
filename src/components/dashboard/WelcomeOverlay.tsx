@@ -51,9 +51,9 @@ export function WelcomeOverlay() {
         style={{ background: K.g900, border: `1px solid ${K.g700}` }}
       >
         <div className="text-center mb-6">
-          <div className="text-[32px] mb-2">🚀</div>
-          <h2 className="font-mono font-bold text-[16px] text-t1 mb-1">Welcome to KIKI Agent</h2>
-          <p className="font-mono text-[11px]" style={{ color: K.t3 }}>Here are 3 quick steps to get started:</p>
+          <div className="text-display mb-2">🚀</div>
+          <h2 className="font-mono font-bold text-lead text-t1 mb-1">Welcome to KIKI Agent</h2>
+          <p className="font-mono text-caption" style={{ color: K.t3 }}>Here are 3 quick steps to get started:</p>
         </div>
 
         <div className="flex flex-col gap-3 mb-6">
@@ -66,16 +66,16 @@ export function WelcomeOverlay() {
               onMouseEnter={e => { e.currentTarget.style.background = K.g800; e.currentTarget.style.borderColor = K.g600; }}
               onMouseLeave={e => { e.currentTarget.style.background = K.g850; e.currentTarget.style.borderColor = K.g700; }}
             >
-              <span className="text-[20px] flex-shrink-0">{s.icon}</span>
+              <span className="text-h3 flex-shrink-0">{s.icon}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] font-bold" style={{ color: K.blue4 }}>STEP {i + 1}</span>
-                  <span className="font-mono text-[10px]" style={{ color: K.t3 }}>—</span>
-                  <span className="font-mono text-[11px] text-t1 font-semibold">{s.title}</span>
+                  <span className="font-mono text-caption font-bold" style={{ color: K.blue4 }}>STEP {i + 1}</span>
+                  <span className="font-mono text-caption" style={{ color: K.t3 }}>—</span>
+                  <span className="font-mono text-caption text-t1 font-semibold">{s.title}</span>
                 </div>
-                <p className="font-mono text-[10px] mt-0.5" style={{ color: K.t3 }}>{s.desc}</p>
+                <p className="font-mono text-caption mt-0.5" style={{ color: K.t3 }}>{s.desc}</p>
               </div>
-              <span className="font-mono text-[12px] flex-shrink-0" style={{ color: K.blue4 }}>→</span>
+              <span className="font-mono text-caption flex-shrink-0" style={{ color: K.blue4 }}>→</span>
             </button>
           ))}
         </div>

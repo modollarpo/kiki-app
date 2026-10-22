@@ -29,9 +29,9 @@ export default function NDAPage() {
       <div className="max-w-[840px] mx-auto" style={{ background:K.void, padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
         {signed ? (
           <div className="text-center py-[60px]">
-            <div className="text-[56px] mb-5">🤝</div>
+            <div className="text-display mb-5">🤝</div>
             <h1 className="font-mono font-bold text-[clamp(20px,3.5vw,32px)] text-kmint mb-3">NDA Executed</h1>
-            <p className="font-sans text-[15px] text-t3 max-w-[440px] mx-auto mb-7 leading-[1.7]">Thank you, {name}. The Mutual NDA between {company} and KIKI Agent (a product of STOREGRILL INC LTD) has been executed. A signed copy will be emailed within 2 hours.</p>
+            <p className="font-sans text-lead text-t3 max-w-[440px] mx-auto mb-7 leading-[1.7]">Thank you, {name}. The Mutual NDA between {company} and KIKI Agent (a product of STOREGRILL INC LTD) has been executed. A signed copy will be emailed within 2 hours.</p>
             <div className="flex gap-2.5 justify-center flex-wrap">
               <Button size="lg" onClick={async () => {
                 const contract = getContract("mutual-nda");
@@ -64,38 +64,38 @@ export default function NDAPage() {
           <>
             <div className="mb-9">
               <div className="flex items-center gap-2.5 mb-3.5 flex-wrap">
-                <span className="font-mono text-[9px] tracking-[0.18em] text-t4">LEGAL</span>
+                <span className="font-mono text-micro tracking-[0.18em] text-t4">LEGAL</span>
                 <Badge color={K.teal}>MUTUAL</Badge>
                 <Badge color={K.blue}>ELECTRONIC SIGNATURE</Badge>
               </div>
               <h1 className="font-mono font-bold text-[clamp(22px,4vw,34px)] text-t1 tracking-[-0.025em] mb-2">Mutual Non-Disclosure Agreement</h1>
-              <p className="font-mono text-[11px] text-t3">Version 1.2 · Effective upon signature · 3-year term</p>
+              <p className="font-mono text-caption text-t3">Version 1.2 · Effective upon signature · 3-year term</p>
             </div>
             <div className="prose mb-8">
               {NDA_TEXT.map((s,i) => (
                 <div key={i} className="mb-[22px] pb-[22px]" style={{ borderBottom:i<NDA_TEXT.length-1?`1px solid ${K.g800}`:"none" }}>
-                  <h3 className="font-mono font-bold text-[13px] text-t1 mb-2">{s.n}</h3>
-                  <p className="font-sans text-[13px] text-t2 leading-relaxed">{s.t}</p>
+                  <h3 className="font-mono font-bold text-small text-t1 mb-2">{s.n}</h3>
+                  <p className="font-sans text-small text-t2 leading-relaxed">{s.t}</p>
                 </div>
               ))}
             </div>
             <div className="p-5 bg-g900 rounded-sm" style={{ border:`1px solid ${K.g800}` }}>
-              <p className="font-mono font-bold text-[13px] text-t1 mb-4">Executing Party (Recipient)</p>
+              <p className="font-mono font-bold text-small text-t1 mb-4">Executing Party (Recipient)</p>
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
-                  <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">FULL LEGAL NAME</p>
-                  <input value={name} onChange={e=>setName(e.target.value)} placeholder="Sarah Chen" className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-[13px] text-t1 outline-none" style={{ border:`1px solid ${K.g700}` }}/>
+                  <p className="font-mono text-caption tracking-[0.08em] text-t3 mb-1.5">FULL LEGAL NAME</p>
+                  <input value={name} onChange={e=>setName(e.target.value)} placeholder="Sarah Chen" className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-small text-t1 outline-none" style={{ border:`1px solid ${K.g700}` }}/>
                 </div>
                 <div>
-                  <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">TITLE / ROLE</p>
-                  <input value={role} onChange={e=>setRole(e.target.value)} placeholder="CMO" className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-[13px] text-t1 outline-none" style={{ border:`1px solid ${K.g700}` }}/>
+                  <p className="font-mono text-caption tracking-[0.08em] text-t3 mb-1.5">TITLE / ROLE</p>
+                  <input value={role} onChange={e=>setRole(e.target.value)} placeholder="CMO" className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-small text-t1 outline-none" style={{ border:`1px solid ${K.g700}` }}/>
                 </div>
               </div>
               <div className="mb-4">
-                <p className="font-mono text-[10px] tracking-[0.08em] text-t3 mb-1.5">COMPANY / ORGANIZATION</p>
-                <input value={company} onChange={e=>setCompany(e.target.value)} placeholder="Acme Corp" className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-[13px] text-t1 outline-none" style={{ border:`1px solid ${K.g700}` }}/>
+                <p className="font-mono text-caption tracking-[0.08em] text-t3 mb-1.5">COMPANY / ORGANIZATION</p>
+                <input value={company} onChange={e=>setCompany(e.target.value)} placeholder="Acme Corp" className="w-full bg-g800 rounded-sm px-3.5 py-2.5 font-sans text-small text-t1 outline-none" style={{ border:`1px solid ${K.g700}` }}/>
               </div>
-              {name && <div className="px-4 py-3 bg-g850 rounded-sm mb-4 font-[Georgia,serif] text-[20px] text-t2" style={{ borderLeft:`3px solid ${K.teal}` }}>{name}</div>}
+              {name && <div className="px-4 py-3 bg-g850 rounded-sm mb-4 font-[Georgia,serif] text-h3 text-t2" style={{ borderLeft:`3px solid ${K.teal}` }}>{name}</div>}
               <Button size="lg" disabled={!name.trim()||!company.trim()||!role.trim()} onClick={() => setSigned(true)}>
                 ✓ Execute Mutual NDA
               </Button>

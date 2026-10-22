@@ -82,7 +82,7 @@ export function Badge({ children, color = K.blue, dot, pulse, style, className =
     <span className={className} {...rest} style={{
       display: "inline-flex", alignItems: "center", gap: 4,
       padding: "2px 7px", background: `${color}14`, color,
-      fontFamily: K.mono, fontSize: 10, fontWeight: 700,
+      fontFamily: K.mono, fontSize: "var(--fs-micro)", fontWeight: 700,
       letterSpacing: "0.08em", borderRadius: 2, flexShrink: 0,
       ...style,
     }}>
@@ -154,7 +154,7 @@ export function Input({ placeholder, prefix, suffix, value, onChange, type = "te
   const [focused, setFocused] = useState(false);
   return (
     <div className={className} {...rest} style={style}>
-      {label && <p style={{ fontFamily: K.mono, fontSize: 10, letterSpacing: "0.1em", color: K.t3, marginBottom: 6, textTransform: "uppercase" }}>{label}</p>}
+      {label && <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", letterSpacing: "0.1em", color: K.t3, marginBottom: 6, textTransform: "uppercase" }}>{label}</p>}
       <div style={{
         display: "flex", alignItems: "center",
         background: K.g800, borderRadius: 2,
@@ -162,21 +162,21 @@ export function Input({ placeholder, prefix, suffix, value, onChange, type = "te
         boxShadow: focused && !error ? `0 0 0 2px ${K.blueD}` : undefined,
         transition: "all 0.15s",
       }}>
-        {prefix && <span style={{ paddingLeft: 12, fontFamily: K.mono, fontSize: 12, color: K.t3, flexShrink: 0 }}>{prefix}</span>}
+        {prefix && <span style={{ paddingLeft: 12, fontFamily: K.mono, fontSize: "var(--fs-caption)", color: K.t3, flexShrink: 0 }}>{prefix}</span>}
         <input
           type={type} placeholder={placeholder} value={value}
           onChange={(e) => onChange?.(e.target.value)}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{
             flex: 1, padding: "10px 14px", background: "transparent", border: "none", outline: "none",
-            fontFamily: mono ? K.mono : K.sans, fontSize: 13, color: K.t1,
+            fontFamily: mono ? K.mono : K.sans, fontSize: "var(--fs-small)", color: K.t1,
             letterSpacing: mono ? "-0.01em" : undefined,
           }}
         />
-        {suffix && <span style={{ paddingRight: 12, fontFamily: K.mono, fontSize: 12, color: error ? K.danger : focused ? K.blue4 : K.t3, flexShrink: 0 }}>{suffix}</span>}
+        {suffix && <span style={{ paddingRight: 12, fontFamily: K.mono, fontSize: "var(--fs-caption)", color: error ? K.danger : focused ? K.blue4 : K.t3, flexShrink: 0 }}>{suffix}</span>}
       </div>
-      {error && <p style={{ fontFamily: K.mono, fontSize: 10, color: K.danger, marginTop: 4 }}>{error}</p>}
-      {hint && !error && <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, marginTop: 4 }}>{hint}</p>}
+      {error && <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.danger, marginTop: 4 }}>{error}</p>}
+      {hint && !error && <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3, marginTop: 4 }}>{hint}</p>}
     </div>
   );
 }
@@ -202,7 +202,7 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
           transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.4)",
         }} />
       </button>
-      {label && <span style={{ fontFamily: K.sans, fontSize: 13, color: K.t2 }}>{label}</span>}
+      {label && <span style={{ fontFamily: K.sans, fontSize: "var(--fs-small)", color: K.t2 }}>{label}</span>}
     </div>
   );
 }
@@ -284,19 +284,19 @@ export function StatCard({ label, value, delta, period, accent = K.blue, sparkli
   return (
     <Card accent={accent}>
       <div style={{ marginBottom: 10 }}>
-        <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.18em", color: K.t4, textTransform: "uppercase" }}>{label}</p>
+        <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", letterSpacing: "0.18em", color: K.t4, textTransform: "uppercase" }}>{label}</p>
       </div>
       {loading ? (
         <><Skeleton width="45%" height={28} /><div style={{ marginTop: 8 }}><Skeleton width="35%" height={10} /></div></>
       ) : (
         <>
-          <span className="mono-value" style={{ fontSize: 26, fontWeight: 700, color: K.t1, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span>
-          {sub && <p style={{ fontFamily: K.mono, fontSize: 10, color: K.t3, marginTop: 4 }}>{sub}</p>}
+          <span className="mono-value" style={{ fontSize: "var(--fs-h2)", fontWeight: 700, color: K.t1, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span>
+          {sub && <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3, marginTop: 4 }}>{sub}</p>}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
             {delta !== undefined && (
-              <span style={{ fontFamily: K.mono, fontSize: 11, fontWeight: 700, color: delta >= 0 ? K.mint : K.danger }}>
+              <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", fontWeight: 700, color: delta >= 0 ? K.mint : K.danger }}>
                 {delta >= 0 ? "↑" : "↓"}{Math.abs(delta).toFixed(1)}%
-                {period && <span style={{ fontWeight: 400, color: K.t4, fontSize: 10 }}> vs {period}</span>}
+                {period && <span style={{ fontWeight: 400, color: K.t4, fontSize: "var(--fs-micro)" }}> vs {period}</span>}
               </span>
             )}
             {sparkline && <Sparkline data={sparkline} color={accent} />}
@@ -310,7 +310,7 @@ export function StatCard({ label, value, delta, period, accent = K.blue, sparkli
 // ─── SectionLabel ─────────────────────────────────────────
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontFamily: K.mono, fontSize: 9, letterSpacing: "0.18em", color: K.t4, textTransform: "uppercase", marginBottom: 10 }}>
+    <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", letterSpacing: "0.18em", color: K.t4, textTransform: "uppercase", marginBottom: 10 }}>
       {children}
     </p>
   );
@@ -331,7 +331,7 @@ export function AIThinking({ label = "SyncBrain is analyzing...", text }: { labe
         borderRadius: "50%", display: "inline-block", flexShrink: 0,
         animation: "kdls-spin 1s linear infinite",
       }} />
-      <span style={{ fontFamily: K.mono, fontSize: 11, color: K.blue, fontStyle: "italic" }}>{message}</span>
+      <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.blue, fontStyle: "italic" }}>{message}</span>
       <div style={{ display: "flex", gap: 3, marginLeft: "auto" }}>
         {[0, 1, 2].map((i) => (
           <span key={i} className="animate-kdls-pulse" style={{ width: 4, height: 4, borderRadius: "50%", background: K.blue, animationDelay: `${i * 0.2}s` }} />
@@ -348,12 +348,12 @@ export function EmptyState({ icon, title, body, cta, onCta, accent = K.t3 }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 24px", textAlign: "center" }}>
       {icon && (
-        <div className="animate-float" style={{ width: 56, height: 56, borderRadius: 2, background: `${accent}14`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, color: accent, marginBottom: 14 }}>
+        <div className="animate-float" style={{ width: 56, height: 56, borderRadius: 2, background: `${accent}14`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--fs-h2)", color: accent, marginBottom: 14 }}>
           {icon}
         </div>
       )}
-      <p style={{ fontFamily: K.mono, fontSize: 13, fontWeight: 700, color: K.t3, marginBottom: body ? 8 : 0 }}>{title}</p>
-      {body && <p style={{ fontFamily: K.sans, fontSize: 12, color: K.t4, lineHeight: 1.6, maxWidth: 320 }}>{body}</p>}
+      <p style={{ fontFamily: K.mono, fontSize: "var(--fs-small)", fontWeight: 700, color: K.t3, marginBottom: body ? 8 : 0 }}>{title}</p>
+      {body && <p style={{ fontFamily: K.sans, fontSize: "var(--fs-caption)", color: K.t4, lineHeight: 1.6, maxWidth: 320 }}>{body}</p>}
       {cta && onCta && (
         <div style={{ marginTop: 16 }}>
           <Button variant="secondary" size="sm" onClick={onCta}>{cta}</Button>
@@ -370,13 +370,13 @@ export function NotConfigured({ service, envVar, note, className = "" }: {
   return (
     <Card accent={K.warn} className={className}>
       <div className="flex flex-col items-center text-center py-10 px-4">
-        <div className="text-[28px] mb-3" style={{ color: K.warn }}>⬡</div>
-        <h3 className="font-mono font-bold text-[15px] text-t1 mb-2">{service} service not configured</h3>
-        <p className="font-mono text-[13px] text-t3 max-w-md leading-[1.6]">
+        <div className="text-h1 mb-3" style={{ color: K.warn }}>⬡</div>
+        <h3 className="font-mono font-bold text-lead text-t1 mb-2">{service} service not configured</h3>
+        <p className="font-mono text-small text-t3 max-w-md leading-[1.6]">
           {note ?? "This page is connected, but its backing microservice is not deployed in this environment, so no live data is available."}
         </p>
         {envVar && (
-          <p className="font-mono text-[11px] text-t4 mt-4">
+          <p className="font-mono text-caption text-t4 mt-4">
             Configure <span style={{ color: K.warn }}>{envVar}</span> to enable this feature.
           </p>
         )}
@@ -428,12 +428,12 @@ export function UpgradePrompt({
   return (
     <Card accent={accent} className={className}>
       <div className="flex flex-col items-center text-center py-8 px-4">
-        <div className="text-[32px] mb-3">⬡</div>
+        <div className="text-display mb-3">⬡</div>
         <h3 className="font-mono font-bold text-base text-t1 mb-2">{title}</h3>
-        <p className="font-mono text-[13px] text-t3 mb-6 max-w-md">{description}</p>
+        <p className="font-mono text-small text-t3 mb-6 max-w-md">{description}</p>
         <a
           href={plan === "enterprise" ? "/contact" : "/dashboard/billing"}
-          className="font-mono text-[13px] font-semibold text-white bg-[#3b82f6] hover:bg-[#2563eb] rounded-lg px-6 py-3 transition-colors no-underline inline-block"
+          className="font-mono text-small font-semibold text-white bg-[#3b82f6] hover:bg-[#2563eb] rounded-lg px-6 py-3 transition-colors no-underline inline-block"
         >
           {plan === "enterprise" ? "Contact Sales" : `Upgrade to ${plan.charAt(0).toUpperCase() + plan.slice(1)}`}
         </a>
