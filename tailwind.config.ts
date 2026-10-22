@@ -44,8 +44,8 @@ const config: Config = {
         kcardhover:  "var(--card-hover)",
       },
       fontFamily: {
-        mono:    ["Inter", "JetBrains Mono", "monospace"],
-        sans:    ["Inter", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
       fontSize: {
         // ── Design-system type scale (rem, base 16px) ──────────

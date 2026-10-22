@@ -1,10 +1,28 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { homeMetadata } from "@/lib/seo";
 import ToastProvider from "@/components/providers/ToastProvider";
 import { HydrationGuard } from "@/components/providers/HydrationGuard";
 import { ClientProviders } from "@/components/providers/ClientProviders";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
+// Self-hosted via next/font: no runtime request to Google, so the app keeps
+// working under a strict CSP and offline/PWA contexts. Exposes --font-sans and
+// --font-mono, which globals.css and the KDLS tokens consume.
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-jetbrains",
+});
 
 export const metadata: Metadata = {
   ...homeMetadata,
@@ -84,17 +102,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSONLD }}
-        />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
         />
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
