@@ -9,10 +9,12 @@ type BtnSize    = "xs"|"sm"|"md"|"lg"|"xl";
 
 export function Button({
   children, variant = "primary", size = "md", onClick, icon, disabled, full, loading, className = "", style,
+  type = "button", ariaLabel,
 }: {
   children?: React.ReactNode; variant?: BtnVariant; size?: BtnSize;
   onClick?: (e: React.MouseEvent) => void; icon?: React.ReactNode; disabled?: boolean;
   full?: boolean; loading?: boolean; className?: string; style?: React.CSSProperties;
+  type?: "button" | "submit" | "reset"; ariaLabel?: string;
 }) {
   const [hov, setHov] = useState(false);
   const bgMap: Record<BtnVariant, string> = {
@@ -46,10 +48,14 @@ export function Button({
 
   return (
     <button
+      type={type}
       onClick={disabled || loading ? undefined : (e) => onClick?.(e)}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       className={className}
+      aria-label={ariaLabel}
+      aria-busy={loading || undefined}
+      aria-disabled={disabled || loading || undefined}
       style={{
         display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44,
         padding: padMap[size], background: bgMap[variant], color: colorMap[variant],
@@ -145,16 +151,20 @@ export function Card({ children, accent, glow, padding = 20, hover, onClick, sty
 }
 
 // ─── Input ────────────────────────────────────────────────
-export function Input({ placeholder, prefix, suffix, value, onChange, type = "text", mono, error, label, hint, style, className = "", ...rest }: {
+export function Input({ placeholder, prefix, suffix, value, onChange, type = "text", mono, error, label, hint, style, className = "", id, ...rest }: {
   placeholder?: string; prefix?: string; suffix?: string;
   value?: string; onChange?: (v: string) => void; type?: string;
   mono?: boolean; error?: string; label?: string; hint?: string;
-  style?: React.CSSProperties; className?: string;
+  style?: React.CSSProperties; className?: string; id?: string;
 } & Omit<React.HTMLAttributes<HTMLDivElement>, "onChange">) {
   const [focused, setFocused] = useState(false);
+  const autoId = React.useId();
+  const inputId = id ?? autoId;
+  const errorId = error ? `${inputId}-error` : undefined;
+  const hintId = hint && !error ? `${inputId}-hint` : undefined;
   return (
     <div className={className} {...rest} style={style}>
-      {label && <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", letterSpacing: "0.1em", color: K.t3, marginBottom: 6, textTransform: "uppercase" }}>{label}</p>}
+      {label && <label htmlFor={inputId} style={{ display: "block", fontFamily: K.mono, fontSize: "var(--fs-micro)", letterSpacing: "0.1em", color: K.t3, marginBottom: 6, textTransform: "uppercase" }}>{label}</label>}
       <div style={{
         display: "flex", alignItems: "center",
         background: K.g800, borderRadius: 2,
@@ -164,9 +174,12 @@ export function Input({ placeholder, prefix, suffix, value, onChange, type = "te
       }}>
         {prefix && <span style={{ paddingLeft: 12, fontFamily: K.mono, fontSize: "var(--fs-caption)", color: K.t3, flexShrink: 0 }}>{prefix}</span>}
         <input
+          id={inputId}
           type={type} placeholder={placeholder} value={value}
           onChange={(e) => onChange?.(e.target.value)}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={errorId ?? hintId}
           style={{
             flex: 1, padding: "10px 14px", background: "transparent", border: "none", outline: "none",
             fontFamily: mono ? K.mono : K.sans, fontSize: "var(--fs-small)", color: K.t1,
@@ -175,8 +188,8 @@ export function Input({ placeholder, prefix, suffix, value, onChange, type = "te
         />
         {suffix && <span style={{ paddingRight: 12, fontFamily: K.mono, fontSize: "var(--fs-caption)", color: error ? K.danger : focused ? K.blue4 : K.t3, flexShrink: 0 }}>{suffix}</span>}
       </div>
-      {error && <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.danger, marginTop: 4 }}>{error}</p>}
-      {hint && !error && <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3, marginTop: 4 }}>{hint}</p>}
+      {error && <p id={errorId} role="alert" style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.danger, marginTop: 4 }}>{error}</p>}
+      {hint && !error && <p id={hintId} style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3, marginTop: 4 }}>{hint}</p>}
     </div>
   );
 }
@@ -186,6 +199,10 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-label={label}
         onClick={() => onChange(!on)}
         style={{
           width: 38, height: 20, borderRadius: 10,
@@ -218,12 +235,19 @@ export function Divider({ my = 14 }: { my?: number }) {
 }
 
 // ─── ProgressBar ──────────────────────────────────────────
-export function ProgressBar({ value, max = 100, color = K.blue, height = 4, glow }: {
-  value: number; max?: number; color?: string; height?: number; glow?: boolean;
+export function ProgressBar({ value, max = 100, color = K.blue, height = 4, glow, label }: {
+  value: number; max?: number; color?: string; height?: number; glow?: boolean; label?: string;
 }) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
-    <div style={{ background: K.g800, borderRadius: height, overflow: "hidden", height }}>
+    <div
+      role="progressbar"
+      aria-valuenow={Math.round(value)}
+      aria-valuemin={0}
+      aria-valuemax={max}
+      aria-label={label}
+      style={{ background: K.g800, borderRadius: height, overflow: "hidden", height }}
+    >
       <div style={{
         width: `${pct}%`, height: "100%", background: color,
         borderRadius: height, transition: "width 0.5s",
@@ -386,7 +410,7 @@ export function NotConfigured({ service, envVar, note, className = "" }: {
 }
 
 // ─── ScrollableTable — horizontal scroll with fade indicator ─
-export function ScrollableTable({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+export function ScrollableTable({ children, className = "", ariaLabel = "Scrollable table" }: { children: React.ReactNode; className?: string; ariaLabel?: string }) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
 
@@ -402,7 +426,14 @@ export function ScrollableTable({ children, className = "" }: { children: React.
 
   return (
     <div className={`relative ${className}`}>
-      <div ref={ref} className="overflow-x-auto" style={{ scrollbarWidth: "thin", scrollbarColor: `${K.g700} transparent` }}>
+      <div
+        ref={ref}
+        role="region"
+        aria-label={ariaLabel}
+        tabIndex={0}
+        className="overflow-x-auto"
+        style={{ scrollbarWidth: "thin", scrollbarColor: `${K.g700} transparent` }}
+      >
         {children}
       </div>
       {canScrollRight && (
@@ -433,7 +464,10 @@ export function UpgradePrompt({
         <p className="font-mono text-small text-t3 mb-6 max-w-md">{description}</p>
         <a
           href={plan === "enterprise" ? "/contact" : "/dashboard/billing"}
-          className="font-mono text-small font-semibold text-white bg-[#3b82f6] hover:bg-[#2563eb] rounded-lg px-6 py-3 transition-colors no-underline inline-block"
+          className="font-mono text-small font-semibold text-white rounded-lg px-6 py-3 transition-colors no-underline inline-block"
+          style={{ background: K.blue }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = K.blue4; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = K.blue; }}
         >
           {plan === "enterprise" ? "Contact Sales" : `Upgrade to ${plan.charAt(0).toUpperCase() + plan.slice(1)}`}
         </a>
