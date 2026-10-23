@@ -310,6 +310,124 @@ export async function unfreezeCard(
   return { success: true };
 }
 
+// ── Manual Card Controls ───────────────────────────────────
+
+async function updateIssuerCardStatus(card: WalletCardRow, status: "active" | "inactive" | "canceled"): Promise<{ success: boolean; error?: string }> {
+  if (card.issuer === "stripe" && card.issuer_card_id && stripeEnabled && stripe) {
+    try {
+      await stripe.issuing.cards.update(card.issuer_card_id, { status });
+    } catch (e) {
+      return { success: false, error: e instanceof Error ? e.message : String(e) };
+    }
+  }
+  return { success: true };
+}
+
+export async function freezeCard(cardId: string): Promise<{ success: boolean; error?: string }> {
+  const db = await getDb();
+  const card = await db.prepare(`
+    SELECT * FROM wallet_cards WHERE id = ? AND status = 'active'
+  `).get<WalletCardRow>(cardId);
+  if (!card) return { success: false, error: "Card not found or not active" };
+
+  const issuer = await updateIssuerCardStatus(card, "inactive");
+  if (!issuer.success) return { success: false, error: issuer.error };
+
+  await db.prepare("UPDATE wallet_cards SET status = 'frozen' WHERE id = ?").run(cardId);
+  eventBus.emit(EVENTS.WALLET_CARD_FROZEN, { cardId, reason: "Manually frozen" });
+  return { success: true };
+}
+
+export async function cancelCard(cardId: string): Promise<{ success: boolean; error?: string }> {
+  const db = await getDb();
+  const card = await db.prepare(`
+    SELECT * FROM wallet_cards WHERE id = ? AND status != 'cancelled'
+  `).get<WalletCardRow>(cardId);
+  if (!card) return { success: false, error: "Card not found or already cancelled" };
+
+  const issuer = await updateIssuerCardStatus(card, "canceled");
+  if (!issuer.success) return { success: false, error: issuer.error };
+
+  await db.prepare("UPDATE wallet_cards SET status = 'cancelled' WHERE id = ?").run(cardId);
+  eventBus.emit(EVENTS.WALLET_CARD_CANCELLED ?? EVENTS.WALLET_CARD_FROZEN, { cardId, reason: "Cancelled" });
+  return { success: true };
+}
+
+// ── Withdraw From Wallet ───────────────────────────────────
+
+export async function withdrawFromWallet(
+  tenantId: string,
+  amount: number,
+  destination: string,
+  description: string
+): Promise<{ success: boolean; balance?: number; transferId?: string; code?: string; error?: string }> {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { success: false, error: "Amount must be a positive number" };
+  }
+
+  const db = await getDb();
+  const wallet = await db.prepare(
+    "SELECT id, balance FROM wallets WHERE tenant_id = ?"
+  ).get<WalletRow>(tenantId);
+  if (!wallet) return { success: false, error: "Wallet not found" };
+
+  if (!stripeEnabled || !stripe) {
+    return {
+      success: false,
+      code: "SERVICE_NOT_CONFIGURED",
+      error: "Withdrawals require Stripe Connect to be configured",
+    };
+  }
+  const connectAccount = destination || process.env.STRIPE_CONNECT_ACCOUNT_ID || "";
+  if (!connectAccount) {
+    return {
+      success: false,
+      code: "SERVICE_NOT_CONFIGURED",
+      error: "A Stripe connected account destination is required",
+    };
+  }
+
+  const res = await db.prepare(
+    "UPDATE wallets SET balance = balance - ? WHERE id = ? AND balance >= ?"
+  ).run(amount, wallet.id, amount);
+  if (!res.changes) {
+    return { success: false, error: "Insufficient wallet balance" };
+  }
+
+  const txId = `tx_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+  await db.prepare(`
+    INSERT INTO wallet_transactions (id, wallet_id, type, amount, description, status, created_at)
+    VALUES (?, ?, 'withdrawal', ?, ?, 'pending', datetime('now'))
+  `).run(txId, wallet.id, amount, description);
+
+  try {
+    const transfer = await stripe.transfers.create({
+      amount: Math.round(amount * 100),
+      currency: "usd",
+      destination: connectAccount,
+      description,
+      metadata: { tenantId, walletId: wallet.id, transactionId: txId },
+    });
+
+    await db.prepare(
+      "UPDATE wallet_transactions SET status = 'settled' WHERE id = ?"
+    ).run(txId);
+
+    eventBus.emit(EVENTS.WALLET_UPDATED, {
+      walletId: wallet.id,
+      amount: -amount,
+      type: "withdrawal",
+      balance: wallet.balance - amount,
+    });
+
+    return { success: true, balance: wallet.balance - amount, transferId: transfer.id };
+  } catch (e) {
+    await db.prepare("UPDATE wallets SET balance = balance + ? WHERE id = ?").run(amount, wallet.id);
+    await db.prepare("UPDATE wallet_transactions SET status = 'failed' WHERE id = ?").run(txId);
+    return { success: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 // ── Spend From Wallet (atomic + idempotent) ────────────────
 // Single choke point for every wallet debit. Guarantees:
 //   1. idempotency — a repeated key is applied at most once.

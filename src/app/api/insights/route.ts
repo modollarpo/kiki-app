@@ -61,11 +61,13 @@ interface SystemMetricRow {
 }
 
 interface FraudEventRow {
+  id: string;
   event_type: string;
   severity: string;
   description: string;
   created_at: string;
   blocked: number;
+  status: string;
 }
 
 interface AuditRow {
@@ -226,13 +228,14 @@ export async function GET(req: Request) {
   };
 
   // ── Anomaly (fraud + signal anomalies) ───────────────
-  const anomalies = await db.prepare(`SELECT event_type, severity, description, created_at, blocked FROM fraud_events WHERE tenant_id = ? AND severity IN ('high','medium') ORDER BY created_at DESC LIMIT 15`).all<FraudEventRow>(tenantId);
+  const anomalies = await db.prepare(`SELECT id, event_type, severity, description, created_at, blocked, status FROM fraud_events WHERE tenant_id = ? AND severity IN ('high','medium') ORDER BY created_at DESC LIMIT 15`).all<FraudEventRow>(tenantId);
   const anomaly = anomalies.map(a => ({
+    id: a.id,
     type: a.event_type,
     severity: a.severity,
     description: a.description,
     time: a.created_at,
-    status: a.blocked ? "blocked" : "detected",
+    status: a.status || (a.blocked ? "blocked" : "open"),
   }));
 
   // ── Audit (agent actions + notifications) ────────────

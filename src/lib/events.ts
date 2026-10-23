@@ -122,6 +122,7 @@ export const EVENTS = {
   // Wallet card lifecycle
   WALLET_CARD_FROZEN: "wallet:card_frozen",
   WALLET_CARD_UNFROZEN: "wallet:card_unfrozen",
+  WALLET_CARD_CANCELLED: "wallet:card_cancelled",
   WALLET_UNFREEZE_REQUESTED: "wallet:unfreeze_requested",
 } as const;
 

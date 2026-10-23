@@ -5,9 +5,11 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/layout/RoleGuard";
 import { Card, Badge, ProgressBar, Button, AIThinking, ScrollableTable } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
+import { useKikiStore } from "@/store";
 import { K, fmt } from "@/lib/kdls";
 import { billing as billingApi } from "@/lib/api";
 import { generatePDF } from "@/lib/pdf";
+import { PLANS } from "@/lib/plans";
 
 interface BillingData {
   subscription: {
@@ -32,6 +34,8 @@ export default function BillingPage() {
   const [tab, setTab] = useState<"overview" | "invoices">("overview");
   const [billing, setBilling] = useState<BillingData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [changingPlan, setChangingPlan] = useState<string | null>(null);
+  const addToast = useKikiStore(s => s.addToast);
 
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
@@ -62,6 +66,29 @@ export default function BillingPage() {
   const totalSpend = billing?.totalManagedSpend || 0;
   const oaas = billing?.oaas;
   const invoices = billing?.invoices || [];
+
+  const changePlan = async (nextPlan: string) => {
+    if (!token) return;
+    const current = plan?.plan?.toLowerCase();
+    if (current === nextPlan) return;
+    if (!confirm(`Switch to the ${nextPlan.toUpperCase()} plan? Proration may apply.`)) return;
+    setChangingPlan(nextPlan);
+    try {
+      const res = await fetch("/api/billing/change-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ plan: nextPlan }),
+      });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) throw new Error(result?.error || "Failed to change plan");
+      await fetchBilling();
+      addToast("success", result?.data?.message || `Plan changed to ${nextPlan}`);
+    } catch (e) {
+      addToast("error", e instanceof Error ? e.message : "Failed to change plan");
+    } finally {
+      setChangingPlan(null);
+    }
+  };
 
   const downloadInvoice = async (invoiceId: string) => {
     const inv = invoices.find(i => i.id === invoiceId);
@@ -140,6 +167,44 @@ export default function BillingPage() {
                 </p>
               </Card>
             </div>
+
+            <Card className="mb-4">
+              <div className="px-5 py-3.5 border-b border-g800 flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <h2 className="font-mono font-bold text-small text-t1">Available Plans</h2>
+                  <p className="font-mono text-caption text-t4 mt-0.5">Switch plans at any time; unused time is prorated.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4">
+                {PLANS.filter(p => !p.performanceBased).map(p => {
+                  const isCurrent = plan?.plan?.toLowerCase() === p.id;
+                  return (
+                    <div key={p.id} className="rounded-kdls border p-4 flex flex-col gap-2"
+                      style={{ borderColor: isCurrent ? p.color : K.g800, background: isCurrent ? `${p.color}10` : K.g900 }}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono font-bold text-small text-t1">{p.name}</span>
+                        {isCurrent && <Badge color={p.color}>CURRENT</Badge>}
+                        {p.hot && !isCurrent && <Badge color={K.blue}>POPULAR</Badge>}
+                      </div>
+                      <p className="font-mono text-h3 font-bold" style={{ color: p.color }}>
+                        {p.contactOnly ? "Custom" : `$${p.priceMonthly.toLocaleString()}/mo`}
+                      </p>
+                      <p className="font-mono text-caption text-t3 flex-1">{p.desc}</p>
+                      <Button
+                        size="sm"
+                        variant={isCurrent ? "ghost" : "secondary"}
+                        full
+                        disabled={isCurrent}
+                        loading={changingPlan === p.id}
+                        onClick={() => p.contactOnly ? router.push("/contact") : changePlan(p.id)}
+                      >
+                        {isCurrent ? "Current plan" : p.contactOnly ? "Contact sales" : `Switch to ${p.name}`}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
 
             <Card>
               <div className="px-5 py-3.5 border-b border-g800">

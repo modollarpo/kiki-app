@@ -240,11 +240,16 @@ async function handleSync(
   const customers = await connector.fetchCustomers(apiKey, row.shop_domain ?? undefined, 250);
 
   let syncedOrders = 0;
+  let skippedOrders = 0;
   let totalRevenue = 0;
   let lastOrderAt: string | null = row.last_order_at;
 
   for (const order of orders) {
-    await recordCommerceOrder(tenantId, order);
+    const recorded = await recordCommerceOrder(tenantId, order, platform);
+    if (recorded.skipped) {
+      skippedOrders++;
+      continue;
+    }
     syncedOrders++;
     if (order.total > 0 && order.refunded !== true) {
       totalRevenue += order.total;
@@ -275,6 +280,7 @@ async function handleSync(
     ok: true,
     data: {
       syncedOrders,
+      skippedOrders,
       syncedCustomers: customers.length,
       totalRevenue,
       lastOrderAt,

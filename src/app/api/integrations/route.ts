@@ -291,6 +291,79 @@ const stateRecord = await db.prepare(`
         });
       }
 
+      // ── Connect using manually supplied credentials ───
+      case "connect_manual": {
+        const { accessToken, refreshToken, accountId, accountName, expiresAt } = body;
+        if (!accessToken || typeof accessToken !== "string") {
+          return NextResponse.json({ ok: false, error: "accessToken required" }, { status: 400 });
+        }
+
+        let validated = false;
+        try {
+          validated = await connector.validateToken(accessToken);
+        } catch (e) {
+          return NextResponse.json(
+            { ok: false, error: `Credential validation failed: ${e instanceof Error ? e.message : String(e)}` },
+            { status: 400 }
+          );
+        }
+        if (!validated) {
+          return NextResponse.json(
+            { ok: false, error: "Credential validation failed. Check the token and permissions." },
+            { status: 400 }
+          );
+        }
+
+        let resolvedAccountId = typeof accountId === "string" ? accountId : "";
+        let resolvedAccountName = typeof accountName === "string" ? accountName : "";
+        try {
+          const accountResult = await connector.getAccountInfo(accessToken);
+          if (accountResult.success && accountResult.data) {
+            resolvedAccountId = resolvedAccountId || accountResult.data.id || "";
+            resolvedAccountName = resolvedAccountName || accountResult.data.name || "";
+          }
+        } catch { /* account info is optional */ }
+
+        const db = await getDb();
+        await db.prepare(`
+          UPDATE tenant_integrations SET status = 'revoked', updated_at = datetime('now')
+          WHERE tenant_id = ? AND platform = ? AND status = 'active'
+        `).run(user.tenantId, platform);
+
+        const newIntegrationId = `int_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        await db.prepare(`
+          INSERT INTO tenant_integrations
+          (id, tenant_id, platform, status, access_token, refresh_token, token_expiry, config, connected_at)
+          VALUES (?, ?, ?, 'active', ?, ?, ?, ?, datetime('now'))
+        `).run(
+          newIntegrationId,
+          user.tenantId,
+          platform,
+          encryptToken(accessToken),
+          refreshToken ? encryptToken(String(refreshToken)) : null,
+          typeof expiresAt === "string" ? expiresAt : null,
+          JSON.stringify({ accountId: resolvedAccountId, accountName: resolvedAccountName })
+        );
+
+        eventBus.emit("integration.connected", {
+          tenantId: user.tenantId,
+          platform,
+          integrationId: newIntegrationId,
+          accountName: resolvedAccountName,
+        });
+
+        return NextResponse.json({
+          ok: true,
+          data: {
+            integrationId: newIntegrationId,
+            platform,
+            accountId: resolvedAccountId,
+            accountName: resolvedAccountName,
+            status: "active",
+          },
+        });
+      }
+
       // ── Disconnect platform ──────────────────────────
       case "disconnect": {
         const db = await getDb();

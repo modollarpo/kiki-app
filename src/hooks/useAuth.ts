@@ -8,7 +8,8 @@ interface AuthState {
   user: AuthResponse["user"] | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  mfaRequired: boolean;
+  login: (email: string, password: string, mfaCode?: string) => Promise<boolean>;
   signup: (name: string, email: string, password: string, companyName?: string) => Promise<boolean>;
   logout: () => void;
   loadUser: () => Promise<void>;
@@ -21,14 +22,24 @@ export const useAuth = create<AuthState>()(
       user: null,
       loading: false,
       error: null,
+      mfaRequired: false,
 
-      login: async (email: string, password: string) => {
+      login: async (email: string, password: string, mfaCode?: string) => {
         set({ loading: true, error: null });
         try {
-          const res = await auth.login(email, password);
-          set({ token: res.token, user: res.user, loading: false, error: null });
+          const res = await auth.login(email, password, mfaCode);
+          set({ token: res.token, user: res.user, loading: false, error: null, mfaRequired: false });
           return true;
         } catch (err) {
+          const code = err && typeof err === "object" && "code" in err ? String((err as { code?: string }).code) : undefined;
+          if (code === "MFA_REQUIRED" || code === "MFA_INVALID") {
+            set({
+              loading: false,
+              mfaRequired: true,
+              error: code === "MFA_INVALID" ? "Invalid authenticator code. Try again." : null,
+            });
+            return false;
+          }
           set({ loading: false, error: err instanceof Error ? err.message : "Login failed" });
           return false;
         }
@@ -48,7 +59,7 @@ export const useAuth = create<AuthState>()(
 
       logout: () => {
         auth.logout().catch(() => {});
-        set({ token: null, user: null, error: null });
+        set({ token: null, user: null, error: null, mfaRequired: false });
       },
 
       loadUser: async () => {

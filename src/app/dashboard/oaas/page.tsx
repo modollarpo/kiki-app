@@ -2,8 +2,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, Button, ProgressBar } from "@/components/ui";
-import { K, fmt } from "@/lib/kdls";
+import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
+import { useKikiStore } from "@/store";
 
 const TASK_TYPE_COLORS: Record<string, string> = {
   budget: K.gold, creative: K.oaas, scheduling: K.teal, audience: K.blue, bidding: K.mint,
@@ -26,6 +27,12 @@ export default function OaasPage() {
   const [tasks, setTasks] = useState<OaasTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newType, setNewType] = useState("budget");
+  const [newDetails, setNewDetails] = useState("");
+  const [creating, setCreating] = useState(false);
+  const addToast = useKikiStore(s => s.addToast);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -42,7 +49,7 @@ export default function OaasPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleAction = async (taskId: string, action: "approve" | "reject") => {
+  const handleAction = async (taskId: string, action: "approve" | "reject" | "cancel") => {
     if (!token) return;
     setBusy(taskId);
     try {
@@ -51,12 +58,50 @@ export default function OaasPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id: taskId, action }),
       });
-      if (!res.ok) return;
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) throw new Error(result?.error || "Action failed");
       setTasks(prev => prev.map(t =>
-        t.id === taskId ? { ...t, status: action === "approve" ? "approved" : "rejected" } : t
+        t.id === taskId ? { ...t, status: result.status } : t
       ));
+      addToast("success", action === "approve" ? "Task approved" : action === "reject" ? "Task rejected" : "Task cancelled");
+    } catch (e) {
+      addToast("error", e instanceof Error ? e.message : "Action failed");
     } finally {
       setBusy(null);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!token) return;
+    if (!newTitle.trim()) { addToast("error", "Task title is required"); return; }
+    setCreating(true);
+    try {
+      const res = await fetch("/api/oaas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: "create", title: newTitle.trim(), type: newType, details: newDetails.trim() || undefined }),
+      });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) throw new Error(result?.error || "Failed to create task");
+      setTasks(prev => [{
+        id: result.id,
+        title: result.title,
+        agent: result.agent,
+        type: result.type,
+        status: "pending",
+        expectedImpact: null,
+        confidence: null,
+        createdAt: new Date().toISOString(),
+        details: result.details || null,
+      }, ...prev]);
+      setNewTitle("");
+      setNewDetails("");
+      setShowCreate(false);
+      addToast("success", "Task created");
+    } catch (e) {
+      addToast("error", e instanceof Error ? e.message : "Failed to create task");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -68,10 +113,33 @@ export default function OaasPage() {
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
-        <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">OaaS Tasks</h1>
-          <p className="font-mono text-caption text-t3">Optimization-as-a-Service · Agent-generated tasks · Approval workflow</p>
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+          <div>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">OaaS Tasks</h1>
+            <p className="font-mono text-caption text-t3">Optimization-as-a-Service · Agent-generated tasks · Approval workflow</p>
+          </div>
+          <Button size="sm" variant="secondary" onClick={() => setShowCreate(v => !v)}>{showCreate ? "Close" : "+ New Task"}</Button>
         </div>
+
+        {showCreate && (
+          <Card className="mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              <div className="sm:col-span-2">
+                <label htmlFor="oaas-title" className="block font-mono text-caption tracking-widest text-t4 mb-1.5">TITLE</label>
+                <input id="oaas-title" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Refresh creative for Q4 campaign" className="w-full bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none focus:border-kblue" />
+              </div>
+              <div>
+                <label htmlFor="oaas-type" className="block font-mono text-caption tracking-widest text-t4 mb-1.5">TYPE</label>
+                <select id="oaas-type" value={newType} onChange={e => setNewType(e.target.value)} className="w-full bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none focus:border-kblue">
+                  {["budget", "creative", "scheduling", "audience", "bidding"].map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+            </div>
+            <label htmlFor="oaas-details" className="block font-mono text-caption tracking-widest text-t4 mb-1.5">DETAILS (OPTIONAL)</label>
+            <textarea id="oaas-details" value={newDetails} onChange={e => setNewDetails(e.target.value)} rows={2} className="w-full bg-g850 border border-g700 rounded-kdls px-3 py-2 font-mono text-caption text-t1 outline-none focus:border-kblue mb-3" />
+            <Button size="sm" loading={creating} onClick={handleCreate}>Create Task</Button>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Pending Review" value={loading ? "…" : String(pending.length)} accent={K.warn} />
@@ -103,8 +171,9 @@ export default function OaasPage() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 flex-shrink-0">
-                    <Button variant="mint" size="xs" onClick={() => handleAction(task.id, "approve")}>Approve</Button>
-                    <Button variant="ghost" size="xs" onClick={() => handleAction(task.id, "reject")}>Reject</Button>
+                    <Button variant="mint" size="xs" loading={busy === task.id} onClick={() => handleAction(task.id, "approve")}>Approve</Button>
+                    <Button variant="ghost" size="xs" loading={busy === task.id} onClick={() => handleAction(task.id, "reject")}>Reject</Button>
+                    <Button variant="ghost" size="xs" loading={busy === task.id} onClick={() => handleAction(task.id, "cancel")}>Cancel</Button>
                   </div>
                 </div>
               </Card>

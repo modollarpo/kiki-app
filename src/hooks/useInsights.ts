@@ -94,6 +94,7 @@ interface InsightsAiops {
 }
 
 interface AnomalyEvent {
+  id: string;
   type: string;
   severity: string;
   description: string;

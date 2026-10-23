@@ -19,6 +19,11 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [topUpAmt, setTopUpAmt] = useState(1000);
   const [toppingUp, setToppingUp] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawAmt, setWithdrawAmt] = useState(500);
+  const [withdrawDest, setWithdrawDest] = useState("");
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [cardBusy, setCardBusy] = useState<string | null>(null);
   const topupToastShown = useRef(false);
 
   useEffect(() => {
@@ -79,6 +84,63 @@ export default function WalletPage() {
     setToppingUp(false);
   };
 
+  const handleWithdraw = async () => {
+    if (!token) return;
+    if (!Number.isFinite(withdrawAmt) || withdrawAmt <= 0) {
+      addToast("error", "Enter a valid withdrawal amount");
+      return;
+    }
+    setWithdrawing(true);
+    try {
+      const res = await fetch("/api/wallet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: "withdraw", amount: withdrawAmt, destination: withdrawDest.trim() || undefined }),
+      });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) {
+        if (result?.code === "SERVICE_NOT_CONFIGURED") {
+          addToast("error", result.error || "Withdrawals are not configured for this workspace.");
+        } else {
+          addToast("error", result?.error || "Withdrawal failed.");
+        }
+        return;
+      }
+      setData(prev => prev ? { ...prev, balance: result.balance } : prev);
+      setWithdrawOpen(false);
+      addToast("success", `Withdrawal of $${withdrawAmt.toLocaleString()} submitted`);
+    } catch {
+      addToast("error", "Withdrawal failed.");
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
+  const handleCardAction = async (cardId: string, action: "freeze_card" | "unfreeze_card" | "cancel_card") => {
+    if (!token) return;
+    if (action === "cancel_card" && !confirm("Cancel this virtual card permanently?")) return;
+    setCardBusy(cardId);
+    try {
+      const res = await fetch("/api/wallet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action, cardId }),
+      });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) throw new Error(result?.error || "Card action failed");
+      const nextStatus = action === "freeze_card" ? "frozen" : action === "unfreeze_card" ? "active" : "cancelled";
+      setData(prev => prev ? {
+        ...prev,
+        cards: prev.cards.map(c => c.id === cardId ? { ...c, status: nextStatus } : c),
+      } : prev);
+      addToast("success", action === "freeze_card" ? "Card frozen" : action === "unfreeze_card" ? "Card unfrozen" : "Card cancelled");
+    } catch (e) {
+      addToast("error", e instanceof Error ? e.message : "Card action failed");
+    } finally {
+      setCardBusy(null);
+    }
+  };
+
   const [issuing, setIssuing] = useState(false);
 
   const handleIssueCard = async () => {
@@ -127,7 +189,10 @@ export default function WalletPage() {
             <h1 className="font-mono font-bold text-lg text-t1 mb-1">Wallet & Cards</h1>
             <p className="font-mono text-caption text-t3">{`Virtual cards · ${(data?.currency || "USD").toUpperCase()} ledger`}</p>
           </div>
-          <Button size="sm" loading={toppingUp} onClick={handleTopUp}>↑ Top Up Wallet</Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={() => setWithdrawOpen(o => !o)}>↓ Withdraw</Button>
+            <Button size="sm" loading={toppingUp} onClick={handleTopUp}>↑ Top Up Wallet</Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
@@ -163,6 +228,18 @@ export default function WalletPage() {
                     <p className="font-mono text-xs font-bold text-kindigo mb-2">{card.campaign}</p>
                     <ProgressBar value={card.limit > 0 ? (card.spent / card.limit) * 100 : 0} color={K.indigo} height={3} label={`${card.campaign} card limit used`} />
                     <p className="font-mono text-caption text-t4 mt-1">${card.spent.toLocaleString()} / ${card.limit.toLocaleString()}</p>
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                      {card.status === "active" && (
+                        <Button size="xs" variant="ghost" loading={cardBusy === card.id} onClick={() => handleCardAction(card.id, "freeze_card")}>Freeze</Button>
+                      )}
+                      {card.status === "frozen" && (
+                        <Button size="xs" variant="ghost" loading={cardBusy === card.id} onClick={() => handleCardAction(card.id, "unfreeze_card")}>Unfreeze</Button>
+                      )}
+                      {card.status !== "cancelled" && (
+                        <Button size="xs" variant="ghost" loading={cardBusy === card.id} onClick={() => handleCardAction(card.id, "cancel_card")} style={{ color: K.danger }}>Cancel</Button>
+                      )}
+                      {card.status === "cancelled" && <Badge color={K.t3}>CANCELLED</Badge>}
+                    </div>
                   </div>
                 ))}
                 {loading && [1, 2].map(i => (
@@ -220,6 +297,32 @@ export default function WalletPage() {
               <p className="font-mono text-h1 font-bold text-kgold">${topUpAmt.toLocaleString()}</p>
             </div>
             <Button variant="mint" size="lg" full loading={toppingUp} onClick={handleTopUp}>↑ Top Up Now</Button>
+
+            {withdrawOpen && (
+              <div className="mt-4 pt-4 border-t border-g800">
+                <h3 className="font-mono font-bold text-small text-t1 mb-3">Withdraw Funds</h3>
+                <label className="block font-mono text-caption tracking-widest text-t4 mb-1.5" htmlFor="withdraw-amount">AMOUNT (USD)</label>
+                <input
+                  id="withdraw-amount"
+                  type="number"
+                  min={1}
+                  max={1000000}
+                  value={withdrawAmt}
+                  onChange={e => setWithdrawAmt(Number(e.target.value))}
+                  className="w-full bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none focus:border-kgold mb-2"
+                />
+                <label className="block font-mono text-caption tracking-widest text-t4 mb-1.5" htmlFor="withdraw-destination">DESTINATION (OPTIONAL)</label>
+                <input
+                  id="withdraw-destination"
+                  placeholder="Stripe connected account"
+                  value={withdrawDest}
+                  onChange={e => setWithdrawDest(e.target.value)}
+                  className="w-full bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none focus:border-kgold mb-3"
+                />
+                <Button variant="secondary" size="md" full loading={withdrawing} onClick={handleWithdraw}>Submit Withdrawal</Button>
+                <p className="font-mono text-caption text-t4 mt-2">Withdrawals settle to your connected payout account.</p>
+              </div>
+            )}
           </Card>
         </div>
       </div>

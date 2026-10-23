@@ -1,14 +1,16 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard, Card, Badge, ProgressBar, Button } from "@/components/ui";
 import { K, fmt } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
+import { useKikiStore } from "@/store";
 import { useRouter } from "next/navigation";
 
 interface Scenario {
   id: string; name: string; description: string; budgetChange: number;
   projectedRevenue: number; projectedRoas: number; risk: string; confidence: number | null;
+  saved?: boolean; status?: string;
 }
 
 export default function ScenariosPage() {
@@ -18,30 +20,140 @@ export default function ScenariosPage() {
   const [selected, setSelected] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newBudget, setNewBudget] = useState(10);
+  const [newRisk, setNewRisk] = useState("medium");
+  const [newDesc, setNewDesc] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const addToast = useKikiStore(s => s.addToast);
+
+  const loadScenarios = useCallback(async () => {
+    if (!token) return;
+    try {
+      const r = await fetch("/api/scenarios", { headers: { Authorization: `Bearer ${token}` } });
+      const d = await r.json().catch(() => null);
+      if (d?.ok && Array.isArray(d.data?.scenarios)) {
+        setScenarios(d.data.scenarios);
+        setSelected(prev => prev || d.data.scenarios[0]?.id || "");
+      } else if (d?.error) {
+        setError(d.error);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load scenarios");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  const handleCreate = async () => {
+    if (!token) return;
+    if (!newName.trim()) { addToast("error", "Scenario name is required"); return; }
+    setCreating(true);
+    try {
+      const res = await fetch("/api/scenarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: "save", name: newName.trim(), budgetChange: newBudget, risk: newRisk, description: newDesc.trim() }),
+      });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) throw new Error(result?.error || "Failed to save scenario");
+      setNewName("");
+      setNewDesc("");
+      setShowCreate(false);
+      await loadScenarios();
+      addToast("success", "Scenario saved");
+    } catch (e) {
+      addToast("error", e instanceof Error ? e.message : "Failed to save scenario");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleApply = async (sc: Scenario) => {
+    if (!token || !sc.saved) return;
+    if (!confirm(`Apply "${sc.name}"? Active campaign budgets will be adjusted by ${sc.budgetChange > 0 ? "+" : ""}${sc.budgetChange}%.`)) return;
+    setBusy(sc.id);
+    try {
+      const res = await fetch("/api/scenarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: "apply", id: sc.id }),
+      });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) throw new Error(result?.error || "Failed to apply scenario");
+      await loadScenarios();
+      addToast("success", `Applied to ${result.data?.campaignsUpdated ?? 0} campaigns`);
+    } catch (e) {
+      addToast("error", e instanceof Error ? e.message : "Failed to apply scenario");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleDelete = async (sc: Scenario) => {
+    if (!token || !sc.saved) return;
+    if (!confirm(`Delete scenario "${sc.name}"?`)) return;
+    setBusy(sc.id);
+    try {
+      const res = await fetch("/api/scenarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: "delete", id: sc.id }),
+      });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) throw new Error(result?.error || "Failed to delete scenario");
+      await loadScenarios();
+      addToast("success", "Scenario deleted");
+    } catch (e) {
+      addToast("error", e instanceof Error ? e.message : "Failed to delete scenario");
+    } finally {
+      setBusy(null);
+    }
+  };
 
   useEffect(() => {
     if (!token) { router.push("/auth/login"); return; }
-    fetch("/api/scenarios", { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => {
-        if (d.ok && Array.isArray(d.data?.scenarios)) {
-          setScenarios(d.data.scenarios);
-          if (d.data.scenarios.length > 0) setSelected(d.data.scenarios[1]?.id || d.data.scenarios[0].id);
-        }
-      })
-      .catch((err) => { setError(err?.message || "Failed to load data"); setLoading(false); })
-      .finally(() => setLoading(false));
-  }, [token, router]);
+    loadScenarios();
+  }, [token, router, loadScenarios]);
 
   const getRiskColor = (risk: string) => risk === "high" ? K.danger : risk === "medium" ? K.warn : K.mint;
 
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
-        <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Scenario Planner</h1>
-          <p className="font-mono text-caption text-t3">Budget allocation scenarios · Projected ROAS · Risk assessment</p>
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+          <div>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Scenario Planner</h1>
+            <p className="font-mono text-caption text-t3">Budget allocation scenarios · Projected ROAS · Risk assessment</p>
+          </div>
+          <Button size="sm" variant="secondary" onClick={() => setShowCreate(v => !v)}>{showCreate ? "Close" : "+ New Scenario"}</Button>
         </div>
+
+        {showCreate && (
+          <Card className="mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              <div>
+                <label htmlFor="scn-name" className="block font-mono text-caption tracking-widest text-t4 mb-1.5">NAME</label>
+                <input id="scn-name" value={newName} onChange={e => setNewName(e.target.value)} placeholder="Aggressive Q4 scale" className="w-full bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none focus:border-kblue" />
+              </div>
+              <div>
+                <label htmlFor="scn-budget" className="block font-mono text-caption tracking-widest text-t4 mb-1.5">BUDGET CHANGE (%)</label>
+                <input id="scn-budget" type="number" min={-100} max={500} value={newBudget} onChange={e => setNewBudget(Number(e.target.value))} className="w-full bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none focus:border-kblue" />
+              </div>
+              <div>
+                <label htmlFor="scn-risk" className="block font-mono text-caption tracking-widest text-t4 mb-1.5">RISK</label>
+                <select id="scn-risk" value={newRisk} onChange={e => setNewRisk(e.target.value)} className="w-full bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none focus:border-kblue">
+                  {["low", "medium", "high"].map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+            </div>
+            <label htmlFor="scn-desc" className="block font-mono text-caption tracking-widest text-t4 mb-1.5">DESCRIPTION (OPTIONAL)</label>
+            <input id="scn-desc" value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full bg-g850 border border-g700 rounded-kdls px-3 py-[10px] font-mono text-caption text-t1 outline-none focus:border-kblue mb-3" />
+            <Button size="sm" loading={creating} onClick={handleCreate}>Save Scenario</Button>
+          </Card>
+        )}
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
@@ -72,6 +184,7 @@ export default function ScenariosPage() {
                     <span className="font-mono text-sm font-bold text-t1">{sc.name}</span>
                     <Badge color={getRiskColor(sc.risk)}>{sc.risk.toUpperCase()} RISK</Badge>
                     <Badge color={sc.confidence != null ? K.t3 : K.warn}>{sc.confidence != null ? `${sc.confidence}% CONF` : "NO MODEL"}</Badge>
+                    {sc.saved && <Badge color={sc.status === "applied" ? K.mint : K.blue}>{sc.status === "applied" ? "APPLIED" : "SAVED"}</Badge>}
                   </div>
                   <p className="font-mono text-caption text-t3 mb-3">{sc.description}</p>
 
@@ -99,6 +212,12 @@ export default function ScenariosPage() {
                   {selected === sc.id
                     ? <Badge color={K.blue}>Selected</Badge>
                     : <Button variant="secondary" size="sm" onClick={() => setSelected(sc.id)}>Select</Button>}
+                  {sc.saved && sc.status !== "applied" && (
+                    <Button size="sm" loading={busy === sc.id} onClick={() => handleApply(sc)}>Apply</Button>
+                  )}
+                  {sc.saved && (
+                    <Button variant="ghost" size="sm" loading={busy === sc.id} onClick={() => handleDelete(sc)}>Delete</Button>
+                  )}
                 </div>
               </div>
             </Card>

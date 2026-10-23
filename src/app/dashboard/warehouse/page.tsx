@@ -12,6 +12,30 @@ export default function WarehousePage() {
   const { token } = useAuth();
   const { data, loading } = useInsights();
   const [training, setTraining] = useState(false);
+  const [exporting, setExporting] = useState<string | null>(null);
+
+  const exportData = async (format: "csv" | "json") => {
+    if (!token) return;
+    setExporting(format);
+    try {
+      const res = await fetch(`/api/warehouse?export=${format}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `feature-store-${new Date().toISOString().slice(0, 10)}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      addToast("success", `Feature store exported as ${format.toUpperCase()}`);
+    } catch (e) {
+      addToast("error", e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExporting(null);
+    }
+  };
 
   const trainModel = async () => {
     if (!token) return;
@@ -37,9 +61,16 @@ export default function WarehousePage() {
   return (
     <DashboardLayout>
       <div className="max-w-[1400px] p-[clamp(14px,3vw,28px)]">
-        <div className="mb-5">
-          <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Feature Store & Data Warehouse</h1>
-          <p className="font-mono text-caption text-t3">Feature snapshots · Model training data · Sync status</p>
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+          <div>
+            <h1 className="font-mono font-bold text-lg text-t1 tracking-tight mb-1">Feature Store & Data Warehouse</h1>
+            <p className="font-mono text-caption text-t3">Feature snapshots · Model training data · Sync status</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="secondary" loading={exporting === "csv"} disabled={features.length === 0} onClick={() => exportData("csv")}>Export CSV</Button>
+            <Button size="sm" variant="secondary" loading={exporting === "json"} disabled={features.length === 0} onClick={() => exportData("json")}>Export JSON</Button>
+            <Button size="sm" variant="secondary" loading={training} onClick={trainModel}>Train Model</Button>
+          </div>
         </div>
 
         {loading ? (

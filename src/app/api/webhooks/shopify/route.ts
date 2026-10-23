@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     // Not an order/paid event — acknowledge to keep Shopify happy.
     if (!order) return NextResponse.json({ ok: true });
 
-    await recordCommerceOrder(tenantId, order);
+    await recordCommerceOrder(tenantId, order, "shopify");
     return NextResponse.json({ ok: true });
   } catch (error) {
     return handleApiError(error, "webhooks/shopify/POST");

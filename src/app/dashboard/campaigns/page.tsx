@@ -8,6 +8,7 @@ import { K } from "@/lib/kdls";
 import { useRouter } from "next/navigation";
 import { useSSE } from "@/hooks/useSSE";
 import { EVENTS } from "@/lib/events";
+import { useKikiStore } from "@/store";
 
 const PLATFORM_COLORS: Record<string,string> = { meta:"#1877F2", google:"#4285F4", tiktok:"#FF0050", linkedin:"#0A66C2", youtube:"#FF0000", pinterest:"#E60023" };
 
@@ -56,6 +57,31 @@ export default function CampaignsPage() {
       setCreating(false);
       setNewName("");
     } catch { /* ignore */ }
+  };
+
+  const handleToggle = async (c: Campaign) => {
+    if (!token) return;
+    const status = c.status === "active" ? "paused" : "active";
+    try {
+      await fetch(`/api/campaigns/${c.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status }),
+      });
+      setCampaignList(prev => prev.map(x => x.id === c.id ? { ...x, status } : x));
+    } catch {}
+  };
+
+  const handleDelete = async (c: Campaign) => {
+    if (!token) return;
+    if (!confirm(`Delete campaign "${c.name}"?`)) return;
+    try {
+      await fetch(`/api/campaigns/${c.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCampaignList(prev => prev.filter(x => x.id !== c.id));
+    } catch {}
   };
 
   return (
@@ -108,8 +134,8 @@ export default function CampaignsPage() {
             <span className="font-mono text-small font-bold text-t1">All Campaigns</span>
           </div>
           <ScrollableTable>
-          <div className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-2 border-b border-g800 bg-g950 min-w-[700px]">
-            {["NAME","STATUS","ROAS","SPEND","BUDGET","PLATFORM","CREATED"].map(h => (
+          <div className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_90px] gap-[10px] px-5 py-2 border-b border-g800 bg-g950 min-w-[760px]">
+            {["NAME","STATUS","ROAS","SPEND","BUDGET","PLATFORM","ACTIONS"].map(h => (
               <span key={h} className="font-mono text-caption tracking-widest text-t4">{h}</span>
             ))}
           </div>
@@ -117,7 +143,7 @@ export default function CampaignsPage() {
             const rc = c.roas >= 4 ? "text-kmint" : c.roas >= 2 ? "text-kwarn" : "text-t3";
             return (
               <div key={c.id}
-                className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-3 border-b border-g900 items-center">
+                className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_90px] gap-[10px] px-5 py-3 border-b border-g900 items-center">
                 <div>
                   <p className="font-mono text-caption font-bold text-t1 mb-[3px]">{c.name}</p>
                   {c.budget > 0 && <ProgressBar value={(c.spend / c.budget) * 100} color={K.blue} height={2} label={`${c.name} budget used`} />}
@@ -130,7 +156,10 @@ export default function CampaignsPage() {
                   style={{ background: `${PLATFORM_COLORS[c.platform] || K.g800}18`, color: PLATFORM_COLORS[c.platform] || K.t2 }}>
                   {c.platform[0]?.toUpperCase()}
                 </span>
-                <span className="font-mono text-caption text-t4">{new Date(c.createdAt).toLocaleDateString()}</span>
+                <div className="flex items-center gap-1">
+                  <Button size="xs" variant="ghost" onClick={() => handleToggle(c)}>{c.status === "active" ? "Pause" : "Resume"}</Button>
+                  <Button size="xs" variant="ghost" onClick={() => handleDelete(c)} style={{ color: K.danger }}>Delete</Button>
+                </div>
               </div>
             );
           })}

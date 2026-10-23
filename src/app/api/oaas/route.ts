@@ -98,17 +98,51 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { id, action } = body;
+    const db = await getDb();
 
-    if (!id || (action !== "approve" && action !== "reject")) {
-      return jsonError("id and action ('approve'|'reject') are required", 400);
+    if (action === "create") {
+      const title = typeof body.title === "string" ? body.title.trim() : "";
+      if (!title) return jsonError("title required", 400);
+      if (title.length > 200) return jsonError("title too long", 400);
+
+      const validTypes = ["budget", "creative", "scheduling", "audience", "bidding"];
+      const type = validTypes.includes(body.type) ? body.type : "budget";
+      const agent = typeof body.agent === "string" && body.agent.trim() ? body.agent.trim().slice(0, 100) : "Manual";
+      const details = typeof body.details === "string" ? body.details.trim().slice(0, 2000) : null;
+      const campaignId = typeof body.campaignId === "string" ? body.campaignId : null;
+      let campaignName = "Manual task";
+
+      if (campaignId) {
+        const campaign = await db.prepare(
+          "SELECT name FROM campaigns WHERE id = ? AND tenant_id = ?"
+        ).get<{ name: string }>(campaignId, user.tenantId);
+        if (!campaign) return jsonError("Campaign not found", 404);
+        campaignName = campaign.name;
+      }
+
+      const taskId = genId("oaas");
+      await db.prepare(`
+        INSERT INTO oaas_tasks
+        (id, tenant_id, campaign_id, campaign_name, title, agent, type, status, expected_impact, confidence, details)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NULL, NULL, ?)
+      `).run(taskId, user.tenantId, campaignId, campaignName, title, agent, type, details);
+
+      return json({ id: taskId, title, agent, type, status: "pending", details, campaignId, campaignName });
     }
 
-    const db = await getDb();
+    if (!id || (action !== "approve" && action !== "reject" && action !== "cancel")) {
+      return jsonError("id and action ('approve'|'reject'|'cancel') are required", 400);
+    }
+
     const existing = await db.prepare("SELECT * FROM oaas_tasks WHERE id = ? AND tenant_id = ?").get<OaasTaskRow>(id, user.tenantId);
     if (!existing) return jsonError("Task not found", 404);
 
-    const status = action === "approve" ? "approved" : "rejected";
-    await db.prepare("UPDATE oaas_tasks SET status = ?, updated_at = datetime('now') WHERE id = ?").run(status, id);
+    if (action === "cancel" && existing.status !== "pending") {
+      return jsonError("Only pending tasks can be cancelled", 400);
+    }
+
+    const status = action === "approve" ? "approved" : action === "reject" ? "rejected" : "cancelled";
+    await db.prepare("UPDATE oaas_tasks SET status = ?, updated_at = datetime('now') WHERE id = ? AND tenant_id = ?").run(status, id, user.tenantId);
 
     return json({ id, status });
   } catch (e) {

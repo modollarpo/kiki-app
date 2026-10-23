@@ -131,16 +131,16 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { campaignId, type, content, platform, status, aiScore } = body;
+    const { campaignId, type, content, platform, status, aiScore, name } = body;
 
     if (!content || typeof content !== "string") {
       return jsonError("content is required");
     }
 
-    const validTypes = ["headline", "cta", "description"];
+    const validTypes = ["headline", "cta", "description", "image", "video", "copy"];
     const creativeType = validTypes.includes(type) ? type : "headline";
 
-    const validPlatforms = ["meta", "google", "tiktok", "youtube", "linkedin", "multi"];
+    const validPlatforms = ["meta", "google", "tiktok", "youtube", "linkedin", "multi", "pinterest"];
     const creativePlatform = validPlatforms.includes(platform) ? platform : "multi";
 
     const validStatuses = ["draft", "approved", "rejected"];
@@ -148,18 +148,35 @@ export async function POST(req: Request) {
 
     const db = await getDb();
     const id = genId("cr");
+    const contentStr = typeof content === "object" ? JSON.stringify(content) : content;
     await db.prepare(`
       INSERT INTO creatives (id, tenant_id, campaign_id, type, content, platform, status, ai_score)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, user.tenantId, campaignId || null,
-      creativeType, content, creativePlatform, creativeStatus,
+      creativeType, contentStr, creativePlatform, creativeStatus,
       typeof aiScore === "number" ? aiScore : 0
     );
 
-    return json({ ok: true, id }, 201);
+    return json({ ok: true, id, asset: { id, name: name || (typeof content === "object" ? (content as any).headline : "Creative"), type: creativeType, platform: creativePlatform, status: creativeStatus } }, 201);
   } catch (error) {
     logger.error("creative-library/POST failed", { message: error instanceof Error ? error.message : String(error) });
     return jsonError("Failed to save creative", 500);
+  }
+}
+
+export async function DELETE(req: Request) {
+  const user = getUserFromRequest(req);
+  if (!user) return jsonError("Unauthorized", 401);
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    if (!id) return jsonError("id required", 400);
+    const db = await getDb();
+    await db.prepare("DELETE FROM creatives WHERE id = ? AND tenant_id = ?").run(id, user.tenantId);
+    return json({ ok: true });
+  } catch (error) {
+    logger.error("creative-library/DELETE failed", { message: error instanceof Error ? error.message : String(error) });
+    return jsonError("Failed to delete creative", 500);
   }
 }

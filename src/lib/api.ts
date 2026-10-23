@@ -73,10 +73,10 @@ export interface AuthResponse {
 }
 
 export const auth = {
-  login: (email: string, password: string) =>
+  login: (email: string, password: string, mfaCode?: string) =>
     request<AuthResponse>("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, ...(mfaCode ? { mfaCode } : {}) }),
     }),
   signup: (name: string, email: string, password: string, companyName?: string) =>
     request<AuthResponse>("/api/auth/signup", {

@@ -62,12 +62,23 @@ export async function DELETE(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
+    let id = searchParams.get("id");
+    let clearRead = searchParams.get("clearRead") === "1";
+    if (!id && !clearRead) {
+      try {
+        const body = await req.json();
+        if (typeof body?.id === "string") id = body.id;
+        if (body?.clearRead === true || body?.all === true) clearRead = true;
+      } catch { /* no body */ }
+    }
+
     const db = await getDb();
     if (id) {
       await db.prepare("DELETE FROM notifications WHERE id = ? AND tenant_id = ? AND user_id = ?").run(id, user.tenantId, user.id);
-    } else {
+    } else if (clearRead) {
       await db.prepare("DELETE FROM notifications WHERE tenant_id = ? AND user_id = ? AND read = 1").run(user.tenantId, user.id);
+    } else {
+      return jsonError("id or clearRead required", 400);
     }
     return json({ ok: true });
   } catch (e) {

@@ -11,6 +11,7 @@ export const nameSchema = z.string().min(2).max(100).transform(v => v.trim());
 export const loginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Password is required"),
+  mfaCode: z.string().max(32).optional(),
 });
 
 export const signupSchema = z.object({

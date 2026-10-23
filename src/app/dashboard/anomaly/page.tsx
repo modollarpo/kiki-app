@@ -1,17 +1,41 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, Badge, ProgressBar, StatCard } from "@/components/ui";
+import { Card, Badge, ProgressBar, StatCard, Button } from "@/components/ui";
 import { K } from "@/lib/kdls";
 import { useAuth } from "@/hooks/useAuth";
 import { useInsights } from "@/hooks/useInsights";
+import { useKikiStore } from "@/store";
 
 export default function AnomalyDetectionPage() {
   const { token, loading: authLoading } = useAuth();
   const router = useRouter();
   const { data, loading } = useInsights();
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState<string | null>(null);
+  const addToast = useKikiStore(s => s.addToast);
+
+  const updateAnomaly = async (id: string, action: "acknowledge" | "resolve" | "reopen") => {
+    if (!token) return;
+    setBusy(id);
+    try {
+      const res = await fetch("/api/anomaly", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id, action }),
+      });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) throw new Error(result?.error || "Update failed");
+      setStatusOverrides(prev => ({ ...prev, [id]: result.status }));
+      addToast("success", action === "resolve" ? "Anomaly resolved" : action === "acknowledge" ? "Anomaly acknowledged" : "Anomaly reopened");
+    } catch (e) {
+      addToast("error", e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setBusy(null);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !token) router.push("/auth/login");
@@ -20,14 +44,15 @@ export default function AnomalyDetectionPage() {
   if (authLoading) return <DashboardLayout><div style={{color:"var(--t2)",padding:"2rem"}}>Loading...</div></DashboardLayout>;
   if (!token) return null;
 
-  const anomalies = (data?.anomaly ?? []).map((a: { type: string; severity: string; description: string; time: string; status: string }) => ({
-    id: a.type?.slice(0, 4) ?? "N/A",
+  const anomalies = (data?.anomaly ?? []).map((a: { id: string; type: string; severity: string; description: string; time: string; status: string }) => ({
+    id: a.id || a.type?.slice(0, 8) || "N/A",
     type: a.description ?? a.type,
+    eventType: a.type,
     campaign: "Platform",
     severity: a.severity ?? "medium",
     change: "—",
     timestamp: a.time ? new Date(a.time).toLocaleString() : "—",
-    status: a.status ?? "investigating",
+    status: statusOverrides[a.id] ?? a.status ?? "open",
   }));
 
   const getSeverityColor = (severity: string) => {
@@ -48,7 +73,7 @@ export default function AnomalyDetectionPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <StatCard label="Active Anomalies" value={loading ? "…" : String(anomalies.filter(a => a.status === "detected").length)} accent={K.danger} sub={`${anomalies.length} total flagged`} />
+          <StatCard label="Active Anomalies" value={loading ? "…" : String(anomalies.filter(a => a.status === "open" || a.status === "detected").length)} accent={K.danger} sub={`${anomalies.length} total flagged`} />
           <StatCard label="Critical" value={loading ? "…" : String(anomalies.filter(a => a.severity === "critical").length)} accent={K.warn} sub="Require action" />
           <StatCard label="Blocked" value={loading ? "…" : String(anomalies.filter(a => a.status === "blocked").length)} accent={K.blue} sub="Auto-blocked / handled" />
           <StatCard label="High Severity" value={loading ? "…" : String(anomalies.filter(a => a.severity === "high").length)} accent={K.teal} sub="Under review" />
@@ -71,7 +96,18 @@ export default function AnomalyDetectionPage() {
                   <p className="font-mono text-small font-bold" style={{ color: getSeverityColor(anomaly.severity) }}>{anomaly.change}</p>
                   <p className="font-mono text-micro text-t4">{anomaly.timestamp}</p>
                 </div>
-                <Badge color={anomaly.status === "detected" ? K.warn : K.mint}>{anomaly.status}</Badge>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Badge color={anomaly.status === "resolved" ? K.mint : anomaly.status === "acknowledged" ? K.blue : K.warn}>{anomaly.status}</Badge>
+                  {(anomaly.status === "open" || anomaly.status === "detected") && (
+                    <Button size="xs" variant="ghost" loading={busy === anomaly.id} onClick={() => updateAnomaly(anomaly.id, "acknowledge")}>Acknowledge</Button>
+                  )}
+                  {anomaly.status !== "resolved" && (
+                    <Button size="xs" variant="secondary" loading={busy === anomaly.id} onClick={() => updateAnomaly(anomaly.id, "resolve")}>Resolve</Button>
+                  )}
+                  {anomaly.status === "resolved" && (
+                    <Button size="xs" variant="ghost" loading={busy === anomaly.id} onClick={() => updateAnomaly(anomaly.id, "reopen")}>Reopen</Button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -10,7 +10,7 @@ import Image from "next/image";
 export default function LoginPage() {
   const router = useRouter();
   const { addToast } = useKikiStore();
-  const { login, loading: authLoading, error: authError } = useAuth();
+  const { login, loading: authLoading, error: authError, mfaRequired } = useAuth();
   const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
   const demoEmail = process.env.NEXT_PUBLIC_DEMO_USER_EMAIL;
   const demoPassword = process.env.NEXT_PUBLIC_DEMO_USER_PASSWORD;
@@ -20,7 +20,8 @@ export default function LoginPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [mfaCode, setMfaCode] = useState("");
+  const [errors, setErrors] = useState<{ email?: string; password?: string; mfaCode?: string }>({});
 
   const validateEmail = (v: string) => {
     if (!v) return "Email is required";
@@ -37,10 +38,11 @@ export default function LoginPage() {
   const handleLogin = async () => {
     const emailErr = validateEmail(email);
     const passErr = validatePassword(password);
-    setErrors({ email: emailErr, password: passErr });
-    if (emailErr || passErr) return;
+    const mfaErr = mfaRequired && !mfaCode.trim() ? "Authenticator code is required" : undefined;
+    setErrors({ email: emailErr, password: passErr, mfaCode: mfaErr });
+    if (emailErr || passErr || mfaErr) return;
 
-    const success = await login(email, password);
+    const success = await login(email, password, mfaRequired ? mfaCode.trim() : undefined);
     if (success) {
       addToast("success", "Signed in successfully. Welcome back.");
       router.push("/dashboard");
@@ -115,6 +117,18 @@ export default function LoginPage() {
               </div>
               <Input type="password" placeholder="••••••••" value={password} onChange={v => { setPassword(v); setErrors(e => ({...e, password: undefined})); }} error={errors.password} suffix="👁" />
             </div>
+            {mfaRequired && (
+              <div className="mb-3">
+                <Input
+                  label="Authenticator Code"
+                  placeholder="123456 or backup code"
+                  value={mfaCode}
+                  onChange={v => { setMfaCode(v); setErrors(e => ({ ...e, mfaCode: undefined })); }}
+                  error={errors.mfaCode}
+                />
+                <p className="font-mono text-caption text-t3 mt-1">Open your authenticator app and enter the 6-digit code.</p>
+              </div>
+            )}
             <div className="flex items-center gap-2 mb-5 mt-2 cursor-pointer" onClick={() => setKeepSignedIn(!keepSignedIn)}>
               <div className="flex-shrink-0 flex items-center justify-center w-[14px] h-[14px] rounded-sm transition-all duration-150" style={{ border:`2px solid ${keepSignedIn ? K.blue : K.g700}`, background: keepSignedIn ? K.blue : "transparent" }}>
                 {keepSignedIn && <span className="text-white text-caption font-bold">✓</span>}

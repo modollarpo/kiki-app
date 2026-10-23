@@ -31,14 +31,41 @@ function deriveProfileFields(realizedLtv: number, realizedOrders: number) {
 
 export async function recordCommerceOrder(
   tenantId: string,
-  order: CommerceOrder
+  order: CommerceOrder,
+  platform = "unknown"
 ): Promise<{
   customerId: string;
   created: boolean;
   newFeedbackCount: number;
   updatedPredictions: number;
+  skipped?: boolean;
 }> {
   const db = await getDb();
+
+  if (order.orderId) {
+    try {
+      await db.prepare(`
+        INSERT INTO commerce_orders (id, tenant_id, platform, order_id, total, currency, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        genId("cmo"),
+        tenantId,
+        platform,
+        order.orderId,
+        order.total,
+        order.currency,
+        order.status
+      );
+    } catch {
+      return {
+        customerId: "",
+        created: false,
+        newFeedbackCount: 0,
+        updatedPredictions: 0,
+        skipped: true,
+      };
+    }
+  }
 
   const isRefunded = order.status === "refunded" || order.refunded === true;
   const orderValue = isRefunded ? 0 : order.total;

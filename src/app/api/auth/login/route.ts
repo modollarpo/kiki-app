@@ -4,6 +4,7 @@ import { verifyPassword, createSession, json, jsonError } from "@/lib/auth";
 import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
 import { loginSchema } from "@/lib/validation";
+import { verifyTotp, verifyAndConsumeBackupCode } from "@/lib/mfa";
 import { logger, setRequestId, generateRequestId } from "@/lib/logger";
 import { ZodError } from "zod";
 
@@ -23,6 +24,43 @@ export async function POST(req: Request) {
 
     if (!user || !verifyPassword(parsed.password, String(user.password || ""))) {
       return jsonError("Invalid email or password", 401);
+    }
+
+    const mfaEnabled = !!(user.mfa_enabled as number | undefined);
+    if (mfaEnabled) {
+      const code = (parsed.mfaCode || "").trim();
+      if (!code) {
+        return json(
+          { ok: false, error: "Enter your authenticator code to continue", code: "MFA_REQUIRED", mfaRequired: true },
+          401
+        );
+      }
+
+      let verified = false;
+      if (user.mfa_secret) {
+        verified = verifyTotp(code, String(user.mfa_secret));
+      }
+
+      if (!verified) {
+        const backup = verifyAndConsumeBackupCode(
+          code,
+          user.mfa_backup_codes ? String(user.mfa_backup_codes) : null
+        );
+        if (backup.valid) {
+          verified = true;
+          await (await db.prepare("UPDATE users SET mfa_backup_codes = ? WHERE id = ?")).run(
+            JSON.stringify(backup.remaining),
+            String(user.id)
+          );
+        }
+      }
+
+      if (!verified) {
+        return json(
+          { ok: false, error: "Invalid authenticator code", code: "MFA_INVALID", mfaRequired: true },
+          401
+        );
+      }
     }
 
     const token = createSession({

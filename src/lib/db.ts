@@ -828,6 +828,69 @@ const SCHEMA = `
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
+  CREATE TABLE IF NOT EXISTS scenario_plans (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    budget_change REAL NOT NULL DEFAULT 0,
+    risk TEXT NOT NULL DEFAULT 'medium',
+    status TEXT NOT NULL DEFAULT 'saved',
+    created_by TEXT,
+    applied_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS commerce_orders (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    platform TEXT NOT NULL DEFAULT 'unknown',
+    order_id TEXT NOT NULL,
+    total REAL NOT NULL DEFAULT 0,
+    currency TEXT NOT NULL DEFAULT 'USD',
+    status TEXT NOT NULL DEFAULT 'unknown',
+    processed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(tenant_id, platform, order_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS report_exports (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    report_type TEXT NOT NULL,
+    format TEXT NOT NULL DEFAULT 'csv',
+    status TEXT NOT NULL DEFAULT 'completed',
+    row_count INTEGER NOT NULL DEFAULT 0,
+    content TEXT,
+    created_by TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS api_keys (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    key_prefix TEXT NOT NULL,
+    key_hash TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'active',
+    last_used_at TEXT,
+    created_by TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS webhook_endpoints (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    url TEXT NOT NULL,
+    events TEXT NOT NULL DEFAULT '["*"]',
+    secret TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    last_delivery_at TEXT,
+    failure_count INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS kyc_entities (
     id TEXT PRIMARY KEY,
     tenant_id TEXT NOT NULL,
@@ -850,6 +913,11 @@ const SCHEMA = `
     entity_id TEXT NOT NULL,
     name TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'uploaded',
+    file_name TEXT,
+    mime_type TEXT,
+    file_size INTEGER NOT NULL DEFAULT 0,
+    content_base64 TEXT,
+    uploaded_by TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -1031,9 +1099,13 @@ const SCHEMA = `
     tenant_id TEXT NOT NULL,
     signal_id TEXT,
     event_type TEXT NOT NULL,
-    severity TEXT NOT NULL DEFAULT 'low',
+    severity TEXT NOT NULL,
     description TEXT NOT NULL,
     blocked INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'open',
+    acknowledged_by TEXT,
+    resolved_by TEXT,
+    resolved_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -1732,6 +1804,15 @@ async function runMigrations(db: PgDb) {
   await addColumnIfMissing("customer_profiles", "commerce_platform", "TEXT");
   await addColumnIfMissing("customer_profiles", "identity_hash", "TEXT");
   await addColumnIfMissing("commerce_connections", "auth_type", "TEXT NOT NULL DEFAULT 'api_key'");
+  await addColumnIfMissing("kyc_documents", "file_name", "TEXT");
+  await addColumnIfMissing("kyc_documents", "mime_type", "TEXT");
+  await addColumnIfMissing("kyc_documents", "file_size", "INTEGER NOT NULL DEFAULT 0");
+  await addColumnIfMissing("kyc_documents", "content_base64", "TEXT");
+  await addColumnIfMissing("kyc_documents", "uploaded_by", "TEXT");
+  await addColumnIfMissing("fraud_events", "status", "TEXT NOT NULL DEFAULT 'open'");
+  await addColumnIfMissing("fraud_events", "acknowledged_by", "TEXT");
+  await addColumnIfMissing("fraud_events", "resolved_by", "TEXT");
+  await addColumnIfMissing("fraud_events", "resolved_at", "TEXT");
 
   // External platform identifiers so bidding decisions can be pushed back to
   // the real ad sets (bids live on ad sets, not campaign budgets).

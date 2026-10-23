@@ -31,6 +31,24 @@ export default function NotificationsPage() {
     setUnread(0);
   };
 
+  const handleDelete = async (id: string) => {
+    if (!token) return;
+    try {
+      await fetch("/api/notifications", { method: "DELETE", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ id }) });
+      const removed = items.find(n => n.id === id);
+      setItems(prev => prev.filter(n => n.id !== id));
+      if (removed && !removed.read) setUnread(prev => Math.max(0, prev - 1));
+    } catch {}
+  };
+
+  const handleClearRead = async () => {
+    if (!token) return;
+    try {
+      await fetch("/api/notifications", { method: "DELETE", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ clearRead: true }) });
+      setItems(prev => prev.filter(n => !n.read));
+    } catch {}
+  };
+
   const severityColor = (s: string) => {
     switch (s) {
       case "critical": return K.danger;
@@ -50,8 +68,9 @@ export default function NotificationsPage() {
               {loading ? <span className="inline-flex items-center gap-1.5"><span className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full shrink-0" style={{ borderColor: `${K.blue}40`, borderTopColor: K.blue }} /><span className="font-mono text-caption text-t3">Loading...</span></span> : `${items.length} total · ${unread} unread`}
             </p>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap gap-2 items-center">
             {unread > 0 && <Button size="sm" variant="ghost" onClick={handleMarkAllRead}>Mark all read</Button>}
+            {items.some(n => n.read) && <Button size="sm" variant="ghost" onClick={handleClearRead} style={{ color: K.danger }}>Clear read</Button>}
           </div>
         </div>
 
@@ -74,14 +93,23 @@ export default function NotificationsPage() {
                   <p className="font-sans text-small text-t3 leading-relaxed mb-1">{n.body}</p>
                   <p className="font-mono text-caption text-t4">{new Date(n.time).toLocaleString()}</p>
                 </div>
-                {!n.read && (
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  {!n.read && (
+                    <button
+                      onClick={e => { e.stopPropagation(); handleMarkRead(n.id); }}
+                      className="font-mono text-caption text-kblue bg-transparent border-none cursor-pointer"
+                    >
+                      Mark read
+                    </button>
+                  )}
                   <button
-                    onClick={e => { e.stopPropagation(); handleMarkRead(n.id); }}
-                    className="font-mono text-caption text-kblue bg-transparent border-none cursor-pointer shrink-0"
+                    onClick={e => { e.stopPropagation(); handleDelete(n.id); }}
+                    className="font-mono text-caption bg-transparent border-none cursor-pointer"
+                    style={{ color: K.danger }}
                   >
-                    Mark read
+                    Delete
                   </button>
-                )}
+                </div>
               </div>
             </Card>
           ))}

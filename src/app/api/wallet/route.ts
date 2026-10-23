@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { getDb, genId } from "@/lib/db";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { checkEnforcement } from "@/lib/tenant";
-import { createVirtualCard, topUpWallet } from "@/lib/wallet";
+import { createVirtualCard, topUpWallet, freezeCard, cancelCard, unfreezeCard, withdrawFromWallet } from "@/lib/wallet";
 import { isStripeIssuingEnabled, SERVICE_NOT_CONFIGURED } from "@/lib/card-issuer";
 import { getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { checkRateLimitDistributed } from "@/lib/rate-limit-redis";
@@ -78,7 +78,53 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { amount, action, campaignName, totalLimit } = body;
+    const { amount, action, campaignName, totalLimit, cardId, biometricToken, destination, requiresBiometric } = body;
+
+    if (action === "freeze_card" || action === "unfreeze_card" || action === "cancel_card") {
+      if (!cardId || typeof cardId !== "string") return jsonError("cardId required", 400);
+
+      if (action === "freeze_card") {
+        const result = await freezeCard(cardId);
+        if (!result.success) return jsonError(result.error || "Failed to freeze card", 400);
+        return json({ ok: true, status: "frozen" });
+      }
+
+      if (action === "unfreeze_card") {
+        const result = await unfreezeCard(cardId, {
+          requiresBiometric: requiresBiometric === true,
+          biometricToken: typeof biometricToken === "string" ? biometricToken : undefined,
+        });
+        if (!result.success) {
+          return json({ ok: false, error: result.error || "Failed to unfreeze card", requiresBiometric: result.requiresBiometric }, 400);
+        }
+        return json({ ok: true, status: "active" });
+      }
+
+      const result = await cancelCard(cardId);
+      if (!result.success) return jsonError(result.error || "Failed to cancel card", 400);
+      return json({ ok: true, status: "cancelled" });
+    }
+
+    if (action === "withdraw") {
+      if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) {
+        return jsonError("Amount must be a positive number", 400);
+      }
+      if (amount > 1_000_000) return jsonError("Maximum withdrawal is $1,000,000", 400);
+
+      const result = await withdrawFromWallet(
+        user.tenantId,
+        amount,
+        typeof destination === "string" ? destination : "",
+        `Wallet withdrawal${destination ? ` to ${destination}` : ""}`
+      );
+      if (!result.success) {
+        return json(
+          { ok: false, error: result.error || "Withdrawal failed", code: result.code },
+          result.code === "SERVICE_NOT_CONFIGURED" ? 503 : 400
+        );
+      }
+      return json({ ok: true, balance: result.balance, transferId: result.transferId });
+    }
 
     if (action === "issue_card") {
       if (!isStripeIssuingEnabled()) {
