@@ -98,7 +98,7 @@ export default function ConsentPrivacyPage() {
                       <span className="text-sm font-medium text-t1 capitalize">{plan.plan || "unknown"}</span>
                       <span className="text-sm font-semibold text-t1">{plan.count.toLocaleString()}</span>
                     </div>
-                    <ProgressBar value={share} max={100} color={K.blue} height={4} />
+                    <ProgressBar value={share} max={100} color={K.blue} height={4} label={`${plan.plan || "unknown"} consent share`} />
                   </div>
                   <div className="text-right w-24">
                     <div className="text-xs text-t3">Share</div>

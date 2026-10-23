@@ -80,9 +80,15 @@ async function loginAndGetState(browser, viewport) {
 async function main() {
   const browser = await chromium.launch(EXECUTABLE ? { executablePath: EXECUTABLE } : {});
   const storageState = await loginAndGetState(browser, { width: 1440, height: 1000 });
+  if (!storageState) {
+    await browser.close();
+    console.error("[a11y] FATAL: could not authenticate — refusing to scan the wrong pages.");
+    process.exit(2);
+  }
 
   const violations = {};
   let totalNodes = 0;
+  let scanErrors = 0;
   const scanned = [];
 
   for (const width of WIDTHS) {
@@ -107,7 +113,13 @@ async function main() {
               timeout: 30000,
             })
             .catch(() => {});
-          await page.waitForTimeout(1000);
+          // Let data fetches and hydration settle so we audit the final DOM,
+          // not a transient loading skeleton.
+          await page.waitForLoadState("networkidle", { timeout: 20000 }).catch(() => {});
+          await page.waitForTimeout(1500);
+          if (p.auth && page.url().includes("/auth/login")) {
+            throw new Error("redirected to login (auth state was not applied)");
+          }
           const results = await new AxeBuilder({ page })
             .withTags(TAGS)
             .analyze();
@@ -124,6 +136,7 @@ async function main() {
             }
           }
         } catch (e) {
+          scanErrors += 1;
           console.log(`[a11y] ${p.path} (${theme}/${width.label}) failed: ${e.message}`);
         }
       }
@@ -155,11 +168,19 @@ async function main() {
   } else {
     for (const [id, d] of entries) {
       console.log(`[a11y] [${d.impact}] ${id}: ${d.count} node(s) — ${d.help}`);
+      for (const n of d.nodes.slice(0, 10)) {
+        console.log(`         ${n.page}  ${n.target}`);
+      }
+      if (d.nodes.length > 10) console.log(`         … ${d.nodes.length - 10} more`);
     }
   }
   console.log(`[a11y] total violation nodes: ${totalNodes} (baseline: ${baseline.maxViolationNodes})`);
   console.log(`[a11y] report written to ${REPORT}`);
 
+  if (scanErrors > 0) {
+    console.error(`\n[a11y] FAIL: ${scanErrors} page scan(s) failed to render correctly.`);
+    process.exit(3);
+  }
   if (totalNodes > baseline.maxViolationNodes) {
     console.error(
       `\n[a11y] FAIL: ${totalNodes} violation node(s) exceed baseline ${baseline.maxViolationNodes}.`

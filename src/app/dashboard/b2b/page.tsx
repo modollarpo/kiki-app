@@ -78,7 +78,7 @@ export default function B2BPage() {
                     <span className="font-mono text-caption text-t2">{stage.name}</span>
                     <span className="font-mono text-caption font-bold text-t1">${(stage.value / 1000).toFixed(0)}K · {stage.count} deals</span>
                   </div>
-                  <ProgressBar value={pct} color={stage.color} height={5} />
+                  <ProgressBar value={pct} color={stage.color} height={5} label={`${stage.name} pipeline stage`} />
                 </div>
               );
             })}

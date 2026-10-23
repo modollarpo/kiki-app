@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
                         <span className="font-mono text-caption text-t2">{fmt.currency(ch.spend)}</span>
                         <div>
                           <span className="font-mono text-caption text-t3 block mb-1">{(ch.share * 100).toFixed(1)}%</span>
-                          <ProgressBar value={ch.share * 100} color={pc} height={3} />
+                          <ProgressBar value={ch.share * 100} color={pc} height={3} label={`${ch.name} share of spend`} />
                         </div>
                       </div>
                     );
@@ -118,7 +118,7 @@ export default function AnalyticsPage() {
                       <span className="font-mono text-caption text-t2">{f.stage}</span>
                       <span className="font-mono text-caption font-bold text-t1">{fmt.compact(f.value)}</span>
                     </div>
-                    <ProgressBar value={f.pct} color={i < 2 ? K.blue : i < 4 ? K.teal : K.mint} height={6} glow />
+                    <ProgressBar value={f.pct} color={i < 2 ? K.blue : i < 4 ? K.teal : K.mint} height={6} glow label={`${f.stage} conversion rate`} />
                     {i < funnel.length - 1 && funnel[i + 1].value > 0 && (
                       <div className="font-mono text-caption text-t4 text-center my-0.5">
                         ↓ {((funnel[i + 1].value / f.value) * 100).toFixed(1)}% conversion

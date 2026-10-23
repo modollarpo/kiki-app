@@ -65,7 +65,7 @@ export default function FraudIVTPage() {
                       <Badge color={severityColor(sev)} dot>{sev}</Badge>
                       <span className="font-mono text-sm font-bold text-t1">{count} <span className="font-mono text-caption text-t4">events</span></span>
                     </div>
-                    <ProgressBar value={pct} color={severityColor(sev)} height={3} />
+                    <ProgressBar value={pct} color={severityColor(sev)} height={3} label={`${sev} severity share`} />
                   </div>
                 );
               })

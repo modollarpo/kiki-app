@@ -161,7 +161,7 @@ export default function WalletPage() {
                     </div>
                     <p className="font-mono text-sm text-t3 mb-2 tracking-widest">•••• {card.last4}</p>
                     <p className="font-mono text-xs font-bold text-kindigo mb-2">{card.campaign}</p>
-                    <ProgressBar value={card.limit > 0 ? (card.spent / card.limit) * 100 : 0} color={K.indigo} height={3} />
+                    <ProgressBar value={card.limit > 0 ? (card.spent / card.limit) * 100 : 0} color={K.indigo} height={3} label={`${card.campaign} card limit used`} />
                     <p className="font-mono text-caption text-t4 mt-1">${card.spent.toLocaleString()} / ${card.limit.toLocaleString()}</p>
                   </div>
                 ))}

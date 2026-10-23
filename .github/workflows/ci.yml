@@ -35,9 +35,8 @@ jobs:
       - run: npm run test
 
   audit:
-    name: Dependency audit (non-blocking)
+    name: Dependency audit
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -47,9 +46,13 @@ jobs:
           cache: 'npm'
 
       - run: npm ci --engine-strict=false
-      # Surfaces high/critical advisories without blocking merges while the
-      # remaining dev-only advisories are triaged.
-      - run: npm audit --audit-level=high
+      # Blocking: high/critical advisories in dependencies we actually ship.
+      - run: npm audit --omit=dev --audit-level=high
+      # Non-blocking: dev-only toolchain advisories (vitest/tailwind/eslint)
+      # stay visible until they can be upgraded without a breaking change.
+      - name: Full audit incl. dev dependencies (non-blocking)
+        continue-on-error: true
+        run: npm audit --audit-level=high
 
   secrets:
     name: Secret scan

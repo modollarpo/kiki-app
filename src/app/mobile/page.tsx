@@ -160,7 +160,7 @@ function WalletScreen() {
             {(c as any).frozen && <Badge color={K.danger} className="mb-2 block">FROZEN</Badge>}
             <p className="font-mono text-caption text-t3 mb-1.5">•••• {c.last4}</p>
             <p className="font-mono font-bold text-caption mb-2" style={{ color:c.color }}>{c.name}</p>
-            <ProgressBar value={(c.spent/c.limit)*100} color={c.color} height={3} />
+            <ProgressBar value={(c.spent/c.limit)*100} color={c.color} height={3} label={`${c.name} card limit used`} />
             <p className="font-mono text-caption text-t4 mt-[3px]">${c.spent.toLocaleString()}/${c.limit.toLocaleString()}</p>
           </div>
         ))}

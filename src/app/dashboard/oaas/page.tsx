@@ -99,7 +99,7 @@ export default function OaasPage() {
                       <span className="font-mono text-caption text-t4">Confidence: <span className="text-kblue">{task.confidence != null ? `${task.confidence}%` : "—"}</span></span>
                     </div>
                     <div className="mt-2">
-                      <ProgressBar value={task.confidence ?? 0} max={100} color={K.blue} height={3} />
+                      <ProgressBar value={task.confidence ?? 0} max={100} color={K.blue} height={3} label="Task confidence" />
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 flex-shrink-0">

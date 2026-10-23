@@ -202,7 +202,7 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
         type="button"
         role="switch"
         aria-checked={on}
-        aria-label={label}
+      aria-label={label ?? "Progress"}
         onClick={() => onChange(!on)}
         style={{
           width: 38, height: 20, borderRadius: 10,

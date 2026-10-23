@@ -120,7 +120,7 @@ export default function CampaignsPage() {
                 className="grid grid-cols-[1fr_90px_80px_80px_80px_90px_70px] gap-[10px] px-5 py-3 border-b border-g900 items-center">
                 <div>
                   <p className="font-mono text-caption font-bold text-t1 mb-[3px]">{c.name}</p>
-                  {c.budget > 0 && <ProgressBar value={(c.spend / c.budget) * 100} color={K.blue} height={2} />}
+                  {c.budget > 0 && <ProgressBar value={(c.spend / c.budget) * 100} color={K.blue} height={2} label={`${c.name} budget used`} />}
                 </div>
                 <StatusBadge status={c.status} />
                 <span className={`font-mono text-xs font-bold ${rc}`}>{c.roas > 0 ? `${c.roas}×` : "—"}</span>

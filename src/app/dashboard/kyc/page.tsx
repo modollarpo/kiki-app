@@ -126,7 +126,7 @@ export default function KycPage() {
                         <p className="font-mono text-caption font-bold text-t1">{e.nextReview}</p>
                       </div>
                     </div>
-                    <ProgressBar value={e.complianceScore} max={100} color={e.complianceScore === 100 ? K.mint : e.complianceScore >= 60 ? K.warn : K.danger} height={4} glow />
+                    <ProgressBar value={e.complianceScore} max={100} color={e.complianceScore === 100 ? K.mint : e.complianceScore >= 60 ? K.warn : K.danger} height={4} glow label={`${e.name} compliance score`} />
                     <p className="font-mono text-caption text-t4 mt-1 text-right">Compliance: {e.complianceScore}%</p>
                   </div>
                 ))}

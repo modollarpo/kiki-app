@@ -116,7 +116,7 @@ export default function AnomalyDetectionPage() {
                   <span className="font-mono text-caption text-t2">{s.label}</span>
                   <span className="font-mono text-caption font-bold text-t1">{s.count}</span>
                 </div>
-                <ProgressBar value={s.pct} color={s.color} height={3} />
+                <ProgressBar value={s.pct} color={s.color} height={3} label={`${s.label} share`} />
               </div>
             ))}
           </Card>

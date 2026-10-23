@@ -210,7 +210,7 @@ export default function DashboardPage() {
                 onClick={() => router.push("/dashboard/campaigns")}>
                 <div className="min-w-0">
                   <p className="font-mono text-xs font-bold text-t1 mb-[3px] overflow-hidden text-ellipsis whitespace-nowrap">{c.name}</p>
-                  <ProgressBar value={c.budget > 0 ? (c.spend / c.budget) * 100 : 0} color={K.blue} height={3} />
+                  <ProgressBar value={c.budget > 0 ? (c.spend / c.budget) * 100 : 0} color={K.blue} height={3} label={`${c.name} budget used`} />
                 </div>
                 <StatusBadge status={c.status} />
                 <span className={`font-mono text-xs font-bold ${c.roas >= 4 ? "text-kmint" : c.roas >= 2 ? "text-kwarn" : "text-kdanger"}`}>{c.roas}×</span>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
                   <span className="font-mono text-caption text-t3">{m.l}</span>
                   <span className="font-mono text-xs font-bold" style={{ color: m.c }}>{m.display}</span>
                 </div>
-                {m.bar !== null && <ProgressBar value={Math.min(100, m.bar)} color={m.c} glow height={4} />}
+                {m.bar !== null && <ProgressBar value={Math.min(100, m.bar)} color={m.c} glow height={4} label={`${m.l} metric`} />}
               </div>
             ))}
           </Card>

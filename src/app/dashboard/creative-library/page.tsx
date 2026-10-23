@@ -130,7 +130,7 @@ export default function CreativeLibraryPage() {
                         <div className="font-mono text-xs font-bold text-kgold">{asset.roas}x</div>
                       </div>
                     </div>
-                    <ProgressBar value={Math.min(100, parseFloat(asset.ctr) || 0)} max={100} color={platformColors[asset.platform] || K.t3} height={3} />
+                    <ProgressBar value={Math.min(100, parseFloat(asset.ctr) || 0)} max={100} color={platformColors[asset.platform] || K.t3} height={3} label={`${asset.name} click-through rate`} />
                   </Card>
                 ))}
               </div>

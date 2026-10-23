@@ -347,7 +347,7 @@ export default function SyncBrainPage() {
                       <span className="font-mono text-caption text-t2 capitalize">{a.type}</span>
                       <span className="font-mono text-caption font-bold text-t1">{a.count} · {pct}%</span>
                     </div>
-                    <ProgressBar value={pct} max={100} color={K.blue} height={3} glow />
+                    <ProgressBar value={pct} max={100} color={K.blue} height={3} glow label={`${a.type} share`} />
                   </div>
                 );
               });

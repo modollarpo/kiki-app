@@ -63,7 +63,7 @@ export default function FinancePage() {
                       <span className="font-mono text-caption font-bold" style={{ color: m.profit >= 80 ? K.mint : K.warn }}>${m.profit}K</span>
                       <div>
                         <span className="font-mono text-caption text-t3 mr-1.5">{margin}%</span>
-                        <ProgressBar value={parseFloat(margin as string)} color={parseFloat(margin as string) >= 20 ? K.mint : K.warn} height={3} />
+                        <ProgressBar value={parseFloat(margin as string)} color={parseFloat(margin as string) >= 20 ? K.mint : K.warn} height={3} label={`${m.month} gross margin`} />
                       </div>
                     </div>
                   );
@@ -80,7 +80,7 @@ export default function FinancePage() {
                   <span className="font-mono text-caption text-t2">{s.name}</span>
                   <span className="font-mono text-caption font-bold" style={{ color: COLOR_MAP[s.color] ?? K.t1 }}>{fmt.currency(s.amount, "USD")}</span>
                 </div>
-                <ProgressBar value={s.share} color={COLOR_MAP[s.color] ?? K.blue} height={4} />
+                <ProgressBar value={s.share} color={COLOR_MAP[s.color] ?? K.blue} height={4} label={`${s.name} revenue share`} />
                 <span className="font-mono text-caption text-t4">{s.share?.toFixed(1)}% of total</span>
               </div>
             ))}

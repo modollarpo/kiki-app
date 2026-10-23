@@ -79,7 +79,7 @@ export default function ProfitMarginPage() {
                     <span className="font-mono text-caption text-t4">MARGIN</span>
                     <span className="font-mono text-caption font-bold" style={{ color: ch.margin > 75 ? K.mint : ch.margin > 60 ? K.gold : K.danger }}>{ch.margin}%</span>
                   </div>
-                  <ProgressBar value={ch.margin} color={ch.margin > 75 ? K.mint : ch.margin > 60 ? K.gold : K.danger} height={4} />
+                  <ProgressBar value={ch.margin} color={ch.margin > 75 ? K.mint : ch.margin > 60 ? K.gold : K.danger} height={4} label={`${ch.name} margin`} />
                 </div>
                 <div className="text-right min-w-[70px]">
                   <p className="font-mono text-caption font-semibold text-t1">${(ch.spend / 1000).toFixed(0)}K</p>
@@ -107,7 +107,7 @@ export default function ProfitMarginPage() {
               <div key={i} className="flex items-center gap-3 py-2 px-3 rounded-sm bg-g850">
                 <span className="font-mono text-caption text-t3 min-w-[30px]">{t.month}</span>
                 <div className="flex-1">
-                  <ProgressBar value={t.margin} color={K.mint} height={4} />
+                  <ProgressBar value={t.margin} color={K.mint} height={4} label={`${t.month} margin`} />
                 </div>
                 <span className="font-mono text-caption font-bold min-w-[40px] text-right text-kmint">{t.margin}%</span>
               </div>

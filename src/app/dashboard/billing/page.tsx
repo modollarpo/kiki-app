@@ -161,7 +161,7 @@ export default function BillingPage() {
                         {warn && <Badge color={K.warn}>HIGH</Badge>}
                       </div>
                     </div>
-                    <ProgressBar value={pct} color={warn ? K.warn : K.blue} height={4} glow={warn} />
+                    <ProgressBar value={pct} color={warn ? K.warn : K.blue} height={4} glow={warn} label={`${m.name} usage`} />
                   </div>
                 );
               })}
