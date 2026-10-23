@@ -101,7 +101,7 @@ export async function createVirtualCard(
     VALUES (?, ?, ?, ?, ?, 0, ?, 'active', ?, ?)
   `).run(cardId, walletId, issued.last4, issued.brand, totalLimit, campaignName, issued.issuer, issued.issuerCardId ?? null);
 
-  // Store campaign mapping and daily limit
+  // Store campaign mapping and daily limit (preserve issuer/last4/brand)
   await db.prepare(`
     UPDATE wallet_cards SET campaign = ? WHERE id = ?
   `).run(JSON.stringify({ campaignId, campaignName, dailyLimit }), cardId);

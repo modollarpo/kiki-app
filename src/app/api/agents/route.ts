@@ -99,7 +99,12 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "run") {
+      // Ensure agent is running before attempting to execute
+      await db.prepare("UPDATE agents SET status = 'running', updated_at = datetime('now') WHERE id = ?").run(id);
       const result = await runAgent(id);
+      if (result == null) {
+        return json({ ok: false, error: "Agent cannot run in current state" }, 400);
+      }
       return json({ ok: true, result });
     }
 

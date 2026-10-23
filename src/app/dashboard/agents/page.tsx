@@ -86,14 +86,22 @@ export default function AgentsPage() {
     if (!token) return;
     setRunningAgent(id);
     try {
-      await fetch("/api/agents", {
+      const res = await fetch("/api/agents", {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id, action: "run" }),
       });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j.error || "Failed to run agent");
       const d = await agentsApi.list(token);
       setAgentList(d.agents as AgentWithActions[]);
-    } catch { /* ignore */ }
+      const store = useKikiStore.getState?.();
+      store?.addToast?.("success", `Running ${agentList.find(a=>a.id===id)?.name || "agent"}...`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to run agent";
+      // @ts-ignore
+      (globalThis as any).addToast?.("error", msg);
+    }
     setRunningAgent(null);
   };
 

@@ -48,10 +48,29 @@ export async function PATCH(req: Request) {
 
     const notif = await db.prepare("SELECT * FROM notifications WHERE id = ? AND tenant_id = ?").get(id, user.tenantId);
     if (!notif) return jsonError("Not found", 404);
+    await db.prepare("UPDATE notifications SET read = 1 WHERE id = ? AND tenant_id = ? AND user_id = ?").run(id, user.tenantId, user.id);
 
-    await db.prepare("UPDATE notifications SET read = 1 WHERE id = ?").run(id);
     return json({ ok: true });
   } catch (e) {
     return handleApiError(e, "notifications/mark-read failed");
+  }
+}
+
+export async function DELETE(req: Request) {
+  const user = getUserFromRequest(req);
+  if (!user) return jsonError("Unauthorized", 401);
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    const db = await getDb();
+    if (id) {
+      await db.prepare("DELETE FROM notifications WHERE id = ? AND tenant_id = ? AND user_id = ?").run(id, user.tenantId, user.id);
+    } else {
+      await db.prepare("DELETE FROM notifications WHERE tenant_id = ? AND user_id = ? AND read = 1").run(user.tenantId, user.id);
+    }
+    return json({ ok: true });
+  } catch (e) {
+    return handleApiError(e, "notifications/DELETE failed");
   }
 }

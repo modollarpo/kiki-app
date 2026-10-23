@@ -47,10 +47,10 @@ export async function POST(req: NextRequest) {
 
     // Update Stripe subscription when configured
     let stripeUpdated = false;
-    if (stripe && stripeEnabled && sub?.stripe_subscription_id) {
+    if (stripe && stripeEnabled) {
       try {
         const newPriceId = priceIdForPlan(plan);
-        if (newPriceId && sub.stripe_subscription_item_id) {
+        if (sub?.stripe_subscription_id && sub.stripe_subscription_item_id && newPriceId) {
           await stripe.subscriptions.update(sub.stripe_subscription_id, {
             items: [{
               id: sub.stripe_subscription_item_id,
@@ -59,12 +59,44 @@ export async function POST(req: NextRequest) {
             proration_behavior: "create_prorations",
           });
           stripeUpdated = true;
+        } else if (sub?.stripe_subscription_id && newPriceId) {
+          const retrieved = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);
+          if (retrieved.items.data[0]) {
+            await stripe.subscriptions.update(sub.stripe_subscription_id, {
+              items: [{ id: retrieved.items.data[0].id, price: newPriceId }],
+              proration_behavior: "create_prorations",
+            });
+            stripeUpdated = true;
+            if (retrieved.items.data[0].id && !sub.stripe_subscription_item_id) {
+              await db.prepare("UPDATE subscriptions SET stripe_subscription_item_id = ? WHERE id = ?").run(retrieved.items.data[0].id, sub.id);
+            }
+          }
+        } else if (newPriceId && user.email) {
+          const customer = await stripe.customers.create({
+            email: user.email,
+            metadata: { tenantId: user.tenantId },
+          });
+          const created = await stripe.subscriptions.create({
+            customer: customer.id,
+            items: [{ price: newPriceId }],
+            proration_behavior: "create_prorations",
+          });
+          stripeUpdated = true;
+          if (sub) {
+            await db.prepare("UPDATE subscriptions SET stripe_subscription_id = ?, stripe_subscription_item_id = ? WHERE id = ?")
+              .run(created.id, created.items.data[0]?.id || null, sub.id);
+          }
         }
       } catch (err) {
-        logger.error("change-plan: Stripe update failed, proceeding with local update", {
+        logger.error("change-plan: Stripe update failed", {
           message: err instanceof Error ? err.message : String(err),
         });
+        if (process.env.NODE_ENV === "production") {
+          return NextResponse.json({ ok: false, error: "Failed to update subscription in billing provider" }, { status: 502 });
+        }
       }
+    } else if (process.env.NODE_ENV === "production" && plan !== "starter") {
+      return NextResponse.json({ ok: false, error: "Billing provider not configured" }, { status: 503 });
     }
 
     // Update local subscription

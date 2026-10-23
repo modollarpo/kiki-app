@@ -4,10 +4,29 @@ import { StatCard, Card, Button, AIThinking, ScrollableTable } from "@/component
 import { K, fmt } from "@/lib/kdls";
 import { useInsights } from "@/hooks/useInsights";
 import { useAuth } from "@/hooks/useAuth";
+import { useKikiStore } from "@/store";
+import { useState } from "react";
 
 export default function WarehousePage() {
+  const { addToast } = useKikiStore();
   const { token } = useAuth();
   const { data, loading } = useInsights();
+  const [training, setTraining] = useState(false);
+
+  const trainModel = async () => {
+    if (!token) return;
+    setTraining(true);
+    try {
+      const res = await fetch("/api/ltv/training", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || j.ok === false) throw new Error(j.error || "Training failed");
+      addToast("success", "LTV model training started");
+    } catch (e) {
+      addToast("error", e instanceof Error && e.message ? e.message : "Training failed");
+    } finally {
+      setTraining(false);
+    }
+  };
   const features = data?.warehouse || [];
 
   const lastUpdatedMs = features.length > 0

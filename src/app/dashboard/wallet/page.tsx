@@ -108,8 +108,8 @@ export default function WalletPage() {
   const balance = data?.balance || walletBalance;
   const cards = data?.cards || [];
   const txs = data?.transactions || [];
-  const todaySpend = txs.filter((tx: WalletData["transactions"][0]) => tx.type === "campaign_spend" && new Date(tx.date).toDateString() === new Date().toDateString()).reduce((s: number, tx: WalletData["transactions"][0]) => s + Math.abs(tx.amount), 0);
-  const spendTxs = txs.filter((tx: WalletData["transactions"][0]) => tx.type === "campaign_spend");
+  const todaySpend = txs.filter((tx: WalletData["transactions"][0]) => (tx.type === "campaign_spend" || tx.type === "ad_spend" || tx.type === "debit") && new Date(tx.date).toDateString() === new Date().toDateString()).reduce((s: number, tx: WalletData["transactions"][0]) => s + Math.abs(tx.amount), 0);
+  const spendTxs = txs.filter((tx: WalletData["transactions"][0]) => tx.type === "campaign_spend" || tx.type === "ad_spend" || tx.type === "debit");
   const totalSpend = spendTxs.reduce((s: number, tx: WalletData["transactions"][0]) => s + Math.abs(tx.amount), 0);
   const spendTimes = spendTxs.map((tx: WalletData["transactions"][0]) => new Date(tx.date).getTime()).filter((n: number) => !Number.isNaN(n));
   const spanDays = spendTimes.length > 1
@@ -177,18 +177,26 @@ export default function WalletPage() {
               </div>
               {txs.slice(0, 8).map((tx: WalletData["transactions"][0], i: number) => (
                 <div key={i} className="flex items-center gap-[14px] px-5 py-3 border-b border-g900">
-                  <div className="w-9 h-9 rounded-kdls bg-g850 flex items-center justify-center font-mono text-base shrink-0"
-                    style={{ color: tx.amount > 0 ? textSafe(K.mint) : K.t3 }}>
-                    {tx.amount > 0 ? "↑" : "↓"}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-mono text-xs font-semibold text-t2">{tx.type.replace("_", " ")}</p>
-                    <p className="font-mono text-caption text-t4">{new Date(tx.date).toLocaleDateString()} · {tx.campaign || tx.description}</p>
-                  </div>
-                  <span className="font-mono text-small font-bold"
-                    style={{ color: tx.amount > 0 ? textSafe(K.mint) : K.t1 }}>
-                    {tx.amount > 0 ? "+" : "-"}${Math.abs(tx.amount).toLocaleString()}
-                  </span>
+                  {(() => {
+                    const isCredit = tx.type === "credit" || tx.type === "topup" || tx.type === "refund" || (tx.amount > 0 && tx.type !== "debit" && tx.type !== "ad_spend" && tx.type !== "campaign_spend");
+                    const isDebit = tx.type === "debit" || tx.type === "ad_spend" || tx.type === "campaign_spend" || (tx.amount < 0 && !isCredit);
+                    return (
+                      <>
+                        <div className="w-9 h-9 rounded-kdls bg-g850 flex items-center justify-center font-mono text-base shrink-0"
+                          style={{ color: isCredit ? textSafe(K.mint) : K.t3 }}>
+                          {isCredit ? "↑" : "↓"}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-mono text-xs font-semibold text-t2">{tx.type.replace("_", " ")}</p>
+                          <p className="font-mono text-caption text-t4">{new Date(tx.date).toLocaleDateString()} · {tx.campaign || tx.description}</p>
+                        </div>
+                        <span className="font-mono text-small font-bold"
+                          style={{ color: isCredit ? textSafe(K.mint) : K.t1 }}>
+                          {isCredit ? "+" : "-"}${Math.abs(tx.amount).toLocaleString()}
+                        </span>
+                      </>
+                    );
+                  })()}
                 </div>
               ))}
             </Card>

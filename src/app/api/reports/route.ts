@@ -51,13 +51,13 @@ export async function GET(req: Request) {
     const totalActions = actions.reduce((s, a) => s + a.count, 0);
     const totalUsageCost = usage.reduce((s, u) => s + u.total_cost, 0);
 
-    return json({
+    const payload = {
       agentActions: {
         total: totalActions,
         byType: actions.map((a) => ({
           actionType: a.action_type,
           count: a.count,
-          avgDurationMs: Math.round(a.avg_duration),
+          avgDurationMs: Math.round(a.avg_duration || 0),
         })),
       },
       campaigns: {
@@ -65,7 +65,7 @@ export async function GET(req: Request) {
         active: cs.active,
         totalSpend: cs.total_spend,
         totalRevenue: cs.total_revenue,
-        avgRoas: Math.round(cs.avg_roas * 100) / 100,
+        avgRoas: Math.round((cs.avg_roas || 0) * 100) / 100,
       },
       usage: {
         totalCost: totalUsageCost,
@@ -76,7 +76,8 @@ export async function GET(req: Request) {
         })),
       },
       generatedAt: new Date().toISOString(),
-    });
+    };
+    return json({ ok: true, data: payload, ...payload });
   } catch (error) {
     logger.error("reports/GET failed", { message: error instanceof Error ? error.message : String(error) });
     return jsonError("Failed to load report data", 500);

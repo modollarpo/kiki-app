@@ -36,13 +36,24 @@ export async function GET(req: Request) {
     id: string; type: string; amount: number; description: string; campaign: string | null; status: string; created_at: string;
   }>;
 
+  const parseCampaign = (raw: string) => {
+    try {
+      const p = JSON.parse(raw || "{}");
+      if (typeof p === "object" && p && p.campaignName) return p.campaignName;
+      if (typeof p === "string") return p;
+      return raw || "—";
+    } catch {
+      return raw || "—";
+    }
+  };
+
   return json({
     id: wallet.id, tenantId: wallet.tenant_id, balance: wallet.balance,
     currency: wallet.currency,
     issuingEnabled: isStripeIssuingEnabled(),
     cards: cards.map(c => ({
       id: c.id, last4: c.last4, brand: c.brand, limit: c.limit,
-      spent: c.spent, campaign: c.campaign, status: c.status, issuer: c.issuer,
+      spent: c.spent, campaign: parseCampaign(c.campaign), status: c.status, issuer: c.issuer,
     })),
     transactions: transactions.map(t => ({
       id: t.id, type: t.type, amount: t.amount, description: t.description,
