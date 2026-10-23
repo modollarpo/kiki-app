@@ -6,7 +6,7 @@ import { StatCard, Card, Badge, Button, ProgressBar } from "@/components/ui";
 import { useKikiStore } from "@/store";
 import { useAuth } from "@/hooks/useAuth";
 import { wallet as walletApi, isNotConfigured, type WalletData } from "@/lib/api";
-import { K } from "@/lib/kdls";
+import { K, textSafe } from "@/lib/kdls";
 import { useSSE } from "@/hooks/useSSE";
 import { EVENTS } from "@/lib/events";
 
@@ -178,7 +178,7 @@ export default function WalletPage() {
               {txs.slice(0, 8).map((tx: WalletData["transactions"][0], i: number) => (
                 <div key={i} className="flex items-center gap-[14px] px-5 py-3 border-b border-g900">
                   <div className="w-9 h-9 rounded-kdls bg-g850 flex items-center justify-center font-mono text-base shrink-0"
-                    style={{ color: tx.amount > 0 ? K.mint : K.t3 }}>
+                    style={{ color: tx.amount > 0 ? textSafe(K.mint) : K.t3 }}>
                     {tx.amount > 0 ? "↑" : "↓"}
                   </div>
                   <div className="flex-1">
@@ -186,7 +186,7 @@ export default function WalletPage() {
                     <p className="font-mono text-caption text-t4">{new Date(tx.date).toLocaleDateString()} · {tx.campaign || tx.description}</p>
                   </div>
                   <span className="font-mono text-small font-bold"
-                    style={{ color: tx.amount > 0 ? K.mint : K.t1 }}>
+                    style={{ color: tx.amount > 0 ? textSafe(K.mint) : K.t1 }}>
                     {tx.amount > 0 ? "+" : "-"}${Math.abs(tx.amount).toLocaleString()}
                   </span>
                 </div>

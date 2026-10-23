@@ -9,7 +9,7 @@ import { useKikiStore } from "@/store";
 import { useAuth } from "@/hooks/useAuth";
 import { useSSE } from "@/hooks/useSSE";
 import { dashboard, type DashboardData } from "@/lib/api";
-import { K } from "@/lib/kdls";
+import { K, textSafe } from "@/lib/kdls";
 import { EVENTS } from "@/lib/events";
 import { useRouter } from "next/navigation";
 
@@ -241,7 +241,7 @@ export default function DashboardPage() {
                 </div>
                 <p className="font-mono text-caption text-t3 mb-[6px] overflow-hidden text-ellipsis whitespace-nowrap">{agent.task as string}</p>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-caption font-bold" style={{ color: agent.color as string }}>{agent.metric as string}</span>
+                  <span className="font-mono text-caption font-bold" style={{ color: textSafe(agent.color as string) }}>{agent.metric as string}</span>
                   <Button size="xs" variant="ghost" onClick={() => handleToggleAgent(agent.id as string, agent.status as string)}>{agent.status === "running" ? "Pause" : "Resume"}</Button>
                 </div>
               </div>
@@ -293,7 +293,7 @@ export default function DashboardPage() {
               <div key={m.l} className="mb-[10px]">
                 <div className="flex justify-between mb-[3px]">
                   <span className="font-mono text-caption text-t3">{m.l}</span>
-                  <span className="font-mono text-xs font-bold" style={{ color: m.c }}>{m.display}</span>
+                  <span className="font-mono text-xs font-bold" style={{ color: textSafe(m.c) }}>{m.display}</span>
                 </div>
                 {m.bar !== null && <ProgressBar value={Math.min(100, m.bar)} color={m.c} glow height={4} label={`${m.l} metric`} />}
               </div>

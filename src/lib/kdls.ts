@@ -50,8 +50,12 @@ const TEXT_SAFE_MAP: Record<string, string> = {
   [K.gold]: K.tGold, [K.oaas]: K.tOaas, [K.teal]: K.tTeal, [K.green]: K.tGreen,
   [K.danger]: K.tDanger, [K.warn]: K.tWarn, [K.pink]: K.tPink, [K.crm]: K.tCrm,
   [K.indigo]: K.tIndigo, [K.pos]: K.tPos,
+  // Legacy raw-hex brand values stored in seed/demo data.
+  "#005CFF": K.tBlue, "#00D4AA": K.tTeal, "#31F3C3": K.tMint,
+  "#8B5CF6": K.tOaas, "#EF4444": K.tDanger, "#F59E0B": K.tGold,
 };
-export const textSafe = (c: string): string => TEXT_SAFE_MAP[c] ?? c;
+export const textSafe = (c: string): string =>
+  TEXT_SAFE_MAP[c] ?? TEXT_SAFE_MAP[c.toUpperCase()] ?? c;
 
 // Static brand colors (don't change with theme — used for badges, charts)
 export const BRAND_COLORS = {

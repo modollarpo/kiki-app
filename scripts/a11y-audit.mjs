@@ -31,8 +31,8 @@ const EXECUTABLE =
   (fs.existsSync("C:/Users/USER/AppData/Local/ms-playwright/chromium-1248/chrome-win64/chrome.exe")
     ? "C:/Users/USER/AppData/Local/ms-playwright/chromium-1248/chrome-win64/chrome.exe"
     : undefined);
-const EMAIL = process.env.A11Y_EMAIL || "demo@keekii.net";
-const PASSWORD = process.env.A11Y_PASSWORD || process.env.DEMO_USER_PASSWORD || "password123";
+const EMAIL = process.env.A11Y_EMAIL || "admin@keekii.net";
+const PASSWORD = process.env.A11Y_PASSWORD || process.env.DEMO_ADMIN_PASSWORD || "admin123";
 
 const PAGES = [
   { name: "home", path: "/", auth: false },
@@ -119,8 +119,11 @@ async function main() {
           // not a transient loading skeleton.
           await page.waitForLoadState("networkidle", { timeout: 20000 }).catch(() => {});
           await page.waitForTimeout(1500);
-          if (p.auth && page.url().includes("/auth/login")) {
-            throw new Error("redirected to login (auth state was not applied)");
+          if (p.auth) {
+            const pathname = new URL(page.url()).pathname.replace(/\/$/, "") || "/";
+            if (pathname !== p.path) {
+              throw new Error(`unexpected redirect to ${pathname}`);
+            }
           }
           const results = await new AxeBuilder({ page })
             .withTags(TAGS)
@@ -134,7 +137,13 @@ async function main() {
             }
             violations[v.id].count += v.nodes.length;
             for (const n of v.nodes) {
-              violations[v.id].nodes.push({ page: key, target: n.target.join(" ") });
+              violations[v.id].nodes.push({
+                page: key,
+                target: n.target.join(" "),
+                html: n.html,
+                failureSummary: n.failureSummary,
+                data: n.any?.[0]?.data,
+              });
             }
           }
         } catch (e) {
@@ -172,6 +181,8 @@ async function main() {
       console.log(`[a11y] [${d.impact}] ${id}: ${d.count} node(s) — ${d.help}`);
       for (const n of d.nodes.slice(0, 10)) {
         console.log(`         ${n.page}  ${n.target}`);
+        if (n.data) console.log(`           data: ${JSON.stringify(n.data)}`);
+        if (n.html) console.log(`           html: ${n.html.replace(/\s+/g, " ").slice(0, 240)}`);
       }
       if (d.nodes.length > 10) console.log(`         … ${d.nodes.length - 10} more`);
     }
