@@ -51,8 +51,7 @@ jobs:
       # Non-blocking: dev-only toolchain advisories (vitest/tailwind/eslint)
       # stay visible until they can be upgraded without a breaking change.
       - name: Full audit incl. dev dependencies (non-blocking)
-        continue-on-error: true
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high || echo "::warning::dev-only advisories present (non-blocking)"
 
   secrets:
     name: Secret scan
@@ -92,7 +91,7 @@ jobs:
           PORT: "3000"
         run: |
           npm run dev > /tmp/dev.log 2>&1 &
-          for i in $(seq 1 60); do
+          for i in $(seq 1 80); do
             if curl -fsS http://localhost:3000/api/status > /dev/null 2>&1; then
               echo "app is up"
               break
@@ -100,6 +99,12 @@ jobs:
             sleep 3
           done
           curl -fsS http://localhost:3000/api/status > /dev/null || (echo "app failed to start"; tail -n 100 /tmp/dev.log; exit 1)
+          # Next compiles routes lazily; warm the audited pages so the browser
+          # never times out waiting for a cold compile on a small runner.
+          for route in /auth/login / /pricing /dashboard /dashboard/campaigns /dashboard/wallet; do
+            echo "warming $route"
+            curl -s -o /dev/null --max-time 240 "http://localhost:3000$route" || true
+          done
 
       # Baseline-gated: fails only when violations exceed scripts/a11y-baseline.json.
       - run: npm run audit:a11y

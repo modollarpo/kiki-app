@@ -52,16 +52,17 @@ const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 async function loginAndGetState(browser, viewport) {
   const ctx = await browser.newContext({ viewport });
   const page = await ctx.newPage();
+  page.setDefaultTimeout(120000);
   try {
-    await page.goto(`${BASE}/auth/login`, { waitUntil: "domcontentloaded", timeout: 60000 });
-    await page.waitForSelector('input[type="email"]', { timeout: 60000 });
+    await page.goto(`${BASE}/auth/login`, { waitUntil: "domcontentloaded", timeout: 120000 });
+    await page.waitForSelector('input[type="email"]', { timeout: 120000 });
     await page.fill('input[type="email"]', EMAIL);
     await page.fill('input[type="password"]', PASSWORD);
     await Promise.all([
       page
         .waitForResponse(
           (r) => r.url().includes("/api/auth/login") && r.request().method() === "POST",
-          { timeout: 45000 }
+          { timeout: 90000 }
         )
         .catch(() => {}),
       page.getByRole("button", { name: /sign in/i }).first().click(),
@@ -98,6 +99,7 @@ async function main() {
         storageState: storageState || undefined,
       });
       const page = await ctx.newPage();
+      page.setDefaultTimeout(120000);
       await page.addInitScript((t) => {
         try {
           localStorage.setItem("kiki-theme", t);
@@ -106,7 +108,7 @@ async function main() {
 
       for (const p of PAGES) {
         try {
-          await page.goto(`${BASE}${p.path}`, { waitUntil: "domcontentloaded", timeout: 60000 });
+          await page.goto(`${BASE}${p.path}`, { waitUntil: "domcontentloaded", timeout: 120000 });
           await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
           await page
             .waitForFunction(() => document.body && document.body.innerText.trim().length > 40, null, {
