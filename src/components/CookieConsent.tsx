@@ -149,14 +149,14 @@ function CookieConsentBannerInner({ showBanner }: { showBanner: boolean }) {
         <p style={{ color: "#8888AA", fontSize: "var(--fs-small)", lineHeight: 1.6, margin: 0 }}>
           We use cookies to enhance your experience, analyze site traffic, and personalize content.
           You can manage your preferences or accept all cookies.{" "}
-          <a href="/privacy" style={{ color: "#005CFF", textDecoration: "underline" }}>Privacy Policy</a>
-          {" "}<a href="/privacy/consent" style={{ color: "#005CFF", textDecoration: "underline" }}>Cookie Settings</a>
+          <a href="/privacy" style={{ color: "#5C9EFF", textDecoration: "underline" }}>Privacy Policy</a>
+          {" "}<a href="/privacy/consent" style={{ color: "#5C9EFF", textDecoration: "underline" }}>Cookie Settings</a>
         </p>
 
         <button
           onClick={() => setShowDetails(!showDetails)}
           style={{
-            color: "#005CFF", fontSize: "var(--fs-caption)", marginTop: 8, background: "none",
+            color: "#5C9EFF", fontSize: "var(--fs-caption)", marginTop: 8, background: "none",
             border: "none", cursor: "pointer", padding: 0,
           }}
         >
@@ -174,7 +174,7 @@ function CookieConsentBannerInner({ showBanner }: { showBanner: boolean }) {
               <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0" }}>
                 <div>
                   <div style={{ color: "#F0F0FF", fontSize: "var(--fs-small)", fontWeight: 500 }}>{item.label}</div>
-                  <div style={{ color: "#666688", fontSize: "var(--fs-micro)" }}>{item.desc}</div>
+                  <div style={{ color: "#9494B0", fontSize: "var(--fs-micro)" }}>{item.desc}</div>
                 </div>
                 {item.locked ? (
                   <span style={{ color: "#31F3C3", fontSize: "var(--fs-micro)", fontWeight: 500 }}>Always on</span>

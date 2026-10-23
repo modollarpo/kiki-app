@@ -172,7 +172,7 @@ export default function DashboardPage() {
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.tDanger }}>{error}</p>
           </div>
         )}
 
@@ -312,7 +312,7 @@ export default function DashboardPage() {
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = `${K.gold}40`; }}>
               <span className="text-caption">{seeding ? "⏳" : "🚀"}</span>
               <span className="font-mono text-caption text-t3 flex-1 text-left">{seeding ? "Loading demo data..." : "Load demo data"}</span>
-              <span className="font-mono text-caption" style={{ color: K.gold }}>↻</span>
+              <span className="font-mono text-caption" style={{ color: K.tGold }}>↻</span>
             </button>
             {[
               { label: "Connect your first ad account", href: "/dashboard/guides/connect-accounts", icon: "🔗" },
@@ -326,7 +326,7 @@ export default function DashboardPage() {
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = K.g700; }}>
                 <span className="text-caption">{g.icon}</span>
                 <span className="font-mono text-caption text-t3 flex-1 text-left">{g.label}</span>
-                <span className="font-mono text-caption" style={{ color: K.blue4 }}>→</span>
+                <span className="font-mono text-caption" style={{ color: K.tBlue }}>→</span>
               </button>
             ))}
           </Card>

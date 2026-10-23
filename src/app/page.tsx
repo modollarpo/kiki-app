@@ -3,31 +3,31 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { MarketingLayout } from "@/components/layout/MarketingLayout";
-import { K } from "@/lib/kdls";
+import { K, textSafe as asText } from "@/lib/kdls";
 import { Button, Badge } from "@/components/ui";
 
 const TICKER = [
-  { label:"LTV-ENRICHED BIDDING",       value:"ACTIVE",      color:K.mint  },
-  { label:"28-FEATURE SIGNAL PROCESSING", value:"ONLINE",   color:K.mint  },
-  { label:"CROSS-PLATFORM ARBITRAGE",   value:"ENABLED",     color:K.mint  },
-  { label:"REAL-TIME CAPI DELIVERY",    value:"CONNECTED",   color:K.teal  },
-  { label:"FRAUD DETECTION ENGINE",     value:"RUNNING",     color:K.teal  },
-  { label:"AI-POWERED OPTIMIZATION",    value:"ENGAGED",     color:K.gold  },
-  { label:"ADAPTIVE BID MANAGEMENT",    value:"ACTIVE",      color:K.blue  },
-  { label:"SUB-SECOND RESPONSES",       value:"TARGET",      color:K.blue  },
-  { label:"SERVER-SIDE CONSENT CONTROLS", value:"ON",        color:K.mint  },
-  { label:"SMART DATA ENRICHMENT",      value:"ONLINE",      color:K.teal  },
+  { label:"LTV-ENRICHED BIDDING",       value:"ACTIVE",      color:K.tMint  },
+  { label:"28-FEATURE SIGNAL PROCESSING", value:"ONLINE",   color:K.tMint  },
+  { label:"CROSS-PLATFORM ARBITRAGE",   value:"ENABLED",     color:K.tMint  },
+  { label:"REAL-TIME CAPI DELIVERY",    value:"CONNECTED",   color:K.tTeal  },
+  { label:"FRAUD DETECTION ENGINE",     value:"RUNNING",     color:K.tTeal  },
+  { label:"AI-POWERED OPTIMIZATION",    value:"ENGAGED",     color:K.tGold  },
+  { label:"ADAPTIVE BID MANAGEMENT",    value:"ACTIVE",      color:K.tBlue  },
+  { label:"SUB-SECOND RESPONSES",       value:"TARGET",      color:K.tBlue  },
+  { label:"SERVER-SIDE CONSENT CONTROLS", value:"ON",        color:K.tMint  },
+  { label:"SMART DATA ENRICHMENT",      value:"ONLINE",      color:K.tTeal  },
 ];
 
 const TERMINAL = [
-  { ts:"09:41:07.001", svc:"capi-gateway",   lvl:"INFO",   color:K.blue,  txt:"POST /v1/events  event=purchase  platform=meta  ip=157.240.x.x" },
-  { ts:"09:41:07.019", svc:"fraud-detect",   lvl:"PASS",   color:K.mint,  txt:"score=0.04  verdict=CLEAN  signals=[ip,fingerprint,velocity]" },
+  { ts:"09:41:07.001", svc:"capi-gateway",   lvl:"INFO",   color:K.tBlue,  txt:"POST /v1/events  event=purchase  platform=meta  ip=157.240.x.x" },
+  { ts:"09:41:07.019", svc:"fraud-detect",   lvl:"PASS",   color:K.tMint,  txt:"score=0.04  verdict=CLEAN  signals=[ip,fingerprint,velocity]" },
   { ts:"09:41:07.022", svc:"consent-svc",    lvl:"INFO",   color:K.t3,    txt:"advertising=true  jurisdiction=GDPR  lawful_basis=consent" },
-  { ts:"09:41:07.038", svc:"ltv-model-v5",   lvl:"PRED",   color:K.gold,  txt:"order=$149.00  →  ltv_90d=$639.20  confidence=0.94" },
-  { ts:"09:41:07.041", svc:"enrichment-svc", lvl:"ENRICH", color:K.mint,  special:true },
-  { ts:"09:41:07.382", svc:"capi-router",    lvl:"SEND",   color:K.mint,  txt:"meta=✓(41ms)  google=✓(38ms)  tiktok=✓(52ms)  linkedin=✓(44ms)" },
-  { ts:"09:41:07.390", svc:"attribution",    lvl:"ATTR",   color:K.oaas,  txt:"campaign=Q4-Fitness  revenue=$639.20  signal_id=sig_a3x9" },
-  { ts:"09:41:07.391", svc:"syncbrain",      lvl:"ROUTE",  color:K.green, txt:"bid_adjust: model=gpt-4o  confidence=0.94  latency=12ms" },
+  { ts:"09:41:07.038", svc:"ltv-model-v5",   lvl:"PRED",   color:K.tGold,  txt:"order=$149.00  →  ltv_90d=$639.20  confidence=0.94" },
+  { ts:"09:41:07.041", svc:"enrichment-svc", lvl:"ENRICH", color:K.tMint,  special:true },
+  { ts:"09:41:07.382", svc:"capi-router",    lvl:"SEND",   color:K.tMint,  txt:"meta=✓(41ms)  google=✓(38ms)  tiktok=✓(52ms)  linkedin=✓(44ms)" },
+  { ts:"09:41:07.390", svc:"attribution",    lvl:"ATTR",   color:K.tOaas,  txt:"campaign=Q4-Fitness  revenue=$639.20  signal_id=sig_a3x9" },
+  { ts:"09:41:07.391", svc:"syncbrain",      lvl:"ROUTE",  color:K.tGreen, txt:"bid_adjust: model=gpt-4o  confidence=0.94  latency=12ms" },
 ];
 
 const PLATFORMS = [
@@ -85,8 +85,8 @@ const COMPARE = [
 
 const PLANS = [
   {name:"Starter",  price:690,  color:K.t3,   desc:"Individuals & lean teams",  cta:"Start Free",    hot:false},
-  {name:"Growth",   price:2000, color:K.blue,  desc:"Scaling media teams",        cta:"Start Free",    hot:true },
-  {name:"Enterprise",price:null,color:K.gold,  desc:"Custom infrastructure",      cta:"Talk to Sales", hot:false},
+  {name:"Growth",   price:2000, color:K.tBlue,  desc:"Scaling media teams",        cta:"Start Free",    hot:true },
+  {name:"Enterprise",price:null,color:K.tGold,  desc:"Custom infrastructure",      cta:"Talk to Sales", hot:false},
 ];
 
 export default function HomePage() {
@@ -111,6 +111,7 @@ export default function HomePage() {
 
   return (
     <MarketingLayout>
+      <div className="force-dark">
 
       {/* ── LIVE TICKER ──────────────────────────────── */}
       <div className="h-8 bg-[#030308] border-b border-g800 flex items-center overflow-hidden">
@@ -145,22 +146,22 @@ export default function HomePage() {
           {/* Eyebrow */}
           <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-kdls px-3 sm:px-4 py-[7px] mb-8 md:mb-10 max-w-full" style={{background:"rgba(0,92,255,0.07)",border:`1px solid rgba(0,92,255,0.18)`}}>
             <span className="animate-kdls-pulse shrink-0" style={{width:6,height:6,borderRadius:"50%",background:K.mint,display:"inline-block"}}/>
-            <span className="text-center" style={{fontFamily:K.mono,fontSize: "var(--fs-micro)",letterSpacing:"0.12em",color:K.blue4,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · GDPR &amp; CCPA</span>
+            <span className="text-center" style={{fontFamily:K.mono,fontSize: "var(--fs-micro)",letterSpacing:"0.12em",color: K.tBlue,fontWeight:600}}>AUTONOMOUS LTV CAMPAIGN EXECUTION · ENTERPRISE-GRADE · GDPR &amp; CCPA</span>
           </div>
 
           {/* Headline */}
           <h1 className="font-mono font-bold text-[clamp(28px,7vw,82px)] leading-none tracking-[-0.045em] mb-[30px] break-words">
-            <span className="block text-[#7070a0] mb-[3px]">Your ad platforms are</span>
-            <span className="block text-[#ccccdd] mb-[3px]">learning from</span>
+            <span className="block mb-[3px]" style={{color:K.tDark3}}>Your ad platforms are</span>
+            <span className="block mb-[3px]" style={{color:K.tDark2}}>learning from</span>
             <span className="block" style={{background:`linear-gradient(110deg,${K.blue} 0%,#5599FF 40%,${K.mint} 100%)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
               the wrong signal.
             </span>
           </h1>
 
           {/* Sub */}
-          <p className="max-w-[580px] mx-auto mb-[36px] md:mb-[46px] font-[300] leading-[1.8] tracking-[-0.01em] text-[#666688]" style={{fontFamily:"Inter,system-ui,sans-serif",fontSize:"clamp(14px,2.5vw,18px)"}}>
+          <p className="max-w-[580px] mx-auto mb-[36px] md:mb-[46px] font-[300] leading-[1.8] tracking-[-0.01em] text-t3" style={{fontFamily:"Inter,system-ui,sans-serif",fontSize:"clamp(14px,2.5vw,18px)"}}>
             KIKI intercepts every conversion, predicts 90-day customer LTV with ML, and feeds enriched signals to Meta, Google, TikTok, and 5 other ad platforms —{" "}
-            <span style={{color:"#8888aa"}}>before they see the raw order value.</span>
+            <span style={{color:K.tDark3}}>before they see the raw order value.</span>
           </p>
 
           {/* CTAs */}
@@ -193,26 +194,26 @@ export default function HomePage() {
             ))}
           </div>
           {/* Log lines */}
-          <div className="px-3 md:px-5 pt-[14px] pb-5 min-h-[190px] overflow-x-auto">
+          <div role="region" aria-label="Live signal terminal output" tabIndex={0} className="px-3 md:px-5 pt-[14px] pb-5 min-h-[190px] overflow-x-auto">
             {TERMINAL.slice(0,termIdx).map((line,i)=>(
               <div key={i} className="grid grid-cols-[60px_90px_50px_1fr] md:grid-cols-[100px_130px_66px_1fr] items-baseline" style={{lineHeight:1.95}}>
-                <span className="font-mono text-caption md:text-caption text-[#2a2a44]">{line.ts}</span>
+                <span className="font-mono text-caption md:text-caption" style={{color:K.tDark4}}>{line.ts}</span>
                 <span className="font-mono text-caption md:text-caption text-t3 truncate">{line.svc}</span>
                 <span style={{fontFamily:K.mono,fontSize: "var(--fs-micro)",fontWeight:700,color:line.color}}>{line.lvl}</span>
                 {line.special?(
                   <span className="font-mono text-caption">
-                    <span style={{color:K.t3}}>order=</span><span style={{color:"#8888aa"}}>149.00</span>
+                    <span style={{color:K.tDark3}}>order=</span><span style={{color:K.tDark3}}>149.00</span>
                     <span style={{color:K.t4}}> → </span>
-                    <span style={{color:K.mint,fontWeight:700}}>ltv_signal=639.20</span>
+                    <span style={{color: K.tMint,fontWeight:700}}>ltv_signal=639.20</span>
                     <span style={{color:K.t4}}>{"  "}</span>
-                    <span style={{color:K.gold}}>confidence=0.94</span>
+                    <span style={{color: K.tGold}}>confidence=0.94</span>
                   </span>
                 ):(
                   <span style={{fontFamily:K.mono,fontSize: "var(--fs-micro)",color:i===3?K.gold:K.t3}}>{line.txt}</span>
                 )}
               </div>
             ))}
-            {termIdx>=TERMINAL.length&&<span style={{color:K.blue4,fontWeight:700}} className="animate-kdls-pulse">▋</span>}
+            {termIdx>=TERMINAL.length&&<span style={{color: K.tBlue,fontWeight:700}} className="animate-kdls-pulse">▋</span>}
           </div>
         </div>
 
@@ -237,7 +238,7 @@ export default function HomePage() {
                   onMouseEnter={e=>{(e.currentTarget.style.background=`${c}14`);(e.currentTarget.style.borderColor=`${c}40`);}}
                   onMouseLeave={e=>{(e.currentTarget.style.background=`${c}08`);(e.currentTarget.style.borderColor=`${c}18`);}}>
                   <span className="font-mono text-caption font-bold" style={{color:c}}>{p[0]}</span>
-                  <span className="font-mono text-caption text-[#555577]">{p}</span>
+                  <span className="font-mono text-caption" style={{color:K.tDark4}}>{p}</span>
                 </div>
               );
             })}
@@ -258,8 +259,8 @@ export default function HomePage() {
             <div className="hidden md:block absolute top-6 left-[8%] right-[8%] h-px" style={{background:`linear-gradient(90deg,transparent,${K.g700},${K.g700},${K.g700},transparent)`}}/>
             {HOW.map((step)=>(
               <div key={step.s} className="flex-1 text-center px-[10px]">
-                <div className="w-12 h-12 rounded-kdls flex items-center justify-center mx-auto mb-4 relative z-[1] font-mono font-bold text-small" style={{background:`${step.c}10`,border:`1px solid ${step.c}25`,color:step.c}}>{step.s}</div>
-                <p className="font-mono font-bold text-caption mb-2 tracking-[0.04em]" style={{color:step.c}}>{step.t}</p>
+                <div className="w-12 h-12 rounded-kdls flex items-center justify-center mx-auto mb-4 relative z-[1] font-mono font-bold text-small" style={{background:`${step.c}10`,border:`1px solid ${step.c}25`,color:asText(step.c)}}>{step.s}</div>
+                <p className="font-mono font-bold text-caption mb-2 tracking-[0.04em]" style={{color:asText(step.c)}}>{step.t}</p>
                 <p className="font-sans text-caption text-t4 leading-[1.65]">{step.b}</p>
               </div>
             ))}
@@ -274,7 +275,7 @@ export default function HomePage() {
             <p className="font-mono text-micro tracking-[0.2em] text-t4 mb-3.5">THE PLATFORM</p>
             <h2 className="font-mono font-bold text-[clamp(24px,4vw,44px)] text-t1 tracking-[-0.035em]">Every tool your media team needs.</h2>
             <p className="font-sans text-small text-t3 mt-3">
-              <a href="/features" className="no-underline" style={{ color: K.blue4 }}>View all 25 features →</a>
+              <a href="/features" className="underline" style={{ color: K.tBlue }}>View all 25 features →</a>
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-g800" style={{border:`1px solid ${K.g800}`}}>
@@ -284,15 +285,15 @@ export default function HomePage() {
                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,transparent,${f.accent}80,transparent)`}}/>
                 <div className="absolute -right-5 -top-5 w-[120px] h-[120px] rounded-full" style={{background:`radial-gradient(circle,${f.accent}06 0%,transparent 70%)`}}/>
                 <div className="flex items-center gap-[10px] mb-5">
-                  <div className="w-9 h-9 rounded-kdls flex items-center justify-center text-base shrink-0" style={{background:`${f.accent}12`,color:f.accent}}>{f.icon}</div>
-                  <p className="font-mono text-caption tracking-[0.16em] opacity-70" style={{color:f.accent}}>{f.n} · {f.tag}</p>
+                  <div className="w-9 h-9 rounded-kdls flex items-center justify-center text-base shrink-0" style={{background:`${f.accent}12`,color:asText(f.accent)}}>{f.icon}</div>
+                  <p className="font-mono text-caption tracking-[0.16em]" style={{color:asText(f.accent)}}>{f.n} · {f.tag}</p>
                 </div>
                 <h3 className="font-mono font-bold text-[clamp(14px,2vw,19px)] text-t1 mb-3.5 leading-[1.2] tracking-[-0.02em] whitespace-pre-line">{f.title}</h3>
                 <p className="font-sans text-small text-t3 leading-[1.75] mb-6">{f.body}</p>
                 <div className="flex gap-px bg-g800 rounded-kdls overflow-hidden mb-4">
                   {f.proof.map(p=>(
                     <div key={p.l} className="flex-1 py-[10px] px-3 bg-g850 text-center">
-                      <p className="font-mono text-sm font-bold" style={{color:f.accent}}>{p.v}</p>
+                      <p className="font-mono text-sm font-bold" style={{color:asText(f.accent)}}>{p.v}</p>
                       <p className="font-mono text-micro text-t4 mt-[3px] tracking-[0.06em]">{p.l}</p>
                     </div>
                   ))}
@@ -300,7 +301,7 @@ export default function HomePage() {
                 <button
                   onClick={() => router.push(f.href)}
                   className="font-mono text-caption font-semibold tracking-[0.02em] px-4 py-2.5 rounded-sm transition-colors duration-150 cursor-pointer no-underline inline-block"
-                  style={{ background:`${f.accent}15`, color:f.accent, border:`1px solid ${f.accent}30` }}
+                  style={{ background:`${f.accent}15`, color:asText(f.accent), border:`1px solid ${f.accent}30` }}
                   onMouseEnter={e => { e.currentTarget.style.background = `${f.accent}25` }}
                   onMouseLeave={e => { e.currentTarget.style.background = `${f.accent}15` }}
                 >
@@ -326,7 +327,7 @@ export default function HomePage() {
                 onMouseLeave={e=>{(e.currentTarget.style.background=K.g900);(e.currentTarget.style.transform="none");}}>
                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{background:`linear-gradient(90deg,transparent,${p.accent}80,transparent)`}}/>
                 <p className="font-mono text-micro tracking-[0.14em] text-t4 mb-3.5">{p.co}</p>
-                <p className="font-mono text-display font-bold tracking-[-0.03em] leading-none mb-[10px]" style={{color:p.accent}}>{p.stat}</p>
+                <p className="font-mono text-display font-bold tracking-[-0.03em] leading-none mb-[10px]" style={{color:asText(p.accent)}}>{p.stat}</p>
                 <p className="font-sans text-caption text-t4 leading-[1.5]">{p.sub}</p>
               </div>
             ))}
@@ -342,11 +343,11 @@ export default function HomePage() {
             <h2 className="font-mono font-bold text-[clamp(22px,3.5vw,38px)] text-t1 tracking-[-0.03em]">What you get vs. the alternatives.</h2>
           </div>
           <div className="rounded-kdls overflow-hidden" style={{border:`1px solid ${K.g800}`}}>
-            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <div role="region" aria-label="KIKI vs alternatives comparison" tabIndex={0} className="overflow-x-auto -webkit-overflow-scrolling-touch">
               <div className="min-w-[600px]">
                 <div className="grid grid-cols-[1fr_90px_110px_90px] bg-g950">
               <div className="py-[13px] px-5"><span className="font-mono text-caption tracking-widest text-t4">CAPABILITY</span></div>
-              {[{l:"KIKI",c:K.blue},{l:"MANUAL",c:K.t4},{l:"BASIC TOOLS",c:K.t4}].map(h=>(
+              {[{l:"KIKI",c:K.tBlue},{l:"MANUAL",c:K.t4},{l:"BASIC TOOLS",c:K.t4}].map(h=>(
                 <div key={h.l} className="py-[13px] px-3 text-center" style={{borderLeft:`1px solid ${K.g800}`}}>
                   <span className="font-mono text-caption tracking-widest" style={{color:h.c}}>{h.l}</span>
                 </div>
@@ -395,7 +396,7 @@ export default function HomePage() {
                 <p className="font-sans text-caption text-t3 mb-5">{p.desc}</p>
                 {p.price!==null?(
                   <div className="mb-[22px]">
-                    <span className="font-mono text-display font-bold tracking-[-0.02em]" style={{color:p.hot?K.blue4:K.t1}}>${annual?Math.round(p.price*0.8).toLocaleString():p.price.toLocaleString()}</span>
+                    <span className="font-mono text-display font-bold tracking-[-0.02em]" style={{color:p.hot?K.tBlue:K.t1}}>${annual?Math.round(p.price*0.8).toLocaleString():p.price.toLocaleString()}</span>
                     <span className="font-mono text-small text-t3">/mo</span>
                     {annual&&<p className="font-mono text-caption text-kmint mt-[3px]">BILLED ANNUALLY · SAVE ${(p.price*0.2*12).toLocaleString()}/YR</p>}
                   </div>
@@ -410,7 +411,7 @@ export default function HomePage() {
           </div>
           <p className="text-center font-mono text-caption text-t4">
             All plans include signal enrichment, fraud protection, and 14-day free trial.{" "}
-            <a href="/pricing" className="no-underline" style={{color:K.blue4}}>See full comparison →</a>
+            <a href="/pricing" className="underline" style={{color: K.tBlue}}>See full comparison →</a>
           </p>
         </div>
       </section>
@@ -442,6 +443,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      </div>
     </MarketingLayout>
   );
 }

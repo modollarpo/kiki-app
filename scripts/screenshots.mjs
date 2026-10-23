@@ -51,8 +51,20 @@ async function loginAndGetState(browser, viewport) {
     await page.fill('input[type="password"]', PASSWORD);
     // Prefer the explicit "Sign In" button.
     const btn = page.getByRole("button", { name: /sign in/i }).first();
-    await btn.click();
-    await page.waitForURL("**/dashboard", { timeout: 30000 });
+    // Wait for the auth round-trip rather than the client-side URL change:
+    // the SPA updates the URL after the token is persisted, and a slow dev
+    // compile can make an awaited `waitForURL` flaky.
+    await Promise.all([
+      page
+        .waitForResponse(
+          (r) => r.url().includes("/api/auth/login") && r.request().method() === "POST",
+          { timeout: 45000 }
+        )
+        .catch(() => {}),
+      btn.click(),
+    ]);
+    await page.waitForTimeout(1500);
+    await page.waitForURL("**/dashboard", { timeout: 30000 }).catch(() => {});
     await page.waitForLoadState("domcontentloaded");
     console.log(`[auth] logged in as ${EMAIL}`);
     const state = await ctx.storageState();

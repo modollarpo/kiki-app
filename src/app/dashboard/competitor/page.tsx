@@ -133,13 +133,13 @@ export default function CompetitorPage() {
         </div>
 
         {lastSummary && (
-          <div className="mb-4 px-4 py-3 rounded font-mono text-caption" style={{ background: K.g850, border: `1px solid ${K.mint}`, color: K.mint }}>
+          <div className="mb-4 px-4 py-3 rounded font-mono text-caption" style={{ background: K.g850, border: `1px solid ${K.mint}`, color: K.tMint }}>
             ✅ {lastSummary}
           </div>
         )}
 
         {runError && (
-          <div className="mb-4 px-4 py-3 rounded font-mono text-caption" style={{ background: K.g850, border: `1px solid ${K.warn}`, color: K.warn }}>
+          <div className="mb-4 px-4 py-3 rounded font-mono text-caption" style={{ background: K.g850, border: `1px solid ${K.warn}`, color: K.tWarn }}>
             ⚠ {runError}
           </div>
         )}
@@ -240,7 +240,7 @@ export default function CompetitorPage() {
               <div key={i} className="border-b" style={{ borderColor: K.g900 }}>
                 <div className="px-5 py-3" style={{ background: K.g950 }}>
                   <div className="flex flex-wrap items-center gap-3 mb-1">
-                    <span className="font-mono text-caption font-bold" style={{ color: K.danger }}>{r.competitorDomain}</span>
+                    <span className="font-mono text-caption font-bold" style={{ color: K.tDanger }}>{r.competitorDomain}</span>
                     <Badge color={K.danger}>{`-${r.priceDropPct.toFixed(1)}% price drop`}</Badge>
                     {r.creativeQueued && <Badge color={K.blue}>counter-offer queued</Badge>}
                   </div>

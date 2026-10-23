@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { K, PLATFORM_COLORS } from "@/lib/kdls";
+import { K, PLATFORM_COLORS, textSafe } from "@/lib/kdls";
 
 // ─── Button ───────────────────────────────────────────────
 type BtnVariant = "primary"|"secondary"|"ghost"|"danger"|"mint"|"violet"|"gold"|"teal";
@@ -29,7 +29,7 @@ export function Button({
   };
   const colorMap: Record<BtnVariant, string> = {
     primary: "white", secondary: K.t2, ghost: hov ? K.t2 : K.t3,
-    danger: "white", mint: K.void, violet: "white", gold: K.gold, teal: K.teal,
+    danger: "white", mint: "#04140E", violet: "white", gold: K.tGold, teal: K.tTeal,
   };
   const borderMap: Record<BtnVariant, string> = {
     primary: "transparent", secondary: K.g700, ghost: "transparent",
@@ -87,7 +87,7 @@ export function Badge({ children, color = K.blue, dot, pulse, style, className =
   return (
     <span className={className} {...rest} style={{
       display: "inline-flex", alignItems: "center", gap: 4,
-      padding: "2px 7px", background: `${color}14`, color,
+      padding: "2px 7px", background: `${color}14`, color: textSafe(color),
       fontFamily: K.mono, fontSize: "var(--fs-micro)", fontWeight: 700,
       letterSpacing: "0.08em", borderRadius: 2, flexShrink: 0,
       ...style,
@@ -188,7 +188,7 @@ export function Input({ placeholder, prefix, suffix, value, onChange, type = "te
         />
         {suffix && <span style={{ paddingRight: 12, fontFamily: K.mono, fontSize: "var(--fs-caption)", color: error ? K.danger : focused ? K.blue4 : K.t3, flexShrink: 0 }}>{suffix}</span>}
       </div>
-      {error && <p id={errorId} role="alert" style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.danger, marginTop: 4 }}>{error}</p>}
+      {error && <p id={errorId} role="alert" style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.tDanger, marginTop: 4 }}>{error}</p>}
       {hint && !error && <p id={hintId} style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3, marginTop: 4 }}>{hint}</p>}
     </div>
   );
@@ -355,7 +355,7 @@ export function AIThinking({ label = "SyncBrain is analyzing...", text }: { labe
         borderRadius: "50%", display: "inline-block", flexShrink: 0,
         animation: "kdls-spin 1s linear infinite",
       }} />
-      <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.blue, fontStyle: "italic" }}>{message}</span>
+      <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.tBlue, fontStyle: "italic" }}>{message}</span>
       <div style={{ display: "flex", gap: 3, marginLeft: "auto" }}>
         {[0, 1, 2].map((i) => (
           <span key={i} className="animate-kdls-pulse" style={{ width: 4, height: 4, borderRadius: "50%", background: K.blue, animationDelay: `${i * 0.2}s` }} />
@@ -394,14 +394,14 @@ export function NotConfigured({ service, envVar, note, className = "" }: {
   return (
     <Card accent={K.warn} className={className}>
       <div className="flex flex-col items-center text-center py-10 px-4">
-        <div className="text-h1 mb-3" style={{ color: K.warn }}>⬡</div>
+        <div className="text-h1 mb-3" style={{ color: K.tWarn }}>⬡</div>
         <h3 className="font-mono font-bold text-lead text-t1 mb-2">{service} service not configured</h3>
         <p className="font-mono text-small text-t3 max-w-md leading-[1.6]">
           {note ?? "This page is connected, but its backing microservice is not deployed in this environment, so no live data is available."}
         </p>
         {envVar && (
           <p className="font-mono text-caption text-t4 mt-4">
-            Configure <span style={{ color: K.warn }}>{envVar}</span> to enable this feature.
+            Configure <span style={{ color: K.tWarn }}>{envVar}</span> to enable this feature.
           </p>
         )}
       </div>

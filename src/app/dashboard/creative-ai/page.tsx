@@ -119,7 +119,7 @@ export default function CreativeAIPage() {
         </div>
 
         {lastRun && (
-          <div className="mb-4 px-4 py-3 rounded font-mono text-caption" style={{ background: K.g850, border: `1px solid ${K.mint}`, color: K.mint }}>
+          <div className="mb-4 px-4 py-3 rounded font-mono text-caption" style={{ background: K.g850, border: `1px solid ${K.mint}`, color: K.tMint }}>
             ✅ {lastRun}
           </div>
         )}
@@ -246,7 +246,7 @@ export default function CreativeAIPage() {
                   </div>
                   <p className="font-mono text-caption font-bold mb-1" style={{ color: K.t1 }}>{copy.headline}</p>
                   <p className="font-mono text-caption mb-2" style={{ color: K.t2 }}>{copy.primaryText}</p>
-                  <span className="font-mono text-caption px-2 py-1 rounded" style={{ background: K.mint + "22", color: K.mint, border: `1px solid ${K.mint}44` }}>
+                  <span className="font-mono text-caption px-2 py-1 rounded" style={{ background: K.mint + "22", color: K.tMint, border: `1px solid ${K.mint}44` }}>
                     {copy.callToAction}
                   </span>
                 </div>

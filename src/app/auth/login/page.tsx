@@ -111,7 +111,7 @@ export default function LoginPage() {
             <div className="mb-1.5">
               <div className="flex items-center justify-between mb-1.5">
                 <p className="font-mono text-caption tracking-widest text-t3 uppercase">Password</p>
-                <button onClick={() => setScreen("forgot")} className="font-mono text-caption bg-transparent border-none cursor-pointer" style={{ color:K.blue4 }}>Forgot?</button>
+                <button onClick={() => setScreen("forgot")} className="font-mono text-caption bg-transparent border-none cursor-pointer" style={{ color: K.tBlue }}>Forgot?</button>
               </div>
               <Input type="password" placeholder="••••••••" value={password} onChange={v => { setPassword(v); setErrors(e => ({...e, password: undefined})); }} error={errors.password} suffix="👁" />
             </div>
@@ -129,7 +129,7 @@ export default function LoginPage() {
             <Button full variant="secondary" size="md" onClick={() => setScreen("sso")} icon={<span>⬡</span>}>Sign in with SSO</Button>
             <p className="font-mono text-caption text-t4 text-center mt-4">
               No account?{" "}
-              <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => router.push("/auth/signup")}>Create account →</span>
+              <span style={{ color: K.tBlue, cursor:"pointer" }} onClick={() => router.push("/auth/signup")}>Create account →</span>
             </p>
           </Card>
         </div>
@@ -152,7 +152,7 @@ export default function LoginPage() {
                 <Input label="Work Email" type="email" placeholder="you@company.com" value={email} onChange={v => { setEmail(v); setErrors({}); }} error={errors.email} style={{ marginBottom:16 }} />
                 <Button full size="lg" onClick={handleForgotPassword}>Send Reset Link →</Button>
                 <p className="font-mono text-caption text-t4 text-center mt-3.5">
-                  <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => setScreen("login")}>← Back to sign in</span>
+                  <span style={{ color: K.tBlue, cursor:"pointer" }} onClick={() => setScreen("login")}>← Back to sign in</span>
                 </p>
               </>
             )}
@@ -178,7 +178,7 @@ export default function LoginPage() {
               ))}
             </div>
             <p className="font-mono text-caption text-t4 text-center mt-3.5">
-              <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => setScreen("login")}>← Use email instead</span>
+              <span style={{ color: K.tBlue, cursor:"pointer" }} onClick={() => setScreen("login")}>← Use email instead</span>
             </p>
           </Card>
         </div>

@@ -132,7 +132,7 @@ export function OnboardingChecklist() {
         background: `${K.mint}10`, border: `1px solid ${K.mint}40`, borderRadius: 4,
         padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16,
       }}>
-        <span style={{ fontFamily: K.mono, fontSize: "var(--fs-caption)", color: K.mint }}>
+        <span style={{ fontFamily: K.mono, fontSize: "var(--fs-caption)", color: K.tMint }}>
           ✓ Setup complete — all {total} steps done. KIKI is fully operational.
         </span>
         <button onClick={dismiss} style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3, background: "none", border: "none", cursor: "pointer" }}>
@@ -210,7 +210,7 @@ export function OnboardingChecklist() {
                   <button
                     onClick={(e) => { e.stopPropagation(); router.push(step.href); }}
                     style={{
-                      fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.blue, background: "none",
+                      fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.tBlue, background: "none",
                       border: `1px solid ${K.blue}40`, borderRadius: 2, padding: "3px 8px",
                       cursor: "pointer", flexShrink: 0,
                     }}

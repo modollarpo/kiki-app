@@ -82,7 +82,7 @@ export default function WorkflowPage() {
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.tDanger }}>{error}</p>
           </div>
         )}
 

@@ -107,7 +107,7 @@ export default function DemoPage() {
             className="text-4xl md:text-5xl font-bold tracking-tight mb-4"
             style={{ color: K.t1, fontFamily: "var(--font-mono)" }}
           >
-            KIKI Agent<span style={{ color: K.blue }}>™</span>
+            KIKI Agent<span style={{ color: K.tBlue }}>™</span>
           </h1>
           <p className="text-lg" style={{ color: K.t2, fontFamily: "var(--font-sans)" }}>
             Run the real enrichment pipeline below, or watch the product demo.
@@ -126,7 +126,7 @@ export default function DemoPage() {
             className="flex items-center justify-between gap-3 px-5 py-3 flex-wrap"
             style={{ background: K.g900, borderBottom: `1px solid ${K.g800}` }}
           >
-            <span className="text-xs font-bold" style={{ color: K.mint, fontFamily: "var(--font-mono)" }}>
+            <span className="text-xs font-bold" style={{ color: K.tMint, fontFamily: "var(--font-mono)" }}>
               LIVE ENRICHMENT
             </span>
             <span className="text-caption" style={{ color: K.t4, fontFamily: "var(--font-mono)" }}>
@@ -206,12 +206,12 @@ export default function DemoPage() {
                 </div>
 
                 <div className="text-caption leading-[1.9]" style={{ color: K.t3, fontFamily: "var(--font-mono)" }}>
-                  <div>value sent to platforms&nbsp; → &nbsp;<span style={{ color: K.mint, fontWeight: 700 }}>${r.enriched.valueToSend.toFixed(2)}</span></div>
+                  <div>value sent to platforms&nbsp; → &nbsp;<span style={{ color: K.tMint, fontWeight: 700 }}>${r.enriched.valueToSend.toFixed(2)}</span></div>
                   <div>enrichment method&nbsp;&nbsp;&nbsp;&nbsp; → &nbsp;<span style={{ color: K.t2 }}>{r.enriched.enrichmentMethod}</span></div>
                   <div>fraud score&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → &nbsp;<span style={{ color: K.t2 }}>{r.fraudScore}</span> {r.fraudBlocked ? "(blocked)" : "(passed)"}</div>
                   <div>consent&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → &nbsp;<span style={{ color: K.t2 }}>{r.consentValid ? "valid" : "blocked"}</span></div>
                   <div>dedup id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → &nbsp;<span style={{ color: K.t4 }}>{r.dedupId.slice(0, 24)}…</span></div>
-                  <div>bid multiplier&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → &nbsp;<span style={{ color: K.gold }}>{r.enriched.recommendedBidMultiplier.toFixed(2)}×</span></div>
+                  <div>bid multiplier&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → &nbsp;<span style={{ color: K.tGold }}>{r.enriched.recommendedBidMultiplier.toFixed(2)}×</span></div>
                 </div>
 
                 <p className="mt-4 text-caption" style={{ color: K.t4, fontFamily: "var(--font-mono)" }}>

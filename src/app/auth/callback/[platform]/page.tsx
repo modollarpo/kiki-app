@@ -167,7 +167,7 @@ export default function OAuthCallbackPage() {
             >
               ✓
             </div>
-            <p style={{ fontSize: "var(--fs-body)", fontWeight: 600, color: K.mint }}>
+            <p style={{ fontSize: "var(--fs-body)", fontWeight: 600, color: K.tMint }}>
               Connected to {platformLabel}
             </p>
             <p style={{ fontSize: "var(--fs-caption)", color: K.t3 }}>
@@ -190,12 +190,12 @@ export default function OAuthCallbackPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "var(--fs-h3)",
-                color: K.danger,
+                color: K.tDanger,
               }}
             >
               ✕
             </div>
-            <p style={{ fontSize: "var(--fs-body)", fontWeight: 600, color: K.danger }}>
+            <p style={{ fontSize: "var(--fs-body)", fontWeight: 600, color: K.tDanger }}>
               Connection Failed
             </p>
             <p style={{ fontSize: "var(--fs-caption)", color: K.t3, lineHeight: 1.6 }}>

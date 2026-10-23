@@ -234,7 +234,7 @@ export default function ConsentPage() {
             </Button>
           </div>
           <p className="font-mono text-caption text-t4 mt-3">
-            For questions, contact <span style={{ color: K.blue4 }}>privacy@keekii.net</span>
+            For questions, contact <span style={{ color: K.tBlue }}>privacy@keekii.net</span>
           </p>
         </div>
       </div>

@@ -58,14 +58,14 @@ export default function ResetPasswordPage() {
               <p className="font-sans text-small text-t3 mb-[22px]">Must be at least 8 characters.</p>
               {error && (
                 <div className="px-3.5 py-2.5 rounded-sm mb-4" style={{ background: `${K.danger}20`, border: `1px solid ${K.danger}40` }}>
-                  <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
+                  <p className="font-mono text-caption" style={{ color: K.tDanger }}>{error}</p>
                 </div>
               )}
               <Input label="New Password" type="password" placeholder="••••••••" value={password} onChange={setPassword} style={{ marginBottom: 12 }} />
               <Input label="Confirm Password" type="password" placeholder="••••••••" value={confirmPassword} onChange={setConfirmPassword} style={{ marginBottom: 16 }} />
               <Button full size="lg" loading={loading} onClick={handleReset}>Reset Password →</Button>
               <p className="font-mono text-caption text-t4 text-center mt-3.5">
-                <span style={{ color: K.blue4, cursor: "pointer" }} onClick={() => router.push("/auth/login")}>← Back to sign in</span>
+                <span style={{ color: K.tBlue, cursor: "pointer" }} onClick={() => router.push("/auth/login")}>← Back to sign in</span>
               </p>
             </>
           )}

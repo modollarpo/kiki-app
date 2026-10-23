@@ -13,7 +13,7 @@
   --void:#0A0A0B;--g950:#0F0F0F;--g900:#131316;--g850:#181820;
   --g800:#1E1E28;--g750:#222232;--g700:#252535;--g600:#32324A;
   /* Text — WCAG AA on #0A0A0B (all >= 4.5:1) */
-  --t1:#F0F0FA;--t2:#B0B0CC;--t3:#7B7B99;--t4:#9090AA;
+  --t1:#F0F0FA;--t2:#B0B0CC;--t3:#9494B0;--t4:#9090AA;
   /* Brand (unchanged across themes) */
   --blue:#005CFF;--blue4:#3380FF;--blue-d:#060E28;--blueT:rgba(0,92,255,0.08);
   --mint:#31F3C3;--mint4:#5AF5D0;--mint-d:#061A14;--mintT:rgba(49,243,195,0.08);
@@ -27,6 +27,20 @@
   --pink:#FF4D9D;--pink-d:#1A0810;--pinkT:rgba(255,77,157,0.08);
   --crm:#FF6A1A;--crm-d:#1A0800;--crmT:rgba(255,106,26,0.08);
   --indigo:#4040CF;--indigo-d:#0A0A28;
+  /* ── Accent-as-TEXT tokens ────────────────────────────────
+     The brand accents above are tuned for FILLS (buttons, chips,
+     chart series) and do not guarantee text contrast. These variants
+     are the ones to use for accent-coloured TEXT; each is verified
+     >= 4.5:1 against every surface in its theme. Values in :root
+     target dark surfaces; [data-theme="light"] overrides them. */
+  --t-blue:#5C9EFF;--t-mint:#31F3C3;--t-gold:#FFC24D;--t-oaas:#AE86FF;
+  --t-teal:#2ED3E6;--t-green:#33E08A;--t-danger:#FF6B6B;--t-warn:#FFC24D;
+  --t-pink:#FF7EB8;--t-crm:#FF9A5C;--t-indigo:#818CF8;--t-pos:#33E08A;
+  /* Fixed text tokens for ALWAYS-DARK surfaces (marketing terminal,
+     stats bars, footer). These deliberately do NOT change in light
+     theme, because the surfaces they sit on are hardcoded dark.
+     Verified >= 4.5:1 on #04040D / #050510 / #030308. */
+  --t-dark-1:#F0F0FA;--t-dark-2:#B0B0CC;--t-dark-3:#9494B0;--t-dark-4:#8A8AA6;
   /* Card / surface tokens */
   --card-bg:var(--g900);--card-border:var(--g750);--card-hover:var(--g850);
   --input-bg:var(--g850);--input-border:var(--g700);
@@ -64,7 +78,10 @@
 [data-theme="light"] {
   --void:#F8F9FC;--g950:#F0F2F5;--g900:#E8EAF0;--g850:#D8DAE2;
   --g800:#C8CAD2;--g750:#B8BAC2;--g700:#A8AAB2;--g600:#888AA2;
-  --t1:#1A1A2E;--t2:#4A4A6A;--t3:#6E6E8A;--t4:#6A6A8A;
+  --t1:#1A1A2E;--t2:#414160;--t3:#55556C;--t4:#63637E;
+  --t-blue:#0B4FC0;--t-mint:#076B4B;--t-gold:#7A5604;--t-oaas:#5E18C0;
+  --t-teal:#085660;--t-green:#056030;--t-danger:#A81818;--t-warn:#7A5604;
+  --t-pink:#A8195C;--t-crm:#A83800;--t-indigo:#3333B3;--t-pos:#056030;
   --blue-d:#E8F0FF;--mint-d:#E6FFF5;--gold-d:#FFF8E6;
   --oaas-d:#F3E8FF;--teal-d:#E6FBFF;--green-d:#E6FFF0;
   --danger-d:#FFE8E8;--warn-d:#FFF4E0;--posD:#E6FFF0;
@@ -121,6 +138,65 @@ input,select,textarea{font-family:inherit;outline:none}
 .ticker-track{display:flex;width:max-content;animation:kdls-ticker 38s linear infinite}
 .ticker-track:hover{animation-play-state:paused}
 .mono-value{font-family:var(--font-mono);font-feature-settings:'tnum';letter-spacing:-0.02em;line-height:1}
+
+/* ═══════════════════════════════════════════════════════════
+   ACCENT-AS-TEXT UTILITIES
+   Remap the `text-k<accent>` utilities to the contrast-safe
+   `--t-*` tokens. `bg-k<accent>` / `border-k<accent>` are left
+   on the brand fill colours, so only foreground text changes.
+   Declared in @layer utilities so it lands after Tailwind's own
+   `.text-k*` rules and wins on equal specificity.
+   ═══════════════════════════════════════════════════════════ */
+@layer utilities {
+  .text-kblue   { color: var(--t-blue); }
+  .text-kblue4  { color: var(--t-blue); }
+  .text-kmint   { color: var(--t-mint); }
+  .text-kmint4  { color: var(--t-mint); }
+  .text-kgold   { color: var(--t-gold); }
+  .text-koaas   { color: var(--t-oaas); }
+  .text-kindigo { color: var(--t-indigo); }
+  .text-kcrm    { color: var(--t-crm); }
+  .text-kteal   { color: var(--t-teal); }
+  .text-kgreen  { color: var(--t-green); }
+  .text-kpos    { color: var(--t-pos); }
+  .text-kwarn   { color: var(--t-warn); }
+  .text-kdanger { color: var(--t-danger); }
+}
+
+/* ── Always-dark scope ──────────────────────────────────────
+   Re-declares the dark theme tokens on a subtree so any element
+   inside resolves `text-t*`, `bg-g*`, `border-g*`, `--blue*`, and
+   inline `K.void` / `K.g900` styles to their DARK values even when
+   the page-level theme is light. Used by intentionally dark
+   marketing surfaces (terminal, stats, hero) that never flip. */
+.force-dark {
+  --void:#0A0A0B;--g950:#0F0F0F;--g900:#131316;--g850:#181820;
+  --g800:#1E1E28;--g750:#222232;--g700:#252535;--g600:#32324A;
+  --t1:#F0F0FA;--t2:#B0B0CC;--t3:#9494B0;--t4:#9090AA;
+  /* Brand fills + their tinted surfaces, pinned to dark values so an
+     always-dark subtree never inherits light-theme tints from the page. */
+  --blue:#005CFF;--blue4:#3380FF;--blue-d:#060E28;
+  --mint:#31F3C3;--mint4:#5AF5D0;--mint-d:#061A14;
+  --gold:#F0A500;--gold-d:#1A1000;
+  --oaas:#7B2FFF;--oaas-d:#100820;
+  --teal:#00B8CC;--teal-d:#001418;
+  --green:#00CC66;--green-d:#001A0E;
+  --danger:#FF3B3B;--danger-d:#1A0606;
+  --warn:#F5A623;--warn-d:#1A1000;
+  --pos:#00D084;--posD:#001A0E;
+  --pink:#FF4D9D;--pink-d:#1A0810;
+  --crm:#FF6A1A;--crm-d:#1A0800;
+  --indigo:#4040CF;--indigo-d:#0A0A28;
+  /* Text-safe accent variants — the DARK-theme values. */
+  --t-blue:#5C9EFF;--t-mint:#31F3C3;--t-gold:#FFC24D;--t-oaas:#AE86FF;
+  --t-teal:#2ED3E6;--t-green:#33E08A;--t-danger:#FF6B6B;--t-warn:#FFC24D;
+  --t-pink:#FF7EB8;--t-crm:#FF9A5C;--t-indigo:#818CF8;--t-pos:#33E08A;
+  --card-bg:#131316;--card-border:#222232;--card-hover:#181820;
+  --input-bg:#181820;--input-border:#252535;
+  --tooltip-bg:#1E1E28;--tooltip-border:#252535;
+  --scrollbar-track:#0A0A0B;--scrollbar-thumb:#252535;
+  background:var(--void);color:var(--t1);
+}
 
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE UTILITIES

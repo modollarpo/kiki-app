@@ -122,7 +122,7 @@ export default function SettingsPage() {
           </div>
           {saveError && (
             <div className="px-3 py-2 rounded mb-3" style={{ background: K.dangerT, border: `1px solid ${K.danger}40` }}>
-              <p className="font-mono text-caption" style={{ color: K.danger }}>{saveError}</p>
+              <p className="font-mono text-caption" style={{ color: K.tDanger }}>{saveError}</p>
             </div>
           )}
           <Button size="sm" loading={saving} onClick={handleSave}>{saved ? "✓ Saved" : "Save Changes"}</Button>

@@ -46,8 +46,8 @@ export default function AppDownloadPage() {
             {platform === "ios" && (
               <div>
                 <div className="p-4 rounded-sm mb-4" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
-                  <p className="font-mono font-bold text-caption mb-1.5" style={{ color:K.blue4 }}>iOS app — coming soon — configure app store builds</p>
-                  <p className="font-sans text-small text-t2">Until it ships, add the web app to your Home Screen: open <span style={{color:K.blue4}}>keekii.net</span> in Safari, tap Share, then &quot;Add to Home Screen&quot;.</p>
+                  <p className="font-mono font-bold text-caption mb-1.5" style={{ color: K.tBlue }}>iOS app — coming soon — configure app store builds</p>
+                  <p className="font-sans text-small text-t2">Until it ships, add the web app to your Home Screen: open <span style={{color: K.tBlue}}>keekii.net</span> in Safari, tap Share, then &quot;Add to Home Screen&quot;.</p>
                 </div>
                 <Button size="lg" onClick={() => { window.location.href = "/dashboard"; }}>Open Web App →</Button>
               </div>
@@ -55,7 +55,7 @@ export default function AppDownloadPage() {
             {platform === "android" && (
               <div>
                 <div className="p-4 rounded-sm mb-4" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
-                  <p className="font-mono font-bold text-caption mb-1.5" style={{ color:K.blue4 }}>Android app — coming soon — configure app store builds</p>
+                  <p className="font-mono font-bold text-caption mb-1.5" style={{ color: K.tBlue }}>Android app — coming soon — configure app store builds</p>
                   <p className="font-sans text-small text-t2">Until it ships, use the web app in Chrome and tap &quot;Install app&quot; from the menu.</p>
                 </div>
                 <Button size="lg" onClick={() => { window.location.href = "/dashboard"; }}>Open Web App →</Button>
@@ -64,8 +64,8 @@ export default function AppDownloadPage() {
             {platform === "pwa" && (
               <div>
                 <div className="p-4 rounded-sm mb-4" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
-                  <p className="font-mono font-bold text-caption mb-1.5" style={{ color:K.blue4 }}>Install as Progressive Web App</p>
-                  <p className="font-sans text-small text-t2">Visit <span style={{color:K.blue4}}>keekii.net/dashboard</span> in your browser, then tap &quot;Add to Home Screen&quot; to install. Works offline with background sync.</p>
+                  <p className="font-mono font-bold text-caption mb-1.5" style={{ color: K.tBlue }}>Install as Progressive Web App</p>
+                  <p className="font-sans text-small text-t2">Visit <span style={{color: K.tBlue}}>keekii.net/dashboard</span> in your browser, then tap &quot;Add to Home Screen&quot; to install. Works offline with background sync.</p>
                 </div>
                 <Button size="lg" onClick={() => { window.location.href = "/dashboard"; }}>Open Web App →</Button>
               </div>

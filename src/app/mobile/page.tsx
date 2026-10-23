@@ -101,7 +101,7 @@ function HomeScreen({ onNav }: { onNav: (s: string) => void }) {
       <div onClick={() => onNav("chat")} className="p-3.5 rounded-xl cursor-pointer flex items-center gap-3 mt-1" style={{ background:K.greenT, border:`1px solid ${K.green}30` }}>
         <span className="text-xl">⬡</span>
         <div>
-          <p className="font-mono font-bold text-caption" style={{ color:K.green }}>Ask SyncBrain</p>
+          <p className="font-mono font-bold text-caption" style={{ color: K.tGreen }}>Ask SyncBrain</p>
           <p className="font-sans text-caption text-t3">Get instant AI insights</p>
         </div>
         <span className="ml-auto font-mono text-body text-t4">›</span>
@@ -326,7 +326,7 @@ export default function MobileAppPage() {
             {chatOpen ? (
               <button onClick={() => setChatOpen(false)} className="font-mono text-caption text-t3 bg-none border-none cursor-pointer">✕ Close</button>
             ) : (
-              <button onClick={() => setChatOpen(true)} className="py-[5px] px-3 rounded-2xl font-mono text-caption cursor-pointer" style={{ background:K.greenD, border:`1px solid ${K.green}40`, color:K.green }}>⬡ Ask AI</button>
+              <button onClick={() => setChatOpen(true)} className="py-[5px] px-3 rounded-2xl font-mono text-caption cursor-pointer" style={{ background:K.greenD, border:`1px solid ${K.green}40`, color: K.tGreen }}>⬡ Ask AI</button>
             )}
           </div>
         </div>

@@ -63,3 +63,40 @@ jobs:
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  a11y:
+    name: Accessibility audit (axe)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - run: npm ci --engine-strict=false
+
+      # The audit drives a real Chromium against the running app.
+      - run: npx playwright install --with-deps chromium
+
+      - name: Start app
+        env:
+          SEED_DEMO_DATA: "true"
+          DEMO_USER_PASSWORD: "password123"
+          DEMO_ADMIN_PASSWORD: "admin123"
+          NEXT_PUBLIC_DEMO_MODE: "true"
+          PORT: "3000"
+        run: |
+          npm run dev > /tmp/dev.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/api/status > /dev/null 2>&1; then
+              echo "app is up"
+              break
+            fi
+            sleep 3
+          done
+          curl -fsS http://localhost:3000/api/status > /dev/null || (echo "app failed to start"; tail -n 100 /tmp/dev.log; exit 1)
+
+      # Baseline-gated: fails only when violations exceed scripts/a11y-baseline.json.
+      - run: npm run audit:a11y

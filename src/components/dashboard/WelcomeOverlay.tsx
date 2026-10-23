@@ -69,13 +69,13 @@ export function WelcomeOverlay() {
               <span className="text-h3 flex-shrink-0">{s.icon}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-caption font-bold" style={{ color: K.blue4 }}>STEP {i + 1}</span>
+                  <span className="font-mono text-caption font-bold" style={{ color: K.tBlue }}>STEP {i + 1}</span>
                   <span className="font-mono text-caption" style={{ color: K.t3 }}>—</span>
                   <span className="font-mono text-caption text-t1 font-semibold">{s.title}</span>
                 </div>
                 <p className="font-mono text-caption mt-0.5" style={{ color: K.t3 }}>{s.desc}</p>
               </div>
-              <span className="font-mono text-caption flex-shrink-0" style={{ color: K.blue4 }}>→</span>
+              <span className="font-mono text-caption flex-shrink-0" style={{ color: K.tBlue }}>→</span>
             </button>
           ))}
         </div>

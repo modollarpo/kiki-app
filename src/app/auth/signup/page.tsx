@@ -77,7 +77,7 @@ export default function SignupPage() {
               <Button full size="lg" loading={loading} onClick={handleSignup}>Create Account →</Button>
               <p className="font-mono text-caption text-t4 text-center mt-4">
                 Already have an account?{" "}
-                <span style={{ color:K.blue4, cursor:"pointer" }} onClick={() => router.push("/auth/login")}>Sign in →</span>
+                <span style={{ color: K.tBlue, cursor:"pointer" }} onClick={() => router.push("/auth/login")}>Sign in →</span>
               </p>
             </Card>
       </div>

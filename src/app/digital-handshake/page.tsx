@@ -50,7 +50,7 @@ export default function DigitalHandshakePage() {
               </div>
               <div className="p-[22px]">
                 <div className="p-3.5 rounded-sm mb-4.5" style={{ background:K.blueT, border:`1px solid ${K.blue}25` }}>
-                  <p className="font-mono font-bold text-caption mb-1" style={{ color:K.blue4 }}>🔒 Cryptographic signature</p>
+                  <p className="font-mono font-bold text-caption mb-1" style={{ color: K.tBlue }}>🔒 Cryptographic signature</p>
                   <p className="font-sans text-caption text-t2">Your signature will be timestamped, hashed (SHA-256), and stored in the immutable audit log with your IP address and user agent. This creates a legally binding electronic agreement.</p>
                 </div>
                 <div className="mb-3">
@@ -125,7 +125,7 @@ export default function DigitalHandshakePage() {
 
         <div className="mt-8 p-4.5 bg-g900 border border-g800 rounded-sm">
           <p className="font-mono font-bold text-caption text-t1 mb-1.5">Need a custom agreement?</p>
-          <p className="font-sans text-small text-t3">Enterprise customers can request custom MSAs, BAAs, and tailored DPAs. Contact <span style={{color:K.blue4}}>legal@keekii.net</span></p>
+          <p className="font-sans text-small text-t3">Enterprise customers can request custom MSAs, BAAs, and tailored DPAs. Contact <span style={{color: K.tBlue}}>legal@keekii.net</span></p>
         </div>
       </div>
     </MarketingLayout>

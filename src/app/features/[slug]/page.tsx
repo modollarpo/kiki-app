@@ -51,7 +51,7 @@ export default function FeatureDetailPage() {
             <div className="w-px h-8" style={{ background: K.g700 }} />
             {feat.capabilities.slice(0, 3).map((c, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="text-caption" style={{ color: K.mint }}>✓</span>
+                <span className="text-caption" style={{ color: K.tMint }}>✓</span>
                 <span className="font-mono text-caption text-t3 whitespace-nowrap">{c}</span>
               </div>
             ))}

@@ -92,7 +92,7 @@ export default function DocsPage() {
         <div className="mt-10 p-5 bg-g900 rounded-sm flex items-center justify-between flex-wrap gap-4" style={{ border:`1px solid ${K.g800}` }}>
           <div>
             <p className="font-mono font-bold text-small text-t1 mb-1">Need help integrating?</p>
-            <p className="font-sans text-small text-t3">Email <span style={{color:K.blue4}}>developers@keekii.net</span></p>
+            <p className="font-sans text-small text-t3">Email <span style={{color: K.tBlue}}>developers@keekii.net</span></p>
           </div>
           <div className="flex gap-2.5">
             <Button size="sm" onClick={() => router.push("/contact")}>Book Integration Call</Button>

@@ -85,7 +85,7 @@ export default function OaaSAgreementPage() {
               </div>
             </div>
             <div className="p-4 rounded-sm mb-5" style={{ background:K.oaasT, border:`1px solid ${K.oaas}25` }}>
-              <p className="font-mono font-bold text-caption mb-1.5" style={{ color:K.oaas }}>⬡ Performance Guarantee</p>
+              <p className="font-mono font-bold text-caption mb-1.5" style={{ color: K.tOaas }}>⬡ Performance Guarantee</p>
               <p className="font-sans text-small text-t2 leading-[1.6]">KIKI guarantees a minimum {tier.upliftTarget} ROAS improvement within 90 days of full onboarding, or we provide a credit equal to 2 months of service fees. Applies to accounts with ≥90 days of historical data.</p>
             </div>
             <Button size="lg" onClick={() => setStep("sign")}>Continue to Sign →</Button>

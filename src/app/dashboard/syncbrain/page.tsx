@@ -280,7 +280,7 @@ export default function SyncBrainPage() {
               {thinking && (
                 <div className="flex gap-[5px] py-2.5 px-3.5 w-fit rounded-sm" style={{ background: K.g850, border: `1px solid ${K.green}30` }}>
                   {[0, 1, 2].map(i => <span key={i} className="animate-kdls-pulse w-1.5 h-1.5 rounded-full" style={{ background: K.green, animationDelay: `${i * 0.2}s` }} />)}
-                  <span className="font-mono text-caption ml-1.5" style={{ color: K.green }}>Thinking...</span>
+                  <span className="font-mono text-caption ml-1.5" style={{ color: K.tGreen }}>Thinking...</span>
                 </div>
               )}
               <div ref={endRef} />

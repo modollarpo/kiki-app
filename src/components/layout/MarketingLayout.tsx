@@ -78,7 +78,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
         {/* Logo */}
         <div style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", flexShrink:0 }} onClick={() => router.push("/")}>
           <Image src="/images/kiki.png" alt="KIKI" width={28} height={28} style={{ borderRadius:3 }} />
-          <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontWeight:700, fontSize: "var(--fs-body)", color:K.t1 }}>KIKI<span style={{ color:K.blue }}>.</span>Agent</span>
+          <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontWeight:700, fontSize: "var(--fs-body)", color:K.t1 }}>KIKI<span style={{ color: K.tBlue }}>.</span>Agent</span>
         </div>
 
         {/* Desktop links */}
@@ -102,6 +102,8 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
         {/* Mobile hamburger */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={mobileMenuOpen}
           style={{ display:"none", flexDirection:"column", gap:4, background:"none", border:"none", padding:8, cursor:"pointer" }}
           className="md-show-flex">
           {[0,1,2].map(i => (
@@ -149,7 +151,7 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
             <div style={{ minWidth:180 }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, cursor:"pointer" }} onClick={() => router.push("/")}>
                 <Image src="/images/kiki.png" alt="KIKI" width={28} height={28} style={{ borderRadius:3 }} />
-                <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontWeight:700, fontSize: "var(--fs-body)", color:K.t1 }}>KIKI<span style={{color:K.blue}}>.</span>Agent</span>
+                <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontWeight:700, fontSize: "var(--fs-body)", color:K.t1 }}>KIKI<span style={{color: K.tBlue}}>.</span>Agent</span>
               </div>
               <p style={{ fontFamily:"Inter,sans-serif", fontSize: "var(--fs-small)", color:K.t3, lineHeight:1.7, marginBottom:14 }}>Autonomous LTV campaign execution. Your ad platforms learn from real customer value.</p>
               <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
@@ -181,13 +183,13 @@ export function MarketingLayout({ children }: { children: React.ReactNode }) {
               <span style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color:K.t3 }}>DOWNLOAD THE APP</span>
               {[{ l:"📱 iOS", h:"/app-download" }, { l:"▶ Android", h:"/app-download" }, { l:"⬡ Install PWA", h:"/app-download" }].map(a => (
                 <a key={a.l} href={a.h}
-                  style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color:K.blue4, textDecoration:"none", background:K.blueD, border:`1px solid ${K.blue}25`, padding:"4px 10px", borderRadius:2 }}>
+                  style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color: K.tBlue, textDecoration:"none", background:K.blueD, border:`1px solid ${K.blue}25`, padding:"4px 10px", borderRadius:2 }}>
                   {a.l}
                 </a>
               ))}
             </div>
             <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
-              {[{l:"System Status", h:"/status", c:K.mint},{l:"Developer Docs", h:"/docs", c:K.blue4},{l:"Contact Sales", h:"/contact", c:K.t3}].map(l => (
+              {[{l:"System Status", h:"/status", c:K.tMint},{l:"Developer Docs", h:"/docs", c:K.tBlue},{l:"Contact Sales", h:"/contact", c:K.t3}].map(l => (
                 <a key={l.l} href={l.h} style={{ fontFamily:"'Inter',system-ui,sans-serif", fontSize: "var(--fs-micro)", color:l.c, textDecoration:"none" }}>{l.l}</a>
               ))}
             </div>

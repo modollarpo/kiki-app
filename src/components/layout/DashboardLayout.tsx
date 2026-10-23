@@ -8,7 +8,7 @@ import {
   useSystemStatus,
 } from "@/store";
 import type { User } from "@/types";
-import { K } from "@/lib/kdls";
+import { K, textSafe } from "@/lib/kdls";
 import { Badge } from "@/components/ui";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -365,7 +365,7 @@ const SidebarContent = memo(function SidebarContent({
       <div
         onClick={() => router.push("/")}
         role="link"
-        aria-label="Go to homepage"
+        aria-label="KIKI.Agent™ ENTERPRISE — go to homepage"
         style={{
           height: 56,
           display: "flex",
@@ -398,7 +398,7 @@ const SidebarContent = memo(function SidebarContent({
                 lineHeight: 1,
               }}
             >
-              KIKI<span style={{ color: K.blue }}>.</span>Agent
+              KIKI<span style={{ color: K.tBlue }}>.</span>Agent
             </p>
             <p
               style={{
@@ -437,7 +437,7 @@ const SidebarContent = memo(function SidebarContent({
               display: "inline-block",
             }}
           />
-          <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.mint }}>
+          <span style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.tMint }}>
             {running} agents running
           </span>
         </div>
@@ -494,7 +494,7 @@ const SidebarContent = memo(function SidebarContent({
                     borderLeft: `2px solid ${isActive ? K.blue : "transparent"}`,
                     textAlign: "left",
                     background: isActive ? `${K.blue}10` : "transparent",
-                    color: isActive ? K.blue4 : K.t3,
+                    color: isActive ? K.tBlue : K.t3,
                     transition: "all 0.1s",
                     marginBottom: 1,
                     cursor: "pointer",
@@ -546,7 +546,6 @@ const SidebarContent = memo(function SidebarContent({
         <div style={{ borderTop: `1px solid ${K.g800}`, padding: 8, flexShrink: 0, display: "flex", gap: 6 }}>
           <button
             onClick={() => router.push("/dashboard/settings")}
-            aria-label="User settings"
             style={{
               flex: 1,
               minWidth: 0,
@@ -563,6 +562,7 @@ const SidebarContent = memo(function SidebarContent({
             onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
           >
             <div
+              aria-hidden="true"
               style={{
                 width: 26,
                 height: 26,
@@ -574,7 +574,7 @@ const SidebarContent = memo(function SidebarContent({
                 fontFamily: K.mono,
                 fontWeight: 700,
                 fontSize: "var(--fs-micro)",
-                color: K.blue4,
+                color: K.tBlue,
                 flexShrink: 0,
               }}
             >
@@ -594,10 +594,11 @@ const SidebarContent = memo(function SidebarContent({
               >
                 {user?.name || "User"}
               </p>
-              <p style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3 }}>
+              <p aria-hidden="true" style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.t3 }}>
                 {user?.plan || "free"} plan
               </p>
             </div>
+            <span className="sr-only"> — account settings</span>
           </button>
           <button
             onClick={onSignOut}
@@ -613,7 +614,7 @@ const SidebarContent = memo(function SidebarContent({
               borderRadius: 2,
               border: `1px solid ${K.g700}`,
               background: "none",
-              color: K.danger,
+              color: K.tDanger,
               cursor: "pointer",
               fontSize: "var(--fs-body)",
             }}
@@ -837,7 +838,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
           <button
             onClick={() => setCmdPaletteOpen(true)}
-            aria-label="Open command palette"
             style={{
               display: "flex",
               alignItems: "center",
@@ -856,7 +856,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               flexShrink: 1,
             }}
           >
-            <span style={{ flexShrink: 0 }}>⌕</span>
+            <span aria-hidden="true" style={{ flexShrink: 0 }}>⌕</span>
             <span
               style={{
                 flex: 1,
@@ -870,6 +870,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </span>
             {!isMobile && (
               <kbd
+                aria-hidden="true"
                 style={{
                   fontFamily: K.mono,
                   fontSize: "var(--fs-micro)",
@@ -884,6 +885,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 ⌘K
               </kbd>
             )}
+            <span className="sr-only"> — open command palette</span>
           </button>
 
           {!isMobile && (
@@ -909,7 +911,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   fontFamily: K.mono,
                   fontSize: "var(--fs-micro)",
                   letterSpacing: "0.1em",
-                  color: statusColor,
+                  color: textSafe(statusColor),
                   whiteSpace: "nowrap",
                 }}
               >

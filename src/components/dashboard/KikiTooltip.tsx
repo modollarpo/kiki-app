@@ -105,7 +105,7 @@ export function KikiTooltip({ term, children }: { term: string; children?: React
               {data.guide && (
                 <a
                   href={`/dashboard/guides/${data.guide}`}
-                  style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.blue, textDecoration: "none" }}
+                  style={{ fontFamily: K.mono, fontSize: "var(--fs-micro)", color: K.tBlue, textDecoration: "none" }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   Read the full guide →

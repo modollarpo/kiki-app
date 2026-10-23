@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { MarketingLayout } from "@/components/layout/MarketingLayout";
-import { K } from "@/lib/kdls";
+import { K, textSafe } from "@/lib/kdls";
 import { Badge, Button } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import { PLANS, type PlanDisplay } from "@/lib/plans";
@@ -33,7 +33,7 @@ export default function PricingPage() {
           <p className="font-sans text-lead text-t3 max-w-[480px] mx-auto mb-7">Start free, scale as you grow. Every plan includes the full signal enrichment engine.</p>
           <div className="inline-flex gap-1 bg-g850 rounded-sm p-1">
             {(["monthly", "annual"] as const).map(b => (
-              <button key={b} onClick={() => setBilling(b)} className="px-5 py-2 font-mono text-caption font-semibold rounded-sm border-none cursor-pointer" style={{ background: billing === b ? K.g700 : "transparent", color: billing === b ? K.t1 : K.t3 }}>
+              <button key={b} onClick={() => setBilling(b)} className="px-5 py-2 font-mono text-caption font-semibold rounded-sm border-none cursor-pointer" style={{ background: billing === b ? K.g850 : "transparent", color: billing === b ? K.t1 : K.t3 }}>
                 {b.charAt(0).toUpperCase() + b.slice(1)}{b === "annual" && <span className="text-kmint ml-1.5 text-caption">SAVE 20%</span>}
               </button>
             ))}
@@ -47,10 +47,10 @@ export default function PricingPage() {
               <p className="font-mono font-bold text-h3 text-t1 mb-1.5">{plan.name}</p>
               <p className="font-sans text-small text-t3 mb-[22px]">{plan.desc}</p>
               {plan.contactOnly || plan.performanceBased ? (
-                <p className="font-mono font-bold text-display mb-[22px]" style={{ color: plan.color }}>{priceLabel(plan)}</p>
+                <p className="font-mono font-bold text-display mb-[22px]" style={{ color: textSafe(plan.color) }}>{priceLabel(plan)}</p>
               ) : (
                 <div className="mb-[22px]">
-                  <span className="font-mono font-bold text-display" style={{ color: plan.hot ? K.blue4 : K.t1 }}>${billing === "monthly" ? plan.priceMonthly.toLocaleString() : plan.priceAnnualPerMonth.toLocaleString()}</span>
+                  <span className="font-mono font-bold text-display" style={{ color: plan.hot ? K.tBlue : K.t1 }}>${billing === "monthly" ? plan.priceMonthly.toLocaleString() : plan.priceAnnualPerMonth.toLocaleString()}</span>
                   <span className="font-mono text-body text-t3">/mo</span>
                   {billing === "annual" && <p className="font-mono text-caption text-kmint mt-[3px]">Billed ${(plan.priceAnnualPerMonth * 12).toLocaleString()}/year · Save ${((plan.priceMonthly - plan.priceAnnualPerMonth) * 12).toLocaleString()}</p>}
                 </div>

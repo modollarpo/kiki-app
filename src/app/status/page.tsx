@@ -93,7 +93,7 @@ export default function StatusPage() {
         <div className="mt-8 text-center p-5 bg-g900 border border-g800 rounded-sm">
           <p className="font-mono text-caption text-t3">
             Incident notifications:{" "}
-            <a href="mailto:hello@keekii.net?subject=Status%20notifications" className="no-underline" style={{ color:K.blue4 }}>hello@keekii.net</a>
+            <a href="mailto:hello@keekii.net?subject=Status%20notifications" className="no-underline" style={{ color: K.tBlue }}>hello@keekii.net</a>
           </p>
         </div>
       </div>

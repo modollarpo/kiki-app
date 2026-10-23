@@ -62,7 +62,7 @@ export default function InfluencerPage() {
             <p className="font-mono text-caption text-t3">Track creator ROI, promo codes, and unattributed conversions</p>
           </div>
           <button onClick={() => setShowForm(!showForm)} className="font-mono text-caption font-semibold px-5 py-2 rounded-sm cursor-pointer"
-            style={{ border: `1px solid ${K.blue}40`, background: K.blue + "20", color: K.blue }}>
+            style={{ border: `1px solid ${K.blue}40`, background: K.blue + "20", color: K.tBlue }}>
             {showForm ? "Cancel" : "+ Add Creator"}
           </button>
         </div>
@@ -99,7 +99,7 @@ export default function InfluencerPage() {
                 </select>
               </div>
               <button onClick={registerCreator} className="font-mono text-caption font-semibold px-4 py-2 rounded-sm cursor-pointer"
-                style={{ border: `1px solid ${K.mint}40`, background: K.mint + "20", color: K.mint }}>Register</button>
+                style={{ border: `1px solid ${K.mint}40`, background: K.mint + "20", color: K.tMint }}>Register</button>
             </div>
           </Card>
         )}

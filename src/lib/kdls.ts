@@ -22,6 +22,14 @@ export const K = {
   warn: "var(--warn)", warnD: "var(--warn-d)", warnT: "var(--warnT)",
   danger: "var(--danger)", dangerD: "var(--danger-d)", dangerT: "var(--dangerT)",
   pink: "var(--pink)", pinkD: "var(--pink-d)", pinkT: "var(--pinkT)",
+  // Accent-as-TEXT (contrast-safe >= 4.5:1 on every surface, both themes).
+  // Use these for accent-coloured TEXT; use the plain tokens above for fills.
+  tBlue: "var(--t-blue)", tMint: "var(--t-mint)", tGold: "var(--t-gold)",
+  tOaas: "var(--t-oaas)", tTeal: "var(--t-teal)", tGreen: "var(--t-green)",
+  tDanger: "var(--t-danger)", tWarn: "var(--t-warn)", tPink: "var(--t-pink)",
+  tCrm: "var(--t-crm)", tIndigo: "var(--t-indigo)", tPos: "var(--t-pos)",
+  // Fixed text for always-dark surfaces (do not flip with theme)
+  tDark1: "var(--t-dark-1)", tDark2: "var(--t-dark-2)", tDark3: "var(--t-dark-3)", tDark4: "var(--t-dark-4)",
   // Card / surface tokens
   cardBg: "var(--card-bg)", cardBorder: "var(--card-border)", cardHover: "var(--card-hover)",
   inputBg: "var(--input-bg)", inputBorder: "var(--input-border)",
@@ -32,6 +40,18 @@ export const K = {
   // Radii
   rSm: "var(--r-sm)", rMd: "var(--r-md)", rLg: "var(--r-lg)", rXl: "var(--r-xl)",
 } as const;
+
+// Maps a brand accent token to its contrast-safe TEXT counterpart.
+// Use when the same accent value drives both a fill and a foreground:
+// keep the original for `background`/`border`, wrap the text colour in
+// `textSafe(...)`. Unknown values pass through untouched.
+const TEXT_SAFE_MAP: Record<string, string> = {
+  [K.blue]: K.tBlue, [K.blue4]: K.tBlue, [K.mint]: K.tMint, [K.mint4]: K.tMint,
+  [K.gold]: K.tGold, [K.oaas]: K.tOaas, [K.teal]: K.tTeal, [K.green]: K.tGreen,
+  [K.danger]: K.tDanger, [K.warn]: K.tWarn, [K.pink]: K.tPink, [K.crm]: K.tCrm,
+  [K.indigo]: K.tIndigo, [K.pos]: K.tPos,
+};
+export const textSafe = (c: string): string => TEXT_SAFE_MAP[c] ?? c;
 
 // Static brand colors (don't change with theme — used for badges, charts)
 export const BRAND_COLORS = {

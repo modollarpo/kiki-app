@@ -56,7 +56,7 @@ export default function B2BPage() {
 
         {error && (
           <div className="mb-4 p-3 rounded-sm" style={{ background: `${K.danger}12`, border: `1px solid ${K.danger}40` }}>
-            <p className="font-mono text-caption" style={{ color: K.danger }}>{error}</p>
+            <p className="font-mono text-caption" style={{ color: K.tDanger }}>{error}</p>
           </div>
         )}
 
@@ -110,7 +110,7 @@ export default function B2BPage() {
               {channelAttribution.map((ch, i) => (
                 <div key={i} className="p-3.5 rounded-sm text-center bg-g850">
                   <p className="font-mono text-caption text-t3 mb-1">{ch.channel}</p>
-                  <p className="font-mono text-xl font-bold" style={{ color: K.blue }}>{ch.credit}%</p>
+                  <p className="font-mono text-xl font-bold" style={{ color: K.tBlue }}>{ch.credit}%</p>
                   <p className="font-mono text-caption text-t4 mt-0.5">${(ch.pipeline / 1000).toFixed(0)}K · {ch.deals} deals</p>
                 </div>
               ))}

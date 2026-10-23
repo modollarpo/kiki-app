@@ -1,0 +1,33 @@
+{
+  "generatedAt": "2026-10-23T06:34:56.641Z",
+  "base": "http://localhost:3000",
+  "scanned": [
+    "home/dark/1440",
+    "pricing/dark/1440",
+    "login/dark/1440",
+    "dashboard/dark/1440",
+    "campaigns/dark/1440",
+    "wallet/dark/1440",
+    "home/light/1440",
+    "pricing/light/1440",
+    "login/light/1440",
+    "dashboard/light/1440",
+    "campaigns/light/1440",
+    "wallet/light/1440",
+    "home/dark/390",
+    "pricing/dark/390",
+    "login/dark/390",
+    "dashboard/dark/390",
+    "campaigns/dark/390",
+    "wallet/dark/390",
+    "home/light/390",
+    "pricing/light/390",
+    "login/light/390",
+    "dashboard/light/390",
+    "campaigns/light/390",
+    "wallet/light/390"
+  ],
+  "totalViolationNodes": 0,
+  "baseline": 0,
+  "violations": {}
+}

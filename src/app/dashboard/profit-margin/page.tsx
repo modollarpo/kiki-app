@@ -87,13 +87,13 @@ export default function ProfitMarginPage() {
               className="w-full h-[120px] p-2 font-mono text-xs rounded-sm resize-vertical"
               style={{ background: K.inputBg, border: `1px solid ${K.inputBorder}`, color: K.t1 }} />
             <button onClick={uploadMargins} className="mt-2 font-mono text-caption font-semibold px-4 py-2 rounded-sm cursor-pointer"
-              style={{ border: `1px solid ${K.mint}40`, background: K.mint + "20", color: K.mint }}>Upload</button>
+              style={{ border: `1px solid ${K.mint}40`, background: K.mint + "20", color: K.tMint }}>Upload</button>
           </Card>
         </div>
 
         <div className="mt-3 text-center">
           <button onClick={fetchPortfolio} className="font-mono text-caption font-semibold px-5 py-2 rounded-sm cursor-pointer"
-            style={{ border: `1px solid ${K.blue}40`, background: K.blue + "20", color: K.blue }}>Refresh Portfolio</button>
+            style={{ border: `1px solid ${K.blue}40`, background: K.blue + "20", color: K.tBlue }}>Refresh Portfolio</button>
         </div>
       </div>
     </DashboardLayout>

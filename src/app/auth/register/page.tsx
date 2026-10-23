@@ -168,7 +168,7 @@ export default function RegisterPage() {
 
           <p className="font-mono text-caption text-t4 text-center mt-4">
             Already have an account?{" "}
-            <span style={{ color: K.blue4, cursor: "pointer" }} onClick={() => router.push("/auth/login")}>
+            <span style={{ color: K.tBlue, cursor: "pointer" }} onClick={() => router.push("/auth/login")}>
               Sign in →
             </span>
           </p>

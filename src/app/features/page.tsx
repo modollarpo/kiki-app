@@ -37,7 +37,7 @@ export default function FeaturesPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge color={f.color}>{f.label.toUpperCase()}</Badge>
-                        {i === 1 && <span className="font-mono text-caption tracking-[0.12em] px-2 py-0.5 rounded-sm" style={{ background: `${K.mint}15`, color: K.mint }}>HOT</span>}
+                        {i === 1 && <span className="font-mono text-caption tracking-[0.12em] px-2 py-0.5 rounded-sm" style={{ background: `${K.mint}15`, color: K.tMint }}>HOT</span>}
                       </div>
                       <h3 className="font-mono font-bold text-lead text-t1 mb-2 leading-snug">{f.tagline}</h3>
                       <p className="font-sans text-small text-t3 leading-[1.7] mb-4">{f.desc}</p>

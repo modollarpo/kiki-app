@@ -23,6 +23,11 @@ const config: Config = {
         t2:      "var(--t2)",
         t3:      "var(--t3)",
         t4:      "var(--t4)",
+        // Fixed text for always-dark surfaces
+        tdark1:  "var(--t-dark-1)",
+        tdark2:  "var(--t-dark-2)",
+        tdark3:  "var(--t-dark-3)",
+        tdark4:  "var(--t-dark-4)",
         // KDLS Brand
         kblue:   "var(--blue)",
         kblue4:  "var(--blue4)",

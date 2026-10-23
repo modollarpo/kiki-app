@@ -51,7 +51,7 @@ export default function MmmPage() {
             <p className="font-mono text-caption text-t3">OLS channel attribution and budget reallocation from campaign data</p>
           </div>
           <button onClick={runMmm} disabled={loading} className="font-mono text-caption font-semibold px-5 py-2 rounded-sm cursor-pointer"
-            style={{ border: `1px solid ${K.blue}40`, background: loading ? K.g800 : K.blue + "20", color: K.blue, cursor: loading ? "wait" : "pointer" }}>
+            style={{ border: `1px solid ${K.blue}40`, background: loading ? K.g800 : K.blue + "20", color: K.tBlue, cursor: loading ? "wait" : "pointer" }}>
             {loading ? "Running..." : hasRun ? "Re-run MMM" : "Run MMM Analysis"}
           </button>
         </div>
