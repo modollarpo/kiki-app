@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { getUserFromRequest, json, jsonError } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { generateSecret, buildOtpauthUri } from "@/lib/mfa";
+import { logger } from "@/lib/logger";
 import QRCode from "qrcode";
 
 export async function POST(req: Request) {
@@ -17,7 +18,10 @@ export async function POST(req: Request) {
       .run(secret, user.id);
     const qrDataUrl = await QRCode.toDataURL(otpauth, { margin: 1, width: 240 });
     return json({ secret, otpauth, qrDataUrl, issuer: "KIKI", account: user.email });
-  } catch {
+  } catch (error) {
+    logger.error("mfa/setup failed", {
+      message: error instanceof Error ? error.message : String(error),
+    });
     return jsonError("Failed to setup MFA", 500);
   }
 }

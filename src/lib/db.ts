@@ -1795,6 +1795,9 @@ async function runMigrations(db: PgDb) {
   await addColumnIfMissing("users", "trial_ends_at", "TEXT");
   await addColumnIfMissing("users", "status", "TEXT NOT NULL DEFAULT 'active'");
   await addColumnIfMissing("users", "updated_at", "TEXT");
+  await addColumnIfMissing("users", "mfa_enabled", "INTEGER NOT NULL DEFAULT 0");
+  await addColumnIfMissing("users", "mfa_secret", "TEXT");
+  await addColumnIfMissing("users", "mfa_backup_codes", "TEXT");
   await addColumnIfMissing("contacts", "tenant_id", "TEXT");
   await addColumnIfMissing("wallet_cards", "issuer", "TEXT NOT NULL DEFAULT 'local'");
   await addColumnIfMissing("wallet_cards", "issuer_card_id", "TEXT");

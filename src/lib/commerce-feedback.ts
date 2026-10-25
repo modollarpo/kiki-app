@@ -152,10 +152,11 @@ export async function recordCommerceOrder(
         id, tenant_id, external_id, email, phone, identity_hash,
         total_orders, total_spent, predicted_ltv, ltv_confidence,
         ltv_segment, repeat_purchase_probability, first_order_at, last_order_at,
-        average_order_value, churn_risk, realized_ltv, realized_orders,
-        last_commerce_sync_at, commerce_platform, synced_at, created_at, updated_at
+        average_order_value, churn_risk, tags, metadata,
+        synced_at, created_at, updated_at, realized_ltv, realized_orders,
+        last_commerce_sync_at, commerce_platform
       )
-      VALUES (?, ?, ?, ?, ?, ?, 0, ?, 0, 0, ?, ?, datetime('now'), datetime('now'), ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
+      VALUES (?, ?, ?, ?, ?, ?, 0, ?, 0, 0, ?, ?, datetime('now'), datetime('now'), ?, ?, '[]', '{}', datetime('now'), datetime('now'), datetime('now'), ?, ?, datetime('now'), ?)
     `).run(
       customerId,
       tenantId,
