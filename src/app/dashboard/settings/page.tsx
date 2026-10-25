@@ -83,11 +83,27 @@ export default function SettingsPage() {
     }
   }, [token, addToast]);
 
+  const parseApiResponse = async (res: Response) => {
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      const text = await res.text();
+      if (text.includes("<!DOCTYPE") || text.includes("<html")) {
+        throw new Error("Server returned HTML page (Endpoint not found / Server starting). Please restart `npm run dev`.");
+      }
+      throw new Error(`Server error (${res.status}): ${text.slice(0, 80)}`);
+    }
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || `Request failed (${res.status})`);
+    }
+    return data;
+  };
+
   const loadMfaStatus = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch("/api/auth/mfa/status", { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await parseApiResponse(res);
       if (data.ok) setMfaStatus({ enabled: !!data.enabled, configured: !!data.configured, backupCodesRemaining: data.backupCodesRemaining || 0 });
     } catch { /* status is non-critical */ }
   }, [token]);
@@ -210,8 +226,7 @@ export default function SettingsPage() {
     setMfaCode("");
     try {
       const res = await fetch("/api/auth/mfa/setup", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || "Failed to start MFA setup");
+      const data = await parseApiResponse(res);
       setMfaSetup({ secret: data.secret, otpauth: data.otpauth, qrDataUrl: data.qrDataUrl });
     } catch (err) {
       setMfaError(err instanceof Error ? err.message : "Failed to start MFA setup");
@@ -233,8 +248,7 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ token: mfaCode.trim() }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || "Invalid code");
+      const data = await parseApiResponse(res);
       setBackupCodes(Array.isArray(data.backupCodes) ? data.backupCodes : []);
       setMfaSetup(null);
       addToast("success", "Two-factor authentication enabled");
@@ -259,8 +273,7 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ token: disableCode.trim() }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || "Failed to disable MFA");
+      await parseApiResponse(res);
       setDisablingMfa(false);
       setDisableCode("");
       setBackupCodes(null);
